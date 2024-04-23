@@ -548,10 +548,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@luca-financial/luca-schema@1.0.1-beta.0":
-  version "1.0.1-beta.0"
-  resolved "https://registry.yarnpkg.com/@luca-financial/luca-schema/-/luca-schema-1.0.1-beta.0.tgz#e6bae0f418a6abb331a9ca7e08c5d84e9216e2aa"
-  integrity sha512-i/T4YXoMoj5MUpNtWevQE7TBAdPNJrk7jv8GfSeHsCEPQMSHzgmBKE5LOFgIteFZ/3hr/dtDBD9GQBF0fDIu4A==
+"@luca-financial/luca-schema@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@luca-financial/luca-schema/-/luca-schema-1.0.1.tgz#004d238c02c46cbf880f9c106c02da37c80bff04"
+  integrity sha512-++G0NGlICoeD69jM7SuTzYSasiTYdqtW8Br1c40Fzrecy5Tb0CO0azsAxgYcrG6OdKguX2zYHxsOpRiTzOeBXQ==
 
 "@mui/base@5.0.0-beta.40", "@mui/base@^5.0.0-beta.22":
   version "5.0.0-beta.40"
