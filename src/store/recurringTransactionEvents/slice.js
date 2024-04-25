@@ -1,5 +1,7 @@
-import { validateRecurringTransactionEvent } from '../validators';
+import { validators } from '@luca-financial/luca-schema';
 import { createListSlice } from '../utils/createListSlice';
+
+const { validateRecurringTransactionEvent } = validators;
 
 const recurringTransactionEventsSlice = createListSlice(
   'recurringtransactionevents',

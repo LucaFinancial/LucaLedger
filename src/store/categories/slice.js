@@ -1,5 +1,7 @@
-import { validateCategory } from '../validators';
+import { validators } from '@luca-financial/luca-schema';
 import { createListSlice } from '../utils/createListSlice';
+
+const { validateCategory } = validators;
 
 const categoriesSlice = createListSlice('categories', validateCategory);
 export const {

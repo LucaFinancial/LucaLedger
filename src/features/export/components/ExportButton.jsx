@@ -1,7 +1,9 @@
 import { Button } from '@mui/material';
+import { validators } from '@luca-financial/luca-schema';
 
 import { useEntities, useTransactions } from '@/hooks';
-import { validateSchema } from '@/store/validators';
+
+const { validateSchema } = validators;
 
 export default function ExportButton() {
   const { transactions } = useTransactions();
