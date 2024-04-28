@@ -2,10 +2,10 @@ import { Paper, Typography } from '@mui/material';
 import { values } from 'lodash';
 import PropTypes from 'prop-types';
 
-import DynamicColumnsTable from '@c/tables/DynamicColumnsTable';
-import { slices } from '@s';
-import { useLucaSchema } from '@s/lucaSchema';
-import { ListTypeEnum, useListSlice } from '@s/schemaDrivenSlice';
+import DynamicColumnsTable from '@comp/tables/DynamicColumnsTable';
+import { slices } from '@store';
+import { useLucaSchema } from '@store/lucaSchema';
+import { ListTypeEnum, useListSlice } from '@store/schemaDrivenSlice';
 import SchemaDrivenComponent, { ColumnTypeEnum } from './SchemaDrivenComponent';
 
 export default function SchemaDrivenTable({

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { values } from 'lodash';
 
-import TableRowCheckbox from '@c/input/TableRowCheckbox';
+import TableRowCheckbox from '@comp/input/TableRowCheckbox';
 
 export const ColumnTypeEnum = Object.freeze({
   STRING: 'string',

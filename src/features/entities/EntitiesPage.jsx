@@ -1,6 +1,6 @@
-import SchemaDrivenTable from '@c/tables/SchemaDrivenTable';
-import { SchemaKeys, useEntities } from '@s/lucaSchema';
-import { ListTypeEnum } from '@s/schemaDrivenSlice';
+import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
+import { SchemaKeys, useEntities } from '@store/lucaSchema';
+import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import AddEntityButton from './components/AddEntityButton';
 
 export default function EntitiesPage() {

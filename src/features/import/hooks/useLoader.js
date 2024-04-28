@@ -1,4 +1,4 @@
-import { useEntities, useTransactions } from '@s/lucaSchema';
+import { useEntities, useTransactions } from '@store/lucaSchema';
 
 export default function useLoader() {
   const { loadEntities } = useEntities();

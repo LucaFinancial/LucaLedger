@@ -1,6 +1,6 @@
-import { slices } from '@s';
-import { constants } from '@s/lucaSchema';
-import { useListSlice } from '@s/schemaDrivenSlice';
+import { slices } from '@store';
+import { constants } from '@store/lucaSchema';
+import { useListSlice } from '@store/schemaDrivenSlice';
 
 export default function useTransactions() {
   const { actions, selectors } = useListSlice(

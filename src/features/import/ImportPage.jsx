@@ -1,9 +1,9 @@
 import { values } from 'lodash';
 import { Fragment, useEffect } from 'react';
 
-import SchemaDrivenTable from '@c/tables/SchemaDrivenTable';
-import { constants } from '@s/lucaSchema';
-import { ListTypeEnum } from '@s/schemaDrivenSlice';
+import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
+import { constants } from '@store/lucaSchema';
+import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import ImportButton from './components/ImportButton';
 import LoadButton from './components/LoadButton';
 import { useJsonFileReader, useLoader } from './hooks';

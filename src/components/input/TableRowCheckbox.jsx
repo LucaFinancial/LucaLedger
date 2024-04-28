@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import CheckboxInput from '@c/core/CheckboxInput';
+import CheckboxInput from '@comp/core/CheckboxInput';
 
 export default function TableRowCheckbox({ row, toggleIsSelected }) {
   const dispatch = useDispatch();

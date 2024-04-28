@@ -1,6 +1,6 @@
-import { slices } from '@s';
-import { constants, useLucaSchema } from '@s/lucaSchema';
-import { useListSlice } from '@s/schemaDrivenSlice';
+import { slices } from '@store';
+import { constants, useLucaSchema } from '@store/lucaSchema';
+import { useListSlice } from '@store/schemaDrivenSlice';
 
 export default function useEntities() {
   const { actions, selectors } = useListSlice(
