@@ -20,7 +20,14 @@
   "settings": {
     "import/resolver": {
       "alias": {
-        "map": [["@", "./src"]],
+        "map": [
+          ["@", "./src"],
+          ["@c", "./src/components"],
+          ["@f", "./src/features"],
+          ["@h", "./src/hooks"],
+          ["@s", "./src/store"],
+          ["@u", "./src/utils"],
+        ],
         "extensions": [".js", ".jsx"],
       },
     },

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import DynamicColumnsTable from '@c/tables/DynamicColumnsTable';
 import { slices } from '@s';
-import { useSchemaConfig } from '@s/lucaSchema';
+import { useLucaSchema } from '@s/lucaSchema';
 import { ListTypeEnum, useListSlice } from '@s/schemaDrivenSlice';
 import SchemaDrivenComponent, { ColumnTypeEnum } from './SchemaDrivenComponent';
 
@@ -14,7 +14,7 @@ export default function SchemaDrivenTable({
   readOnly = true,
   listType,
 }) {
-  const { title, columns } = useSchemaConfig(schemaKey);
+  const { title, columns } = useLucaSchema(schemaKey);
   const { actions, selectors } = useListSlice(slices, schemaKey);
   const data = selectors.selectList(listType);
 

@@ -54,6 +54,16 @@ const RepeatedTransactionOccurrenceStatusEnum = Object.freeze({
   DELETED: 'DELETED',
 });
 
+const SchemaKeys = Object.freeze({
+  CATEGORY: 'category',
+  ENTITY: 'entity',
+  LUCASCHEMA: 'lucaSchema',
+  RECURRINGTRANSACTION: 'recurringTransaction',
+  RECURRINGTRANSACTIONEVENT: 'recurringTransactionEvent',
+  SCHEMA: 'schema',
+  TRANSACTION: 'transaction',
+});
+
 export default {
   TransactionStateEnum,
   CategoryTypeEnum,
@@ -62,4 +72,5 @@ export default {
   RepeatedTransactionFrequencyEnum,
   RepeatedTransactionStateEnum,
   RepeatedTransactionOccurrenceStatusEnum,
+  SchemaKeys,
 };

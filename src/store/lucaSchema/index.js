@@ -1,13 +1,6 @@
 import * as hooks from './hooks';
-import { SchemaKeys, validators } from './lucaSchemaConfig';
-import { useSchemaConfig } from './hooks/useSchemaConfig';
+import constants from './constants';
 
-const { useEntities, useTransactions } = hooks;
+const { useEntities, useLucaSchema, useTransactions } = hooks;
 
-export {
-  SchemaKeys,
-  useEntities,
-  useSchemaConfig,
-  useTransactions,
-  validators,
-};
+export { constants, useEntities, useLucaSchema, useTransactions };
