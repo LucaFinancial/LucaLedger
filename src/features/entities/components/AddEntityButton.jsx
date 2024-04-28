@@ -1,10 +1,10 @@
 import { useDispatch } from 'react-redux';
 
-import { EntityTypeEnum } from '@/store/constants';
-import { actions } from '@/store/entities';
+import { useEntities } from '@s/lucaSchema';
 
 export default function AddEntityButton() {
   const dispatch = useDispatch();
+  const { actions, EntityTypeEnum } = useEntities();
 
   const handleAddEntity = () => {
     dispatch(
