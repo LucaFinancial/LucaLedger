@@ -38,6 +38,7 @@
   "plugins": ["react-refresh"],
   "rules": {
     "no-undef": "error",
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
     "react-refresh/only-export-components": "warn",
     "react/jsx-filename-extension": [
       "error",
