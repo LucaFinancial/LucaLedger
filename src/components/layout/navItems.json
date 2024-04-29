@@ -1,34 +1,47 @@
 [
   {
     "linkTo": "/dashboard",
-    "navText": "Dashboard"
+    "navText": "Dashboard",
+    "enabled": false
   },
   {
     "linkTo": "/accounts",
-    "navText": "Accounts"
+    "navText": "Accounts",
+    "enabled": false
   },
   {
     "linkTo": "/entities",
-    "navText": "Entities"
+    "navText": "Entities",
+    "enabled": false
   },
   {
     "linkTo": "/categories",
-    "navText": "Categories"
+    "navText": "Categories",
+    "enabled": false
   },
   {
     "linkTo": "/recurring",
-    "navText": "Recurring Txs"
+    "navText": "Recurring Txs",
+    "enabled": false
   },
   {
     "linkTo": "/businesses",
-    "navText": "Businesses"
+    "navText": "Businesses",
+    "enabled": false
   },
   {
     "linkTo": "/settings",
-    "navText": "Settings"
+    "navText": "Settings",
+    "enabled": false
   },
   {
     "linkTo": "/export",
-    "navText": "Export"
+    "navText": "Export",
+    "enabled": false
+  },
+  {
+    "linkTo": "/import",
+    "navText": "Import",
+    "enabled": true
   }
 ]

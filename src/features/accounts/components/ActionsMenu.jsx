@@ -40,15 +40,6 @@ export default function ActionsMenu({ account }) {
     handleClose();
   };
 
-  const handleExportAccount = async (event) => {
-    event.stopPropagation();
-    // await dispatch(
-    //   actions.saveAccountAsync({ account, filename: `${account.name}.json` })
-    // );
-    console.log('ToDo: Export account data');
-    handleClose();
-  };
-
   return (
     <>
       <IconButton
@@ -78,7 +69,7 @@ export default function ActionsMenu({ account }) {
         open={open}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleExportAccount}>
+        <MenuItem onClick={() => console.log('todo: figure this out')}>
           <ListItemIcon>
             <SaveIcon fontSize='small' />
           </ListItemIcon>

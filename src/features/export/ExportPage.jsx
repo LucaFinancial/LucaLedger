@@ -1,20 +1,27 @@
-import EntitiesTable from './components/EntitiesTable';
+import { categorySchema, entitySchema, transactionSchema } from 'luca-schema';
+
+import SchemaDrivenTable from '@/components/tables/SchemaDrivenTable';
 import ExportButton from './components/ExportButton';
-import TransactionsTable from './components/TransactionsTable';
 
 export default function ExportPage() {
   return (
     <div style={{ position: 'relative' }}>
       <ExportButton />
-      <div>
-        <EntitiesTable />
-      </div>
-      <div>
-        <TransactionsTable />
-      </div>
-      <div>
-        <h2>Categories</h2>
-      </div>
+      <SchemaDrivenTable
+        title='Entities'
+        data={[]}
+        schema={entitySchema}
+      />
+      <SchemaDrivenTable
+        title='Categories'
+        data={[]}
+        schema={categorySchema}
+      />
+      <SchemaDrivenTable
+        title='Transactions'
+        data={[]}
+        schema={transactionSchema}
+      />
       <div>
         <h2>Recurring Transactions</h2>
       </div>
