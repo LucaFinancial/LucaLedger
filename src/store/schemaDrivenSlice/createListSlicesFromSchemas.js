@@ -1,21 +1,20 @@
 import createListSlice from './createListSlice';
 
-export default function createListSlicesFromSchemas(SchemaKeys, validators) {
+export default function createListSlicesFromSchemas(schemas, validator) {
   const slices = {};
 
-  Object.keys(SchemaKeys).forEach((key) => {
-    const schemaKey = SchemaKeys[key];
-    const validator = validators[schemaKey];
+  Object.keys(schemas).forEach((key) => {
+    const validateSchema = validator.getSchema(key);
 
-    if (validator) {
+    if (validateSchema) {
       const { reducer, sliceActions, mainListSelectors, loadedListSelectors } =
-        createListSlice(schemaKey, validator);
-      slices[schemaKey] = {
+        createListSlice(key, validateSchema);
+      slices[key] = {
         reducer,
         sliceActions,
         mainListSelectors,
         loadedListSelectors,
-        sliceSelector: (state) => state[schemaKey],
+        sliceSelector: (state) => state[key],
       };
     }
   });

@@ -1,12 +1,10 @@
 import { slices } from '@store';
-import { constants } from '@store/lucaSchema';
 import { useListSlice } from '@store/schemaDrivenSlice';
 
+const TRANSACTION_SCHEMA_KEY = 'transaction';
+
 export default function useTransactions() {
-  const { actions, selectors } = useListSlice(
-    slices,
-    constants.SchemaKeys.TRANSACTION
-  );
+  const { actions, selectors } = useListSlice(slices, TRANSACTION_SCHEMA_KEY);
   const transactions = selectors.selectItems;
   const loadedTransactions = selectors.selectLoadedItems;
 

@@ -1,20 +1,14 @@
-import { schemas, validators } from '@luca-financial/luca-schema';
-import { values } from 'lodash';
+import { constants, schemas, lucaValidator } from '@luca-financial/luca-schema';
 
 import generateColumnsFromSchema from '../generateColumnsFromSchema';
-import constants from '../constants';
 
-export default function useSchemaConfig(schemaKey) {
+export default function useLucaSchema(schemaKey) {
   if (!schemaKey) {
     throw new Error('schemaKey is required');
   }
 
-  if (!values(constants.SchemaKeys).includes(schemaKey)) {
-    throw new Error(`Invalid schemaKey: ${schemaKey}`);
-  }
-
   const schema = schemas[schemaKey];
-  const validator = validators[schemaKey];
+  const validator = lucaValidator.getSchema(schemaKey);
   const columns = generateColumnsFromSchema(schema);
 
   return {

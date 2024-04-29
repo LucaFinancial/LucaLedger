@@ -1,8 +1,7 @@
-import { values } from 'lodash';
+import { schemas } from '@luca-financial/luca-schema';
 import { Fragment, useEffect } from 'react';
 
 import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
-import { constants } from '@store/lucaSchema';
 import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import ImportButton from './components/ImportButton';
 import LoadButton from './components/LoadButton';
@@ -36,7 +35,7 @@ export default function ImportPage() {
         <LoadButton onFileLoad={handleFileLoad} />
         <ImportButton />
       </div>
-      {values(constants.SchemaKeys).map((key) => (
+      {Object.keys(schemas).map((key) => (
         <Fragment key={key}>
           <SchemaDrivenTable
             schemaKey={key}
