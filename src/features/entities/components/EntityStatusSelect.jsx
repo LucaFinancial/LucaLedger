@@ -1,7 +1,7 @@
 import { Select, MenuItem } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import { EntityStatusEnum } from '@/store/constants';
+import { EntityStatusEnum } from '@/store/enums';
 
 const EntityStatusSelect = ({ entityStatus, onChange }) => {
   return (

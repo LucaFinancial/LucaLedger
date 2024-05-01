@@ -7,7 +7,7 @@ import LedgerRow from './LedgerRow';
 import { selectors } from '@/store/transactions';
 import TableHeader from './TableHeader';
 import { dateCompareFn } from '../utils';
-import { TransactionStateEnum } from '@/store/constants';
+import { TransactionStateEnum } from '@/store/enums';
 
 export default function LedgerTable() {
   const { accountId } = useParams();

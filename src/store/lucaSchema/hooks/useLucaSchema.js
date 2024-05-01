@@ -1,4 +1,4 @@
-import { constants, schemas, lucaValidator } from '@luca-financial/luca-schema';
+import { enums, schemas, lucaValidator } from '@luca-financial/luca-schema';
 
 import generateColumnsFromSchema from '../generateColumnsFromSchema';
 
@@ -14,7 +14,7 @@ export default function useLucaSchema(schemaKey) {
   return {
     title: schema.title,
     description: schema.description,
-    constants,
+    enums,
     schema,
     validator,
     columns,
