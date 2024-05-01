@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@comp/*": ["./src/components/*"],
+      "@feat/*": ["./src/features/*"],
+      "@hook/*": ["./src/hooks/*"],
+      "@store/*": ["./src/store/*"],
+      "@util/*": ["./src/utils/*"]
+    },
+    "module": "esnext",
+    "target": "es2020",
+    "jsx": "preserve"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
