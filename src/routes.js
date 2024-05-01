@@ -1,15 +1,15 @@
-import HomePage from '@/features/home/HomePage';
-// import DashboardPage from '@/features/dashboard/DashboardPage';
-// import AccountsPage from '@/features/accounts/AccountsPage';
-// import LedgerPage from '@/features/ledger/LedgerPage';
-// import EntitiesPage from '@/features/entities/EntitiesPage';
-// import CategoriesPage from '@/features/categories/CategoriesPage';
-// import RecurringTransactionsPage from '@/features/recurringTransactions/RecurringTransactionsPage';
-// import BusinessesPage from '@/features/businesses/BusinessesPage';
-// import SettingsPage from '@/features/settings/SettingsPage';
-// import ExportPage from '@/features/export/ExportPage';
-import ImportPage from '@/features/import/ImportPage';
-import NotFoundPage from '@/features/errors/NotFoundPage';
+import HomePage from '@feat/home/HomePage';
+// import DashboardPage from '@feat/dashboard/DashboardPage';
+// import AccountsPage from '@feat/accounts/AccountsPage';
+// import LedgerPage from '@feat/ledger/LedgerPage';
+import EntitiesPage from '@feat/entities/EntitiesPage';
+// import CategoriesPage from '@feat/categories/CategoriesPage';
+// import RecurringTransactionsPage from '@feat/recurringTransactions/RecurringTransactionsPage';
+// import BusinessesPage from '@feat/businesses/BusinessesPage';
+// import SettingsPage from '@feat/settings/SettingsPage';
+// import ExportPage from '@feat/export/ExportPage';
+import ImportPage from '@feat/import/ImportPage';
+import NotFoundPage from '@feat/errors/NotFoundPage';
 
 export const routes = [
   {
@@ -28,10 +28,10 @@ export const routes = [
   //   path: '/accounts/:accountId',
   //   component: LedgerPage,
   // },
-  // {
-  //   path: '/entities',
-  //   component: EntitiesPage,
-  // },
+  {
+    path: '/entities',
+    component: EntitiesPage,
+  },
   // {
   //   path: '/categories',
   //   component: CategoriesPage,
