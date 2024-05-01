@@ -1,12 +1,14 @@
+import { enums } from '@luca-financial/luca-schema';
+
 import { slices } from '@store';
-import { useLucaSchema } from '@store/lucaSchema';
+import { useLucaSchemaPkg } from '@hook';
 import { useListSlice } from '@store/schemaDrivenSlice';
 
-const ENTITY_SCHEMA_KEY = 'entity';
-
 export default function useEntities() {
-  const { actions, selectors } = useListSlice(slices, ENTITY_SCHEMA_KEY);
-  const config = useLucaSchema(ENTITY_SCHEMA_KEY);
+  const { SchemasEnum } = enums;
+  const { ENTITY } = SchemasEnum;
+  const { actions, selectors } = useListSlice(slices, ENTITY);
+  const entityPkg = useLucaSchemaPkg(ENTITY);
 
   const entities = selectors.selectItems;
   const loadedEntities = selectors.selectLoadedItems;
@@ -24,7 +26,7 @@ export default function useEntities() {
   };
 
   return {
-    config,
+    ...entityPkg,
     entities,
     loadedEntities,
     loadEntities,
