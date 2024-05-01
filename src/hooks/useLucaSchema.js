@@ -1,6 +1,6 @@
 import { enums, schemas, lucaValidator } from '@luca-financial/luca-schema';
 
-import generateColumnsFromSchema from '../generateColumnsFromSchema';
+import generateColumnsFromSchema from '@util/generateColumnsFromSchema';
 
 export default function useLucaSchema(schemaKey) {
   if (!schemaKey) {
