@@ -25,6 +25,10 @@ export default function useEntities() {
     actions.importSelectedItems();
   };
 
+  const updateEntityById = (id, entity) => {
+    actions.updateItemById(id, entity);
+  };
+
   return {
     ...entityPkg,
     entities,
@@ -33,4 +37,18 @@ export default function useEntities() {
     importEntities,
     importSelectedEntities,
   };
+
+  /**
+   * Returns an object with the following properties:
+   * - title: string
+   * - description: string
+   * - schema: object
+   * - validator: object
+   * - columns: array
+   * - entities: array
+   * - loadedEntities: array
+   * - loadEntities: function
+   * - importEntities: function
+   * - importSelectedEntities: function
+   */
 }

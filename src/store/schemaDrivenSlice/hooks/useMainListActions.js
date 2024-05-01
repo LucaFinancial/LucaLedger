@@ -8,5 +8,6 @@ export default function useMainListActions(sliceActions) {
   const actions = {
     addItem,
   };
+
   return { actions };
 }

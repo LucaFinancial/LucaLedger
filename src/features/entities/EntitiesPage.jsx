@@ -1,14 +1,16 @@
 import { enums } from '@luca-financial/luca-schema';
 
 import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
-import { useEntities } from '@store/lucaSchema';
+import { useEntities } from './hooks';
 import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import AddEntityButton from './components/AddEntityButton';
 
 export default function EntitiesPage() {
   const { SchemasEnum } = enums;
   const schemaKey = SchemasEnum.ENTITY;
-  const { config } = useEntities();
+  const entitiesPkg = useEntities();
+
+  console.log('Entities', entitiesPkg);
 
   return (
     <div>

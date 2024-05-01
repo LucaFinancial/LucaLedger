@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 
-import { useEntities } from '@store/lucaSchema';
+import { useEntities } from '../hooks';
 
 export default function AddEntityButton() {
   const dispatch = useDispatch();
