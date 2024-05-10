@@ -1,6 +1,6 @@
 import { enums } from '@luca-financial/luca-schema';
 
-import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
+import SchemaDrivenTable from '@comp/schemaDrivenTable/SchemaDrivenTable';
 import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import AddEntityButton from './components/AddEntityButton';
 
