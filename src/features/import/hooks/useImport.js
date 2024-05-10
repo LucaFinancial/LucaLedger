@@ -1,4 +1,5 @@
-import { useEntities, useTransactions } from '@store/lucaSchema';
+import { useEntities } from '@feat/entities/hooks';
+import { useTransactions } from '@feat/transactions/hooks';
 
 export default function useImport() {
   const { importEntities, importSelectedEntities } = useEntities();

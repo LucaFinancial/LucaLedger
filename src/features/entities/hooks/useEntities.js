@@ -13,6 +13,15 @@ export default function useEntities() {
   const entities = selectors.selectItems;
   const loadedEntities = selectors.selectLoadedItems;
 
+  const createNewEntity = (type, title, description) => {
+    const entity = {
+      title,
+      description,
+      type,
+    };
+    listActions.addItem(entity);
+  };
+
   const loadEntities = (entities) => {
     listActions.loadItems(entities);
   };
@@ -25,15 +34,16 @@ export default function useEntities() {
     listActions.importSelectedItems();
   };
 
-  // const updateEntityById = (id, entity) => {
-  //   listActions.updateItemById(id, entity);
-  // };
+  const updateEntityById = (id, entity) => {
+    listActions.updateItemById(id, entity);
+  };
 
   const actions = {
+    createNewEntity,
     loadEntities,
     importEntities,
     importSelectedEntities,
-    // updateEntityById,
+    updateEntityById,
   };
 
   return {
