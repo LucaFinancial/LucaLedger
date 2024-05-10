@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accounts';
+import { actions, enums } from '@/store/accounts';
 
 import { Cancel as CancelIcon, Check as SaveIcon } from '@mui/icons-material';
 
@@ -22,7 +22,7 @@ export default function AccountNameEdit({ account, setIsEditing }) {
 
   const handleSave = () => {
     dispatch(
-      actions.updateAccountProperty(account, constants.AccountFields.NAME, name)
+      actions.updateAccountProperty(account, enums.AccountFields.NAME, name)
     );
     setIsEditing(false);
   };

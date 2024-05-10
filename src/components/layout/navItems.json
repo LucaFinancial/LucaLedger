@@ -12,7 +12,7 @@
   {
     "linkTo": "/entities",
     "navText": "Entities",
-    "enabled": false
+    "enabled": true
   },
   {
     "linkTo": "/categories",

@@ -1,3 +1,4 @@
+import useLucaSchemaPkg from './useLucaSchemaPkg';
 import useVersion from './useVersion';
 
-export { useVersion };
+export { useLucaSchemaPkg, useVersion };

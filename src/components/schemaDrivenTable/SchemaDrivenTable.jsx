@@ -2,10 +2,10 @@ import { Paper, Typography } from '@mui/material';
 import { values } from 'lodash';
 import PropTypes from 'prop-types';
 
-import DynamicColumnsTable from '@comp/tables/DynamicColumnsTable';
+import { useLucaSchemaPkg } from '@hooks';
 import { slices } from '@store';
-import { useLucaSchema } from '@store/lucaSchema';
 import { ListTypeEnum, useListSlice } from '@store/schemaDrivenSlice';
+import DynamicColumnsTable from './DynamicColumnsTable';
 import SchemaDrivenComponent, { ColumnTypeEnum } from './SchemaDrivenComponent';
 
 export default function SchemaDrivenTable({
@@ -14,7 +14,7 @@ export default function SchemaDrivenTable({
   readOnly = true,
   listType,
 }) {
-  const { title, columns } = useLucaSchema(schemaKey);
+  const { title, columns } = useLucaSchemaPkg(schemaKey);
   const { actions, selectors } = useListSlice(slices, schemaKey);
   const data = selectors.selectList(listType);
 

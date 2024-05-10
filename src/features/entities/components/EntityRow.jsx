@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions } from '@/store/entities';
+import { useEntities } from '../hooks';
 import EntityStatusSelect from './EntityStatusSelect';
 import EntityTypeSelect from './EntityTypeSelect';
 

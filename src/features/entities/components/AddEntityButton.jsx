@@ -1,20 +1,11 @@
-import { useDispatch } from 'react-redux';
-
-import { useEntities } from '@store/lucaSchema';
+import { useEntities } from '../hooks';
 
 export default function AddEntityButton() {
-  const dispatch = useDispatch();
-  const { actions, EntityTypeEnum } = useEntities();
+  const { actions } = useEntities();
 
-  const handleAddEntity = () => {
-    dispatch(
-      actions.createNewEntity(
-        EntityTypeEnum.ACCOUNT,
-        'New entity',
-        'add a description'
-      )
-    );
+  const handleClickAddNewEntity = () => {
+    actions.createNewEntity('New entity', 'add a description');
   };
 
-  return <button onClick={handleAddEntity}>Add New Entity</button>;
+  return <button onClick={handleClickAddNewEntity}>Add New Entity</button>;
 }

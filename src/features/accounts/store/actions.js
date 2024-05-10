@@ -1,4 +1,4 @@
-import { EntityTypeEnum } from '@/store/constants';
+import { EntityTypeEnum } from '@/store/enums';
 import { actions } from '@/store/entities';
 
 export const createNewAccount = (name, description) => (dispatch) => {

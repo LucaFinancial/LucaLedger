@@ -1,7 +1,7 @@
 import { schemas } from '@luca-financial/luca-schema';
 import { Fragment, useEffect } from 'react';
 
-import SchemaDrivenTable from '@comp/tables/SchemaDrivenTable';
+import SchemaDrivenTable from '@comp/schemaDrivenTable/SchemaDrivenTable';
 import { ListTypeEnum } from '@store/schemaDrivenSlice';
 import ImportButton from './components/ImportButton';
 import LoadButton from './components/LoadButton';
