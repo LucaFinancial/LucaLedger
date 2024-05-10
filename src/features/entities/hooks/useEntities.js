@@ -1,4 +1,5 @@
 import { enums } from '@luca-financial/luca-schema';
+import { v4 as uuidv4 } from 'uuid';
 
 import { slices } from '@store';
 import { useLucaSchemaPkg } from '@hooks';
@@ -13,11 +14,19 @@ export default function useEntities() {
   const entities = selectors.selectItems;
   const loadedEntities = selectors.selectLoadedItems;
 
-  const createNewEntity = (type, title, description) => {
+  const createNewEntity = (
+    name = '',
+    description = '',
+    entityType = enums.EntityTypeEnum.ACCOUNT
+  ) => {
     const entity = {
-      title,
+      id: uuidv4(),
+      name,
       description,
-      type,
+      entityType,
+      entityStatus: enums.EntityStatusEnum.ACTIVE,
+      createdAt: new Date().toISOString(),
+      updatedAt: null,
     };
     listActions.addItem(entity);
   };
@@ -62,8 +71,6 @@ export default function useEntities() {
    * - columns: array
    * - entities: array
    * - loadedEntities: array
-   * - loadEntities: function
-   * - importEntities: function
-   * - importSelectedEntities: function
+   * - actions: object
    */
 }

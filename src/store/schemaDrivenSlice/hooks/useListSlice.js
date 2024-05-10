@@ -11,16 +11,12 @@ export default function useListSlice(slices, sliceName) {
     loadedListSelectors,
   } = slices[sliceName];
 
-  console.log('slice actions', sliceActions);
-
   const { loading, error } = useSelector(sliceSelector);
   const { actions } = useListActions(sliceActions);
   const { selectors } = useListSelectors(
     mainListSelectors,
     loadedListSelectors
   );
-
-  console.log('actions', actions);
 
   return {
     loading,
