@@ -1,11 +1,14 @@
 {
   "name": "@luca-financial/luca-ledger",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://lucaledger.app",
   "type": "module",
   "license": "MIT",
   "description": "A simple ledger app for tracking your expenses.",
   "entry": "src/main.jsx",
+  "engines": {
+    "node": "18.x || 20.x"
+  },
   "scripts": {
     "dev": "vite --port 8080",
     "start": "vite --port 8080",
@@ -17,7 +20,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@luca-financial/luca-schema": "1.0.6",
+    "@luca-financial/luca-schema": "1.1.1",
     "@mui/icons-material": "^5.14.15",
     "@mui/material": "^5.14.15",
     "@mui/system": "^5.14.15",
@@ -25,6 +28,7 @@
     "@reduxjs/toolkit": "^1.9.7",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
+    "axios": "^1.6.8",
     "dayjs": "^1.11.10",
     "immer": "^10.0.3",
     "jszip": "^3.10.1",
@@ -42,7 +46,7 @@
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-react": "^7.33.2",

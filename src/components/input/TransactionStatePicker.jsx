@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { actions } from '@/store/transactions';
-import { TransactionStateEnum } from '@/store/constants';
+import { TransactionStateEnum } from '@/store/enums';
 
 export default function TransactionStatePicker({ transaction }) {
   const dispatch = useDispatch();
