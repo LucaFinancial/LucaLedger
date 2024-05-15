@@ -1,24 +1,26 @@
 import PropTypes from 'prop-types';
 import { values } from 'lodash';
 
+import { ColumnTypeEnum } from '@util';
 import BooleanCell from './BooleanCell';
 import CheckboxCell from './CheckboxCell';
 import NumberCell from './NumberCell';
 import StringCell from './StringCell';
-
-export const ColumnTypeEnum = Object.freeze({
-  STRING: 'string',
-  NUMBER: 'number',
-  BOOLEAN: 'boolean',
-  CHECKBOX: 'checkbox',
-});
+import DropdownCell from './DropdownCell';
 
 export default function SchemaDrivenComponent(props) {
   const { column } = props;
 
+  const getStringTypeCell = () => {
+    if (column.enum) {
+      return <DropdownCell {...props} />;
+    }
+    return <StringCell {...props} />;
+  };
+
   switch (column.type) {
     case ColumnTypeEnum.STRING:
-      return <StringCell {...props} />;
+      return getStringTypeCell();
     case ColumnTypeEnum.NUMBER:
       return <NumberCell {...props} />;
     case ColumnTypeEnum.BOOLEAN:
@@ -36,6 +38,7 @@ SchemaDrivenComponent.propTypes = {
     field: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     type: PropTypes.oneOf(values(ColumnTypeEnum)).isRequired,
+    enum: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
   actions: PropTypes.object,
   readOnly: PropTypes.bool,
