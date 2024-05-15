@@ -6,7 +6,8 @@ import { useLucaSchemaPkg } from '@hooks';
 import { slices } from '@store';
 import { ListTypeEnum, useListSlice } from '@store/schemaDrivenSlice';
 import DynamicColumnsTable from './DynamicColumnsTable';
-import SchemaDrivenComponent, { ColumnTypeEnum } from './SchemaDrivenComponent';
+import SchemaDrivenComponent from './SchemaDrivenComponent';
+import { ColumnTypeEnum } from '@util';
 
 export default function SchemaDrivenTable({
   schemaKey,
