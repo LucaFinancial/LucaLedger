@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accounts';
+import { actions, enums } from '@/store/accounts';
 
 export default function StatementDayInput({ account }) {
   const dispatch = useDispatch();
   const [statementDay, setStatementDay] = useState(account.statementDay || 1);
 
-  if (account.type !== constants.AccountType.CREDIT_CARD) {
+  if (account.type !== enums.AccountType.CREDIT_CARD) {
     return null;
   }
 
@@ -30,7 +30,7 @@ export default function StatementDayInput({ account }) {
     dispatch(
       actions.updateAccountProperty(
         account,
-        constants.AccountFields.STATEMENT_DAY,
+        enums.AccountFields.STATEMENT_DAY,
         newValue
       )
     );

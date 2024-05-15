@@ -1,20 +1,11 @@
-import { useDispatch } from 'react-redux';
-
-import { EntityTypeEnum } from '@/store/constants';
-import { actions } from '@/store/entities';
+import { useEntities } from '../hooks';
 
 export default function AddEntityButton() {
-  const dispatch = useDispatch();
+  const { actions } = useEntities();
 
-  const handleAddEntity = () => {
-    dispatch(
-      actions.createNewEntity(
-        EntityTypeEnum.ACCOUNT,
-        'New entity',
-        'add a description'
-      )
-    );
+  const handleClickAddNewEntity = () => {
+    actions.createNewEntity('New entity', 'add a description');
   };
 
-  return <button onClick={handleAddEntity}>Add New Entity</button>;
+  return <button onClick={handleClickAddNewEntity}>Add New Entity</button>;
 }

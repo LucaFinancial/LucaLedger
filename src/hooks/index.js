@@ -1,5 +1,4 @@
-import useEntities from './useEntities';
-import useTransactions from './useTransactions';
+import useLucaSchemaPkg from './useLucaSchemaPkg';
 import useVersion from './useVersion';
 
-export { useEntities, useTransactions, useVersion };
+export { useLucaSchemaPkg, useVersion };

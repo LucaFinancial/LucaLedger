@@ -1,7 +1,7 @@
 {
   "env": {
     "browser": true,
-    "es2020": true,
+    "es2020": true
   },
   "extends": [
     "eslint:recommended",
@@ -11,30 +11,38 @@
     "plugin:jsx-a11y/recommended",
     "plugin:react-redux/recommended",
     "plugin:react-hooks/recommended",
-    "plugin:prettier/recommended",
+    "plugin:prettier/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module",
+    "sourceType": "module"
   },
   "settings": {
     "import/resolver": {
       "alias": {
-        "map": [["@", "./src"]],
-        "extensions": [".js", ".jsx"],
+        "map": [
+          ["@", "./src"],
+          ["@comp", "./src/components"],
+          ["@feat", "./src/features"],
+          ["@hooks", "./src/hooks"],
+          ["@store", "./src/store"],
+          ["@util", "./src/utils"]
+        ],
+        "extensions": [".js", ".jsx"]
       },
     },
     "react": {
-      "version": "18.2",
-    },
+      "version": "18.2"
+    }
   },
   "plugins": ["react-refresh"],
   "rules": {
     "no-undef": "error",
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
     "react-refresh/only-export-components": "warn",
     "react/jsx-filename-extension": [
       "error",
-      { "extensions": [".js", ".jsx"] },
-    ],
-  },
+      { "extensions": [".js", ".jsx"] }
+    ]
+  }
 }
