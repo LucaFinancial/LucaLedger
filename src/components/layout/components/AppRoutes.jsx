@@ -1,13 +1,13 @@
 import { Route, Routes } from 'react-router-dom';
 
-import { routes } from '@/routes';
+import { routes } from '@/routesConfig';
 
 export default function AppRoutes() {
   return (
     <Routes>
       {routes.map((route) => (
         <Route
-          key={route.path}
+          key={route.id}
           path={route.path}
           element={<route.component />}
         />
