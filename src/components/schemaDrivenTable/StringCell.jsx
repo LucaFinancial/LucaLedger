@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import { Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useEffect, useRef, useState } from 'react';
 
 export default function StringCell({ row, column, actions, readOnly = true }) {
   const value = row[column.field];

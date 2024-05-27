@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 import { values } from 'lodash';
+import PropTypes from 'prop-types';
 
 import { ColumnTypeEnum } from '@util';
 

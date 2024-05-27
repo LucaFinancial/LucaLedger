@@ -14,7 +14,18 @@ const StyledLink = styled(Link)`
   }
 `;
 
-export default function NavItem({ path, text, icon, showIcon }) {
+export default function NavItem({ path, text, Icon, showIcon }) {
+  let content = text;
+
+  if (showIcon && Icon) {
+    content = (
+      <>
+        <Icon />
+        {text}
+      </>
+    );
+  }
+
   return (
     <StyledLink to={path}>
       <Typography
@@ -27,7 +38,7 @@ export default function NavItem({ path, text, icon, showIcon }) {
           color: 'white',
         }}
       >
-        {(showIcon && icon) ? icon : text}
+        {content}
       </Typography>
     </StyledLink>
   );
@@ -36,6 +47,6 @@ export default function NavItem({ path, text, icon, showIcon }) {
 NavItem.propTypes = {
   path: PropTypes.string.isRequired,
   text: PropTypes.string.isRequired,
-  icon: PropTypes.object,
-  showIcon: PropTypes.bool
+  Icon: PropTypes.object,
+  showIcon: PropTypes.bool,
 };
