@@ -15,8 +15,6 @@ export default function useTransactions() {
   const loadedTransactions = selectors.selectLoadedItems;
 
   const createNewTransaction = (payorId, payeeId, description = '') => {
-    console.log('Add new transaction');
-    console.log('description:', description);
     const transaction = {
       id: uuidv4(),
       payorId,
@@ -29,7 +27,6 @@ export default function useTransactions() {
       createdAt: new Date().toISOString(),
       updatedAt: null,
     };
-    console.log('transaction:', transaction);
     listActions.addItem(transaction);
   };
 

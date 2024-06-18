@@ -14,7 +14,6 @@ export default function TransactionsPage() {
   const [payeeId, setPayeeId] = useState('');
 
   const handleClickAddNewTransaction = () => {
-    console.log('Add new transaction');
     actions.createNewTransaction(
       payorId,
       payeeId,
