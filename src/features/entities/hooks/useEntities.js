@@ -11,7 +11,7 @@ export default function useEntities() {
   const { actions: listActions, selectors } = useListSlice(slices, ENTITY);
   const entityPkg = useLucaSchemaPkg(ENTITY);
 
-  const entities = selectors.selectItems;
+  const entities = selectors.selectAllItems;
   const loadedEntities = selectors.selectLoadedItems;
 
   const createNewEntity = (
@@ -61,16 +61,16 @@ export default function useEntities() {
     loadedEntities,
     actions,
   };
-
-  /**
-   * Returns an object with the following properties:
-   * - title: string
-   * - description: string
-   * - schema: object
-   * - validator: object
-   * - columns: array
-   * - entities: array
-   * - loadedEntities: array
-   * - actions: object
-   */
 }
+
+/**
+ * Returns an object with the following properties:
+ * - title: string
+ * - description: string
+ * - schema: object
+ * - validator: object
+ * - columns: array
+ * - entities: array
+ * - loadedEntities: array
+ * - actions: object
+ */

@@ -1,13 +1,11 @@
-import PropTypes from 'prop-types';
 import { values } from 'lodash';
+import PropTypes from 'prop-types';
 
 import { ColumnTypeEnum } from '@util';
 
 export default function DropdownCell(props) {
   const { column, row, actions, readOnly } = props;
   const { field, enum: enumOptions } = column;
-
-  console.log('DropdownCell', actions);
 
   const handleChange = (event) => {
     const { value } = event.target;

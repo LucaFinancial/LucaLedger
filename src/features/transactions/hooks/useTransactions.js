@@ -1,30 +1,75 @@
+import { enums } from '@luca-financial/luca-schema';
+import { v4 as uuidv4 } from 'uuid';
+
+import { useLucaSchemaPkg } from '@hooks';
 import { slices } from '@store';
 import { useListSlice } from '@store/schemaDrivenSlice';
 
-const TRANSACTION_SCHEMA_KEY = 'transaction';
-
 export default function useTransactions() {
-  const { actions, selectors } = useListSlice(slices, TRANSACTION_SCHEMA_KEY);
-  const transactions = selectors.selectItems;
+  const { SchemasEnum } = enums;
+  const { TRANSACTION } = SchemasEnum;
+  const { actions: listActions, selectors } = useListSlice(slices, TRANSACTION);
+  const transactionPkg = useLucaSchemaPkg(TRANSACTION);
+
+  const transactions = selectors.selectAllItems;
   const loadedTransactions = selectors.selectLoadedItems;
 
-  const loadTransactions = (entities) => {
-    actions.loadItems(entities);
+  const createNewTransaction = (payorId, payeeId, description = '') => {
+    const transaction = {
+      id: uuidv4(),
+      payorId,
+      payeeId,
+      categoryId: null,
+      amount: 0.0,
+      date: new Date().toISOString().split('T')[0],
+      description,
+      transactionState: enums.TransactionStateEnum.PLANNED,
+      createdAt: new Date().toISOString(),
+      updatedAt: null,
+    };
+    listActions.addItem(transaction);
+  };
+
+  const loadTransactions = (transactions) => {
+    listActions.loadItems(transactions);
   };
 
   const importTransactions = () => {
-    actions.importAllItems();
+    listActions.importAllItems();
   };
 
   const importSelectedTransactions = () => {
-    actions.importSelectedItems();
+    listActions.importSelectedItems();
   };
 
-  return {
-    transactions,
-    loadedTransactions,
+  const updateTransactionById = (id, transaction) => {
+    listActions.updateItemById(id, transaction);
+  };
+
+  const actions = {
+    createNewTransaction,
     loadTransactions,
     importTransactions,
     importSelectedTransactions,
+    updateTransactionById,
+  };
+
+  return {
+    ...transactionPkg,
+    transactions,
+    loadedTransactions,
+    actions,
   };
 }
+
+/**
+ * Returns an object with the following properties:
+ * - title: string
+ * - description: string
+ * - schema: object
+ * - validator: object
+ * - columns: array
+ * - transactions: array
+ * - loadedTransactions: array
+ * - actions: object
+ */

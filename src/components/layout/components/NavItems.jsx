@@ -1,15 +1,17 @@
 import NavItem from './NavItem';
 
-import navItemList from '../navItems.json';
+import { routes } from '@/routesConfig';
 
 export default function NavItems() {
-  return navItemList
-    .filter((navItem) => navItem.enabled)
-    .map((navItem, i) => (
+  return routes
+    .filter((route) => route.navBar)
+    .map((route) => (
       <NavItem
-        key={i}
-        linkTo={navItem.linkTo}
-        navText={navItem.navText}
+        key={route.id}
+        path={route.path}
+        text={route.title}
+        Icon={route.icon}
+        showIcon={route.navBarIcon}
       />
     ));
 }
