@@ -24,6 +24,7 @@
     "@luca-financial/luca-schema": "^1.1.1",
     "@mui/icons-material": "^6.3.0",
     "@mui/material": "^6.3.0",
+    "@mui/x-date-pickers": "^7.23.3",
     "@reduxjs/toolkit": "^2.5.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
