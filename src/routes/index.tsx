@@ -1,29 +1,33 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { PATHS } from './paths';
-import { requireAuth } from './guards';
-import { PrivateRoute } from './PrivateRoute';
+import RootLayout from '@/layouts/RootLayout';
+import HomePage from '@/pages/HomePage';
+import DashboardPage from '@/pages/DashboardPage';
+import ProfilePage from '@/pages/ProfilePage';
+import LoginPage from '@/pages/LoginPage';
+import ErrorPage from '@/pages/ErrorPage';
 
 export const router = createBrowserRouter([
   {
-    path: PATHS.HOME,
+    path: '/',
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
-        element: <PrivateRoute />,
-        children: [
-          {
-            path: PATHS.DASHBOARD,
-            element: <DashboardPage />,
-            loader: requireAuth,
-          },
-          {
-            path: PATHS.PROFILE,
-            element: <ProfilePage />,
-            loader: requireAuth,
-          },
-        ],
+        index: true,
+        element: <HomePage />,
       },
-      { path: PATHS.LOGIN, element: <LoginPage /> },
+      {
+        path: 'dashboard',
+        element: <DashboardPage />,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: 'login',
+        element: <LoginPage />,
+      },
     ],
   },
 ]);
