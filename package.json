@@ -12,10 +12,10 @@
   "scripts": {
     "build": "tsc -b && vite build && cp CNAME dist/CNAME && cp dist/index.html dist/404.html",
     "deploy": "gh-pages -d dist",
-    "dev": "vite",
+    "dev": "vite --port 8080",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite",
+    "start": "vite --port 8080",
     "test": "jest"
   },
   "dependencies": {
