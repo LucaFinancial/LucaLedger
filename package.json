@@ -1,6 +1,7 @@
 {
   "name": "@luca-financial/luca-ledger",
   "version": "0.1.0",
+  "homepage": "https://lucaledger.app",
   "type": "module",
   "scripts": {
     "dev": "vite",
