@@ -10,7 +10,7 @@
     "node": "18.x || 20.x"
   },
   "scripts": {
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && cp CNAME dist/CNAME && cp dist/index.html dist/404.html",
     "deploy": "gh-pages -d dist",
     "dev": "vite",
     "lint": "eslint .",
