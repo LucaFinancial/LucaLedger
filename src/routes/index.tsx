@@ -1,10 +1,11 @@
-import { createBrowserRouter } from 'react-router-dom';
 import RootLayout from '@/layouts/RootLayout';
-import HomePage from '@/pages/HomePage';
 import DashboardPage from '@/pages/DashboardPage';
-import ProfilePage from '@/pages/ProfilePage';
-import LoginPage from '@/pages/LoginPage';
 import ErrorPage from '@/pages/ErrorPage';
+import HomePage from '@/pages/HomePage';
+import LoginPage from '@/pages/LoginPage';
+import ProfilePage from '@/pages/ProfilePage';
+import RegisterPage from '@/pages/RegisterPage';
+import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />,
+      },
+      {
+        path: 'register',
+        element: <RegisterPage />,
       },
     ],
   },
