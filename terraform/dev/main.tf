@@ -8,6 +8,11 @@ terraform {
   required_version = ">= 1.3.0"
 }
 
+provider "google" {
+  project = "luca-ledger-dev"
+  region  = "us-central1"
+}
+
 module "cloudbuild" {
   source            = "../modules/cloudbuild"
 
