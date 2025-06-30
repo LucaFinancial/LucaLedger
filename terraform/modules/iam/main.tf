@@ -4,6 +4,12 @@ resource "google_service_account" "cloudbuild_sa" {
   display_name = "Cloud Build Service Account"
 }
 
+resource "google_project_iam_member" "cloudbuild_sa_iam_user" {
+  project = var.project_id
+  role   = "roles/iam.serviceAccountUser"
+  member = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_storage_bucket_iam_member" "cloudbuild_sa_object_admin" {
   bucket  = var.bucket_name
   role    = "roles/storage.objectAdmin"
