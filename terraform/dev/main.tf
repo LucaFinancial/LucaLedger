@@ -13,14 +13,33 @@ provider "google" {
   region  = "us-central1"
 }
 
-module "cloudbuild" {
-  source            = "../modules/cloudbuild"
+module "storage" {
+  source          = "../modules/storage"
 
-  project_id        = "luca-ledger-dev"
-  region            = "us-central1"
-  host_connection   = "luca-ledger-dev-gh-connection"
-  repo_name         = "LucaFinancial-LucaLedger"
-  bucket_name       = "luca-ledger-dev-web-app-bucket"
-  branch_pattern    = ".*"
-  cloudbuild_service_account_email = "cloudbuild-sa@luca-ledger-dev.iam.gserviceaccount.com"
+  project_id      = "luca-ledger-dev"
+  bucket_name     = "luca-ledger-dev-web-app-bucket"
+  region          = "us-central1"
 }
+
+module "iam" {
+  source          = "../modules/iam"
+
+  project_id      = "luca-ledger-dev"
+  bucket_name     = "luca-ledger-dev-web-app-bucket"
+
+  depends_on      = [module.storage]
+}
+
+#module "cloudbuild" {
+  #source            = "../modules/cloudbuild"
+
+  #project_id        = "luca-ledger-dev"
+  #region            = "us-central1"
+  #host_connection   = "luca-ledger-dev-gh-connection"
+  #repo_name         = "LucaFinancial-LucaLedger"
+  #bucket_name       = "luca-ledger-dev-web-app-bucket"
+  #branch_pattern    = ".*"
+  #cloudbuild_service_account_email = "cloudbuild-sa@luca-ledger-dev.iam.gserviceaccount.com"
+
+  #depends_on        = [module.iam]
+#}
