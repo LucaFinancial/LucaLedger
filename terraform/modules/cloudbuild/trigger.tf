@@ -13,8 +13,9 @@ resource "google_cloudbuild_trigger" "luca_ledger_webapp_dev" {
     "cloudbuild.yml"
   ]
 
-  repository_event_config {
-    repository = "projects/${var.project_id}/locations/${var.region}/connections/${var.host_connection}/repositories/${var.repo_name}"
+  github {
+    owner = "LucaFinancial"
+    name  = "LucaLedger"
     push {
       branch = var.branch_pattern
     }
