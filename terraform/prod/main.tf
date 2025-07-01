@@ -17,7 +17,7 @@ module "storage" {
   source          = "../modules/storage"
 
   project_id      = "luca-ledger-prod"
-  bucket_name     = "luca-ledger-prod-web-app-bucket"
+  bucket_name     = "lucaledger-app"
   region          = "us-central1"
 }
 
@@ -25,7 +25,7 @@ module "iam" {
   source          = "../modules/iam"
 
   project_id      = "luca-ledger-prod"
-  bucket_name     = "luca-ledger-prod-web-app-bucket"
+  bucket_name     = "lucaledger-app"
 
   depends_on      = [module.storage]
 }
@@ -38,7 +38,7 @@ module "cloudbuild" {
   region            = "us-central1"
   host_connection   = "luca-ledger-prod-gh-connection"
   repo_name         = "LucaFinancial-LucaLedger"
-  bucket_name       = "luca-ledger-prod-web-app-bucket"
+  bucket_name       = "lucaledger-app"
   branch_pattern    = "^main$"
 
   depends_on        = [module.iam]
