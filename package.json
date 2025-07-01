@@ -1,7 +1,7 @@
 {
   "name": "@luca-financial/luca-ledger",
   "version": "0.0.3",
-  "homepage": "https://storage.googleapis.com/luca-ledger-dev-web-app-bucket/",
+  "homepage": "https://lucaledger.app",
   "type": "module",
   "license": "MIT",
   "description": "A simple ledger app for tracking your expenses.",
