@@ -27,3 +27,8 @@ variable "bucket_name" {
   description = "Name of the GCS bucket to deploy the app to"
   type        = string
 }
+
+variable "env" {
+  description = "The environment the resources are being deployed to"
+  type        = string
+}

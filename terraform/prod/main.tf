@@ -33,6 +33,7 @@ module "iam" {
 module "cloudbuild" {
   source            = "../modules/cloudbuild"
 
+  env               = "prod"
   project_id        = "luca-ledger-prod"
   region            = "us-central1"
   host_connection   = "luca-ledger-prod-gh-connection"

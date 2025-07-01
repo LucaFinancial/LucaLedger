@@ -1,5 +1,5 @@
 resource "google_cloudbuild_trigger" "luca_ledger_webapp_dev" {
-  name        = "luca-ledger-webapp-dev-trigger"
+  name        = "luca-ledger-webapp-${var.env}-trigger"
   description = "Trigger for deploying the Luca Ledger web app to GCS (dev)"
   disabled    = false
   project     = var.project_id
