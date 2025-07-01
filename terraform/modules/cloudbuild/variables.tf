@@ -27,8 +27,3 @@ variable "bucket_name" {
   description = "Name of the GCS bucket to deploy the app to"
   type        = string
 }
-
-variable "cloudbuild_service_account_email" {
-  description = "Email address of the Cloud Build service account"
-  type        = string
-}

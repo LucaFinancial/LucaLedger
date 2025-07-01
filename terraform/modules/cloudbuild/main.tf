@@ -27,5 +27,5 @@ resource "google_cloudbuild_trigger" "luca_ledger_webapp_dev" {
 
   filename = "cloudbuild.yml"
   
-  service_account = var.cloudbuild_service_account_email
+  service_account = "projects/${var.project_id}/serviceAccounts/cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }

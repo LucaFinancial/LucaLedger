@@ -39,7 +39,6 @@ module "cloudbuild" {
   repo_name         = "LucaFinancial-LucaLedger"
   bucket_name       = "luca-ledger-dev-web-app-bucket"
   branch_pattern    = ".*"
-  cloudbuild_service_account_email = "cloudbuild-sa@luca-ledger-dev.iam.gserviceaccount.com"
 
   depends_on        = [module.iam]
 }
