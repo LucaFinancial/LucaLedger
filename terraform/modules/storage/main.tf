@@ -7,7 +7,7 @@ resource "google_storage_bucket" "luca_ledger_web_app_bucket" {
 
   website {
     main_page_suffix = "index.html"
-    not_found_page   = "index.html"
+    not_found_page   = "404.html"
   }
 }
 
