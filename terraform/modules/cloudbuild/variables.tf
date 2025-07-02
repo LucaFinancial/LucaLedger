@@ -8,16 +8,6 @@ variable "region" {
   type        = string
 }
 
-variable "host_connection" {
-  description = "Name of the host connection (e.g., luca-ledger-dev-gh-connection)"
-  type        = string
-}
-
-variable "repo_name" {
-  description = "Name of the GitHub repository (e.g., LucaFinancial-LucaLedger)"
-  type        = string
-}
-
 variable "branch_pattern" {
   description = "Branch regex pattern to match push events (e.g., '.*' for dev, '^main$' for prod)"
   type        = string

@@ -9,37 +9,38 @@ terraform {
 }
 
 provider "google" {
-  project = "luca-ledger-prod"
-  region  = "us-central1"
+  project = var.project_id
+  region  = var.region
 }
 
 module "storage" {
-  source          = "../modules/storage"
-
-  project_id      = "luca-ledger-prod"
-  bucket_name     = "lucaledger-app"
-  region          = "us-central1"
+  source       = "../modules/storage"
+  project_id   = var.project_id
+  bucket_name  = var.bucket_name
+  region       = var.region
 }
 
 module "iam" {
-  source          = "../modules/iam"
-
-  project_id      = "luca-ledger-prod"
-  bucket_name     = "lucaledger-app"
-
-  depends_on      = [module.storage]
+  source       = "../modules/iam"
+  project_id   = var.project_id
+  bucket_name  = var.bucket_name
+  depends_on   = [module.storage]
 }
 
 module "cloudbuild" {
-  source            = "../modules/cloudbuild"
+  source          = "../modules/cloudbuild"
+  env             = var.env
+  project_id      = var.project_id
+  region          = var.region
+  bucket_name     = var.bucket_name
+  branch_pattern  = ".*"
+  depends_on      = [module.iam]
+}
 
-  env               = "prod"
-  project_id        = "luca-ledger-prod"
-  region            = "us-central1"
-  host_connection   = "luca-ledger-prod-gh-connection"
-  repo_name         = "LucaFinancial-LucaLedger"
-  bucket_name       = "lucaledger-app"
-  branch_pattern    = "^main$"
-
-  depends_on        = [module.iam]
+module "load_balancer" {
+  source      = "../modules/load-balancer"
+  name        = "${var.env}-luca-ledger"
+  bucket_name = var.bucket_name
+  ssl_domains = var.ssl_domains
+  depends_on  = [module.storage]
 }
