@@ -1,0 +1,15 @@
+# Terraform
+*.tf
+*.tfvars
+*.tfstate*
+.terraform/
+
+# Git, local config, and general noise
+.git
+.vscode
+*.log
+dist
+node_modules
+
+# Other files
+CNAME
