@@ -1,18 +1,3 @@
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 4.46.0"
-    }
-  }
-  required_version = ">= 1.3.0"
-}
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
 module "storage" {
   source       = "../modules/storage"
   project_id   = var.project_id
@@ -21,10 +6,12 @@ module "storage" {
 }
 
 module "iam" {
-  source       = "../modules/iam"
-  project_id   = var.project_id
-  bucket_name  = var.bucket_name
-  depends_on   = [module.storage]
+  source        = "../modules/iam"
+  project_id    = var.project_id
+  region        = var.region
+  bucket_name   = var.bucket_name
+  service_name  = var.service_name
+  depends_on    = [module.storage]
 }
 
 module "cloudbuild" {
@@ -33,6 +20,7 @@ module "cloudbuild" {
   project_id      = var.project_id
   region          = var.region
   bucket_name     = var.bucket_name
+  service_name  = var.service_name
   branch_pattern  = ".*"
   depends_on      = [module.iam]
 }

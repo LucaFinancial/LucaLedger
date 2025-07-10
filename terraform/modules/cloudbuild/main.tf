@@ -52,6 +52,10 @@ resource "google_cloudbuild_trigger" "luca_ledger_cloud_run" {
       branch = var.branch_pattern
     }
   }
+  
+  substitutions = {
+    _SERVICE_NAME = var.service_name
+  }
 
   filename = "cloudbuild.cloudrun.yml"
 
