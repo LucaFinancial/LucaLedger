@@ -21,7 +21,7 @@ steps:
       [
         'run',
         'deploy',
-        'luca-ledger-web-app',
+        'luca-ledger-web-app-$_ENVIRONMENT',
         '--image',
         'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
         '--region',
