@@ -22,7 +22,7 @@ resource "google_cloudbuild_trigger" "luca_ledger_webapp_cloud_run" {
   }
   
   substitutions = {
-    _SERVICE_NAME = var.service_name
+    _ENVIRONMENT = var.env
   }
 
   filename = "cloudbuild.cloudrun.yml"

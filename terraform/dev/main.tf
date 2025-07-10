@@ -20,7 +20,6 @@ module "cloudbuild" {
   project_id      = var.project_id
   region          = var.region
   bucket_name     = var.bucket_name
-  service_name  = var.service_name
   branch_pattern  = ".*"
   depends_on      = [module.iam]
 }

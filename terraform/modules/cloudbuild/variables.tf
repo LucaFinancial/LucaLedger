@@ -18,11 +18,6 @@ variable "bucket_name" {
   type        = string
 }
 
-variable "service_name" {
-  type        = string
-  description = ""
-}
-
 variable "env" {
   description = "The environment the resources are being deployed to"
   type        = string
