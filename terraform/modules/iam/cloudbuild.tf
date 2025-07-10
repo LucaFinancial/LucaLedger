@@ -13,17 +13,29 @@ resource "google_project_iam_member" "cloudbuild_sa_iam_user" {
 resource "google_storage_bucket_iam_member" "cloudbuild_sa_object_admin" {
   bucket  = var.bucket_name
   role    = "roles/storage.objectAdmin"
-  member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+  member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
 resource "google_project_iam_member" "cloudbuild_sa_builder" {
   project = var.project_id
   role    = "roles/cloudbuild.builds.builder"
-  member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+  member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
 resource "google_project_iam_member" "cloudbuild_sa_logging" {
   project = var.project_id
   role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+  member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_cloud_run_deployer" {
+  project = "luca-ledger-dev"
+  role    = "roles/run.developer"
+  member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "cloudbuild_artifact_registry_writer" {
+  project = "luca-ledger-dev"
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }

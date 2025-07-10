@@ -25,7 +25,6 @@ steps:
         gsutil -m rsync -r dist gs://$_BUCKET_NAME
         gsutil -m setmeta -h "Cache-Control:no-cache" gs://$_BUCKET_NAME/**
 
-# Optional: define substitutions to make $_BUCKET_NAME required
 substitutions:
   _BUCKET_NAME: ''
 

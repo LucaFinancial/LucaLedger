@@ -22,3 +22,8 @@ variable "ssl_domains" {
   type        = list(string)
   description = "List of domains for SSL cert"
 }
+
+variable "service_name" {
+  type        = string
+  description = ""
+}

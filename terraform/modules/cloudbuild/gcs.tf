@@ -1,4 +1,4 @@
-resource "google_cloudbuild_trigger" "luca_ledger_webapp_dev" {
+resource "google_cloudbuild_trigger" "luca_ledger_webapp_gcs" {
   name        = "luca-ledger-webapp-${var.env}-trigger"
   description = "Trigger for deploying the Luca Ledger web app to GCS (dev)"
   disabled    = false
@@ -25,7 +25,7 @@ resource "google_cloudbuild_trigger" "luca_ledger_webapp_dev" {
     _BUCKET_NAME = var.bucket_name
   }
 
-  filename = "cloudbuild.yml"
+  filename = "cloudbuild.gcs.yml"
   
   service_account = "projects/${var.project_id}/serviceAccounts/cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }
