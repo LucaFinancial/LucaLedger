@@ -29,13 +29,13 @@ resource "google_project_iam_member" "cloudbuild_sa_logging" {
 }
 
 resource "google_project_iam_member" "cloudbuild_cloud_run_deployer" {
-  project = "luca-ledger-dev"
-  role    = "roles/run.developer"
+  project = var.project_id
+  role    = "roles/run.admin"
   member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
 resource "google_project_iam_member" "cloudbuild_artifact_registry_writer" {
-  project = "luca-ledger-dev"
+  project = var.project_id
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:cloudbuild-sa@${var.project_id}.iam.gserviceaccount.com"
 }
