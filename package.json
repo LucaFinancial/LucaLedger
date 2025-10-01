@@ -6,7 +6,8 @@
   "license": "MIT",
   "description": "A simple ledger app for tracking your expenses.",
   "scripts": {
-    "build": "yarn && vite build && cp CNAME dist/CNAME && cp dist/index.html dist/404.html",
+    "build": "vite build",
+    "build:pages": "yarn && vite build && cp CNAME dist/CNAME && cp dist/index.html dist/404.html",
     "deploy": "gh-pages -d dist",
     "dev": "vite",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
