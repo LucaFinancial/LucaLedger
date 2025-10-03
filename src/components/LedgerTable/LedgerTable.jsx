@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom';
 import LedgerHeader from './LedgerHeader';
 import SeparatorRow from './SeparatorRow';
 import StatementSeparatorRow from './StatementSeparatorRow';
-import { dateCompareFn } from './utils';
+import { computeStatementMonth, dateCompareFn } from './utils';
 
 export default function LedgerTable({
   filterValue,
@@ -114,6 +114,30 @@ export default function LedgerTable({
               !previousTransaction ||
               getMonthIdentifier(previousTransaction.date) !== monthId;
 
+            // Check if statement period changes between previous and current transaction
+            const statementDay = account.statementDay || 1;
+            const currentStatementMonth =
+              account.type === constants.AccountType.CREDIT_CARD
+                ? computeStatementMonth(transaction, statementDay)
+                : null;
+            const previousStatementMonth =
+              account.type === constants.AccountType.CREDIT_CARD &&
+              previousTransaction
+                ? computeStatementMonth(previousTransaction, statementDay)
+                : null;
+            const isStatementMonthDifferent =
+              currentStatementMonth &&
+              previousStatementMonth &&
+              currentStatementMonth !== previousStatementMonth;
+
+            // Determine which month the statement divider belongs to
+            const previousYearId = previousTransaction
+              ? getYearIdentifier(previousTransaction.date)
+              : null;
+            const previousYearMonthKey = previousTransaction
+              ? getYearMonthKey(previousTransaction.date)
+              : null;
+
             return (
               <Fragment key={transaction.id}>
                 {isNewYear && (
@@ -126,6 +150,18 @@ export default function LedgerTable({
                     onCollapseYear={() => handleCollapseYear(yearId)}
                   />
                 )}
+                {/* Render statement divider BEFORE month separator if it belongs to previous month */}
+                {isStatementMonthDifferent &&
+                  isNewMonth &&
+                  !collapsedGroups.includes(previousYearId) &&
+                  !collapsedGroups.includes(previousYearMonthKey) && (
+                    <StatementSeparatorRow
+                      statementDay={statementDay}
+                      transaction={transaction}
+                      previousTransaction={previousTransaction}
+                      transactions={transactionsWithBalance}
+                    />
+                  )}
                 {isNewMonth && !collapsedGroups.includes(yearId) && (
                   <SeparatorRow
                     transaction={transaction}
@@ -137,10 +173,12 @@ export default function LedgerTable({
                 {!collapsedGroups.includes(yearId) &&
                   !collapsedGroups.includes(yearMonthKey) && (
                     <>
-                      {index > 0 &&
+                      {/* Render statement divider within the same month if no month boundary crossing */}
+                      {isStatementMonthDifferent &&
+                        !isNewMonth &&
                         account.type === constants.AccountType.CREDIT_CARD && (
                           <StatementSeparatorRow
-                            statementDay={account.statementDay || 1}
+                            statementDay={statementDay}
                             transaction={transaction}
                             previousTransaction={previousTransaction}
                             transactions={transactionsWithBalance}
