@@ -130,14 +130,6 @@ export default function LedgerTable({
               previousStatementMonth &&
               currentStatementMonth !== previousStatementMonth;
 
-            // Determine which month the statement divider belongs to
-            const previousYearId = previousTransaction
-              ? getYearIdentifier(previousTransaction.date)
-              : null;
-            const previousYearMonthKey = previousTransaction
-              ? getYearMonthKey(previousTransaction.date)
-              : null;
-
             return (
               <Fragment key={transaction.id}>
                 {isNewYear && (
@@ -150,18 +142,6 @@ export default function LedgerTable({
                     onCollapseYear={() => handleCollapseYear(yearId)}
                   />
                 )}
-                {/* Render statement divider BEFORE month separator if it belongs to previous month */}
-                {isStatementMonthDifferent &&
-                  isNewMonth &&
-                  !collapsedGroups.includes(previousYearId) &&
-                  !collapsedGroups.includes(previousYearMonthKey) && (
-                    <StatementSeparatorRow
-                      statementDay={statementDay}
-                      transaction={transaction}
-                      previousTransaction={previousTransaction}
-                      transactions={transactionsWithBalance}
-                    />
-                  )}
                 {isNewMonth && !collapsedGroups.includes(yearId) && (
                   <SeparatorRow
                     transaction={transaction}
@@ -170,6 +150,19 @@ export default function LedgerTable({
                     onToggleCollapse={() => toggleGroupCollapse(yearMonthKey)}
                   />
                 )}
+                {/* Render statement divider AFTER month separator when crossing month boundary */}
+                {isStatementMonthDifferent &&
+                  isNewMonth &&
+                  !collapsedGroups.includes(yearId) &&
+                  !collapsedGroups.includes(yearMonthKey) &&
+                  account.type === constants.AccountType.CREDIT_CARD && (
+                    <StatementSeparatorRow
+                      statementDay={statementDay}
+                      transaction={transaction}
+                      previousTransaction={previousTransaction}
+                      transactions={transactionsWithBalance}
+                    />
+                  )}
                 {!collapsedGroups.includes(yearId) &&
                   !collapsedGroups.includes(yearMonthKey) && (
                     <>
