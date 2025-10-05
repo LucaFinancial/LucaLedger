@@ -1,5 +1,4 @@
-import LedgerRow from '@/components/LedgerRow';
-import { constants, selectors } from '@/store/accounts';
+import { selectors } from '@/store/accounts';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -8,8 +7,8 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import LedgerHeader from './LedgerHeader';
 import SeparatorRow from './SeparatorRow';
-import StatementSeparatorRow from './StatementSeparatorRow';
-import { computeStatementMonth, dateCompareFn } from './utils';
+import MonthGroup from './MonthGroup';
+import { dateCompareFn } from './utils';
 
 export default function LedgerTable({
   filterValue,
@@ -87,12 +86,23 @@ export default function LedgerTable({
     [getYearIdentifier, getMonthIdentifier]
   );
 
-  const getPreviousTransaction = (index) => {
-    if (index === 0) {
-      return null;
-    }
-    return filteredTransactions[index - 1];
-  };
+  // Group transactions by year and month
+  const groupedTransactions = useMemo(() => {
+    const groups = {};
+    filteredTransactions.forEach((transaction) => {
+      const yearId = getYearIdentifier(transaction.date);
+      const yearMonthKey = getYearMonthKey(transaction.date);
+
+      if (!groups[yearId]) {
+        groups[yearId] = {};
+      }
+      if (!groups[yearId][yearMonthKey]) {
+        groups[yearId][yearMonthKey] = [];
+      }
+      groups[yearId][yearMonthKey].push(transaction);
+    });
+    return groups;
+  }, [filteredTransactions, getYearIdentifier, getYearMonthKey]);
 
   return (
     <TableContainer
@@ -102,98 +112,44 @@ export default function LedgerTable({
       <Table stickyHeader>
         <LedgerHeader />
         <TableBody>
-          {filteredTransactions.map((transaction, index) => {
-            const yearId = getYearIdentifier(transaction.date);
-            const monthId = getMonthIdentifier(transaction.date);
-            const yearMonthKey = getYearMonthKey(transaction.date);
-            const previousTransaction = getPreviousTransaction(index);
-            const isNewYear =
-              !previousTransaction ||
-              getYearIdentifier(previousTransaction.date) !== yearId;
-            const isNewMonth =
-              !previousTransaction ||
-              getMonthIdentifier(previousTransaction.date) !== monthId;
+          {Object.keys(groupedTransactions)
+            .sort((a, b) => (dayjs(b).isAfter(dayjs(a)) ? 1 : -1))
+            .map((yearId) => {
+              const yearMonths = groupedTransactions[yearId];
+              const yearMonthKeys = Object.keys(yearMonths).sort((a, b) => {
+                const dateA = dayjs(yearMonths[a][0].date);
+                const dateB = dayjs(yearMonths[b][0].date);
+                return dateB.isAfter(dateA) ? 1 : -1;
+              });
 
-            // Check if statement period changes between previous and current transaction
-            const statementDay = account.statementDay || 1;
-            const currentStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD
-                ? computeStatementMonth(transaction, statementDay)
-                : null;
-            const previousStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD &&
-              previousTransaction
-                ? computeStatementMonth(previousTransaction, statementDay)
-                : null;
-            const isStatementMonthDifferent =
-              currentStatementMonth &&
-              previousStatementMonth &&
-              currentStatementMonth !== previousStatementMonth;
+              const firstMonthKey = yearMonthKeys[0];
+              const firstTransaction = yearMonths[firstMonthKey][0];
 
-            // Determine which month the statement divider belongs to
-            const previousYearId = previousTransaction
-              ? getYearIdentifier(previousTransaction.date)
-              : null;
-            const previousYearMonthKey = previousTransaction
-              ? getYearMonthKey(previousTransaction.date)
-              : null;
-
-            return (
-              <Fragment key={transaction.id}>
-                {isNewYear && (
+              return (
+                <Fragment key={yearId}>
                   <SeparatorRow
-                    transaction={transaction}
+                    transaction={firstTransaction}
                     isYear
                     isCollapsed={collapsedGroups.includes(yearId)}
                     onToggleCollapse={() => toggleGroupCollapse(yearId)}
                     onExpandYear={() => handleExpandYear(yearId)}
                     onCollapseYear={() => handleCollapseYear(yearId)}
                   />
-                )}
-                {/* Render statement divider BEFORE month separator if it belongs to previous month */}
-                {isStatementMonthDifferent &&
-                  isNewMonth &&
-                  !collapsedGroups.includes(previousYearId) &&
-                  !collapsedGroups.includes(previousYearMonthKey) && (
-                    <StatementSeparatorRow
-                      statementDay={statementDay}
-                      transaction={transaction}
-                      previousTransaction={previousTransaction}
-                      transactions={transactionsWithBalance}
-                    />
-                  )}
-                {isNewMonth && !collapsedGroups.includes(yearId) && (
-                  <SeparatorRow
-                    transaction={transaction}
-                    previousTransaction={previousTransaction}
-                    isCollapsed={collapsedGroups.includes(yearMonthKey)}
-                    onToggleCollapse={() => toggleGroupCollapse(yearMonthKey)}
-                  />
-                )}
-                {!collapsedGroups.includes(yearId) &&
-                  !collapsedGroups.includes(yearMonthKey) && (
-                    <>
-                      {/* Render statement divider within the same month if no month boundary crossing */}
-                      {isStatementMonthDifferent &&
-                        !isNewMonth &&
-                        account.type === constants.AccountType.CREDIT_CARD && (
-                          <StatementSeparatorRow
-                            statementDay={statementDay}
-                            transaction={transaction}
-                            previousTransaction={previousTransaction}
-                            transactions={transactionsWithBalance}
-                          />
-                        )}
-                      <LedgerRow
-                        key={transaction.id}
-                        row={transaction}
-                        balance={transaction.balance}
+                  {!collapsedGroups.includes(yearId) &&
+                    yearMonthKeys.map((monthKey) => (
+                      <MonthGroup
+                        key={monthKey}
+                        transactions={yearMonths[monthKey]}
+                        isCollapsed={collapsedGroups.includes(monthKey)}
+                        onToggleCollapse={() => toggleGroupCollapse(monthKey)}
+                        statementDay={account.statementDay || 1}
+                        accountType={account.type}
+                        allTransactions={filteredTransactions}
                       />
-                    </>
-                  )}
-              </Fragment>
-            );
-          })}
+                    ))}
+                </Fragment>
+              );
+            })}
         </TableBody>
       </Table>
     </TableContainer>
