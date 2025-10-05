@@ -14,9 +14,10 @@ const migrateState = (persistedState) => {
 
   // If we have 'accounts' but not 'accountsLegacy', migrate it
   if (persistedState.accounts && !persistedState.accountsLegacy) {
+    const { accounts, ...rest } = persistedState;
     return {
-      ...persistedState,
-      accountsLegacy: persistedState.accounts,
+      ...rest,
+      accountsLegacy: accounts,
     };
   }
 
