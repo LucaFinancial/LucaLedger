@@ -55,10 +55,17 @@ export default function MonthGroup({
         );
 
         if (statementDate.format('YYYY-MMMM') === currentMonthFormat) {
+          // Check if the transaction that triggered this change is in the current month
+          const transactionInCurrentMonth = transactions.some(
+            (t) => t.id === transaction.id
+          );
+
           dividers.push({
             transaction,
             previousTransaction,
-            insertBefore: transaction.id,
+            // If transaction is in this month, insert before it
+            // Otherwise, insert at the end (after all transactions in this month)
+            insertBefore: transactionInCurrentMonth ? transaction.id : null,
           });
         }
       }
@@ -101,6 +108,18 @@ export default function MonthGroup({
               </Fragment>
             );
           })}
+          {/* Render dividers that should appear at the end of the month */}
+          {statementDividers
+            .filter((d) => d.insertBefore === null)
+            .map((divider, index) => (
+              <StatementSeparatorRow
+                key={`end-divider-${index}`}
+                statementDay={statementDay}
+                transaction={divider.transaction}
+                previousTransaction={divider.previousTransaction}
+                transactions={allTransactions}
+              />
+            ))}
         </>
       )}
     </Fragment>
