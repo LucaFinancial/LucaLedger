@@ -167,6 +167,48 @@ Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the fo
 - Updating Material-UI from 5.14 to 5.15 → **PATCH** version bump (dependency update)
 - Removing support for old account format → **MAJOR** version bump (breaking change)
 
+#### Release Candidate Versioning for Issues
+
+When working on GitHub issues, use release candidate (RC) versioning to track development progress:
+
+**On First Commit for a New Issue:**
+1. Determine the appropriate version increment (major, minor, or patch) based on the issue type
+2. Update package.json version with `-rc.1` suffix
+3. Commit with message: `chore: bump to X.Y.Z-rc.1`
+
+**On Subsequent Commits on the Same Branch:**
+1. Increment only the RC number (e.g., `-rc.1` → `-rc.2` → `-rc.3`)
+2. Keep the base version unchanged
+3. Commit with message: `chore: bump to X.Y.Z-rc.N`
+
+**Manual Update Commands:**
+```bash
+# First commit on new issue (adds -rc.1):
+# Determine version type, then manually update package.json
+# OR use: npm version <major|minor|patch> --preid=rc --no-git-tag-version
+# Then manually add -rc.1 suffix if npm command doesn't add it
+
+# Subsequent commits (increment RC number):
+# Manually update package.json RC number
+# Example: change "1.9.0-rc.1" to "1.9.0-rc.2"
+```
+
+**RC Versioning Examples:**
+- Working on issue to add new feature:
+  - First commit: `1.8.8` → `1.9.0-rc.1` (minor bump + RC)
+  - Second commit: `1.9.0-rc.1` → `1.9.0-rc.2` (increment RC only)
+  - Third commit: `1.9.0-rc.2` → `1.9.0-rc.3` (increment RC only)
+  
+- Working on issue to fix a bug:
+  - First commit: `1.8.8` → `1.8.9-rc.1` (patch bump + RC)
+  - Second commit: `1.8.9-rc.1` → `1.8.9-rc.2` (increment RC only)
+
+**Important Notes:**
+- RC versions are development versions and should be used during issue work
+- When issue is complete and merged to main, the final version should remove the `-rc.X` suffix
+- Always commit version changes alongside code changes
+- Use consistent commit message format: `chore: bump to X.Y.Z-rc.N`
+
 ## Troubleshooting
 
 ### Common Issues
