@@ -19,75 +19,55 @@ export default function MonthGroup({
   }
 
   const firstTransaction = transactions[0];
-  // Find if there's a statement divider that belongs to this month
-  // A statement divider belongs to a month if the statement date falls within that month
-  const shouldRenderStatementDivider = () => {
+
+  // Find all statement dividers that should appear in this month
+  // A statement divider for statement period X should appear in the month
+  // where the statement date falls, regardless of when transactions occur
+  const findStatementDividersForMonth = () => {
     if (!statementDay || accountType !== 'Credit Card') {
-      return false;
+      return [];
     }
 
-    // Check if there's a statement change within or entering this month
-    const monthTransactions = transactions;
-    if (monthTransactions.length === 0) {
-      return false;
-    }
+    const dividers = [];
+    const currentMonthFormat = dayjs(firstTransaction.date).format('YYYY-MMMM');
 
-    // Get the statement month for the first transaction of this calendar month
-    const firstTxStatementMonth = computeStatementMonth(
-      monthTransactions[0],
-      statementDay
-    );
+    // Go through all transactions and find statement changes
+    allTransactions.forEach((transaction, index) => {
+      if (index === 0) return;
 
-    // Find the previous transaction (from the global list, not just this month)
-    const firstTxIndex = allTransactions.findIndex(
-      (t) => t.id === monthTransactions[0].id
-    );
-    const previousTransaction =
-      firstTxIndex > 0 ? allTransactions[firstTxIndex - 1] : null;
-
-    if (!previousTransaction) {
-      return false;
-    }
-
-    const prevStatementMonth = computeStatementMonth(
-      previousTransaction,
-      statementDay
-    );
-
-    // Check if statement month changed
-    if (firstTxStatementMonth !== prevStatementMonth) {
-      // The statement divider belongs to the month where the statement date falls
-      // prevStatementMonth format is "MMMM YYYY", e.g., "January 2024"
-      // Extract the month and year from prevStatementMonth
-      const statementDate = dayjs(
-        `${statementDay} ${prevStatementMonth}`,
-        'D MMMM YYYY'
+      const previousTransaction = allTransactions[index - 1];
+      const currentStatementMonth = computeStatementMonth(
+        transaction,
+        statementDay
+      );
+      const previousStatementMonth = computeStatementMonth(
+        previousTransaction,
+        statementDay
       );
 
-      // Check if this statement date falls in the current calendar month
-      const currentMonthDate = dayjs(firstTransaction.date);
-      return (
-        statementDate.format('YYYY-MMMM') ===
-        currentMonthDate.format('YYYY-MMMM')
-      );
-    }
+      if (currentStatementMonth !== previousStatementMonth) {
+        // A statement change occurred
+        // The divider represents the closing of previousStatementMonth
+        // Check if the statement date for previousStatementMonth falls in this calendar month
+        const statementDate = dayjs(
+          `${statementDay} ${previousStatementMonth}`,
+          'D MMMM YYYY'
+        );
 
-    return false;
+        if (statementDate.format('YYYY-MMMM') === currentMonthFormat) {
+          dividers.push({
+            transaction,
+            previousTransaction,
+            insertBefore: transaction.id,
+          });
+        }
+      }
+    });
+
+    return dividers;
   };
 
-  const shouldShowDivider = shouldRenderStatementDivider();
-  const statementDividerData = shouldShowDivider
-    ? (() => {
-        const firstTxIndex = allTransactions.findIndex(
-          (t) => t.id === transactions[0].id
-        );
-        return {
-          transaction: allTransactions[firstTxIndex],
-          previousTransaction:
-            firstTxIndex > 0 ? allTransactions[firstTxIndex - 1] : null,
-        };
-      })()
-    : null;
+  const statementDividers = findStatementDividersForMonth();
 
   return (
     <Fragment>
@@ -98,57 +78,19 @@ export default function MonthGroup({
       />
       {!isCollapsed && (
         <>
-          {shouldShowDivider && statementDividerData && (
-            <StatementSeparatorRow
-              statementDay={statementDay}
-              transaction={statementDividerData.transaction}
-              previousTransaction={statementDividerData.previousTransaction}
-              transactions={allTransactions}
-            />
-          )}
           {transactions.map((transaction) => {
-            // Check if there's a statement divider within the month
-            const txIndex = allTransactions.findIndex(
-              (t) => t.id === transaction.id
+            // Find if there's a statement divider to render before this transaction
+            const dividerBeforeThis = statementDividers.find(
+              (d) => d.insertBefore === transaction.id
             );
-            const previousTransaction =
-              txIndex > 0 ? allTransactions[txIndex - 1] : null;
-
-            const shouldRenderInlineStatementDivider = () => {
-              if (!statementDay || accountType !== 'Credit Card') {
-                return false;
-              }
-              if (!previousTransaction) {
-                return false;
-              }
-
-              const currentStatementMonth = computeStatementMonth(
-                transaction,
-                statementDay
-              );
-              const previousStatementMonth = computeStatementMonth(
-                previousTransaction,
-                statementDay
-              );
-
-              // Only render if statement month changes AND we stay in the same calendar month
-              const sameCalendarMonth =
-                dayjs(transaction.date).format('YYYY-MMMM') ===
-                dayjs(previousTransaction.date).format('YYYY-MMMM');
-
-              return (
-                currentStatementMonth !== previousStatementMonth &&
-                sameCalendarMonth
-              );
-            };
 
             return (
               <Fragment key={transaction.id}>
-                {shouldRenderInlineStatementDivider() && (
+                {dividerBeforeThis && (
                   <StatementSeparatorRow
                     statementDay={statementDay}
-                    transaction={transaction}
-                    previousTransaction={previousTransaction}
+                    transaction={dividerBeforeThis.transaction}
+                    previousTransaction={dividerBeforeThis.previousTransaction}
                     transactions={allTransactions}
                   />
                 )}
