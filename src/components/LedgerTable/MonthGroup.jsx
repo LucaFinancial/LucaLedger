@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import LedgerRow from '@/components/LedgerRow';
 import SeparatorRow from './SeparatorRow';
 import StatementSeparatorRow from './StatementSeparatorRow';
-import { computeStatementMonth } from './utils';
 
 export default function MonthGroup({
   transactions,
@@ -30,46 +29,59 @@ export default function MonthGroup({
 
     const dividers = [];
     const currentMonthFormat = dayjs(firstTransaction.date).format('YYYY-MMMM');
+    const currentMonthDate = dayjs(firstTransaction.date);
 
-    // Go through all transactions and find statement changes
-    allTransactions.forEach((transaction, index) => {
-      if (index === 0) return;
+    // Check if the statement date for this month falls within this month
+    const statementDateThisMonth = dayjs(
+      `${statementDay} ${currentMonthDate.format('MMMM YYYY')}`,
+      'D MMMM YYYY'
+    );
 
-      const previousTransaction = allTransactions[index - 1];
-      const currentStatementMonth = computeStatementMonth(
-        transaction,
-        statementDay
-      );
-      const previousStatementMonth = computeStatementMonth(
-        previousTransaction,
-        statementDay
-      );
+    if (statementDateThisMonth.format('YYYY-MMMM') === currentMonthFormat) {
+      // Find the first transaction on or after the statement date
+      const firstTransactionAfterStatement = allTransactions.find((t) => {
+        const tDate = dayjs(t.date);
+        return tDate.isSameOrAfter(statementDateThisMonth, 'day');
+      });
 
-      if (currentStatementMonth !== previousStatementMonth) {
-        // A statement change occurred
-        // The divider represents the closing of previousStatementMonth
-        // Check if the statement date for previousStatementMonth falls in this calendar month
-        const statementDate = dayjs(
-          `${statementDay} ${previousStatementMonth}`,
-          'D MMMM YYYY'
+      if (firstTransactionAfterStatement) {
+        // Find the transaction immediately before the statement date
+        const indexOfFirstAfter = allTransactions.findIndex(
+          (t) => t.id === firstTransactionAfterStatement.id
+        );
+        const previousTransaction =
+          indexOfFirstAfter > 0 ? allTransactions[indexOfFirstAfter - 1] : null;
+
+        // Check if the first transaction after statement is in the current month
+        const transactionInCurrentMonth = transactions.some(
+          (t) => t.id === firstTransactionAfterStatement.id
         );
 
-        if (statementDate.format('YYYY-MMMM') === currentMonthFormat) {
-          // Check if the transaction that triggered this change is in the current month
-          const transactionInCurrentMonth = transactions.some(
-            (t) => t.id === transaction.id
-          );
+        dividers.push({
+          transaction: firstTransactionAfterStatement,
+          previousTransaction,
+          // If transaction is in this month, insert before it
+          // Otherwise, insert at the end (after all transactions in this month)
+          insertBefore: transactionInCurrentMonth
+            ? firstTransactionAfterStatement.id
+            : null,
+        });
+      } else {
+        // No transactions after the statement date
+        // Place divider at the end with the last transaction as context
+        const lastTransaction = allTransactions[allTransactions.length - 1];
+        const secondToLastTransaction =
+          allTransactions.length > 1
+            ? allTransactions[allTransactions.length - 2]
+            : null;
 
-          dividers.push({
-            transaction,
-            previousTransaction,
-            // If transaction is in this month, insert before it
-            // Otherwise, insert at the end (after all transactions in this month)
-            insertBefore: transactionInCurrentMonth ? transaction.id : null,
-          });
-        }
+        dividers.push({
+          transaction: lastTransaction,
+          previousTransaction: secondToLastTransaction,
+          insertBefore: null, // Place at the end
+        });
       }
-    });
+    }
 
     return dividers;
   };
