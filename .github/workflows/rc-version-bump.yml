@@ -1,0 +1,107 @@
+name: RC Version Bump
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  rc-version-bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Get current version
+        id: current-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+      
+      - name: Determine RC version
+        id: rc-version
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.version }}"
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          
+          # Remove any existing -rc suffix to get base version
+          BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-rc\.[0-9]*$//')
+          
+          # Get all tags for this base version with rc suffix
+          EXISTING_RC_TAGS=$(git tag -l "v${BASE_VERSION}-rc.*" | sort -V)
+          
+          # Find the highest RC number
+          if [ -z "$EXISTING_RC_TAGS" ]; then
+            RC_NUM=1
+          else
+            LAST_RC_TAG=$(echo "$EXISTING_RC_TAGS" | tail -1)
+            LAST_RC_NUM=$(echo "$LAST_RC_TAG" | sed -n 's/.*-rc\.\([0-9]*\)$/\1/p')
+            RC_NUM=$((LAST_RC_NUM + 1))
+          fi
+          
+          NEW_VERSION="${BASE_VERSION}-rc.${RC_NUM}"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "rc_num=$RC_NUM" >> $GITHUB_OUTPUT
+          
+          echo "Base version: $BASE_VERSION"
+          echo "New RC version: $NEW_VERSION"
+          echo "RC number: $RC_NUM"
+      
+      - name: Check if version needs update
+        id: version-check
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.version }}"
+          NEW_VERSION="${{ steps.rc-version.outputs.new_version }}"
+          
+          if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "Version is already up to date: $NEW_VERSION"
+          else
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "Version needs update: $CURRENT_VERSION -> $NEW_VERSION"
+          fi
+      
+      - name: Update package.json version
+        if: steps.version-check.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.rc-version.outputs.new_version }}"
+          npm version $NEW_VERSION --no-git-tag-version
+          echo "Updated package.json to version $NEW_VERSION"
+      
+      - name: Commit version bump
+        if: steps.version-check.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.rc-version.outputs.new_version }}"
+          git add package.json
+          git commit -m "chore: bump to $NEW_VERSION"
+          echo "Committed version bump"
+      
+      - name: Create and push tag
+        if: steps.version-check.outputs.needs_update == 'true'
+        run: |
+          NEW_VERSION="${{ steps.rc-version.outputs.new_version }}"
+          git tag "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+          echo "Created and pushed tag v$NEW_VERSION"
+      
+      - name: Push changes
+        if: steps.version-check.outputs.needs_update == 'true'
+        run: |
+          git push
+          echo "Pushed version bump commit"

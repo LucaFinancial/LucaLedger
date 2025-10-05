@@ -120,6 +120,19 @@ src/
 - Use `npm version <major|minor|patch>` to auto-update package.json
 - CI/CD uses version for deployment tagging
 
+#### Automatic RC Versioning for Non-Main Branches
+
+- On non-main branches (e.g., `copilot/*` branches), GitHub Actions automatically appends `-rc.X` suffix
+- Each push to the branch automatically increments the RC number (e.g., `1.8.9-rc.1` → `1.8.9-rc.2`)
+- The RC version workflow:
+  1. Detects the base version from package.json
+  2. Finds the highest existing RC tag for that base version
+  3. Increments the RC number and updates package.json
+  4. Commits with message format: `chore: bump to X.Y.Z-rc.N`
+  5. Creates and pushes a git tag for the RC version
+- **Manual version updates on feature branches**: If you manually update the base version (e.g., from 1.8.8 to 1.8.9), the next automated run will start at `1.8.9-rc.1`
+- **Main branch**: No RC suffix is added; versions remain as standard semantic versions
+
 #### Semantic Versioning Guidelines
 
 Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the format MAJOR.MINOR.PATCH:
@@ -151,11 +164,20 @@ Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the fo
 
 #### Version Update Process
 
+**For main branch (production releases):**
+
 1. **Before making changes**: Check current version in package.json
 2. **After completing changes**: Determine the appropriate version increment based on the guidelines above
 3. **Update version**: Run `npm version <major|minor|patch>` from the repository root
 4. **Verify**: Check that package.json has been updated correctly
 5. **Commit**: Include the version change in your commit
+
+**For feature/copilot branches (release candidates):**
+
+1. **Automatic RC versioning**: The RC version bump workflow handles versioning automatically on each push
+2. **Manual base version update**: If you want to change the base version (e.g., from 1.8.8 to 1.9.0), run `npm version <major|minor|patch>` and commit
+3. **Next automated run**: The workflow will detect the new base version and start the RC sequence at `X.Y.Z-rc.1`
+4. **No manual RC updates needed**: The workflow manages the RC number incrementing automatically
 
 #### Examples
 
