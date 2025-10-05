@@ -11,6 +11,11 @@ export default function BalanceDifference({ account, filterArray }) {
     .filter((t) => t.status === lastStatus)
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
+  // Hide indicator when difference is $0.00
+  if (difference === 0) {
+    return null;
+  }
+
   const isCreditCard = type === 'Credit Card';
   const isPositive = difference >= 0;
   const color = isCreditCard
