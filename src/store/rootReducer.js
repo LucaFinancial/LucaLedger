@@ -1,7 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
-import { reducer as accountsReducer } from './accounts';
+import { reducer as accountsLegacyReducer } from './accountsLegacy';
 
 export default combineReducers({
-  accountsLegacy: accountsReducer,
+  accountsLegacy: accountsLegacyReducer,
 });

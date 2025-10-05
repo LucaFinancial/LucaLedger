@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-import { schemas } from '@/store/transactions';
+import { schemas } from '@/store/transactionsLegacy';
 import { AccountType } from './constants';
 
 const commonAccountSchema = yup
