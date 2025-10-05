@@ -113,13 +113,13 @@ export default function LedgerTable({
         <LedgerHeader />
         <TableBody>
           {Object.keys(groupedTransactions)
-            .sort((a, b) => (dayjs(b).isAfter(dayjs(a)) ? 1 : -1))
+            .sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1))
             .map((yearId) => {
               const yearMonths = groupedTransactions[yearId];
               const yearMonthKeys = Object.keys(yearMonths).sort((a, b) => {
                 const dateA = dayjs(yearMonths[a][0].date);
                 const dateB = dayjs(yearMonths[b][0].date);
-                return dateB.isAfter(dateA) ? 1 : -1;
+                return dateA.isAfter(dateB) ? 1 : -1;
               });
 
               const firstMonthKey = yearMonthKeys[0];
