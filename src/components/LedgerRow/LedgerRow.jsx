@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { constants } from '@/store/transactions';
 import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
-// import CategoryCell from './CategoryCell';
 import DateCell from './DateCell';
 import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
@@ -35,7 +34,6 @@ export default function LedgerRow({ row, balance }) {
       <StatusCell transaction={row} />
       <DateCell transaction={row} />
       <DescriptionCell transaction={row} />
-      {/* <CategoryCell transaction={row} /> */}
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
       <DeleteButtonCell transaction={row} />

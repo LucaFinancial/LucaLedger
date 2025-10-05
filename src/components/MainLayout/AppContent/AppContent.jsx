@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import Accounts from '@/views/Accounts';
-import Categories from '@/views/Categories';
 import Dashboard from '@/views/Dashboard';
 import Ledger from '@/views/Ledger';
 
@@ -28,10 +27,6 @@ export default function AppContent() {
       <Route
         path='/accounts/:accountId'
         element={<Ledger />}
-      />
-      <Route
-        path='/categories'
-        element={<Categories />}
       />
       <Route
         path='*'
