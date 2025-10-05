@@ -131,21 +131,34 @@ export default function LedgerTable({
               currentStatementMonth !== previousStatementMonth;
 
             // Determine which calendar month the statement divider belongs to
-            // by extracting the month/year from previousStatementMonth
-            const previousCalendarMonth = previousTransaction
-              ? dayjs(previousTransaction.date).format('MMMM YYYY')
+            // Extract the month/year from previousStatementMonth string
+            const statementMonthDate = previousStatementMonth
+              ? dayjs(previousStatementMonth, 'MMMM YYYY')
               : null;
-            const statementDividerBelongsToPreviousCalendarMonth =
-              isStatementMonthDifferent &&
-              previousStatementMonth === previousCalendarMonth;
+            const statementMonthKey = statementMonthDate
+              ? `${statementMonthDate.format(
+                  'YYYY'
+                )}-${statementMonthDate.format('MMMM')}`
+              : null;
+            const statementYearId = statementMonthDate
+              ? statementMonthDate.format('YYYY')
+              : null;
 
-            // Get year and month key for previous calendar month (for visibility check)
-            const previousYearId = previousTransaction
-              ? getYearIdentifier(previousTransaction.date)
-              : null;
-            const previousYearMonthKey = previousTransaction
-              ? getYearMonthKey(previousTransaction.date)
-              : null;
+            // Check if we should render a divider for previousStatementMonth
+            const currentCalendarMonth = dayjs(transaction.date).format(
+              'MMMM YYYY'
+            );
+            const previousStatementBelongsToCurrentMonth =
+              isStatementMonthDifferent &&
+              isNewMonth &&
+              previousStatementMonth === currentCalendarMonth;
+
+            // Check if we should render a divider for currentStatementMonth
+            // This happens when the current transaction's statement period matches the calendar month
+            const currentStatementBelongsToCurrentMonth =
+              isStatementMonthDifferent &&
+              isNewMonth &&
+              currentStatementMonth === currentCalendarMonth;
 
             return (
               <Fragment key={transaction.id}>
@@ -159,19 +172,6 @@ export default function LedgerTable({
                     onCollapseYear={() => handleCollapseYear(yearId)}
                   />
                 )}
-                {/* Render statement divider BEFORE month separator if it belongs to previous month */}
-                {statementDividerBelongsToPreviousCalendarMonth &&
-                  isNewMonth &&
-                  !collapsedGroups.includes(previousYearId) &&
-                  !collapsedGroups.includes(previousYearMonthKey) &&
-                  account.type === constants.AccountType.CREDIT_CARD && (
-                    <StatementSeparatorRow
-                      statementDay={statementDay}
-                      transaction={transaction}
-                      previousTransaction={previousTransaction}
-                      transactions={transactionsWithBalance}
-                    />
-                  )}
                 {isNewMonth && !collapsedGroups.includes(yearId) && (
                   <SeparatorRow
                     transaction={transaction}
@@ -180,6 +180,35 @@ export default function LedgerTable({
                     onToggleCollapse={() => toggleGroupCollapse(yearMonthKey)}
                   />
                 )}
+                {/* Render statement divider AFTER month separator if previousStatementMonth belongs to current month */}
+                {previousStatementBelongsToCurrentMonth &&
+                  !collapsedGroups.includes(statementYearId) &&
+                  !collapsedGroups.includes(statementMonthKey) &&
+                  account.type === constants.AccountType.CREDIT_CARD && (
+                    <StatementSeparatorRow
+                      statementDay={statementDay}
+                      transaction={transaction}
+                      previousTransaction={previousTransaction}
+                      transactions={transactionsWithBalance}
+                    />
+                  )}
+                {/* Render statement divider for currentStatementMonth if it matches current calendar month */}
+                {currentStatementBelongsToCurrentMonth &&
+                  !collapsedGroups.includes(yearId) &&
+                  !collapsedGroups.includes(yearMonthKey) &&
+                  account.type === constants.AccountType.CREDIT_CARD && (
+                    <StatementSeparatorRow
+                      statementDay={statementDay}
+                      transaction={transaction}
+                      previousTransaction={{
+                        ...transaction,
+                        date: dayjs(transaction.date)
+                          .date(statementDay - 1)
+                          .format('YYYY-MM-DD'),
+                      }}
+                      transactions={transactionsWithBalance}
+                    />
+                  )}
                 {!collapsedGroups.includes(yearId) &&
                   !collapsedGroups.includes(yearMonthKey) && (
                     <>
