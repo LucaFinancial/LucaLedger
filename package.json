@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "1.8.8",
+  "version": "1.8.9-rc.1",
   "homepage": "https://luca-ledger.app/",
   "type": "module",
   "license": "MIT",
