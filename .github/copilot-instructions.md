@@ -37,7 +37,7 @@ After making changes, ALWAYS test these user scenarios:
 1. **Navigation**: Test navigation between Dashboard (/) and Accounts (/accounts)
 2. **Account Creation**: Click "Create New Account" button to verify account creation works
 3. **UI Responsiveness**: Verify Material-UI components render correctly
-4. **Version Display**: Check that version number (currently v1.8.2) appears in top-right
+4. **Version Display**: Check that version number appears in top-right (update this when version changes)
 
 ### Code Quality Requirements
 
@@ -116,8 +116,12 @@ src/
 ### Versioning
 
 - Version number is in package.json and displayed in app header
+- **ALWAYS increment the patch version in package.json when making bug fixes or small changes**
+- **ALWAYS increment the minor version when adding new features**
+- **ALWAYS increment the major version for breaking changes**
 - Update version with `npm version <major|minor|patch>` to auto-update package.json
 - CI/CD uses version for deployment tagging
+- When fixing bugs or issues, increment the patch version (e.g., 1.8.5 → 1.8.6)
 
 ## Troubleshooting
 
