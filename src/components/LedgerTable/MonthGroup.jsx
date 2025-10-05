@@ -40,7 +40,9 @@ export default function MonthGroup({
     if (statementDateThisMonth.format('YYYY-MMMM') === currentMonthFormat) {
       // Find the first transaction on or after the statement date
       const firstTransactionAfterStatement = allTransactions.find((t) => {
+        if (!t || !t.date) return false;
         const tDate = dayjs(t.date);
+        if (!tDate.isValid()) return false;
         return tDate.isSameOrAfter(statementDateThisMonth, 'day');
       });
 
