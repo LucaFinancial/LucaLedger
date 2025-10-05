@@ -116,8 +116,56 @@ src/
 ### Versioning
 
 - Version number is in package.json and displayed in app header
-- Update version with `npm version <major|minor|patch>` to auto-update package.json
+- **ALWAYS** update version when making changes to the codebase using semantic versioning
+- Use `npm version <major|minor|patch>` to auto-update package.json
 - CI/CD uses version for deployment tagging
+
+#### Semantic Versioning Guidelines
+
+Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the format MAJOR.MINOR.PATCH:
+
+**MAJOR version** (X.0.0) - Increment when making incompatible changes:
+- Breaking changes to data structure (e.g., account schema changes that require migration)
+- Removing features or components
+- Changing APIs that affect saved account files
+- Changes that require users to take action (e.g., clear localStorage)
+- **Command**: `npm version major`
+
+**MINOR version** (1.X.0) - Increment when adding functionality in a backward-compatible manner:
+- New features (e.g., new account types, new views, new components)
+- New UI components or pages
+- Enhanced functionality to existing features
+- New configuration options
+- Performance improvements that users will notice
+- **Command**: `npm version minor`
+
+**PATCH version** (1.8.X) - Increment when making backward-compatible bug fixes:
+- Bug fixes that don't add new features
+- UI/UX improvements and styling changes
+- Documentation updates
+- Refactoring code without changing behavior
+- Dependency updates (unless they add new features)
+- Performance optimizations
+- Accessibility improvements
+- **Command**: `npm version patch`
+
+#### Version Update Process
+
+1. **Before making changes**: Check current version in package.json
+2. **After completing changes**: Determine the appropriate version increment based on the guidelines above
+3. **Update version**: Run `npm version <major|minor|patch>` from the repository root
+4. **Verify**: Check that package.json has been updated correctly
+5. **Commit**: Include the version change in your commit
+
+#### Examples
+
+- Adding a new "Investment Account" type → **MINOR** version bump (new feature)
+- Fixing a bug where dates display incorrectly → **PATCH** version bump (bug fix)
+- Changing the account data schema in a breaking way → **MAJOR** version bump (breaking change)
+- Improving button styling → **PATCH** version bump (UI improvement)
+- Adding export to PDF feature → **MINOR** version bump (new feature)
+- Updating Material-UI from 5.14 to 5.15 → **PATCH** version bump (dependency update)
+- Removing support for old account format → **MAJOR** version bump (breaking change)
 
 ## Troubleshooting
 
