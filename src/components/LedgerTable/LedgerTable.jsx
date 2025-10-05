@@ -130,20 +130,6 @@ export default function LedgerTable({
               previousStatementMonth &&
               currentStatementMonth !== previousStatementMonth;
 
-            // Determine which calendar month the statement divider belongs to
-            // Extract the month/year from previousStatementMonth string
-            const statementMonthDate = previousStatementMonth
-              ? dayjs(previousStatementMonth, 'MMMM YYYY')
-              : null;
-            const statementMonthKey = statementMonthDate
-              ? `${statementMonthDate.format(
-                  'YYYY'
-                )}-${statementMonthDate.format('MMMM')}`
-              : null;
-            const statementYearId = statementMonthDate
-              ? statementMonthDate.format('YYYY')
-              : null;
-
             // Check if we should render a divider for previousStatementMonth
             const currentCalendarMonth = dayjs(transaction.date).format(
               'MMMM YYYY'
@@ -182,8 +168,8 @@ export default function LedgerTable({
                 )}
                 {/* Render statement divider AFTER month separator if previousStatementMonth belongs to current month */}
                 {previousStatementBelongsToCurrentMonth &&
-                  !collapsedGroups.includes(statementYearId) &&
-                  !collapsedGroups.includes(statementMonthKey) &&
+                  !collapsedGroups.includes(yearId) &&
+                  !collapsedGroups.includes(yearMonthKey) &&
                   account.type === constants.AccountType.CREDIT_CARD && (
                     <StatementSeparatorRow
                       statementDay={statementDay}
