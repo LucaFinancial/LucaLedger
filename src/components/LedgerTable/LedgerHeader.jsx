@@ -7,7 +7,6 @@ export default function LedgerHeader() {
         <TableCell>Status</TableCell>
         <TableCell>Date</TableCell>
         <TableCell>Description</TableCell>
-        {/* <TableCell>Category</TableCell> */}
         <TableCell>Amount</TableCell>
         <TableCell>Balance</TableCell>
         <TableCell>Actions</TableCell>
