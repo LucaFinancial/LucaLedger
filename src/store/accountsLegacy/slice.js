@@ -7,8 +7,8 @@ import {
   updateAccountReducer,
 } from './reducers';
 
-const accounts = createSlice({
-  name: 'accounts',
+const accountsLegacy = createSlice({
+  name: 'accountsLegacy',
   initialState: [],
   reducers: {
     addAccount: addAccountReducer,
@@ -18,6 +18,7 @@ const accounts = createSlice({
   extraReducers,
 });
 
-export default accounts.reducer;
+export default accountsLegacy.reducer;
 
-export const { addAccount, removeAccount, updateAccount } = accounts.actions;
+export const { addAccount, removeAccount, updateAccount } =
+  accountsLegacy.actions;

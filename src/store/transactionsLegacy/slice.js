@@ -6,8 +6,8 @@ import {
   updateTransactionReducer,
 } from './reducers';
 
-const transactions = createSlice({
-  name: 'transactions',
+const transactionsLegacy = createSlice({
+  name: 'transactionsLegacy',
   reducers: {
     addTransaction: addTransactionReducer,
     updateTransaction: updateTransactionReducer,
@@ -16,4 +16,4 @@ const transactions = createSlice({
 });
 
 export const { addTransaction, updateTransaction, removeTransaction } =
-  transactions.actions;
+  transactionsLegacy.actions;

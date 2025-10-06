@@ -1,4 +1,4 @@
-import { reducers } from '@/store/transactions';
+import { reducers } from '@/store/transactionsLegacy';
 
 export const addAccountReducer = (state, action) => {
   state.push(action.payload);

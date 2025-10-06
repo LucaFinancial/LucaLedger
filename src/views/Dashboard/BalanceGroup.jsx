@@ -1,5 +1,5 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors } from '@/store/accounts';
+import { selectors } from '@/store/accountsLegacy';
 import { Grid } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';

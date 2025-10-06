@@ -1,5 +1,5 @@
 import LedgerRow from '@/components/LedgerRow';
-import { constants, selectors } from '@/store/accounts';
+import { constants, selectors } from '@/store/accountsLegacy';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';

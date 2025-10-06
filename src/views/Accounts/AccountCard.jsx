@@ -2,7 +2,7 @@ import { Card, CardContent, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 
-import { constants } from '@/store/transactions';
+import { constants } from '@/store/transactionsLegacy';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
