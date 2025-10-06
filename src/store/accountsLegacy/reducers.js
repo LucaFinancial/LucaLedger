@@ -1,4 +1,6 @@
 import { reducers } from '@/store/transactionsLegacy';
+import * as accountsActions from '@/store/accounts/slice';
+import * as transactionsActions from '@/store/transactions/slice';
 
 export const addAccountReducer = (state, action) => {
   state.push(action.payload);
@@ -59,4 +61,82 @@ export const extraReducers = (builder) => {
       ].transactions.filter((t) => t.id !== transactionId);
     }
   });
+};
+
+// Dual-write middleware actions to also update the new unified slices
+export const dualWriteAccountAdd = (account) => (dispatch) => {
+  // Write to new accounts slice (without transactions)
+  const accountWithoutTransactions = {
+    id: account.id,
+    name: account.name,
+    type: account.type,
+    statementDay: account.statementDay,
+    version: account.version,
+  };
+  dispatch(accountsActions.addAccount(accountWithoutTransactions));
+
+  // Write transactions to unified slice
+  if (account.transactions && Array.isArray(account.transactions)) {
+    account.transactions.forEach((transaction) => {
+      dispatch(
+        transactionsActions.addTransaction({
+          ...transaction,
+          accountId: account.id,
+        })
+      );
+    });
+  }
+};
+
+export const dualWriteAccountUpdate = (account) => (dispatch) => {
+  // Update in new accounts slice
+  const accountWithoutTransactions = {
+    id: account.id,
+    name: account.name,
+    type: account.type,
+    statementDay: account.statementDay,
+    version: account.version,
+  };
+  dispatch(accountsActions.updateAccount(accountWithoutTransactions));
+};
+
+export const dualWriteAccountRemove = (accountId) => (dispatch, getState) => {
+  // Remove from new accounts slice
+  dispatch(accountsActions.removeAccount(accountId));
+
+  // Remove all transactions for this account from unified slice
+  const state = getState();
+  const transactionsToRemove = state.transactions.filter(
+    (t) => t.accountId === accountId
+  );
+  transactionsToRemove.forEach((t) => {
+    dispatch(transactionsActions.removeTransaction(t.id));
+  });
+};
+
+export const dualWriteTransactionAdd =
+  (accountId, transaction) => (dispatch) => {
+    // Add to unified transactions slice
+    dispatch(
+      transactionsActions.addTransaction({
+        ...transaction,
+        accountId,
+      })
+    );
+  };
+
+export const dualWriteTransactionUpdate =
+  (accountId, transaction) => (dispatch) => {
+    // Update in unified transactions slice
+    dispatch(
+      transactionsActions.updateTransaction({
+        ...transaction,
+        accountId,
+      })
+    );
+  };
+
+export const dualWriteTransactionRemove = (transactionId) => (dispatch) => {
+  // Remove from unified transactions slice
+  dispatch(transactionsActions.removeTransaction(transactionId));
 };
