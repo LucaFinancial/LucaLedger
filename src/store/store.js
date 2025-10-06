@@ -12,16 +12,70 @@ const localStorageMiddleware = (store) => (next) => (action) => {
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
 
+  let state = { ...persistedState };
+  let needsPersist = false;
+
   // If we have 'accounts' but not 'accountsLegacy', migrate it
-  if (persistedState.accounts && !persistedState.accountsLegacy) {
-    const { accounts, ...rest } = persistedState;
-    return {
+  if (state.accounts && !state.accountsLegacy) {
+    const { accounts, ...rest } = state;
+    state = {
       ...rest,
       accountsLegacy: accounts,
     };
+    needsPersist = true;
   }
 
-  return persistedState;
+  // Migration: Add accountId to all transactions
+  if (state.accountsLegacy && Array.isArray(state.accountsLegacy)) {
+    let totalUpdated = 0;
+    const updatedAccounts = state.accountsLegacy.map((account) => {
+      if (!account.transactions || !Array.isArray(account.transactions)) {
+        return account;
+      }
+
+      let accountUpdated = 0;
+      const updatedTransactions = account.transactions.map((transaction) => {
+        // Only add accountId if it's missing
+        if (!transaction.accountId) {
+          accountUpdated++;
+          return {
+            ...transaction,
+            accountId: account.id,
+          };
+        }
+        return transaction;
+      });
+
+      if (accountUpdated > 0) {
+        totalUpdated += accountUpdated;
+        console.log(
+          `Migration: Added accountId to ${accountUpdated} transactions in account "${
+            account.name || account.id
+          }"`
+        );
+      }
+
+      return {
+        ...account,
+        transactions: updatedTransactions,
+      };
+    });
+
+    if (totalUpdated > 0) {
+      console.log(
+        `Migration: Successfully updated ${totalUpdated} transactions across ${state.accountsLegacy.length} accounts`
+      );
+      state.accountsLegacy = updatedAccounts;
+      needsPersist = true;
+    }
+  }
+
+  // Persist the migrated state immediately
+  if (needsPersist) {
+    localStorage.setItem('reduxState', JSON.stringify(state));
+  }
+
+  return state;
 };
 
 export default configureStore({
