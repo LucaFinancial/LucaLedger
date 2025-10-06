@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions } from '@/store/transactions';
+import { actions } from '@/store/transactionsLegacy';
 import AmountField from './AmountField';
 import DescriptionField from './DescriptionField';
 import FrequencyField from './FrequencyField';

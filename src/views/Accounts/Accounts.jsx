@@ -1,7 +1,7 @@
 import { Box, Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 
-import { selectors } from '@/store/accounts';
+import { selectors } from '@/store/accountsLegacy';
 import AccountCard from './AccountCard';
 import ButtonGroup from './ButtonGroup';
 

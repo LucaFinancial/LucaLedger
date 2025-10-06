@@ -2,7 +2,7 @@ import { Button } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions } from '@/store/transactions';
+import { actions } from '@/store/transactionsLegacy';
 
 export default function NewTransactionButton() {
   const dispatch = useDispatch();

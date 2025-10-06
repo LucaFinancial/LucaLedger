@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accounts';
+import { actions, constants } from '@/store/accountsLegacy';
 
 import { Cancel as CancelIcon, Check as SaveIcon } from '@mui/icons-material';
 

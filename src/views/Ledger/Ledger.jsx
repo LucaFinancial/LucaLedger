@@ -1,7 +1,7 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accounts';
+import { selectors } from '@/store/accountsLegacy';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';

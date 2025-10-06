@@ -1,6 +1,6 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors } from '@/store/accounts';
-import { AccountType } from '@/store/accounts/constants';
+import { selectors } from '@/store/accountsLegacy';
+import { AccountType } from '@/store/accountsLegacy/constants';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import AccountRow from './AccountRow';

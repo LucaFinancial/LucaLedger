@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions, constants } from '@/store/transactions';
+import { actions, constants } from '@/store/transactionsLegacy';
 
 export default function TransactionStatusSelect({ transaction }) {
   const dispatch = useDispatch();

@@ -1,7 +1,7 @@
 import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import { constants } from '@/store/transactions';
+import { constants } from '@/store/transactionsLegacy';
 import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
 import DateCell from './DateCell';
