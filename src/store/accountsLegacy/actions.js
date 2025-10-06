@@ -6,23 +6,27 @@ import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import schemas from './schemas';
 import { addAccount, removeAccount, updateAccount } from './slice';
+import {
+  dualWriteAccountAdd,
+  dualWriteAccountUpdate,
+  dualWriteAccountRemove,
+} from './reducers';
 
 export const createNewAccount = () => (dispatch) => {
-  dispatch(
-    addAccount(
-      generateAccountObject(
-        uuid(),
-        'New Account',
-        AccountType.CHECKING,
-        null,
-        []
-      )
-    )
+  const account = generateAccountObject(
+    uuid(),
+    'New Account',
+    AccountType.CHECKING,
+    null,
+    []
   );
+  dispatch(addAccount(account));
+  dispatch(dualWriteAccountAdd(account));
 };
 
 export const loadAccount = (account) => (dispatch) => {
   dispatch(addAccount(account));
+  dispatch(dualWriteAccountAdd(account));
 };
 
 const loadAccountFromFile = async () => {
@@ -49,6 +53,7 @@ export const loadAccountAsync = () => async (dispatch) => {
     return;
   }
   dispatch(addAccount(account));
+  dispatch(dualWriteAccountAdd(account));
 };
 
 export const saveAccount = (account, filename) => {
@@ -94,6 +99,7 @@ export const saveAllAccounts = (accounts) => {
 
 export const removeAccountById = (id) => (dispatch) => {
   dispatch(removeAccount(id));
+  dispatch(dualWriteAccountRemove(id));
 };
 
 export { updateAccount };
@@ -105,4 +111,5 @@ export const updateAccountProperty =
       [property]: value,
     };
     dispatch(updateAccount(updatedAccount));
+    dispatch(dualWriteAccountUpdate(updatedAccount));
   };

@@ -5,10 +5,16 @@ import config from '@/config';
 import { generateTransaction } from './generators';
 import schemas from './schemas';
 import { addTransaction, removeTransaction, updateTransaction } from './slice';
+import {
+  dualWriteTransactionAdd,
+  dualWriteTransactionUpdate,
+  dualWriteTransactionRemove,
+} from '@/store/accountsLegacy/reducers';
 
 export const createNewTransaction = (accountId) => (dispatch) => {
   const newTransaction = generateTransaction({ accountId });
   dispatch(addTransaction({ accountId, transaction: newTransaction }));
+  dispatch(dualWriteTransactionAdd(accountId, newTransaction));
 };
 
 export const createRepeatTransaction = createAsyncThunk(
@@ -41,6 +47,7 @@ export const createRepeatTransaction = createAsyncThunk(
 
         let firstActionPayload = { accountId, transaction: firstTransaction };
         dispatch(addTransaction(firstActionPayload));
+        dispatch(dualWriteTransactionAdd(accountId, firstTransaction));
 
         // Create transaction for the 15th of the month
         let secondTransactionDate = nextDate.date(15);
@@ -53,6 +60,7 @@ export const createRepeatTransaction = createAsyncThunk(
 
         let secondActionPayload = { accountId, transaction: secondTransaction };
         dispatch(addTransaction(secondActionPayload));
+        dispatch(dualWriteTransactionAdd(accountId, secondTransaction));
 
         // Advance to the next month
         nextDate = nextDate.add(1, 'month');
@@ -66,6 +74,7 @@ export const createRepeatTransaction = createAsyncThunk(
         const newTransaction = generateTransaction(initialData);
         schemas.transaction.validateSync(newTransaction);
         dispatch(addTransaction({ accountId, transaction: newTransaction }));
+        dispatch(dualWriteTransactionAdd(accountId, newTransaction));
 
         if (frequency === 'Days') {
           nextDate = nextDate.add(frequencyCount, 'day');
@@ -95,9 +104,11 @@ export const updateTransactionProperty =
     };
     const actionPayload = { accountId, transaction: updatedTransaction };
     dispatch(updateTransaction(actionPayload));
+    dispatch(dualWriteTransactionUpdate(accountId, updatedTransaction));
   };
 
 export const removeTransactionById = (accountId, transaction) => (dispatch) => {
   const actionPayload = { accountId, transactionId: transaction.id };
   dispatch(removeTransaction(actionPayload));
+  dispatch(dualWriteTransactionRemove(transaction.id));
 };

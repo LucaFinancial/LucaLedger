@@ -1,7 +1,7 @@
 {
   "name": "luca-ledger",
-  "version": "1.9.2",
-  "homepage": "https://lucaledger.app/",
+  "version": "1.10.0-rc.1",
+  "homepage": "https://luca-ledger.app/",
   "type": "module",
   "license": "MIT",
   "description": "A simple ledger app for tracking your expenses.",
