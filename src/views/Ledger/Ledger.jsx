@@ -85,7 +85,7 @@ export default function Ledger() {
     <Box
       sx={{
         width: '100%',
-        height: 'calc(100vh - 100px)',
+        height: 'calc(100vh - 64px)',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-around',
