@@ -8,6 +8,7 @@ import schemas from './schemas';
 export const generateTransaction = (initialData = {}) => {
   const transaction = {
     id: uuid(),
+    accountId: initialData.accountId || null,
     status: TransactionStatusEnum.PLANNED,
     date: dayjs().format(config.dateFormatString),
     amount: 0.0,

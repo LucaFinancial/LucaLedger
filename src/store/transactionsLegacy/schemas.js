@@ -4,6 +4,7 @@ import { TransactionStatusEnum } from './constants';
 
 const commonTransactionSchema = yup.object({
   id: yup.string().required('Transaction ID is required'),
+  accountId: yup.string().required('Account ID is required'),
   status: yup
     .string()
     .required('Transaction status is required')

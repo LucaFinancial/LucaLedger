@@ -24,7 +24,12 @@ export const extraReducers = (builder) => {
     const { accountId, transaction } = action.payload;
     const accountIndex = state.findIndex((account) => account.id === accountId);
     if (accountIndex !== -1) {
-      state[accountIndex].transactions.push(transaction);
+      // Ensure accountId is set on the transaction
+      const transactionWithAccountId = {
+        ...transaction,
+        accountId,
+      };
+      state[accountIndex].transactions.push(transactionWithAccountId);
     }
   });
   builder.addCase(reducers.updateTransaction, (state, action) => {
@@ -39,6 +44,8 @@ export const extraReducers = (builder) => {
         state[accountIndex].transactions[transactionIndex] = {
           ...existing,
           ...updatedTransaction,
+          // Ensure accountId is preserved
+          accountId,
         };
       }
     }

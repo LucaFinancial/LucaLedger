@@ -7,7 +7,7 @@ import schemas from './schemas';
 import { addTransaction, removeTransaction, updateTransaction } from './slice';
 
 export const createNewTransaction = (accountId) => (dispatch) => {
-  const newTransaction = generateTransaction();
+  const newTransaction = generateTransaction({ accountId });
   dispatch(addTransaction({ accountId, transaction: newTransaction }));
 };
 
@@ -32,9 +32,10 @@ export const createRepeatTransaction = createAsyncThunk(
       if (frequency === 'Bi-Monthly') {
         // Create transaction for the 1st of the month
         let firstTransactionDate = nextDate.date(1);
-        let firstTransaction = createNewTransaction(
-          firstTransactionDate.format(config.dateFormatString)
-        );
+        let firstTransaction = generateTransaction({
+          accountId,
+          date: firstTransactionDate.format(config.dateFormatString),
+        });
         firstTransaction.amount = amount;
         firstTransaction.description = description;
 
@@ -43,9 +44,10 @@ export const createRepeatTransaction = createAsyncThunk(
 
         // Create transaction for the 15th of the month
         let secondTransactionDate = nextDate.date(15);
-        let secondTransaction = createNewTransaction(
-          secondTransactionDate.format(config.dateFormatString)
-        );
+        let secondTransaction = generateTransaction({
+          accountId,
+          date: secondTransactionDate.format(config.dateFormatString),
+        });
         secondTransaction.amount = amount;
         secondTransaction.description = description;
 
@@ -56,6 +58,7 @@ export const createRepeatTransaction = createAsyncThunk(
         nextDate = nextDate.add(1, 'month');
       } else {
         const initialData = {
+          accountId,
           date: nextDate.format(config.dateFormatString),
           amount: amount,
           description,
