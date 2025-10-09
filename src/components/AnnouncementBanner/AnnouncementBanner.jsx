@@ -135,16 +135,6 @@ export default function AnnouncementBanner() {
               on your device.
             </Typography>
             <Typography
-              variant='body2'
-              sx={{ mb: 2 }}
-            >
-              You&apos;ll need to re-enter your passphrase after periods of
-              inactivity or per session. An optional &quot;remember on this
-              device&quot; feature will be available via device authentication
-              for added convenience.
-            </Typography>
-
-            <Typography
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
@@ -157,7 +147,8 @@ export default function AnnouncementBanner() {
               After the migration, you&apos;ll continue using Luca Ledger as
               normal, with the added benefit of encryption and improved data
               handling. More information, including the official release date,
-              will be provided as we get closer to launch.
+              will be provided as we get closer to launch. We anticipate the
+              release to be in early 2026.
             </Typography>
 
             <Typography
