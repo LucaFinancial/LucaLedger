@@ -157,6 +157,23 @@ export default function AnnouncementBanner() {
               on your device.
             </Typography>
             <Typography
+              variant='body2'
+              sx={{
+                mb: 2,
+                fontStyle: 'italic',
+                color: 'text.secondary',
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                padding: 1,
+                borderRadius: 1,
+              }}
+            >
+              <strong>Note:</strong> Luca Ledger stores no data remotely. All
+              your financial information remains exclusively on your local
+              machine, and this will continue to be the case during the
+              transition to Version 2. Future versions may include optional
+              cloud sync features, but local storage will be the default.
+            </Typography>
+            <Typography
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
