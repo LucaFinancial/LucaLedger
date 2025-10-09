@@ -1,18 +1,10 @@
 import { Typography, Button, Tooltip } from '@mui/material';
-import { useState, useEffect } from 'react';
 
 import { version } from '../../../package.json';
 
 const STORAGE_KEY = 'announcementBannerDismissed_v2';
 
 export default function VersionDisplay() {
-  const [isDismissed, setIsDismissed] = useState(false);
-
-  useEffect(() => {
-    const dismissed = localStorage.getItem(STORAGE_KEY) === 'true';
-    setIsDismissed(dismissed);
-  }, []);
-
   const handleVersionClick = () => {
     // Toggle the announcement banner dismissal state
     const currentState = localStorage.getItem(STORAGE_KEY) === 'true';
@@ -27,11 +19,9 @@ export default function VersionDisplay() {
     window.location.reload();
   };
 
-  const tooltipText = isDismissed ? 'show notification' : 'hide notification';
-
   return (
     <Tooltip
-      title={tooltipText}
+      title='hide/show notification'
       arrow
     >
       <Button
