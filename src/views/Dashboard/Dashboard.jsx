@@ -3,6 +3,7 @@ import { selectors } from '@/store/accountsLegacy';
 import { AccountType } from '@/store/accountsLegacy/constants';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import AccountRow from './AccountRow';
 import BalanceGroup from './BalanceGroup';
 
@@ -14,6 +15,8 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <AnnouncementBanner />
+
       <Typography
         variant='h4'
         sx={{ mb: 4 }}
