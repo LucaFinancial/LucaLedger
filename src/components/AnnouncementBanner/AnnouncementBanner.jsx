@@ -71,6 +71,18 @@ export default function AnnouncementBanner() {
     >
       <Box>
         <Typography
+          variant='caption'
+          sx={{
+            mb: 2,
+            display: 'block',
+            fontStyle: 'italic',
+            color: 'text.secondary',
+          }}
+        >
+          💡 Tip: Click the version number (top-right) to hide/show this
+          notification
+        </Typography>
+        <Typography
           variant='h6'
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
