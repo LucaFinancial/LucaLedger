@@ -14,6 +14,8 @@ import {
 } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 
+import { version as currentVersion } from '../../../package.json';
+
 const STORAGE_KEY = 'announcementBannerDismissed_v2';
 
 export default function AnnouncementBanner() {
@@ -21,8 +23,16 @@ export default function AnnouncementBanner() {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    const isDismissed = localStorage.getItem(STORAGE_KEY) === 'true';
-    setDismissed(isDismissed);
+    const storedVersion = localStorage.getItem('appVersion');
+
+    // Reset dismissed state if version has changed
+    if (storedVersion !== currentVersion) {
+      localStorage.removeItem(STORAGE_KEY);
+      setDismissed(false);
+    } else {
+      const isDismissed = localStorage.getItem(STORAGE_KEY) === 'true';
+      setDismissed(isDismissed);
+    }
   }, []);
 
   const handleDismiss = () => {
