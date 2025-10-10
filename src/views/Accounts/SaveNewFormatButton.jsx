@@ -1,5 +1,6 @@
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
+import dayjs from 'dayjs';
 
 import { selectors } from '@/store/accounts';
 
@@ -18,7 +19,7 @@ export default function SaveNewFormatButton() {
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = 'luca-ledger-unified.json';
+    link.download = `${dayjs().format('YYYY-MM-DD')}.ll`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
