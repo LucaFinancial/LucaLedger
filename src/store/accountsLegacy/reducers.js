@@ -1,7 +1,16 @@
 import { reducers } from '@/store/transactionsLegacy';
 
 export const addAccountReducer = (state, action) => {
-  state.push(action.payload);
+  const account = action.payload;
+  // Normalize transaction amounts to numbers
+  const normalizedAccount = {
+    ...account,
+    transactions: account.transactions.map((t) => ({
+      ...t,
+      amount: typeof t.amount === 'string' ? parseFloat(t.amount) : t.amount,
+    })),
+  };
+  state.push(normalizedAccount);
 };
 
 export const updateAccountReducer = (state, action) => {
