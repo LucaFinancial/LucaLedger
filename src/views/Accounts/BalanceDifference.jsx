@@ -65,7 +65,7 @@ BalanceDifference.propTypes = {
     transactions: PropTypes.arrayOf(
       PropTypes.shape({
         status: PropTypes.string.isRequired,
-        amount: PropTypes.string.isRequired,
+        amount: PropTypes.number.isRequired,
       })
     ).isRequired,
     type: PropTypes.string.isRequired,
