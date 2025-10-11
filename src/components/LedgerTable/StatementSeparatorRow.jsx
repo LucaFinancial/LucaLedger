@@ -68,6 +68,7 @@ export default function StatementSeparatorRow({
           style={{ backgroundColor: '#f5f5f5', padding: '8px 16px' }}
         >
           <Typography
+            component='div'
             style={{
               display: 'flex',
               justifyContent: 'space-between',
