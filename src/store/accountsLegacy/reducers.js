@@ -74,13 +74,12 @@ export const extraReducers = (builder) => {
 
 // Dual-write middleware actions to also update the new unified slices
 export const dualWriteAccountAdd = (account) => (dispatch) => {
-  // Write to new accounts slice (without transactions)
+  // Write to new accounts slice (without transactions and without version)
   const accountWithoutTransactions = {
     id: account.id,
     name: account.name,
     type: account.type,
     statementDay: account.statementDay,
-    version: account.version,
   };
   dispatch(accountsActions.addAccount(accountWithoutTransactions));
 
@@ -98,13 +97,12 @@ export const dualWriteAccountAdd = (account) => (dispatch) => {
 };
 
 export const dualWriteAccountUpdate = (account) => (dispatch) => {
-  // Update in new accounts slice
+  // Update in new accounts slice (without version)
   const accountWithoutTransactions = {
     id: account.id,
     name: account.name,
     type: account.type,
     statementDay: account.statementDay,
-    version: account.version,
   };
   dispatch(accountsActions.updateAccount(accountWithoutTransactions));
 };

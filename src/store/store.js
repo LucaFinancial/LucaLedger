@@ -83,13 +83,12 @@ const migrateState = (persistedState) => {
   if (hasLegacyData && (newAccountsEmpty || newTransactionsEmpty)) {
     console.log('Phase 2 Migration: Copying data to unified store...');
 
-    // Copy accounts to new accounts slice (without transactions)
+    // Copy accounts to new accounts slice (without transactions or version)
     state.accounts = state.accountsLegacy.map((account) => ({
       id: account.id,
       name: account.name,
       type: account.type,
       statementDay: account.statementDay,
-      version: '2.0.0', // Update version to reflect new unified schema
     }));
 
     // Copy all transactions to unified transactions slice with accountId
