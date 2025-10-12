@@ -89,7 +89,7 @@ const migrateState = (persistedState) => {
       name: account.name,
       type: account.type,
       statementDay: account.statementDay,
-      version: account.version,
+      version: '2.0.0', // Update version to reflect new unified schema
     }));
 
     // Copy all transactions to unified transactions slice with accountId
@@ -107,7 +107,7 @@ const migrateState = (persistedState) => {
     state.transactions = allTransactions;
 
     console.log(
-      `Phase 2 Migration: Copied ${state.accounts.length} accounts and ${allTransactions.length} transactions to unified store`
+      `Phase 2 Migration: Copied ${state.accounts.length} accounts and ${allTransactions.length} transactions to unified store with updated schema version 2.0.0`
     );
     needsPersist = true;
   }
