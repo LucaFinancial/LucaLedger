@@ -19,6 +19,9 @@ export default function Ledger() {
     selectors.selectTransactionsByAccountId(accountId)
   );
 
+  // Create account object with transactions for components that need it
+  const accountWithTransactions = account ? { ...account, transactions } : null;
+
   const allMonths = transactions?.length
     ? [
         ...new Set(
@@ -101,7 +104,7 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel account={account} />
+        <SettingsPanel account={accountWithTransactions} />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -113,7 +116,7 @@ export default function Ledger() {
             padding: '15px',
           }}
         >
-          <AccountName account={account} />
+          <AccountName account={accountWithTransactions} />
         </Box>
         <Box
           sx={{

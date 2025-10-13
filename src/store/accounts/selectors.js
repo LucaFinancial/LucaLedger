@@ -1,3 +1,5 @@
+import { createSelector } from '@reduxjs/toolkit';
+
 // Basic selectors
 export const selectAccounts = (state) => state.accounts;
 export const selectTransactions = (state) => state.transactions;
@@ -27,10 +29,13 @@ export const selectAccountWithTransactions = (accountId) => (state) => {
   };
 };
 
-// Selector for all accounts with their transactions
-export const selectAccountsWithTransactions = (state) => {
-  return state.accounts.map((account) => ({
-    ...account,
-    transactions: state.transactions.filter((t) => t.accountId === account.id),
-  }));
-};
+// Memoized selector for all accounts with their transactions
+export const selectAccountsWithTransactions = createSelector(
+  [selectAccounts, selectTransactions],
+  (accounts, transactions) => {
+    return accounts.map((account) => ({
+      ...account,
+      transactions: transactions.filter((t) => t.accountId === account.id),
+    }));
+  }
+);
