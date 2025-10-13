@@ -70,6 +70,48 @@ const migrateState = (persistedState) => {
     }
   }
 
+  // Phase 2 Migration: Copy data from legacy slices to new unified slices
+  // Check if we need to migrate by seeing if new slices are empty but legacy has data
+  const hasLegacyData =
+    state.accountsLegacy &&
+    Array.isArray(state.accountsLegacy) &&
+    state.accountsLegacy.length > 0;
+  const newAccountsEmpty = !state.accounts || state.accounts.length === 0;
+  const newTransactionsEmpty =
+    !state.transactions || state.transactions.length === 0;
+
+  if (hasLegacyData && (newAccountsEmpty || newTransactionsEmpty)) {
+    console.log('Phase 2 Migration: Copying data to unified store...');
+
+    // Copy accounts to new accounts slice (without transactions)
+    state.accounts = state.accountsLegacy.map((account) => ({
+      id: account.id,
+      name: account.name,
+      type: account.type,
+      statementDay: account.statementDay,
+      version: '2.0.0', // Update version to reflect new unified schema
+    }));
+
+    // Copy all transactions to unified transactions slice with accountId
+    const allTransactions = [];
+    state.accountsLegacy.forEach((account) => {
+      if (account.transactions && Array.isArray(account.transactions)) {
+        account.transactions.forEach((transaction) => {
+          allTransactions.push({
+            ...transaction,
+            accountId: account.id, // Ensure accountId is set
+          });
+        });
+      }
+    });
+    state.transactions = allTransactions;
+
+    console.log(
+      `Phase 2 Migration: Copied ${state.accounts.length} accounts and ${allTransactions.length} transactions to unified store with updated schema version 2.0.0`
+    );
+    needsPersist = true;
+  }
+
   // Persist the migrated state immediately
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
