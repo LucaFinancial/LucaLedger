@@ -5,9 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import schemas from './schemas';
-import { addAccount, removeAccount, updateAccount } from './slice';
 import { selectors } from '@/store/accounts';
-import * as transactionsActions from '@/store/transactions/slice';
 
 // Dual-write actions
 import {
@@ -23,27 +21,14 @@ export const createNewAccount = () => (dispatch) => {
     AccountType.CHECKING,
     null
   );
-  dispatch(addAccount(account));
-  dispatch(dualWriteAccountAdd(account));
+  const accountWithTransactions = { ...account, transactions: [] };
+  // Dual-write handles writing to both normalized and legacy
+  dispatch(dualWriteAccountAdd(accountWithTransactions));
 };
 
 export const loadAccount = (account) => (dispatch) => {
-  // Extract transactions and add account without them
-  const { transactions, ...accountData } = account;
-  dispatch(addAccount(accountData));
+  // Dual-write handles writing to both normalized and legacy
   dispatch(dualWriteAccountAdd(account));
-
-  // Add transactions separately
-  if (transactions && Array.isArray(transactions)) {
-    transactions.forEach((transaction) => {
-      dispatch(
-        transactionsActions.addTransaction({
-          ...transaction,
-          accountId: account.id,
-        })
-      );
-    });
-  }
 };
 
 const loadAccountFromFile = async () => {
@@ -69,23 +54,19 @@ export const loadAccountAsync = () => async (dispatch) => {
     return;
   }
 
-  dispatch(addAccount(account));
-  dispatch(
-    dualWriteAccountAdd({ ...account, transactions: data.transactions || [] })
-  );
-
-  // Add transactions separately
-  if (data.transactions && Array.isArray(data.transactions)) {
-    data.transactions.forEach((t) => {
-      dispatch(
-        transactionsActions.addTransaction({
+  const accountWithTransactions = {
+    ...account,
+    transactions: data.transactions
+      ? data.transactions.map((t) => ({
           ...t,
           amount: parseFloat(t.amount),
           accountId: account.id,
-        })
-      );
-    });
-  }
+        }))
+      : [],
+  };
+
+  // Dual-write handles writing to both normalized and legacy
+  dispatch(dualWriteAccountAdd(accountWithTransactions));
 };
 
 export const saveAccount = (accountId, filename) => (dispatch, getState) => {
@@ -150,27 +131,37 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   });
 };
 
-export const removeAccountById = (id) => (dispatch, getState) => {
-  const state = getState();
-  const transactions = selectors.selectTransactionsByAccountId(id)(state);
-
-  // Remove all transactions for this account
-  transactions.forEach((transaction) => {
-    dispatch(transactionsActions.removeTransaction(transaction.id));
-  });
-
-  dispatch(removeAccount(id));
+export const removeAccountById = (id) => (dispatch) => {
+  // Dual-write handles syncing to normalized
   dispatch(dualWriteAccountRemove(id));
 };
 
-export { updateAccount };
+export const updateAccount = (account) => (dispatch, getState) => {
+  const state = getState();
+  const transactions = selectors.selectTransactionsByAccountId(account.id)(
+    state
+  );
+
+  const accountWithTransactions = {
+    ...account,
+    transactions,
+  };
+  // Dual-write handles writing to both normalized and legacy
+  dispatch(dualWriteAccountUpdate(accountWithTransactions));
+};
 
 export const updateAccountProperty =
-  (account, property, value) => (dispatch) => {
+  (account, property, value) => (dispatch, getState) => {
+    const state = getState();
+    const transactions = selectors.selectTransactionsByAccountId(account.id)(
+      state
+    );
+
     const updatedAccount = {
       ...account,
       [property]: value,
+      transactions,
     };
-    dispatch(updateAccount(updatedAccount));
+    // Dual-write handles writing to both normalized and legacy
     dispatch(dualWriteAccountUpdate(updatedAccount));
   };

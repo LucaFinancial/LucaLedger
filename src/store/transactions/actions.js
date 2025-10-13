@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import config from '@/config';
 import { generateTransaction } from './generators';
 import schemas from './schemas';
-import { addTransaction, removeTransaction, updateTransaction } from './slice';
 
 // Dual-write actions
 import {
@@ -15,7 +14,7 @@ import {
 
 export const createNewTransaction = (accountId) => (dispatch) => {
   const newTransaction = generateTransaction({ accountId });
-  dispatch(addTransaction(newTransaction));
+  // Dual-write handles writing to both normalized and legacy
   dispatch(dualWriteTransactionAdd(accountId, newTransaction));
 };
 
@@ -47,7 +46,6 @@ export const createRepeatTransaction = createAsyncThunk(
         firstTransaction.amount = amount;
         firstTransaction.description = description;
 
-        dispatch(addTransaction(firstTransaction));
         dispatch(dualWriteTransactionAdd(accountId, firstTransaction));
 
         // Create transaction for the 15th of the month
@@ -59,7 +57,6 @@ export const createRepeatTransaction = createAsyncThunk(
         secondTransaction.amount = amount;
         secondTransaction.description = description;
 
-        dispatch(addTransaction(secondTransaction));
         dispatch(dualWriteTransactionAdd(accountId, secondTransaction));
 
         // Advance to the next month
@@ -73,7 +70,6 @@ export const createRepeatTransaction = createAsyncThunk(
         };
         const newTransaction = generateTransaction(initialData);
         schemas.transaction.validateSync(newTransaction);
-        dispatch(addTransaction(newTransaction));
         dispatch(dualWriteTransactionAdd(accountId, newTransaction));
 
         if (frequency === 'Days') {
@@ -102,11 +98,11 @@ export const updateTransactionProperty =
       ...transaction,
       [property]: value,
     };
-    dispatch(updateTransaction(updatedTransaction));
+    // Dual-write handles writing to both normalized and legacy
     dispatch(dualWriteTransactionUpdate(accountId, updatedTransaction));
   };
 
 export const removeTransactionById = (accountId, transaction) => (dispatch) => {
-  dispatch(removeTransaction(transaction.id));
+  // Dual-write handles syncing to normalized
   dispatch(dualWriteTransactionRemove(transaction.id));
 };
