@@ -1,7 +1,7 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accountsLegacy';
+import { selectors } from '@/store/accounts';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -15,11 +15,14 @@ export default function Ledger() {
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState('');
   const account = useSelector(selectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    selectors.selectTransactionsByAccountId(accountId)
+  );
 
-  const allMonths = account?.transactions?.length
+  const allMonths = transactions?.length
     ? [
         ...new Set(
-          account.transactions.map((t) => {
+          transactions.map((t) => {
             const date = dayjs(t.date);
             return `${date.format('YYYY')}-${date.format('MMMM')}`;
           })

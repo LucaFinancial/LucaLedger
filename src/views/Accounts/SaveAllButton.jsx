@@ -1,10 +1,11 @@
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 
-import { actions, selectors } from '@/store/accountsLegacy';
+import { actions } from '@/store/accountsLegacy';
+import { selectors } from '@/store/accounts';
 
 export default function SaveAllButton() {
-  const accounts = useSelector(selectors.selectAccounts);
+  const accounts = useSelector(selectors.selectAccountsWithTransactions);
 
   return (
     <Button

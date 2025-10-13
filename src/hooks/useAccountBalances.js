@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { constants } from '@/store/accountsLegacy';
-import { TransactionStatusEnum } from '../store/transactionsLegacy/constants';
+import { TransactionStatusEnum } from '@/store/transactionsLegacy/constants';
 
 export const useAccountBalances = (accounts) => {
   return useMemo(() => {
