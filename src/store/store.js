@@ -8,64 +8,74 @@ const localStorageMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
-// Migration function to handle schema versions and data migration
+// Migration function to handle renaming 'accounts' to 'accountsLegacy'
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
 
-  // Check for schema version in the persisted data
-  const dataSchemaVersion = persistedState.schemaVersion;
-  const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
+  let state = { ...persistedState };
+  let needsPersist = false;
 
-  // If no schema version found in data, this is invalid - refuse to load
-  if (!dataSchemaVersion) {
-    console.error(
-      'No schema version found in persisted data. Data load refused.'
-    );
-    alert(
-      'Unable to load data: No schema version found. Your data may be corrupted or from an unsupported format.'
-    );
-    return {};
+  // If we have 'accounts' but not 'accountsLegacy', migrate it
+  if (state.accounts && !state.accountsLegacy) {
+    const { accounts, ...rest } = state;
+    state = {
+      ...rest,
+      accountsLegacy: accounts,
+    };
+    needsPersist = true;
   }
 
-  // If data is v2, check if it matches our expected format
-  if (dataSchemaVersion === '2.0.0') {
-    // Data is already v2 format, should be good to go
-    console.log('Loading v2.0.0 schema data');
-
-    // Update stored schema version if different
-    if (storedSchemaVersion !== dataSchemaVersion) {
-      localStorage.setItem('dataSchemaVersion', dataSchemaVersion);
-    }
-
-    return persistedState;
-  }
-
-  // If data is v1, check for legacy format and refuse to load
-  if (dataSchemaVersion === '1.0.0') {
-    // Double-check by looking for v1 indicators (accounts with embedded transactions)
-    if (persistedState.accounts && Array.isArray(persistedState.accounts)) {
-      const hasEmbeddedTransactions = persistedState.accounts.some(
-        (account) => account.transactions && Array.isArray(account.transactions)
-      );
-
-      if (hasEmbeddedTransactions) {
-        console.error(
-          'v1.0.0 schema data detected with embedded transactions. Migration not supported.'
-        );
-        alert(
-          'Unable to load data: This appears to be v1.0.0 format data which is not supported. Please contact support for migration assistance.'
-        );
-        return {};
+  // Migration: Add accountId to all transactions
+  if (state.accountsLegacy && Array.isArray(state.accountsLegacy)) {
+    let totalUpdated = 0;
+    const updatedAccounts = state.accountsLegacy.map((account) => {
+      if (!account.transactions || !Array.isArray(account.transactions)) {
+        return account;
       }
+
+      let accountUpdated = 0;
+      const updatedTransactions = account.transactions.map((transaction) => {
+        // Only add accountId if it's missing
+        if (!transaction.accountId) {
+          accountUpdated++;
+          return {
+            ...transaction,
+            accountId: account.id,
+          };
+        }
+        return transaction;
+      });
+
+      if (accountUpdated > 0) {
+        totalUpdated += accountUpdated;
+        console.log(
+          `Migration: Added accountId to ${accountUpdated} transactions in account "${
+            account.name || account.id
+          }"`
+        );
+      }
+
+      return {
+        ...account,
+        transactions: updatedTransactions,
+      };
+    });
+
+    if (totalUpdated > 0) {
+      console.log(
+        `Migration: Successfully updated ${totalUpdated} transactions across ${state.accountsLegacy.length} accounts`
+      );
+      state.accountsLegacy = updatedAccounts;
+      needsPersist = true;
     }
   }
 
-  // Unknown or unsupported version - refuse to load
-  console.error(`Unsupported schema version: ${dataSchemaVersion}`);
-  alert(
-    `Unable to load data: Unsupported schema version "${dataSchemaVersion}". Please update your application.`
-  );
-  return {};
+  // Persist the migrated state immediately
+  if (needsPersist) {
+    localStorage.setItem('reduxState', JSON.stringify(state));
+  }
+
+  return state;
 };
 
 export default configureStore({
