@@ -8,7 +8,7 @@ import ButtonGroup from './ButtonGroup';
 const accountSortByName = (a, b) => a.name.localeCompare(b.name);
 
 export default function Accounts() {
-  const accounts = useSelector(selectors.selectAccountsWithTransactions);
+  const accounts = useSelector(selectors.selectAccounts);
   const sortedAccounts = [...accounts].sort(accountSortByName);
 
   return (

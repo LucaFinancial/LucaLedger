@@ -1,10 +1,13 @@
 import PropTypes from 'prop-types';
 
-export default function BalanceDifference({ account, filterArray }) {
+export default function BalanceDifference({
+  transactions,
+  accountType,
+  filterArray,
+}) {
   if (filterArray.length <= 1) {
     return null;
   }
-  const { transactions, type } = account;
 
   const lastStatus = filterArray[filterArray.length - 1];
   const difference = transactions
@@ -16,7 +19,7 @@ export default function BalanceDifference({ account, filterArray }) {
     return null;
   }
 
-  const isCreditCard = type === 'Credit Card';
+  const isCreditCard = accountType === 'Credit Card';
   const isPositive = difference >= 0;
   const color = isCreditCard
     ? isPositive
@@ -61,14 +64,12 @@ export default function BalanceDifference({ account, filterArray }) {
 }
 
 BalanceDifference.propTypes = {
-  account: PropTypes.shape({
-    transactions: PropTypes.arrayOf(
-      PropTypes.shape({
-        status: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
-      })
-    ).isRequired,
-    type: PropTypes.string.isRequired,
-  }).isRequired,
+  transactions: PropTypes.arrayOf(
+    PropTypes.shape({
+      status: PropTypes.string.isRequired,
+      amount: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  accountType: PropTypes.string.isRequired,
   filterArray: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

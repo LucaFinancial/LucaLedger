@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions } from '@/store/accountsLegacy';
+import { actions } from '@/store/accounts';
 
 import {
   Delete as DeleteIcon,
@@ -43,7 +43,10 @@ export default function ActionsMenu({ account }) {
   const handleSave = async (event) => {
     event.stopPropagation();
     await dispatch(
-      actions.saveAccountAsync({ account, filename: `${account.name}.json` })
+      actions.saveAccountAsync({
+        accountId: account.id,
+        filename: `${account.name}.json`,
+      })
     );
     handleClose();
   };

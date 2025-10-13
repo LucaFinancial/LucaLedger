@@ -3,8 +3,13 @@ import PropTypes from 'prop-types';
 
 import BalanceDifference from './BalanceDifference';
 
-export default function BalanceRow({ account, balanceType, filterArray }) {
-  const total = account.transactions
+export default function BalanceRow({
+  transactions,
+  accountType,
+  balanceType,
+  filterArray,
+}) {
+  const total = transactions
     .filter((t) => filterArray.includes(t.status))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
@@ -16,7 +21,7 @@ export default function BalanceRow({ account, balanceType, filterArray }) {
   // Determine color for negative balance
   let negativeColor;
   if (total < 0) {
-    negativeColor = account.type === 'Credit Card' ? 'green' : 'red';
+    negativeColor = accountType === 'Credit Card' ? 'green' : 'red';
   }
 
   return (
@@ -35,7 +40,8 @@ export default function BalanceRow({ account, balanceType, filterArray }) {
         <span>{balanceType}</span>
         <span style={{ marginLeft: 'auto', textAlign: 'right', minWidth: 100 }}>
           <BalanceDifference
-            account={account}
+            transactions={transactions}
+            accountType={accountType}
             filterArray={filterArray}
           />
         </span>
@@ -57,7 +63,8 @@ export default function BalanceRow({ account, balanceType, filterArray }) {
 }
 
 BalanceRow.propTypes = {
-  account: PropTypes.object.isRequired,
+  transactions: PropTypes.array.isRequired,
+  accountType: PropTypes.string.isRequired,
   balanceType: PropTypes.string.isRequired,
   filterArray: PropTypes.array.isRequired,
 };

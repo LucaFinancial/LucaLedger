@@ -1,14 +1,21 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-import { constants } from '@/store/transactions';
+import {
+  selectors as transactionSelectors,
+  constants,
+} from '@/store/transactions';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
 
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(account.id)
+  );
 
   const cardLength = '320px';
 
@@ -33,12 +40,14 @@ export default function AccountCard({ account }) {
         <Typography variant='h4'>{account.name}</Typography>
         <Typography variant='subtitle1'>{account.type}</Typography>
         <BalanceRow
-          account={account}
+          transactions={transactions}
+          accountType={account.type}
           balanceType={'Current'}
           filterArray={[constants.TransactionStatusEnum.COMPLETE]}
         />
         <BalanceRow
-          account={account}
+          transactions={transactions}
+          accountType={account.type}
           balanceType={'Pending'}
           filterArray={[
             constants.TransactionStatusEnum.COMPLETE,
@@ -46,7 +55,8 @@ export default function AccountCard({ account }) {
           ]}
         />
         <BalanceRow
-          account={account}
+          transactions={transactions}
+          accountType={account.type}
           balanceType={'Scheduled'}
           filterArray={[
             constants.TransactionStatusEnum.COMPLETE,
@@ -75,11 +85,5 @@ AccountCard.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
-    transactions: PropTypes.arrayOf(
-      PropTypes.shape({
-        status: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
-      })
-    ).isRequired,
   }).isRequired,
 };

@@ -10,8 +10,7 @@ import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions } from '@/store/transactionsLegacy';
-import { constants } from '@/store/transactions';
+import { actions, constants } from '@/store/transactions';
 import {
   doublePrecisionFormatString,
   parseFloatDoublePrecision,

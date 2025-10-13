@@ -1,17 +1,20 @@
 import { Button } from '@mui/material';
-import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { actions } from '@/store/accountsLegacy';
-import { selectors } from '@/store/accounts';
+import { actions } from '@/store/accounts';
 
 export default function SaveAllButton() {
-  const accounts = useSelector(selectors.selectAccountsWithTransactions);
+  const dispatch = useDispatch();
+
+  const handleClick = () => {
+    dispatch(actions.saveAllAccounts());
+  };
 
   return (
     <Button
       variant='contained'
       color='primary'
-      onClick={() => actions.saveAllAccounts(accounts)}
+      onClick={handleClick}
     >
       Save All Accounts
     </Button>

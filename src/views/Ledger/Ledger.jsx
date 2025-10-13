@@ -2,6 +2,7 @@ import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import SettingsPanel from '@/components/SettingsPanel';
 import { selectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -14,11 +15,10 @@ export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState('');
-  const accountWithTransactions = useSelector(
-    selectors.selectAccountWithTransactions(accountId)
+  const account = useSelector(selectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
   );
-  const account = accountWithTransactions;
-  const transactions = accountWithTransactions?.transactions || [];
 
   const allMonths = transactions?.length
     ? [
@@ -102,7 +102,10 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel account={accountWithTransactions} />
+        <SettingsPanel
+          account={account}
+          transactions={transactions}
+        />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -114,7 +117,7 @@ export default function Ledger() {
             padding: '15px',
           }}
         >
-          <AccountName account={accountWithTransactions} />
+          <AccountName account={account} />
         </Box>
         <Box
           sx={{

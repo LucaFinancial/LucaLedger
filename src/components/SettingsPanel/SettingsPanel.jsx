@@ -6,9 +6,7 @@ import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
 
-export default function SettingsPanel({ account }) {
-  const { transactions } = account;
-
+export default function SettingsPanel({ account, transactions }) {
   const completedBalance = transactions
     .filter((transaction) => transaction.status === 'complete ')
     .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
@@ -87,4 +85,5 @@ export default function SettingsPanel({ account }) {
 
 SettingsPanel.propTypes = {
   account: PropTypes.object.isRequired,
+  transactions: PropTypes.array.isRequired,
 };
