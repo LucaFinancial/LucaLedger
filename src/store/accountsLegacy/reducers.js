@@ -80,7 +80,6 @@ export const dualWriteAccountAdd = (account) => (dispatch) => {
     name: account.name,
     type: account.type,
     statementDay: account.statementDay,
-    version: account.version,
   };
   dispatch(accountsActions.addAccount(accountWithoutTransactions));
 
@@ -104,7 +103,6 @@ export const dualWriteAccountUpdate = (account) => (dispatch) => {
     name: account.name,
     type: account.type,
     statementDay: account.statementDay,
-    version: account.version,
   };
   dispatch(accountsActions.updateAccount(accountWithoutTransactions));
 };
