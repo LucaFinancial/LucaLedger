@@ -14,13 +14,11 @@ export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState('');
-  const account = useSelector(selectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    selectors.selectTransactionsByAccountId(accountId)
+  const accountWithTransactions = useSelector(
+    selectors.selectAccountWithTransactions(accountId)
   );
-
-  // Create account object with transactions for components that need it
-  const accountWithTransactions = account ? { ...account, transactions } : null;
+  const account = accountWithTransactions;
+  const transactions = accountWithTransactions?.transactions || [];
 
   const allMonths = transactions?.length
     ? [
