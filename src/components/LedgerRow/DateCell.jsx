@@ -7,7 +7,8 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import config from '@/config';
-import { actions, constants } from '@/store/transactionsLegacy';
+import { actions } from '@/store/transactionsLegacy';
+import { constants } from '@/store/transactions';
 import { Cancel, Check } from '@mui/icons-material';
 
 export default function DateCell({ transaction }) {

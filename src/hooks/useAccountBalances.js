@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { constants } from '@/store/accountsLegacy';
-import { TransactionStatusEnum } from '@/store/transactionsLegacy/constants';
+import { constants as accountConstants } from '@/store/accounts';
+import { constants as transactionConstants } from '@/store/transactions';
 
 export const useAccountBalances = (accounts) => {
   return useMemo(() => {
@@ -11,7 +11,8 @@ export const useAccountBalances = (accounts) => {
       future: 0,
     };
 
-    const { COMPLETE, PENDING, SCHEDULED, PLANNED } = TransactionStatusEnum;
+    const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
+      transactionConstants.TransactionStatusEnum;
 
     const processedAccounts = accounts.map((account) => {
       const balances = {
@@ -30,7 +31,7 @@ export const useAccountBalances = (accounts) => {
         ]),
       };
 
-      if (account.type === constants.AccountType.CREDIT_CARD) {
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
         Object.keys(balances).forEach((key) => {
           totals[key] -= Math.max(balances[key], 0);
         });

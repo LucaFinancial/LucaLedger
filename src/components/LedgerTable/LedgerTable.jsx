@@ -1,6 +1,5 @@
 import LedgerRow from '@/components/LedgerRow';
-import { constants as accountsLegacyConstants } from '@/store/accountsLegacy';
-import { selectors } from '@/store/accounts';
+import { constants as accountConstants, selectors } from '@/store/accounts';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -120,12 +119,11 @@ export default function LedgerTable({
             // Check if statement period changes between previous and current transaction
             const statementDay = account.statementDay || 1;
             const currentStatementMonth =
-              account.type === accountsLegacyConstants.AccountType.CREDIT_CARD
+              account.type === accountConstants.AccountType.CREDIT_CARD
                 ? computeStatementMonth(transaction, statementDay)
                 : null;
             const previousStatementMonth =
-              account.type ===
-                accountsLegacyConstants.AccountType.CREDIT_CARD &&
+              account.type === accountConstants.AccountType.CREDIT_CARD &&
               previousTransaction
                 ? computeStatementMonth(previousTransaction, statementDay)
                 : null;
@@ -181,7 +179,7 @@ export default function LedgerTable({
                       {isStatementMonthDifferent &&
                         !isNewMonth &&
                         account.type ===
-                          accountsLegacyConstants.AccountType.CREDIT_CARD && (
+                          accountConstants.AccountType.CREDIT_CARD && (
                           <StatementSeparatorRow
                             statementDay={statementDay}
                             transaction={transaction}
