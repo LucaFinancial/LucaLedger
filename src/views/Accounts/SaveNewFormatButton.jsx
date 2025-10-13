@@ -10,7 +10,7 @@ export default function SaveNewFormatButton() {
 
   const handleSave = () => {
     const data = {
-      version: '2.0.0',
+      schemaVersion: '2.0.0',
       accounts,
       transactions,
     };

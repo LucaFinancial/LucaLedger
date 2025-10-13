@@ -8,115 +8,64 @@ const localStorageMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
-// Migration function to handle renaming 'accounts' to 'accountsLegacy'
+// Migration function to handle schema versions and data migration
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
 
-  let state = { ...persistedState };
-  let needsPersist = false;
+  // Check for schema version in the persisted data
+  const dataSchemaVersion = persistedState.schemaVersion;
+  const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
 
-  // If we have 'accounts' but not 'accountsLegacy', migrate it
-  if (state.accounts && !state.accountsLegacy) {
-    const { accounts, ...rest } = state;
-    state = {
-      ...rest,
-      accountsLegacy: accounts,
-    };
-    needsPersist = true;
+  // If no schema version found in data, this is invalid - refuse to load
+  if (!dataSchemaVersion) {
+    console.error(
+      'No schema version found in persisted data. Data load refused.'
+    );
+    alert(
+      'Unable to load data: No schema version found. Your data may be corrupted or from an unsupported format.'
+    );
+    return {};
   }
 
-  // Migration: Add accountId to all transactions
-  if (state.accountsLegacy && Array.isArray(state.accountsLegacy)) {
-    let totalUpdated = 0;
-    const updatedAccounts = state.accountsLegacy.map((account) => {
-      if (!account.transactions || !Array.isArray(account.transactions)) {
-        return account;
-      }
+  // If data is v2, check if it matches our expected format
+  if (dataSchemaVersion === '2.0.0') {
+    // Data is already v2 format, should be good to go
+    console.log('Loading v2.0.0 schema data');
 
-      let accountUpdated = 0;
-      const updatedTransactions = account.transactions.map((transaction) => {
-        // Only add accountId if it's missing
-        if (!transaction.accountId) {
-          accountUpdated++;
-          return {
-            ...transaction,
-            accountId: account.id,
-          };
-        }
-        return transaction;
-      });
+    // Update stored schema version if different
+    if (storedSchemaVersion !== dataSchemaVersion) {
+      localStorage.setItem('dataSchemaVersion', dataSchemaVersion);
+    }
 
-      if (accountUpdated > 0) {
-        totalUpdated += accountUpdated;
-        console.log(
-          `Migration: Added accountId to ${accountUpdated} transactions in account "${
-            account.name || account.id
-          }"`
-        );
-      }
+    return persistedState;
+  }
 
-      return {
-        ...account,
-        transactions: updatedTransactions,
-      };
-    });
-
-    if (totalUpdated > 0) {
-      console.log(
-        `Migration: Successfully updated ${totalUpdated} transactions across ${state.accountsLegacy.length} accounts`
+  // If data is v1, check for legacy format and refuse to load
+  if (dataSchemaVersion === '1.0.0') {
+    // Double-check by looking for v1 indicators (accounts with embedded transactions)
+    if (persistedState.accounts && Array.isArray(persistedState.accounts)) {
+      const hasEmbeddedTransactions = persistedState.accounts.some(
+        (account) => account.transactions && Array.isArray(account.transactions)
       );
-      state.accountsLegacy = updatedAccounts;
-      needsPersist = true;
+
+      if (hasEmbeddedTransactions) {
+        console.error(
+          'v1.0.0 schema data detected with embedded transactions. Migration not supported.'
+        );
+        alert(
+          'Unable to load data: This appears to be v1.0.0 format data which is not supported. Please contact support for migration assistance.'
+        );
+        return {};
+      }
     }
   }
 
-  // Phase 2 Migration: Copy data from legacy slices to new unified slices
-  // Check if we need to migrate by seeing if new slices are empty but legacy has data
-  const hasLegacyData =
-    state.accountsLegacy &&
-    Array.isArray(state.accountsLegacy) &&
-    state.accountsLegacy.length > 0;
-  const newAccountsEmpty = !state.accounts || state.accounts.length === 0;
-  const newTransactionsEmpty =
-    !state.transactions || state.transactions.length === 0;
-
-  if (hasLegacyData && (newAccountsEmpty || newTransactionsEmpty)) {
-    console.log('Phase 2 Migration: Copying data to unified store...');
-
-    // Copy accounts to new accounts slice (without transactions or version)
-    state.accounts = state.accountsLegacy.map((account) => ({
-      id: account.id,
-      name: account.name,
-      type: account.type,
-      statementDay: account.statementDay,
-    }));
-
-    // Copy all transactions to unified transactions slice with accountId
-    const allTransactions = [];
-    state.accountsLegacy.forEach((account) => {
-      if (account.transactions && Array.isArray(account.transactions)) {
-        account.transactions.forEach((transaction) => {
-          allTransactions.push({
-            ...transaction,
-            accountId: account.id, // Ensure accountId is set
-          });
-        });
-      }
-    });
-    state.transactions = allTransactions;
-
-    console.log(
-      `Phase 2 Migration: Copied ${state.accounts.length} accounts and ${allTransactions.length} transactions to unified store with updated schema version 2.0.0`
-    );
-    needsPersist = true;
-  }
-
-  // Persist the migrated state immediately
-  if (needsPersist) {
-    localStorage.setItem('reduxState', JSON.stringify(state));
-  }
-
-  return state;
+  // Unknown or unsupported version - refuse to load
+  console.error(`Unsupported schema version: ${dataSchemaVersion}`);
+  alert(
+    `Unable to load data: Unsupported schema version "${dataSchemaVersion}". Please update your application.`
+  );
+  return {};
 };
 
 export default configureStore({
