@@ -1,12 +1,18 @@
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
+import { selectors } from '@/store/transactions';
 
-export default function SettingsPanel({ account, transactions }) {
+export default function SettingsPanel({ account }) {
+  const transactions = useSelector(
+    selectors.selectTransactionsByAccountId(account.id)
+  );
+
   const completedBalance = transactions
     .filter((transaction) => transaction.status === 'complete ')
     .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
@@ -85,5 +91,4 @@ export default function SettingsPanel({ account, transactions }) {
 
 SettingsPanel.propTypes = {
   account: PropTypes.object.isRequired,
-  transactions: PropTypes.array.isRequired,
 };

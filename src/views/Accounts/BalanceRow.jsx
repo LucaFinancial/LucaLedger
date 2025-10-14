@@ -1,14 +1,20 @@
 import { Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 import BalanceDifference from './BalanceDifference';
+import { selectors } from '@/store/transactions';
 
 export default function BalanceRow({
-  transactions,
+  accountId,
   accountType,
   balanceType,
   filterArray,
 }) {
+  const transactions = useSelector(
+    selectors.selectTransactionsByAccountId(accountId)
+  );
+
   const total = transactions
     .filter((t) => filterArray.includes(t.status))
     .reduce((acc, t) => acc + Number(t.amount), 0);
@@ -40,7 +46,7 @@ export default function BalanceRow({
         <span>{balanceType}</span>
         <span style={{ marginLeft: 'auto', textAlign: 'right', minWidth: 100 }}>
           <BalanceDifference
-            transactions={transactions}
+            accountId={accountId}
             accountType={accountType}
             filterArray={filterArray}
           />
@@ -63,7 +69,7 @@ export default function BalanceRow({
 }
 
 BalanceRow.propTypes = {
-  transactions: PropTypes.array.isRequired,
+  accountId: PropTypes.string.isRequired,
   accountType: PropTypes.string.isRequired,
   balanceType: PropTypes.string.isRequired,
   filterArray: PropTypes.array.isRequired,

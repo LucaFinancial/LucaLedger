@@ -1,10 +1,16 @@
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { selectors } from '@/store/transactions';
 
 export default function BalanceDifference({
-  transactions,
+  accountId,
   accountType,
   filterArray,
 }) {
+  const transactions = useSelector(
+    selectors.selectTransactionsByAccountId(accountId)
+  );
+
   if (filterArray.length <= 1) {
     return null;
   }
@@ -64,12 +70,7 @@ export default function BalanceDifference({
 }
 
 BalanceDifference.propTypes = {
-  transactions: PropTypes.arrayOf(
-    PropTypes.shape({
-      status: PropTypes.string.isRequired,
-      amount: PropTypes.number.isRequired,
-    })
-  ).isRequired,
+  accountId: PropTypes.string.isRequired,
   accountType: PropTypes.string.isRequired,
   filterArray: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

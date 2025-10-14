@@ -1,8 +1,14 @@
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { constants as accountConstants } from '@/store/accounts';
-import { constants as transactionConstants } from '@/store/transactions';
+import {
+  constants as transactionConstants,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
 
-export const useAccountBalances = (accounts, allTransactions) => {
+export const useAccountBalances = (accounts) => {
+  const allTransactions = useSelector(transactionSelectors.selectTransactions);
+
   return useMemo(() => {
     const totals = {
       current: 0,

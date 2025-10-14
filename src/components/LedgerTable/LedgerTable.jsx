@@ -1,5 +1,6 @@
 import LedgerRow from '@/components/LedgerRow';
 import { constants as accountConstants, selectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -19,7 +20,7 @@ export default function LedgerTable({
   const { accountId } = useParams();
   const account = useSelector(selectors.selectAccountById(accountId));
   const transactions = useSelector(
-    selectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
   const sortedTransactions = useMemo(

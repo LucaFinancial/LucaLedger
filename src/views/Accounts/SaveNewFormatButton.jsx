@@ -3,10 +3,11 @@ import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
 import { selectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 export default function SaveNewFormatButton() {
   const accounts = useSelector(selectors.selectAccounts);
-  const transactions = useSelector(selectors.selectTransactions);
+  const transactions = useSelector(transactionSelectors.selectTransactions);
 
   const handleSave = () => {
     const data = {

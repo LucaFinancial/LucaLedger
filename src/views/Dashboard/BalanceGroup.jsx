@@ -1,6 +1,5 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { selectors } from '@/store/accounts';
-import { selectors as transactionSelectors } from '@/store/transactions';
 import { Grid } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
@@ -8,11 +7,10 @@ import BalanceCard from './BalanceCard';
 
 export default function BalanceGroup({ accountType }) {
   const accounts = useSelector(selectors.selectAccounts);
-  const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const filteredAccounts = accounts.filter(
     (account) => account.type === accountType
   );
-  const { totals } = useAccountBalances(filteredAccounts, allTransactions);
+  const { totals } = useAccountBalances(filteredAccounts);
 
   return (
     <Grid

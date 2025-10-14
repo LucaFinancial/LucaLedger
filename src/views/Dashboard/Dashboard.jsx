@@ -1,6 +1,5 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { selectors, constants } from '@/store/accounts';
-import { selectors as transactionSelectors } from '@/store/transactions';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
@@ -9,11 +8,7 @@ import BalanceGroup from './BalanceGroup';
 
 export default function Dashboard() {
   const accounts = useSelector(selectors.selectAccounts);
-  const allTransactions = useSelector(transactionSelectors.selectTransactions);
-  const { accounts: accountsWithBalances } = useAccountBalances(
-    accounts,
-    allTransactions
-  );
+  const { accounts: accountsWithBalances } = useAccountBalances(accounts);
 
   const { SAVINGS, CHECKING, CREDIT_CARD } = constants.AccountType;
 

@@ -102,10 +102,7 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel
-          account={account}
-          transactions={transactions}
-        />
+        <SettingsPanel account={account} />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box

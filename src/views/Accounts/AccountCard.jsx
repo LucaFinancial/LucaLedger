@@ -1,21 +1,14 @@
 import { Card, CardContent, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 
-import {
-  selectors as transactionSelectors,
-  constants,
-} from '@/store/transactions';
+import { constants } from '@/store/transactions';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
 
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(account.id)
-  );
 
   const cardLength = '320px';
 
@@ -40,13 +33,13 @@ export default function AccountCard({ account }) {
         <Typography variant='h4'>{account.name}</Typography>
         <Typography variant='subtitle1'>{account.type}</Typography>
         <BalanceRow
-          transactions={transactions}
+          accountId={account.id}
           accountType={account.type}
           balanceType={'Current'}
           filterArray={[constants.TransactionStatusEnum.COMPLETE]}
         />
         <BalanceRow
-          transactions={transactions}
+          accountId={account.id}
           accountType={account.type}
           balanceType={'Pending'}
           filterArray={[
@@ -55,7 +48,7 @@ export default function AccountCard({ account }) {
           ]}
         />
         <BalanceRow
-          transactions={transactions}
+          accountId={account.id}
           accountType={account.type}
           balanceType={'Scheduled'}
           filterArray={[
