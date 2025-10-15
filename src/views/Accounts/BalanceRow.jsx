@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 import BalanceDifference from './BalanceDifference';
-import { selectors } from '@/store/transactions';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 export default function BalanceRow({
   accountId,
@@ -12,7 +12,7 @@ export default function BalanceRow({
   filterArray,
 }) {
   const transactions = useSelector(
-    selectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
   const total = transactions

@@ -1,7 +1,7 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accounts';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
@@ -15,7 +15,7 @@ export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState('');
-  const account = useSelector(selectors.selectAccountById(accountId));
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );

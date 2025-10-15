@@ -7,7 +7,11 @@ import {
 } from '@/store/transactions';
 
 export const useAccountBalances = (accounts) => {
-  const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  // Get all transactions for the provided accounts
+  const accountIds = useMemo(() => accounts.map((a) => a.id), [accounts]);
+  const allRelevantTransactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountIds(accountIds)
+  );
 
   return useMemo(() => {
     const totals = {
@@ -21,8 +25,8 @@ export const useAccountBalances = (accounts) => {
       transactionConstants.TransactionStatusEnum;
 
     const processedAccounts = accounts.map((account) => {
-      // Filter transactions for this account
-      const transactions = allTransactions.filter(
+      // Filter transactions for this specific account
+      const transactions = allRelevantTransactions.filter(
         (t) => t.accountId === account.id
       );
 
@@ -56,7 +60,7 @@ export const useAccountBalances = (accounts) => {
     });
 
     return { accounts: processedAccounts, totals };
-  }, [accounts, allTransactions]);
+  }, [accounts, allRelevantTransactions]);
 };
 
 const calculateBalance = (transactions, statuses) => {

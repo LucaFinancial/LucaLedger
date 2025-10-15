@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { selectors } from '@/store/transactions';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 export default function BalanceDifference({
   accountId,
@@ -8,7 +8,7 @@ export default function BalanceDifference({
   filterArray,
 }) {
   const transactions = useSelector(
-    selectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
   if (filterArray.length <= 1) {

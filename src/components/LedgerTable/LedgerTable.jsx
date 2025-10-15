@@ -1,5 +1,8 @@
 import LedgerRow from '@/components/LedgerRow';
-import { constants as accountConstants, selectors } from '@/store/accounts';
+import {
+  constants as accountConstants,
+  selectors as accountSelectors,
+} from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
@@ -18,7 +21,7 @@ export default function LedgerTable({
   setCollapsedGroups,
 }) {
   const { accountId } = useParams();
-  const account = useSelector(selectors.selectAccountById(accountId));
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );

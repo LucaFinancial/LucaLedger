@@ -7,10 +7,9 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { actions } from '@/store/accountsLegacy';
-import { selectors as transactionSelectors } from '@/store/transactions';
+import { actions as accountActions } from '@/store/accounts';
 
 import {
   Delete as DeleteIcon,
@@ -22,11 +21,6 @@ export default function ActionsMenu({ account }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
-
-  // Get transactions from Redux to combine with account for save
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(account.id)
-  );
 
   const handleClick = (event) => {
     event.stopPropagation();
@@ -42,22 +36,15 @@ export default function ActionsMenu({ account }) {
 
   const handleDelete = (event) => {
     event.stopPropagation();
-    dispatch(actions.removeAccountById(account.id));
+    // Use normalized action which handles dual-write
+    dispatch(accountActions.removeAccountById(account.id));
     handleClose();
   };
 
-  const handleSave = async (event) => {
+  const handleSave = (event) => {
     event.stopPropagation();
-    const accountWithTransactions = {
-      ...account,
-      transactions,
-    };
-    await dispatch(
-      actions.saveAccountAsync({
-        account: accountWithTransactions,
-        filename: `${account.name}.json`,
-      })
-    );
+    // Use normalized save action
+    dispatch(accountActions.saveAccountWithTransactions(account.id));
     handleClose();
   };
 

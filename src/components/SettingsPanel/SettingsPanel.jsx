@@ -6,11 +6,11 @@ import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
-import { selectors } from '@/store/transactions';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 export default function SettingsPanel({ account }) {
   const transactions = useSelector(
-    selectors.selectTransactionsByAccountId(account.id)
+    transactionSelectors.selectTransactionsByAccountId(account.id)
   );
 
   const completedBalance = transactions
