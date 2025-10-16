@@ -32,7 +32,7 @@ export default function SaveNewFormatButton() {
       color='secondary'
       onClick={handleSave}
     >
-      Save New Format
+      Save Accounts
     </Button>
   );
 }

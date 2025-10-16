@@ -1,13 +1,14 @@
 import { Button } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-import { actions } from '@/store/accounts';
+import { selectors } from '@/store/accountsLegacy';
+import { saveAllAccounts } from '@/store/accountsLegacy/actions';
 
 export default function SaveAllButton() {
-  const dispatch = useDispatch();
+  const accounts = useSelector(selectors.selectAccounts);
 
   const handleClick = () => {
-    dispatch(actions.saveAllAccounts());
+    saveAllAccounts(accounts);
   };
 
   return (
@@ -16,7 +17,7 @@ export default function SaveAllButton() {
       color='primary'
       onClick={handleClick}
     >
-      Save All Accounts
+      Save Legacy Format
     </Button>
   );
 }

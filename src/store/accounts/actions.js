@@ -180,7 +180,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   URL.revokeObjectURL(url);
 };
 
-// Save single account with transactions
+// Save single account with transactions in v2 format
 export const saveAccountWithTransactions =
   (accountId) => (dispatch, getState) => {
     const state = getState();
@@ -190,16 +190,18 @@ export const saveAccountWithTransactions =
 
     if (!account) return;
 
-    const accountWithTransactions = {
-      ...account,
+    // Save in v2 format: separate accounts and transactions arrays
+    const data = {
+      schemaVersion: '2.0.0',
+      accounts: [account],
       transactions,
     };
 
-    const saveString = JSON.stringify(accountWithTransactions, null, 2);
-    const saveBlob = new Blob([saveString]);
+    const saveString = JSON.stringify(data, null, 2);
+    const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${account.name}.json`;
+    link.download = `${account.name}.ll`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
