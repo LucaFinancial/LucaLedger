@@ -1,2 +1,6 @@
+// Basic selectors
 export const selectAccounts = (state) => state.accounts;
-export const selectTransactions = (state) => state.transactions;
+
+// Account selectors
+export const selectAccountById = (accountId) => (state) =>
+  state.accounts.find((account) => account.id === accountId);

@@ -2,7 +2,7 @@ import { Box, Button } from '@mui/material';
 import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions } from '@/store/accountsLegacy';
+import { actions } from '@/store/accounts';
 
 export default function LoadButton() {
   const dispatch = useDispatch();

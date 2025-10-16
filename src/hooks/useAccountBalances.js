@@ -1,8 +1,18 @@
 import { useMemo } from 'react';
-import { constants } from '@/store/accountsLegacy';
-import { TransactionStatusEnum } from '../store/transactionsLegacy/constants';
+import { useSelector } from 'react-redux';
+import { constants as accountConstants } from '@/store/accounts';
+import {
+  constants as transactionConstants,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
 
 export const useAccountBalances = (accounts) => {
+  // Get all transactions for the provided accounts
+  const accountIds = useMemo(() => accounts.map((a) => a.id), [accounts]);
+  const allRelevantTransactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountIds(accountIds)
+  );
+
   return useMemo(() => {
     const totals = {
       current: 0,
@@ -11,18 +21,24 @@ export const useAccountBalances = (accounts) => {
       future: 0,
     };
 
-    const { COMPLETE, PENDING, SCHEDULED, PLANNED } = TransactionStatusEnum;
+    const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
+      transactionConstants.TransactionStatusEnum;
 
     const processedAccounts = accounts.map((account) => {
+      // Filter transactions for this specific account
+      const transactions = allRelevantTransactions.filter(
+        (t) => t.accountId === account.id
+      );
+
       const balances = {
-        current: calculateBalance(account.transactions, [COMPLETE]),
-        pending: calculateBalance(account.transactions, [COMPLETE, PENDING]),
-        scheduled: calculateBalance(account.transactions, [
+        current: calculateBalance(transactions, [COMPLETE]),
+        pending: calculateBalance(transactions, [COMPLETE, PENDING]),
+        scheduled: calculateBalance(transactions, [
           COMPLETE,
           PENDING,
           SCHEDULED,
         ]),
-        future: calculateBalance(account.transactions, [
+        future: calculateBalance(transactions, [
           COMPLETE,
           PENDING,
           SCHEDULED,
@@ -30,7 +46,7 @@ export const useAccountBalances = (accounts) => {
         ]),
       };
 
-      if (account.type === constants.AccountType.CREDIT_CARD) {
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
         Object.keys(balances).forEach((key) => {
           totals[key] -= Math.max(balances[key], 0);
         });
@@ -44,7 +60,7 @@ export const useAccountBalances = (accounts) => {
     });
 
     return { accounts: processedAccounts, totals };
-  }, [accounts]);
+  }, [accounts, allRelevantTransactions]);
 };
 
 const calculateBalance = (transactions, statuses) => {

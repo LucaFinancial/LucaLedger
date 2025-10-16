@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions, constants } from '@/store/transactionsLegacy';
+import { actions, constants } from '@/store/transactions';
 import { Cancel, Check } from '@mui/icons-material';
 
 export default function DescriptionCell({ transaction }) {

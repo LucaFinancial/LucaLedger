@@ -2,11 +2,12 @@ import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
-import { selectors } from '@/store/accounts';
+import { selectors as accountSelectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
-export default function SaveNewFormatButton() {
-  const accounts = useSelector(selectors.selectAccounts);
-  const transactions = useSelector(selectors.selectTransactions);
+export default function SaveButton() {
+  const accounts = useSelector(accountSelectors.selectAccounts);
+  const transactions = useSelector(transactionSelectors.selectTransactions);
 
   const handleSave = () => {
     const data = {
@@ -28,10 +29,10 @@ export default function SaveNewFormatButton() {
   return (
     <Button
       variant='contained'
-      color='secondary'
+      color='primary'
       onClick={handleSave}
     >
-      Save New Format
+      Save Accounts
     </Button>
   );
 }
