@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectors } from '@/store/accountsLegacy';
 import { saveAllAccounts } from '@/store/accountsLegacy/actions';
 
-export default function SaveAllButton() {
+export default function SaveLegacyButton() {
   const accounts = useSelector(selectors.selectAccounts);
 
   const handleClick = () => {
@@ -14,7 +14,7 @@ export default function SaveAllButton() {
   return (
     <Button
       variant='contained'
-      color='primary'
+      color='secondary'
       onClick={handleClick}
     >
       Save Legacy Format

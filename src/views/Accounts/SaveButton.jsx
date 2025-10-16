@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 
-export default function SaveNewFormatButton() {
+export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
 
@@ -29,7 +29,7 @@ export default function SaveNewFormatButton() {
   return (
     <Button
       variant='contained'
-      color='secondary'
+      color='primary'
       onClick={handleSave}
     >
       Save Accounts
