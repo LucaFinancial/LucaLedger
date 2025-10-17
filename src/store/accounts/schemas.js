@@ -4,7 +4,6 @@ import { AccountType } from './constants';
 
 const commonAccountSchema = yup
   .object({
-    version: yup.string().required('Version is required'),
     id: yup.string().required('ID is required'),
     name: yup.string().required('Name is required'),
     type: yup.string().required('Type is required'),

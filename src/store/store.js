@@ -37,7 +37,6 @@ const migrateState = (persistedState) => {
         name: account.name,
         type: account.type,
         statementDay: account.statementDay,
-        version: '2.0.0',
       }));
 
       const allTransactions = [];
@@ -61,6 +60,20 @@ const migrateState = (persistedState) => {
     delete state.accountsLegacy;
     console.log('Migration: Cleared legacy data from storage');
     needsPersist = true;
+  }
+
+  // Remove version field from existing accounts if present
+  if (state.accounts && Array.isArray(state.accounts)) {
+    const hadVersion = state.accounts.some((account) => 'version' in account);
+    if (hadVersion) {
+      state.accounts = state.accounts.map((account) => {
+        // eslint-disable-next-line no-unused-vars
+        const { version, ...accountWithoutVersion } = account;
+        return accountWithoutVersion;
+      });
+      console.log('Migration: Removed version field from accounts');
+      needsPersist = true;
+    }
   }
 
   if (needsPersist) {
