@@ -23,25 +23,19 @@ export const createNewAccount = () => (dispatch) => {
 };
 
 export const loadAccount = (data) => (dispatch) => {
-  // Check if this is v2 format (has schemaVersion and separate accounts/transactions)
   if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-    // Load v2 format: accounts and transactions are separate arrays
     data.accounts.forEach((accountData) => {
       dispatch(addAccount(accountData));
     });
 
-    // Dispatch all transactions to normalized store
     data.transactions.forEach((transaction) => {
       dispatch(addTransaction(transaction));
     });
   } else {
-    // Load v1 format: account with embedded transactions
     const { transactions, ...accountData } = data;
 
-    // Dispatch account to normalized store (without transactions)
     dispatch(addAccount(accountData));
 
-    // Dispatch transactions to normalized store
     if (transactions && Array.isArray(transactions)) {
       transactions.forEach((transaction) => {
         dispatch(addTransaction({ ...transaction, accountId: data.id }));
@@ -81,10 +75,8 @@ export const loadAccountAsync = () => async (dispatch) => {
       }))
     : [];
 
-  // Dispatch account to normalized store
   dispatch(addAccount(account));
 
-  // Dispatch transactions to normalized store
   transactions.forEach((transaction) => {
     dispatch(addTransaction(transaction));
   });
@@ -95,17 +87,14 @@ export const removeAccountById = (id) => (dispatch, getState) => {
   const transactions =
     transactionSelectors.selectTransactionsByAccountId(id)(state);
 
-  // Remove transactions from normalized store
   transactions.forEach((transaction) => {
     dispatch(removeTransaction(transaction.id));
   });
 
-  // Remove account from normalized store
   dispatch(removeAccount(id));
 };
 
 export const updateAccount = (account) => (dispatch) => {
-  // Update in normalized store
   dispatch(updateAccountNormalized(account));
 };
 
@@ -118,7 +107,6 @@ export const updateAccountProperty =
     dispatch(updateAccount(updatedAccount));
   };
 
-// Save all accounts in new v2 format
 export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
   const accounts = state.accounts;
@@ -141,7 +129,6 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   URL.revokeObjectURL(url);
 };
 
-// Save single account with transactions in v2 format
 export const saveAccountWithTransactions =
   (accountId) => (dispatch, getState) => {
     const state = getState();
@@ -151,7 +138,6 @@ export const saveAccountWithTransactions =
 
     if (!account) return;
 
-    // Save in v2 format: separate accounts and transactions arrays
     const data = {
       schemaVersion: '2.0.0',
       accounts: [account],
