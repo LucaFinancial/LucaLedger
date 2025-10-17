@@ -37,7 +37,7 @@ After making changes, ALWAYS test these user scenarios:
 1. **Navigation**: Test navigation between Dashboard (/) and Accounts (/accounts)
 2. **Account Creation**: Click "Create New Account" button to verify account creation works
 3. **UI Responsiveness**: Verify Material-UI components render correctly
-4. **Version Display**: Check that version number (currently v1.9.4) appears in top-right
+4. **Version Display**: Check that version number appears in top-right (format: vX.Y.Z)
 
 ### Code Quality Requirements
 
