@@ -10,21 +10,10 @@ import {
   removeTransaction,
 } from './slice';
 
-// Legacy transaction actions (these are in accountsLegacy extraReducers)
-import {
-  addTransaction as addTransactionLegacy,
-  updateTransaction as updateTransactionLegacy,
-  removeTransaction as removeTransactionLegacy,
-} from '@/store/transactionsLegacy/slice';
-
 export const createNewTransaction = (accountId) => (dispatch) => {
   const newTransaction = generateTransaction({ accountId });
 
-  // Dispatch to normalized store
   dispatch(addTransaction(newTransaction));
-
-  // Dispatch to legacy store (accountsLegacy extraReducers will handle it)
-  dispatch(addTransactionLegacy({ accountId, transaction: newTransaction }));
 };
 
 export const createRepeatTransaction = createAsyncThunk(
@@ -56,9 +45,6 @@ export const createRepeatTransaction = createAsyncThunk(
         firstTransaction.description = description;
 
         dispatch(addTransaction(firstTransaction));
-        dispatch(
-          addTransactionLegacy({ accountId, transaction: firstTransaction })
-        );
 
         // Create transaction for the 15th of the month
         let secondTransactionDate = nextDate.date(15);
@@ -70,9 +56,6 @@ export const createRepeatTransaction = createAsyncThunk(
         secondTransaction.description = description;
 
         dispatch(addTransaction(secondTransaction));
-        dispatch(
-          addTransactionLegacy({ accountId, transaction: secondTransaction })
-        );
 
         // Advance to the next month
         nextDate = nextDate.add(1, 'month');
@@ -87,9 +70,6 @@ export const createRepeatTransaction = createAsyncThunk(
         schemas.transaction.validateSync(newTransaction);
 
         dispatch(addTransaction(newTransaction));
-        dispatch(
-          addTransactionLegacy({ accountId, transaction: newTransaction })
-        );
 
         if (frequency === 'Days') {
           nextDate = nextDate.add(frequencyCount, 'day');
@@ -118,21 +98,9 @@ export const updateTransactionProperty =
       [property]: value,
     };
 
-    // Dispatch to normalized store
     dispatch(updateTransactionNormalized(updatedTransaction));
-
-    // Dispatch to legacy store
-    dispatch(
-      updateTransactionLegacy({ accountId, transaction: updatedTransaction })
-    );
   };
 
 export const removeTransactionById = (accountId, transaction) => (dispatch) => {
-  // Dispatch to normalized store
   dispatch(removeTransaction(transaction.id));
-
-  // Dispatch to legacy store
-  dispatch(
-    removeTransactionLegacy({ accountId, transactionId: transaction.id })
-  );
 };

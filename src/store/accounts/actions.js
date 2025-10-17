@@ -9,15 +9,6 @@ import {
   removeAccount,
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
-
-// Legacy actions for dual-write
-import {
-  addAccount as addAccountLegacy,
-  updateAccount as updateAccountLegacy,
-  removeAccount as removeAccountLegacy,
-} from '@/store/accountsLegacy/slice';
-
-// Transaction actions for dual-write
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
 
 export const createNewAccount = () => (dispatch) => {
@@ -28,11 +19,7 @@ export const createNewAccount = () => (dispatch) => {
     null
   );
 
-  // Dispatch to normalized store
   dispatch(addAccount(account));
-
-  // Dispatch to legacy store with transactions array
-  dispatch(addAccountLegacy({ ...account, transactions: [] }));
 };
 
 export const loadAccount = (data) => (dispatch) => {
@@ -40,16 +27,7 @@ export const loadAccount = (data) => (dispatch) => {
   if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
     // Load v2 format: accounts and transactions are separate arrays
     data.accounts.forEach((accountData) => {
-      // Dispatch account to normalized store
       dispatch(addAccount(accountData));
-
-      // Create account with transactions for legacy store
-      const accountTransactions = data.transactions.filter(
-        (t) => t.accountId === accountData.id
-      );
-      dispatch(
-        addAccountLegacy({ ...accountData, transactions: accountTransactions })
-      );
     });
 
     // Dispatch all transactions to normalized store
@@ -62,9 +40,6 @@ export const loadAccount = (data) => (dispatch) => {
 
     // Dispatch account to normalized store (without transactions)
     dispatch(addAccount(accountData));
-
-    // Dispatch account to legacy store (with transactions)
-    dispatch(addAccountLegacy(data));
 
     // Dispatch transactions to normalized store
     if (transactions && Array.isArray(transactions)) {
@@ -106,11 +81,8 @@ export const loadAccountAsync = () => async (dispatch) => {
       }))
     : [];
 
-  // Dispatch account to normalized store (without transactions)
+  // Dispatch account to normalized store
   dispatch(addAccount(account));
-
-  // Dispatch account to legacy store (with transactions)
-  dispatch(addAccountLegacy({ ...account, transactions }));
 
   // Dispatch transactions to normalized store
   transactions.forEach((transaction) => {
@@ -130,22 +102,11 @@ export const removeAccountById = (id) => (dispatch, getState) => {
 
   // Remove account from normalized store
   dispatch(removeAccount(id));
-
-  // Remove account from legacy store
-  dispatch(removeAccountLegacy(id));
 };
 
-export const updateAccount = (account) => (dispatch, getState) => {
-  const state = getState();
-  const transactions = transactionSelectors.selectTransactionsByAccountId(
-    account.id
-  )(state);
-
+export const updateAccount = (account) => (dispatch) => {
   // Update in normalized store
   dispatch(updateAccountNormalized(account));
-
-  // Update in legacy store with transactions
-  dispatch(updateAccountLegacy({ ...account, transactions }));
 };
 
 export const updateAccountProperty =
