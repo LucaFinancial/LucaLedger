@@ -4,7 +4,7 @@ steps:
       [
         'build',
         '-t',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-webapp-$_ENVIRONMENT',
         '.',
       ]
 
@@ -12,7 +12,7 @@ steps:
     args:
       [
         'push',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-webapp-$_ENVIRONMENT',
       ]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -23,7 +23,7 @@ steps:
         'deploy',
         'luca-ledger-web-app-$_ENVIRONMENT',
         '--image',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-webapp-$_ENVIRONMENT',
         '--region',
         'us-central1',
         '--platform',
@@ -32,7 +32,7 @@ steps:
       ]
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-webapp-$_ENVIRONMENT'
 
 substitutions:
   _ENVIRONMENT: ''
