@@ -208,6 +208,40 @@ When working on GitHub issues, use release candidate (RC) versioning to track de
 - Always commit version changes alongside code changes
 - Use consistent commit message format: `chore: bump to X.Y.Z-rc.N`
 
+### Pull Request Best Practices
+
+When working on GitHub issues and creating pull requests, follow these practices to ensure proper issue tracking and closure:
+
+#### Linking Issues to PRs
+
+**ALWAYS** include a closing keyword in the PR description to automatically close the associated issue when the PR is merged. GitHub recognizes several keywords that will trigger automatic issue closure:
+
+**Closing Keywords:**
+- `Closes #123`
+- `Fixes #123`
+- `Resolves #123`
+
+**Best Practices:**
+1. **Include the closing keyword at the beginning of the PR description** for visibility
+2. Use `Closes #123` format where `123` is the issue number you are working on
+3. If working on multiple issues, include multiple closing keywords (e.g., `Closes #123, Closes #456`)
+4. The closing keyword must be in the PR description (not just commit messages) to trigger automatic closure
+5. Ensure the issue number is correct before submitting the PR
+
+**Example PR Description:**
+```
+Closes #42
+
+- [x] Add feature X
+- [x] Update documentation
+- [x] Add tests
+- [x] Verify changes
+```
+
+This will automatically close issue #42 when the PR is merged to the default branch.
+
+**Note:** If you're working on an issue but don't want it to close automatically (e.g., partial work, related but separate), use "Related to #123" or "Part of #123" instead.
+
 ## Troubleshooting
 
 ### Common Issues
