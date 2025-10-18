@@ -1,14 +1,14 @@
 import { Box, Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 
-import { selectors } from '@/store/accountsLegacy';
+import { selectors as accountSelectors } from '@/store/accounts';
 import AccountCard from './AccountCard';
 import ButtonGroup from './ButtonGroup';
 
 const accountSortByName = (a, b) => a.name.localeCompare(b.name);
 
 export default function Accounts() {
-  const accounts = useSelector(selectors.selectAccounts);
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const sortedAccounts = [...accounts].sort(accountSortByName);
 
   return (

@@ -1,12 +1,12 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors } from '@/store/accountsLegacy';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { Grid } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import BalanceCard from './BalanceCard';
 
 export default function BalanceGroup({ accountType }) {
-  const accounts = useSelector(selectors.selectAccounts);
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const filteredAccounts = accounts.filter(
     (account) => account.type === accountType
   );

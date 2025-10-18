@@ -1,18 +1,12 @@
 import * as yup from 'yup';
 
-import { schemas } from '@/store/transactionsLegacy';
 import { AccountType } from './constants';
 
 const commonAccountSchema = yup
   .object({
-    version: yup.string().required('Version is required'),
     id: yup.string().required('ID is required'),
     name: yup.string().required('Name is required'),
     type: yup.string().required('Type is required'),
-    transactions: yup
-      .array()
-      .of(schemas.transaction)
-      .required('Transactions are required'),
   })
   .noUnknown();
 

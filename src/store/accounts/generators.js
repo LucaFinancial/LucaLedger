@@ -8,7 +8,6 @@ export const generateAccount = (initialData = {}) => {
   const account = {
     id: uuid(),
     type: accountType,
-    transactions: [],
     ...initialData,
   };
   schemas[accountType].validateSync(account);
@@ -24,17 +23,9 @@ export const generateNewSavingsAccount = () =>
 export const generateNewCreditCardAccount = () =>
   generateAccount({ type: AccountType.CREDIT_CARD, statementDay: 1 });
 
-export const generateAccountObject = (
+export const generateAccountObject = (id, name, type, statementDay) => ({
   id,
   name,
   type,
   statementDay,
-  transactions
-) => ({
-  version: '1.0.0',
-  id,
-  name,
-  type,
-  statementDay,
-  transactions,
 });

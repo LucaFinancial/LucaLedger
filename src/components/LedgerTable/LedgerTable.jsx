@@ -1,5 +1,9 @@
 import LedgerRow from '@/components/LedgerRow';
-import { constants, selectors } from '@/store/accountsLegacy';
+import {
+  constants as accountConstants,
+  selectors as accountSelectors,
+} from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -17,8 +21,10 @@ export default function LedgerTable({
   setCollapsedGroups,
 }) {
   const { accountId } = useParams();
-  const account = useSelector(selectors.selectAccountById(accountId));
-  const { transactions } = account;
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
 
   const sortedTransactions = useMemo(
     () => [...transactions].sort(dateCompareFn),
@@ -117,11 +123,11 @@ export default function LedgerTable({
             // Check if statement period changes between previous and current transaction
             const statementDay = account.statementDay || 1;
             const currentStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD
+              account.type === accountConstants.AccountType.CREDIT_CARD
                 ? computeStatementMonth(transaction, statementDay)
                 : null;
             const previousStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD &&
+              account.type === accountConstants.AccountType.CREDIT_CARD &&
               previousTransaction
                 ? computeStatementMonth(previousTransaction, statementDay)
                 : null;
@@ -176,7 +182,8 @@ export default function LedgerTable({
                       {/* Render statement divider within the same month if no month boundary crossing */}
                       {isStatementMonthDifferent &&
                         !isNewMonth &&
-                        account.type === constants.AccountType.CREDIT_CARD && (
+                        account.type ===
+                          accountConstants.AccountType.CREDIT_CARD && (
                           <StatementSeparatorRow
                             statementDay={statementDay}
                             transaction={transaction}
