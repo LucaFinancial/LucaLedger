@@ -7,9 +7,15 @@ export default function VersionProvider() {
     const storedVersion = localStorage.getItem('appVersion');
     if (storedVersion !== currentVersion) {
       localStorage.setItem('appVersion', currentVersion);
-      alert(
-        `Luca Ledger has been updated since the last time you were here! You were last on ${storedVersion} and are now using ${currentVersion}`
-      );
+      if (storedVersion === null) {
+        alert(
+          `Welcome to Luca Ledger! You are using version ${currentVersion}.`
+        );
+      } else {
+        alert(
+          `Luca Ledger has been updated since the last time you were here! You were last on ${storedVersion} and are now using ${currentVersion}`
+        );
+      }
     }
   }, []);
   return <></>;
