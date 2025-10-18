@@ -8,111 +8,74 @@ const localStorageMiddleware = (store) => (next) => (action) => {
   return result;
 };
 
-// Migration function to handle renaming 'accounts' to 'accountsLegacy'
+// Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
 
   let state = { ...persistedState };
   let needsPersist = false;
 
-  // If we have 'accounts' but not 'accountsLegacy', migrate it
-  if (state.accounts && !state.accountsLegacy) {
-    const { accounts, ...rest } = state;
-    state = {
-      ...rest,
-      accountsLegacy: accounts,
-    };
-    needsPersist = true;
-  }
-
-  // Migration: Add accountId to all transactions
-  if (state.accountsLegacy && Array.isArray(state.accountsLegacy)) {
-    let totalUpdated = 0;
-    const updatedAccounts = state.accountsLegacy.map((account) => {
-      if (!account.transactions || !Array.isArray(account.transactions)) {
-        return account;
-      }
-
-      let accountUpdated = 0;
-      const updatedTransactions = account.transactions.map((transaction) => {
-        // Only add accountId if it's missing
-        if (!transaction.accountId) {
-          accountUpdated++;
-          return {
-            ...transaction,
-            accountId: account.id,
-          };
-        }
-        return transaction;
-      });
-
-      if (accountUpdated > 0) {
-        totalUpdated += accountUpdated;
-        console.log(
-          `Migration: Added accountId to ${accountUpdated} transactions in account "${
-            account.name || account.id
-          }"`
-        );
-      }
-
-      return {
-        ...account,
-        transactions: updatedTransactions,
-      };
-    });
-
-    if (totalUpdated > 0) {
-      console.log(
-        `Migration: Successfully updated ${totalUpdated} transactions across ${state.accountsLegacy.length} accounts`
-      );
-      state.accountsLegacy = updatedAccounts;
-      needsPersist = true;
-    }
-  }
-
-  // Phase 2 Migration: Copy data from legacy slices to new unified slices
-  // Check if we need to migrate by seeing if new slices are empty but legacy has data
   const hasLegacyData =
     state.accountsLegacy &&
     Array.isArray(state.accountsLegacy) &&
     state.accountsLegacy.length > 0;
-  const newAccountsEmpty = !state.accounts || state.accounts.length === 0;
-  const newTransactionsEmpty =
-    !state.transactions || state.transactions.length === 0;
 
-  if (hasLegacyData && (newAccountsEmpty || newTransactionsEmpty)) {
-    console.log('Phase 2 Migration: Copying data to unified store...');
-
-    // Copy accounts to new accounts slice (without transactions)
-    state.accounts = state.accountsLegacy.map((account) => ({
-      id: account.id,
-      name: account.name,
-      type: account.type,
-      statementDay: account.statementDay,
-      version: '2.0.0', // Update version to reflect new unified schema
-    }));
-
-    // Copy all transactions to unified transactions slice with accountId
-    const allTransactions = [];
-    state.accountsLegacy.forEach((account) => {
-      if (account.transactions && Array.isArray(account.transactions)) {
-        account.transactions.forEach((transaction) => {
-          allTransactions.push({
-            ...transaction,
-            accountId: account.id, // Ensure accountId is set
-          });
-        });
-      }
-    });
-    state.transactions = allTransactions;
-
+  if (hasLegacyData) {
     console.log(
-      `Phase 2 Migration: Copied ${state.accounts.length} accounts and ${allTransactions.length} transactions to unified store with updated schema version 2.0.0`
+      'Migration: Converting remaining legacy data to normalized format...'
     );
+
+    if (!state.accounts) state.accounts = [];
+    if (!state.transactions) state.transactions = [];
+
+    const needsMigration =
+      state.accounts.length === 0 || state.transactions.length === 0;
+
+    if (needsMigration) {
+      state.accounts = state.accountsLegacy.map((account) => ({
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        statementDay: account.statementDay,
+      }));
+
+      const allTransactions = [];
+      state.accountsLegacy.forEach((account) => {
+        if (account.transactions && Array.isArray(account.transactions)) {
+          account.transactions.forEach((transaction) => {
+            allTransactions.push({
+              ...transaction,
+              accountId: account.id,
+            });
+          });
+        }
+      });
+      state.transactions = allTransactions;
+
+      console.log(
+        `Migration: Converted ${state.accounts.length} accounts and ${allTransactions.length} transactions to normalized format`
+      );
+    }
+
+    delete state.accountsLegacy;
+    console.log('Migration: Cleared legacy data from storage');
     needsPersist = true;
   }
 
-  // Persist the migrated state immediately
+  // Remove version field from existing accounts if present
+  if (state.accounts && Array.isArray(state.accounts)) {
+    const hadVersion = state.accounts.some((account) => 'version' in account);
+    if (hadVersion) {
+      state.accounts = state.accounts.map((account) => {
+        // eslint-disable-next-line no-unused-vars
+        const { version, ...accountWithoutVersion } = account;
+        return accountWithoutVersion;
+      });
+      console.log('Migration: Removed version field from accounts');
+      needsPersist = true;
+    }
+  }
+
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }

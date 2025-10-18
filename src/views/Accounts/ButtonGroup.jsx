@@ -1,7 +1,6 @@
 import { Box, Grid } from '@mui/material';
 
 import LoadButton from './LoadButton';
-import SaveLegacyButton from './SaveLegacyButton';
 import CreateNewButton from './CreateNewButton';
 import SaveButton from './SaveButton';
 
@@ -40,12 +39,6 @@ export default function ButtonGroup() {
           key={2}
         >
           <SaveButton />
-        </Grid>
-        <Grid
-          item
-          key={3}
-        >
-          <SaveLegacyButton />
         </Grid>
       </Grid>
     </Box>

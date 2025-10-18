@@ -24,7 +24,6 @@ export const generateNewCreditCardAccount = () =>
   generateAccount({ type: AccountType.CREDIT_CARD, statementDay: 1 });
 
 export const generateAccountObject = (id, name, type, statementDay) => ({
-  version: '1.0.0',
   id,
   name,
   type,
