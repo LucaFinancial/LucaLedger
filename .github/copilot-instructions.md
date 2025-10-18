@@ -37,7 +37,7 @@ After making changes, ALWAYS test these user scenarios:
 1. **Navigation**: Test navigation between Dashboard (/) and Accounts (/accounts)
 2. **Account Creation**: Click "Create New Account" button to verify account creation works
 3. **UI Responsiveness**: Verify Material-UI components render correctly
-4. **Version Display**: Check that version number (currently v1.8.2) appears in top-right
+4. **Version Display**: Check that version number appears in top-right (format: vX.Y.Z)
 
 ### Code Quality Requirements
 
@@ -70,15 +70,14 @@ src/
 ├── components/           # Reusable UI components
 │   ├── MainLayout/      # App header, navigation, layout
 │   ├── VersionDisplay/  # Version number display
-│   └── [15 other components]
+│   └── [11 other components]
 ├── views/               # Main application pages
 │   ├── Dashboard/       # Financial overview (home page)
 │   ├── Accounts/        # Account management
-│   ├── Ledger/         # Transaction ledger
-│   └── Categories/      # Category management
-├── store/              # Redux store and slices
-│   ├── accounts/       # Account state management
-│   └── transactions/   # Transaction state management
+│   └── Ledger/          # Transaction ledger
+├── store/                  # Redux store and slices
+│   ├── accountsLegacy/     # Account state management
+│   └── transactionsLegacy/ # Transaction state management
 ├── hooks/              # Custom React hooks
 └── main.jsx           # Application entry point
 ```
