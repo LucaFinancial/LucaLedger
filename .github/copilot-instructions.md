@@ -220,9 +220,6 @@ When working on GitHub issues and creating pull requests, follow these practices
 - `Closes #123`
 - `Fixes #123`
 - `Resolves #123`
-- `Close #123`
-- `Fix #123`
-- `Resolve #123`
 
 **Best Practices:**
 1. **Include the closing keyword at the beginning of the PR description** for visibility
