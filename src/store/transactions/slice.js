@@ -14,6 +14,15 @@ const transactions = createSlice({
         state[index] = { ...state[index], ...updatedTransaction };
       }
     },
+    updateMultipleTransactions: (state, action) => {
+      const { transactionIds, updates } = action.payload;
+      transactionIds.forEach((id) => {
+        const index = state.findIndex((t) => t.id === id);
+        if (index !== -1) {
+          state[index] = { ...state[index], ...updates };
+        }
+      });
+    },
     removeTransaction: (state, action) => {
       const transactionId = action.payload;
       return state.filter((t) => t.id !== transactionId);
@@ -23,5 +32,9 @@ const transactions = createSlice({
 
 export default transactions.reducer;
 
-export const { addTransaction, updateTransaction, removeTransaction } =
-  transactions.actions;
+export const {
+  addTransaction,
+  updateTransaction,
+  updateMultipleTransactions,
+  removeTransaction,
+} = transactions.actions;

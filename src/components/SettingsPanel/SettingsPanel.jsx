@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
@@ -8,7 +8,11 @@ import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
 import { selectors as transactionSelectors } from '@/store/transactions';
 
-export default function SettingsPanel({ account }) {
+export default function SettingsPanel({
+  account,
+  selectedCount,
+  onBulkEditClick,
+}) {
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(account.id)
   );
@@ -33,6 +37,16 @@ export default function SettingsPanel({ account }) {
     (acc, transaction) => acc + Number(transaction.amount),
     0
   );
+
+  const getBulkEditButtonText = () => {
+    if (selectedCount === 0) {
+      return 'Select Transactions';
+    } else if (selectedCount === 1) {
+      return 'Edit 1 Transaction';
+    } else {
+      return `Edit ${selectedCount} Transactions`;
+    }
+  };
 
   return (
     <Box
@@ -84,6 +98,17 @@ export default function SettingsPanel({ account }) {
             balance={futureBalance}
           />
         </SettingsPanelItem>
+        <SettingsPanelItem>
+          <Button
+            variant='contained'
+            fullWidth
+            disabled={selectedCount === 0}
+            onClick={onBulkEditClick}
+            sx={{ mt: 2 }}
+          >
+            {getBulkEditButtonText()}
+          </Button>
+        </SettingsPanelItem>
       </Box>
     </Box>
   );
@@ -91,4 +116,6 @@ export default function SettingsPanel({ account }) {
 
 SettingsPanel.propTypes = {
   account: PropTypes.object.isRequired,
+  selectedCount: PropTypes.number,
+  onBulkEditClick: PropTypes.func,
 };

@@ -19,6 +19,8 @@ export default function LedgerTable({
   filterValue,
   collapsedGroups,
   setCollapsedGroups,
+  selectedTransactions,
+  onSelectionChange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
@@ -43,10 +45,14 @@ export default function LedgerTable({
     if (!filterValue) {
       return transactionsWithBalance;
     }
-    return transactionsWithBalance.filter((transaction) =>
-      transaction.description.toLowerCase().includes(filterValue.toLowerCase())
+    return transactionsWithBalance.filter(
+      (transaction) =>
+        transaction.description
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()) ||
+        selectedTransactions.has(transaction.id)
     );
-  }, [filterValue, transactionsWithBalance]);
+  }, [filterValue, transactionsWithBalance, selectedTransactions]);
 
   const toggleGroupCollapse = (groupId) => {
     setCollapsedGroups((prevCollapsedGroups) =>
@@ -99,6 +105,26 @@ export default function LedgerTable({
     }
     return filteredTransactions[index - 1];
   };
+
+  const getSelectedCountForGroup = useCallback(
+    (groupId, isYear) => {
+      return filteredTransactions.filter((transaction) => {
+        const transactionGroupId = isYear
+          ? getYearIdentifier(transaction.date)
+          : getYearMonthKey(transaction.date);
+        return (
+          transactionGroupId === groupId &&
+          selectedTransactions.has(transaction.id)
+        );
+      }).length;
+    },
+    [
+      filteredTransactions,
+      selectedTransactions,
+      getYearIdentifier,
+      getYearMonthKey,
+    ]
+  );
 
   return (
     <TableContainer
@@ -154,6 +180,7 @@ export default function LedgerTable({
                     onToggleCollapse={() => toggleGroupCollapse(yearId)}
                     onExpandYear={() => handleExpandYear(yearId)}
                     onCollapseYear={() => handleCollapseYear(yearId)}
+                    selectedCount={getSelectedCountForGroup(yearId, true)}
                   />
                 )}
                 {/* Render statement divider BEFORE month separator if it belongs to previous month */}
@@ -174,6 +201,10 @@ export default function LedgerTable({
                     previousTransaction={previousTransaction}
                     isCollapsed={collapsedGroups.includes(yearMonthKey)}
                     onToggleCollapse={() => toggleGroupCollapse(yearMonthKey)}
+                    selectedCount={getSelectedCountForGroup(
+                      yearMonthKey,
+                      false
+                    )}
                   />
                 )}
                 {!collapsedGroups.includes(yearId) &&
@@ -195,6 +226,8 @@ export default function LedgerTable({
                         key={transaction.id}
                         row={transaction}
                         balance={transaction.balance}
+                        isSelected={selectedTransactions.has(transaction.id)}
+                        onSelectionChange={onSelectionChange}
                       />
                     </>
                   )}
@@ -211,4 +244,6 @@ LedgerTable.propTypes = {
   filterValue: PropTypes.string,
   collapsedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
   setCollapsedGroups: PropTypes.func.isRequired,
+  selectedTransactions: PropTypes.instanceOf(Set),
+  onSelectionChange: PropTypes.func,
 };
