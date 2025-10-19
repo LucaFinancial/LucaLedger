@@ -4,7 +4,7 @@ steps:
       [
         'build',
         '-t',
-        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/lucaledger-webapp-$_ENVIRONMENT',
         '.',
       ]
 
@@ -12,7 +12,7 @@ steps:
     args:
       [
         'push',
-        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/lucaledger-webapp-$_ENVIRONMENT',
       ]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -23,7 +23,7 @@ steps:
         'deploy',
         '$_SERVICE_NAME',
         '--image',
-        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/lucaledger-webapp-$_ENVIRONMENT',
         '--region',
         '$_REGION',
         '--platform',
@@ -32,7 +32,7 @@ steps:
       ]
 
 images:
-  - '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT'
+  - '$_REPOSITORY_URL/lucaledger-webapp-$_ENVIRONMENT'
 
 substitutions:
   _ENVIRONMENT: ''
