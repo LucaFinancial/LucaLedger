@@ -48,11 +48,6 @@ export default function Landing() {
           supports multiple account types including Checking, Savings, and
           Credit Card accounts.
         </Typography>
-        <Typography paragraph>
-          Built with modern technologies including React, Material-UI, and Redux
-          Toolkit, Luca Ledger provides a fast, responsive, and intuitive user
-          experience for managing your personal finances.
-        </Typography>
       </Paper>
 
       {/* Upcoming Features Section */}
@@ -69,6 +64,15 @@ export default function Landing() {
         <Typography component='div'>
           <ul style={{ lineHeight: '1.8' }}>
             <li>
+              <strong>Data Encryption at Rest:</strong> Your financial data will
+              be encrypted when stored, ensuring maximum security and privacy
+            </li>
+            <li>
+              <strong>Recurring Transactions:</strong> Set up automatic
+              recurring expenses and income to streamline your budgeting
+              process
+            </li>
+            <li>
               <strong>Enhanced Reporting:</strong> More detailed financial
               reports and visualizations to help you understand your spending
               patterns
@@ -80,14 +84,6 @@ export default function Landing() {
             <li>
               <strong>Transaction Categories:</strong> Improved category
               management with custom categories and subcategories
-            </li>
-            <li>
-              <strong>Data Export:</strong> Export your financial data in
-              various formats for backup or analysis in other tools
-            </li>
-            <li>
-              <strong>Multi-Currency Support:</strong> Track accounts in
-              different currencies with automatic conversion
             </li>
           </ul>
         </Typography>
@@ -118,15 +114,6 @@ export default function Landing() {
             <li>
               <strong>Offline Capability:</strong> The application works
               completely offline once loaded
-            </li>
-            <li>
-              <strong>Data Ownership:</strong> You have full control over your
-              data with the ability to export and backup
-            </li>
-            <li>
-              <strong>Automatic Updates:</strong> The application automatically
-              migrates your data when updating to new versions, ensuring
-              compatibility with the latest features
             </li>
           </ul>
         </Typography>
