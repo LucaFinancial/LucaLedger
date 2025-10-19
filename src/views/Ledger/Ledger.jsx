@@ -1,11 +1,16 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
+import BulkEditModal from '@/components/BulkEditModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accountsLegacy';
+import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  actions as transactionActions,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
 import NewTransactionButton from './NewTransactionButton';
@@ -13,13 +18,19 @@ import NewTransactionButton from './NewTransactionButton';
 export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [filterValue, setFilterValue] = useState('');
-  const account = useSelector(selectors.selectAccountById(accountId));
+  const [selectedTransactions, setSelectedTransactions] = useState(new Set());
+  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
 
-  const allMonths = account?.transactions?.length
+  const allMonths = transactions?.length
     ? [
         ...new Set(
-          account.transactions.map((t) => {
+          transactions.map((t) => {
             const date = dayjs(t.date);
             return `${date.format('YYYY')}-${date.format('MMMM')}`;
           })
@@ -81,6 +92,37 @@ export default function Ledger() {
     setCollapsedGroups(getDefaultCollapsedGroups());
   };
 
+  const handleSelectionChange = (transactionId, isSelected) => {
+    setSelectedTransactions((prev) => {
+      const newSet = new Set(prev);
+      if (isSelected) {
+        newSet.add(transactionId);
+      } else {
+        newSet.delete(transactionId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkEditClick = () => {
+    setBulkEditModalOpen(true);
+  };
+
+  const handleBulkEditClose = () => {
+    setBulkEditModalOpen(false);
+  };
+
+  const handleBulkEditApply = (newStatus) => {
+    dispatch(
+      transactionActions.updateMultipleTransactionsStatus(
+        Array.from(selectedTransactions),
+        newStatus
+      )
+    );
+    setSelectedTransactions(new Set());
+    setBulkEditModalOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -98,7 +140,11 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel account={account} />
+        <SettingsPanel
+          account={account}
+          selectedCount={selectedTransactions.size}
+          onBulkEditClick={handleBulkEditClick}
+        />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -136,9 +182,17 @@ export default function Ledger() {
           filterValue={filterValue}
           collapsedGroups={collapsedGroups}
           setCollapsedGroups={setCollapsedGroups}
+          selectedTransactions={selectedTransactions}
+          onSelectionChange={handleSelectionChange}
         />
         <NewTransactionButton />
         <RepeatedTransactionsModal />
+        <BulkEditModal
+          open={bulkEditModalOpen}
+          onClose={handleBulkEditClose}
+          selectedCount={selectedTransactions.size}
+          onApplyChanges={handleBulkEditApply}
+        />
       </Box>
     </Box>
   );

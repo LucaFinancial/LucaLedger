@@ -4,11 +4,17 @@ import dayjs from 'dayjs';
 import config from '@/config';
 import { generateTransaction } from './generators';
 import schemas from './schemas';
-import { addTransaction, removeTransaction, updateTransaction } from './slice';
+import {
+  addTransaction,
+  updateTransaction as updateTransactionNormalized,
+  updateMultipleTransactions,
+  removeTransaction,
+} from './slice';
 
 export const createNewTransaction = (accountId) => (dispatch) => {
   const newTransaction = generateTransaction({ accountId });
-  dispatch(addTransaction({ accountId, transaction: newTransaction }));
+
+  dispatch(addTransaction(newTransaction));
 };
 
 export const createRepeatTransaction = createAsyncThunk(
@@ -39,8 +45,7 @@ export const createRepeatTransaction = createAsyncThunk(
         firstTransaction.amount = amount;
         firstTransaction.description = description;
 
-        let firstActionPayload = { accountId, transaction: firstTransaction };
-        dispatch(addTransaction(firstActionPayload));
+        dispatch(addTransaction(firstTransaction));
 
         // Create transaction for the 15th of the month
         let secondTransactionDate = nextDate.date(15);
@@ -51,8 +56,7 @@ export const createRepeatTransaction = createAsyncThunk(
         secondTransaction.amount = amount;
         secondTransaction.description = description;
 
-        let secondActionPayload = { accountId, transaction: secondTransaction };
-        dispatch(addTransaction(secondActionPayload));
+        dispatch(addTransaction(secondTransaction));
 
         // Advance to the next month
         nextDate = nextDate.add(1, 'month');
@@ -65,7 +69,8 @@ export const createRepeatTransaction = createAsyncThunk(
         };
         const newTransaction = generateTransaction(initialData);
         schemas.transaction.validateSync(newTransaction);
-        dispatch(addTransaction({ accountId, transaction: newTransaction }));
+
+        dispatch(addTransaction(newTransaction));
 
         if (frequency === 'Days') {
           nextDate = nextDate.add(frequencyCount, 'day');
@@ -90,14 +95,23 @@ export const createRepeatTransaction = createAsyncThunk(
 export const updateTransactionProperty =
   (accountId, transaction, property, value) => (dispatch) => {
     const updatedTransaction = {
-      id: transaction.id,
+      ...transaction,
       [property]: value,
     };
-    const actionPayload = { accountId, transaction: updatedTransaction };
-    dispatch(updateTransaction(actionPayload));
+
+    dispatch(updateTransactionNormalized(updatedTransaction));
   };
 
 export const removeTransactionById = (accountId, transaction) => (dispatch) => {
-  const actionPayload = { accountId, transactionId: transaction.id };
-  dispatch(removeTransaction(actionPayload));
+  dispatch(removeTransaction(transaction.id));
 };
+
+export const updateMultipleTransactionsStatus =
+  (transactionIds, newStatus) => (dispatch) => {
+    dispatch(
+      updateMultipleTransactions({
+        transactionIds,
+        updates: { status: newStatus },
+      })
+    );
+  };
