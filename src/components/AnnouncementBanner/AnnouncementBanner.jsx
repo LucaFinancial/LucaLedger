@@ -16,11 +16,42 @@ import { useState, useEffect } from 'react';
 
 import { version as currentVersion } from '../../../package.json';
 
-const STORAGE_KEY = 'announcementBannerDismissed_v2_migration';
+const STORAGE_KEY = 'announcementBannerDismissed_v2';
 
 export default function AnnouncementBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [countdown, setCountdown] = useState('');
+
+  // Calculate countdown to December 13, 2025
+  useEffect(() => {
+    const calculateCountdown = () => {
+      const releaseDate = new Date('2025-12-13T00:00:00');
+      const now = new Date();
+      const diff = releaseDate - now;
+
+      if (diff <= 0) {
+        setCountdown('Released!');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+
+      if (days > 0) {
+        setCountdown(`${days} day${days !== 1 ? 's' : ''} remaining`);
+      } else {
+        setCountdown(`${hours} hour${hours !== 1 ? 's' : ''} remaining`);
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000 * 60 * 60); // Update every hour
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const storedVersion = localStorage.getItem('appVersion');
@@ -87,8 +118,20 @@ export default function AnnouncementBanner() {
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
         >
-          Important: Version 2.0.0 Release on December 13, 2025
+          🎉 Exciting News: Version 2.0.0 Coming December 13, 2025!
         </Typography>
+        {countdown && (
+          <Typography
+            variant='body2'
+            sx={{
+              mb: 1,
+              fontWeight: 'bold',
+              color: 'primary.main',
+            }}
+          >
+            ⏰ {countdown}
+          </Typography>
+        )}
         <Typography
           variant='body2'
           sx={{ mb: 2 }}
@@ -168,9 +211,9 @@ export default function AnnouncementBanner() {
                 </li>
                 <li>
                   <strong>Data migration:</strong> Your data is stored locally
-                  in your browser. To use v1 after the v2 release, you&apos;ll
-                  need to export your data from the current URL and import it at
-                  the new v1 URL before December 13, 2025.
+                  in your browser. To use v1 <em>after</em> the v2 release,
+                  you&apos;ll need to export your data from the current URL and
+                  import it at the new v1 URL before December 13, 2025.
                 </li>
               </ul>
             </Typography>
