@@ -120,9 +120,20 @@ export default function AnnouncementBanner() {
               variant='body2'
               sx={{ mb: 2 }}
             >
-              Version 2 introduces a new format for how transactions are stored.
-              This update improves performance, reliability, and prepares Luca
-              Ledger for future enhancements.
+              Version 2.0.0 represents a major architectural upgrade with improved data management and future extensibility. This release includes:
+            </Typography>
+            <Typography
+              variant='body2'
+              component='div'
+              sx={{ mb: 2 }}
+            >
+              <ul style={{ marginTop: 0, paddingLeft: '20px' }}>
+                <li><strong>Normalized Redux State Management:</strong> Complete transition from legacy nested account/transaction stores to normalized Redux slices with separate <code>accounts</code> and <code>transactions</code> stores, improving performance and data consistency across all components</li>
+                <li><strong>Schema Version Tracking:</strong> New <code>SchemaVersionProvider</code> tracks and manages data schema versions in local storage, ensuring compatibility and enabling seamless migrations for future releases</li>
+                <li><strong>Comprehensive Account Actions:</strong> Enhanced account management with new actions supporting create, load, save, update, and remove operations, all with automatic transaction handling and schema validation</li>
+                <li><strong>Optimized Data Access:</strong> All components and hooks now use efficient selectors to fetch transactions by account or account IDs, significantly improving performance and data access reliability</li>
+                <li><strong>Automatic Data Migration:</strong> Seamless one-time migration from legacy data format to normalized structure with <code>accountId</code> tracking on all transactions</li>
+              </ul>
             </Typography>
 
             <Typography
