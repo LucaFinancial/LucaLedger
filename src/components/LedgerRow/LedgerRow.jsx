@@ -1,4 +1,4 @@
-import { Checkbox, TableCell, TableRow } from '@mui/material';
+import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactions';
@@ -7,6 +7,7 @@ import BalanceCell from './BalanceCell';
 import DateCell from './DateCell';
 import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
+import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 
 const setBgColor = (status) => {
@@ -30,19 +31,17 @@ export default function LedgerRow({
   isSelected,
   onSelectionChange,
 }) {
-  const bgColor = isSelected ? '#b3d9ff' : setBgColor(row.status);
+  const bgColor = isSelected ? '#ffe6f0' : setBgColor(row.status);
 
   return (
     <TableRow
       sx={{ background: bgColor, '& .MuiTableCell-root': { padding: '4px' } }}
     >
-      <TableCell sx={{ width: '48px', paddingLeft: '16px' }}>
-        <Checkbox
-          checked={isSelected}
-          onChange={(e) => onSelectionChange(row.id, e.target.checked)}
-          size='small'
-        />
-      </TableCell>
+      <SelectionCell
+        transaction={row}
+        isSelected={isSelected}
+        onSelectionChange={onSelectionChange}
+      />
       <StatusCell transaction={row} />
       <DateCell transaction={row} />
       <DescriptionCell transaction={row} />
