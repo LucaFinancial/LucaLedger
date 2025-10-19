@@ -4,7 +4,7 @@ steps:
       [
         'build',
         '-t',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
         '.',
       ]
 
@@ -12,7 +12,7 @@ steps:
     args:
       [
         'push',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
       ]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -21,21 +21,24 @@ steps:
       [
         'run',
         'deploy',
-        'luca-ledger-web-app-$_ENVIRONMENT',
+        '$_SERVICE_NAME',
         '--image',
-        'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT',
+        '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT',
         '--region',
-        'us-central1',
+        '$_REGION',
         '--platform',
         'managed',
         '--allow-unauthenticated',
       ]
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/containers/luca-ledger-web-app-$_ENVIRONMENT'
+  - '$_REPOSITORY_URL/luca-ledger-webapp-$_ENVIRONMENT'
 
 substitutions:
   _ENVIRONMENT: ''
+  _REPOSITORY_URL: ''
+  _SERVICE_NAME: ''
+  _REGION: ''
 
 options:
   logging: CLOUD_LOGGING_ONLY
