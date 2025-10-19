@@ -27,8 +27,8 @@ const setBgColor = (status) => {
 export default function LedgerRow({
   row,
   balance,
-  isSelected,
-  onToggleSelection,
+  isSelected = false,
+  onToggleSelection = () => {},
 }) {
   const bgColor = setBgColor(row.status);
 
@@ -61,9 +61,4 @@ LedgerRow.propTypes = {
   balance: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
   onToggleSelection: PropTypes.func,
-};
-
-LedgerRow.defaultProps = {
-  isSelected: false,
-  onToggleSelection: () => {},
 };

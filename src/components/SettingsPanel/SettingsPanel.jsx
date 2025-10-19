@@ -8,8 +8,8 @@ import { SettingsPanelItem } from './SettingsPanelItem';
 
 export default function SettingsPanel({
   account,
-  selectedCount,
-  onBulkEditClick,
+  selectedCount = 0,
+  onBulkEditClick = () => {},
 }) {
   const { transactions } = account;
 
@@ -110,9 +110,4 @@ SettingsPanel.propTypes = {
   account: PropTypes.object.isRequired,
   selectedCount: PropTypes.number,
   onBulkEditClick: PropTypes.func,
-};
-
-SettingsPanel.defaultProps = {
-  selectedCount: 0,
-  onBulkEditClick: () => {},
 };
