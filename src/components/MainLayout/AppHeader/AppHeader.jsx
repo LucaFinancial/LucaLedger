@@ -22,6 +22,10 @@ export default function AppHeader() {
             />
           </Link>
           <NavItem
+            linkTo='/dashboard'
+            navText='Dashboard'
+          />
+          <NavItem
             linkTo='/accounts'
             navText='Accounts'
           />
