@@ -7,6 +7,7 @@ import schemas from './schemas';
 import {
   addTransaction,
   updateTransaction as updateTransactionNormalized,
+  updateMultipleTransactions,
   removeTransaction,
 } from './slice';
 
@@ -104,3 +105,13 @@ export const updateTransactionProperty =
 export const removeTransactionById = (accountId, transaction) => (dispatch) => {
   dispatch(removeTransaction(transaction.id));
 };
+
+export const updateMultipleTransactionsStatus =
+  (transactionIds, newStatus) => (dispatch) => {
+    dispatch(
+      updateMultipleTransactions({
+        transactionIds,
+        updates: { status: newStatus },
+      })
+    );
+  };
