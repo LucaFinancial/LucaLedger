@@ -69,8 +69,7 @@ export default function Landing() {
             </li>
             <li>
               <strong>Recurring Transactions:</strong> Set up automatic
-              recurring expenses and income to streamline your budgeting
-              process
+              recurring expenses and income to streamline your budgeting process
             </li>
             <li>
               <strong>Enhanced Reporting:</strong> More detailed financial
