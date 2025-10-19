@@ -2,7 +2,6 @@ import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { selectors as accountSelectors, constants } from '@/store/accounts';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
 import AccountRow from './AccountRow';
 import BalanceGroup from './BalanceGroup';
 
@@ -14,8 +13,6 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <AnnouncementBanner />
-
       <Typography
         variant='h4'
         sx={{ mb: 4 }}
