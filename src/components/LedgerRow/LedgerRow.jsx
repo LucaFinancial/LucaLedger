@@ -1,4 +1,4 @@
-import { TableRow } from '@mui/material';
+import { Checkbox, TableCell, TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactionsLegacy';
@@ -24,13 +24,28 @@ const setBgColor = (status) => {
   }
 };
 
-export default function LedgerRow({ row, balance }) {
+export default function LedgerRow({
+  row,
+  balance,
+  isSelected,
+  onToggleSelection,
+}) {
   const bgColor = setBgColor(row.status);
 
   return (
     <TableRow
-      sx={{ background: bgColor, '& .MuiTableCell-root': { padding: '4px' } }}
+      sx={{
+        background: isSelected ? '#e3f2fd' : bgColor,
+        '& .MuiTableCell-root': { padding: '4px' },
+      }}
     >
+      <TableCell sx={{ width: '50px', padding: '4px' }}>
+        <Checkbox
+          checked={isSelected}
+          onChange={() => onToggleSelection(row.id)}
+          size='small'
+        />
+      </TableCell>
       <StatusCell transaction={row} />
       <DateCell transaction={row} />
       <DescriptionCell transaction={row} />
@@ -44,4 +59,11 @@ export default function LedgerRow({ row, balance }) {
 LedgerRow.propTypes = {
   row: PropTypes.object.isRequired,
   balance: PropTypes.number.isRequired,
+  isSelected: PropTypes.bool,
+  onToggleSelection: PropTypes.func,
+};
+
+LedgerRow.defaultProps = {
+  isSelected: false,
+  onToggleSelection: () => {},
 };

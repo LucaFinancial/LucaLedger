@@ -1,6 +1,7 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import SettingsPanel from '@/components/SettingsPanel';
+import BulkEditModal from '@/components/BulkEditModal';
 import { selectors } from '@/store/accountsLegacy';
 import { Box, Button, TextField } from '@mui/material';
 import dayjs from 'dayjs';
@@ -14,6 +15,8 @@ export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const [filterValue, setFilterValue] = useState('');
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState([]);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const account = useSelector(selectors.selectAccountById(accountId));
 
   const allMonths = account?.transactions?.length
@@ -81,6 +84,32 @@ export default function Ledger() {
     setCollapsedGroups(getDefaultCollapsedGroups());
   };
 
+  const handleToggleSelection = (transactionId) => {
+    setSelectedTransactionIds((prev) => {
+      if (prev.includes(transactionId)) {
+        return prev.filter((id) => id !== transactionId);
+      }
+      return [...prev, transactionId];
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedTransactionIds([]);
+  };
+
+  const handleBulkEditClick = () => {
+    setIsBulkEditModalOpen(true);
+  };
+
+  const handleCloseBulkEditModal = () => {
+    setIsBulkEditModalOpen(false);
+  };
+
+  const selectedTransactions =
+    account?.transactions?.filter((t) =>
+      selectedTransactionIds.includes(t.id)
+    ) || [];
+
   return (
     <Box
       sx={{
@@ -98,7 +127,11 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel account={account} />
+        <SettingsPanel
+          account={account}
+          selectedCount={selectedTransactionIds.length}
+          onBulkEditClick={handleBulkEditClick}
+        />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -136,9 +169,17 @@ export default function Ledger() {
           filterValue={filterValue}
           collapsedGroups={collapsedGroups}
           setCollapsedGroups={setCollapsedGroups}
+          selectedTransactionIds={selectedTransactionIds}
+          onToggleSelection={handleToggleSelection}
         />
         <NewTransactionButton />
         <RepeatedTransactionsModal />
+        <BulkEditModal
+          open={isBulkEditModalOpen}
+          onClose={handleCloseBulkEditModal}
+          selectedTransactions={selectedTransactions}
+          onClearSelection={handleClearSelection}
+        />
       </Box>
     </Box>
   );

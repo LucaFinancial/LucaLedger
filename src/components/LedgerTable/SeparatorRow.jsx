@@ -12,6 +12,7 @@ export default function SeparatorRow({
   onToggleCollapse,
   onExpandYear,
   onCollapseYear,
+  selectedCount,
 }) {
   const date = dayjs(transaction.date);
   const format = isYear ? 'YYYY' : 'MMMM YYYY';
@@ -39,7 +40,7 @@ export default function SeparatorRow({
       }}
     >
       <TableCell
-        colSpan={6}
+        colSpan={7}
         sx={{
           backgroundColor: isYear ? '#f5f5f5' : '#fafafa',
           fontWeight: isYear ? 'bold' : 'normal',
@@ -58,6 +59,11 @@ export default function SeparatorRow({
             )}
           </IconButton>
           {date.format(format)}
+          {selectedCount > 0 && (
+            <span style={{ marginLeft: '8px', color: '#1976d2' }}>
+              ({selectedCount} selected)
+            </span>
+          )}
           {isYear && onExpandYear && onCollapseYear && (
             <YearControls
               yearId={date.format('YYYY')}
@@ -79,8 +85,10 @@ SeparatorRow.propTypes = {
   onToggleCollapse: PropTypes.func.isRequired,
   onExpandYear: PropTypes.func,
   onCollapseYear: PropTypes.func,
+  selectedCount: PropTypes.number,
 };
 
 SeparatorRow.defaultProps = {
   isYear: false,
+  selectedCount: 0,
 };

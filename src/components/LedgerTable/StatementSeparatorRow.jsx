@@ -64,7 +64,7 @@ export default function StatementSeparatorRow({
     isStatementMonthDifferent && (
       <TableRow>
         <TableCell
-          colSpan={6}
+          colSpan={7}
           style={{ backgroundColor: '#f5f5f5', padding: '8px 16px' }}
         >
           <Typography

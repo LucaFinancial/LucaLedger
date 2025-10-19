@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import AccountTypePicker from '@/components/AccountTypePicker';
@@ -6,7 +6,11 @@ import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
 
-export default function SettingsPanel({ account }) {
+export default function SettingsPanel({
+  account,
+  selectedCount,
+  onBulkEditClick,
+}) {
   const { transactions } = account;
 
   const completedBalance = transactions
@@ -29,6 +33,12 @@ export default function SettingsPanel({ account }) {
     (acc, transaction) => acc + Number(transaction.amount),
     0
   );
+
+  const getButtonLabel = () => {
+    if (selectedCount === 0) return 'Select Transactions';
+    if (selectedCount === 1) return 'Edit 1 Transaction';
+    return `Edit ${selectedCount} Transactions`;
+  };
 
   return (
     <Box
@@ -80,6 +90,17 @@ export default function SettingsPanel({ account }) {
             balance={futureBalance}
           />
         </SettingsPanelItem>
+        <SettingsPanelItem>
+          <Button
+            variant='contained'
+            fullWidth
+            disabled={selectedCount === 0}
+            onClick={onBulkEditClick}
+            sx={{ mt: 2 }}
+          >
+            {getButtonLabel()}
+          </Button>
+        </SettingsPanelItem>
       </Box>
     </Box>
   );
@@ -87,4 +108,11 @@ export default function SettingsPanel({ account }) {
 
 SettingsPanel.propTypes = {
   account: PropTypes.object.isRequired,
+  selectedCount: PropTypes.number,
+  onBulkEditClick: PropTypes.func,
+};
+
+SettingsPanel.defaultProps = {
+  selectedCount: 0,
+  onBulkEditClick: () => {},
 };
