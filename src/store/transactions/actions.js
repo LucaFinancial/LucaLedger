@@ -110,7 +110,13 @@ export const removeTransactionById =
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
       const { deleteEncryptedRecord } = await import('@/crypto/database');
-      await deleteEncryptedRecord('transactions', transaction.id);
+      try {
+        await deleteEncryptedRecord('transactions', transaction.id);
+      } catch (error) {
+        console.error('Failed to delete encrypted transaction:', error);
+        // Don't proceed with Redux state update if encrypted deletion fails
+        throw error;
+      }
     }
 
     dispatch(removeTransaction(transaction.id));

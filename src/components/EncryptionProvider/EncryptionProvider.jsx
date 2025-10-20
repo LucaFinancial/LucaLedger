@@ -157,27 +157,35 @@ export default function EncryptionProvider() {
       setUnlockError(null);
       setMigrating(true);
 
-      // Unlock encryption
+      // Unlock encryption (this sets the active DEK)
       const { expiresAt } = await unlockEncryption(password, stayLoggedIn);
 
-      // Load encrypted data into Redux
+      // Get the DEK that was just set by unlockEncryption
       const dek = getActiveDEK();
       if (dek) {
-        const encryptedAccounts = await getAllEncryptedRecords('accounts', dek);
-        const encryptedTransactions = await getAllEncryptedRecords(
-          'transactions',
-          dek
-        );
+        // Load encrypted data into Redux
+        const [encryptedAccounts, encryptedTransactions] = await Promise.all([
+          getAllEncryptedRecords('accounts', dek),
+          getAllEncryptedRecords('transactions', dek),
+        ]);
 
-        // Load accounts
-        encryptedAccounts.forEach((account) => {
+        // Load accounts in batches to avoid blocking UI
+        for (const account of encryptedAccounts) {
           dispatch(addAccount(account));
-        });
+          // Small delay to prevent UI freezing with large datasets
+          if (encryptedAccounts.length > 100) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          }
+        }
 
-        // Load transactions
-        encryptedTransactions.forEach((transaction) => {
+        // Load transactions in batches to avoid blocking UI
+        for (const transaction of encryptedTransactions) {
           dispatch(addTransaction(transaction));
-        });
+          // Small delay to prevent UI freezing with large datasets
+          if (encryptedTransactions.length > 1000) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          }
+        }
       }
 
       // Update auth status
