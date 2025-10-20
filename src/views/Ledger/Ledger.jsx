@@ -7,7 +7,14 @@ import {
   actions as transactionActions,
   selectors as transactionSelectors,
 } from '@/store/transactions';
-import { Box, Button, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from '@mui/material';
+import { Clear } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -172,7 +179,21 @@ export default function Ledger() {
             onChange={(e) => setFilterValue(e.target.value)}
             variant='outlined'
             size='small'
-            sx={{ width: '700px' }}
+            sx={{ width: '400px' }}
+            InputProps={{
+              endAdornment: filterValue && (
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='clear filter'
+                    onClick={() => setFilterValue('')}
+                    edge='end'
+                    size='small'
+                  >
+                    <Clear />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button onClick={handleCollapseAll}>Collapse All</Button>
           <Button onClick={handleExpandAll}>Expand All</Button>
