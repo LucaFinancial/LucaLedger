@@ -82,10 +82,17 @@ export const loadAccountAsync = () => async (dispatch) => {
   });
 };
 
-export const removeAccountById = (id) => (dispatch, getState) => {
+export const removeAccountById = (id) => async (dispatch, getState) => {
   const state = getState();
   const transactions =
     transactionSelectors.selectTransactionsByAccountId(id)(state);
+
+  // Handle encrypted data if enabled
+  const isEncrypted = state.encryption?.status === 'encrypted';
+  if (isEncrypted) {
+    const { deleteEncryptedRecord } = await import('@/crypto/database');
+    await deleteEncryptedRecord('accounts', id);
+  }
 
   transactions.forEach((transaction) => {
     dispatch(removeTransaction(transaction.id));

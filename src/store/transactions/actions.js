@@ -102,9 +102,19 @@ export const updateTransactionProperty =
     dispatch(updateTransactionNormalized(updatedTransaction));
   };
 
-export const removeTransactionById = (accountId, transaction) => (dispatch) => {
-  dispatch(removeTransaction(transaction.id));
-};
+export const removeTransactionById =
+  (accountId, transaction) => async (dispatch, getState) => {
+    const state = getState();
+
+    // Handle encrypted data if enabled
+    const isEncrypted = state.encryption?.status === 'encrypted';
+    if (isEncrypted) {
+      const { deleteEncryptedRecord } = await import('@/crypto/database');
+      await deleteEncryptedRecord('transactions', transaction.id);
+    }
+
+    dispatch(removeTransaction(transaction.id));
+  };
 
 export const updateMultipleTransactionsStatus =
   (transactionIds, newStatus) => (dispatch) => {

@@ -22,12 +22,16 @@ import {
   unlockEncryption,
   hasValidSessionToken,
   clearActiveDEK,
+  getActiveDEK,
 } from '@/crypto/keyManager';
 import {
   hasEncryptedData,
   batchStoreEncryptedRecords,
   clearAllData,
+  getAllEncryptedRecords,
 } from '@/crypto/database';
+import { addAccount } from '@/store/accounts/slice';
+import { addTransaction } from '@/store/transactions/slice';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -151,9 +155,30 @@ export default function EncryptionProvider() {
   const handleUnlock = async (password, stayLoggedIn) => {
     try {
       setUnlockError(null);
+      setMigrating(true);
 
       // Unlock encryption
       const { expiresAt } = await unlockEncryption(password, stayLoggedIn);
+
+      // Load encrypted data into Redux
+      const dek = getActiveDEK();
+      if (dek) {
+        const encryptedAccounts = await getAllEncryptedRecords('accounts', dek);
+        const encryptedTransactions = await getAllEncryptedRecords(
+          'transactions',
+          dek
+        );
+
+        // Load accounts
+        encryptedAccounts.forEach((account) => {
+          dispatch(addAccount(account));
+        });
+
+        // Load transactions
+        encryptedTransactions.forEach((transaction) => {
+          dispatch(addTransaction(transaction));
+        });
+      }
 
       // Update auth status
       dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
@@ -161,10 +186,12 @@ export default function EncryptionProvider() {
         dispatch(setSessionExpiresAt(expiresAt));
       }
 
+      setMigrating(false);
       setShowUnlock(false);
     } catch (error) {
       console.error('Unlock failed:', error);
       setUnlockError('Incorrect password. Please try again.');
+      setMigrating(false);
     }
   };
 
