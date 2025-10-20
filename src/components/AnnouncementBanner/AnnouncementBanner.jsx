@@ -21,6 +21,37 @@ const STORAGE_KEY = 'announcementBannerDismissed_v2';
 export default function AnnouncementBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [countdown, setCountdown] = useState('');
+
+  // Calculate countdown to December 13, 2025
+  useEffect(() => {
+    const calculateCountdown = () => {
+      const releaseDate = new Date('2025-12-13T00:00:00');
+      const now = new Date();
+      const diff = releaseDate - now;
+
+      if (diff <= 0) {
+        setCountdown('Released!');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+
+      if (days > 0) {
+        setCountdown(`${days} day${days !== 1 ? 's' : ''} remaining`);
+      } else {
+        setCountdown(`${hours} hour${hours !== 1 ? 's' : ''} remaining`);
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000 * 60 * 60); // Update every hour
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const storedVersion = localStorage.getItem('appVersion');
@@ -87,16 +118,51 @@ export default function AnnouncementBanner() {
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
         >
-          Coming Soon: Version 2.0.0
+          🎉 Exciting News: Version 2.0.0 Coming December 13, 2025!
+        </Typography>
+        {countdown && (
+          <Typography
+            variant='body2'
+            sx={{
+              mb: 1,
+              fontWeight: 'bold',
+              color: 'primary.main',
+            }}
+          >
+            ⏰ {countdown}
+          </Typography>
+        )}
+        <Typography
+          variant='body2'
+          sx={{ mb: 2 }}
+        >
+          Luca Ledger Version 2 will be released on{' '}
+          <strong>December 13, 2025</strong>. Version 1 will continue to be
+          available at{' '}
+          <a
+            href='https://v1.lucaledger.app'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ fontWeight: 'bold' }}
+          >
+            v1.lucaledger.app
+          </a>{' '}
+          for the foreseeable future.
         </Typography>
         <Typography
           variant='body2'
-          sx={{ mb: 1 }}
+          sx={{
+            mb: 2,
+            p: 1.5,
+            backgroundColor: 'warning.light',
+            borderRadius: 1,
+            fontWeight: 'bold',
+          }}
         >
-          Luca Ledger Version 2 is on the horizon with exciting new features and
-          enhanced security! Your data will automatically migrate to a new
-          storage format, and all locally stored information will be encrypted
-          at rest with a user-generated passphrase.
+          ⚠️ Action Required: If you are not ready to upgrade to v2, please move
+          your data to the new v1 URL before{' '}
+          <span style={{ textDecoration: 'underline' }}>December 13, 2025</span>
+          .
         </Typography>
 
         <Button
@@ -114,80 +180,63 @@ export default function AnnouncementBanner() {
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
-              What&apos;s Changing in Version 2
+              What You Need to Know
             </Typography>
             <Typography
               variant='body2'
+              component='div'
               sx={{ mb: 2 }}
             >
-              Version 2 introduces a new format for how transactions are stored.
-              This update improves performance, reliability, and prepares Luca
-              Ledger for future enhancements.
+              <ul style={{ marginTop: 0, paddingLeft: '20px' }}>
+                <li>
+                  <strong>Version 1 remains available:</strong> You can continue
+                  using v1 at{' '}
+                  <a
+                    href='https://v1.lucaledger.app'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    https://v1.lucaledger.app
+                  </a>
+                </li>
+                <li>
+                  <strong>Preview Version 2:</strong> Test the new version at{' '}
+                  <a
+                    href='https://beta.lucaledger.app'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    https://beta.lucaledger.app
+                  </a>
+                </li>
+                <li>
+                  <strong>Data migration:</strong> Your data is stored locally
+                  in your browser. To use v1 <em>after</em> the v2 release,
+                  you&apos;ll need to export your data from the current URL and
+                  import it at the new v1 URL before December 13, 2025.
+                </li>
+              </ul>
             </Typography>
 
             <Typography
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
-              Automatic Migration
+              Need Help?
             </Typography>
             <Typography
               variant='body2'
               sx={{ mb: 2 }}
             >
-              <strong>No user action required!</strong> When Version 2 is
-              released, your data will automatically migrate to the new format.
-              Legacy data will still load but will be converted immediately to
-              ensure compatibility.
-            </Typography>
-
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1 }}
-            >
-              New Security Feature: Local Data Encryption
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{ mb: 1 }}
-            >
-              All locally stored data will be encrypted at rest using a
-              user-generated passphrase (or a securely generated one). This
-              ensures that your financial information remains private and secure
-              on your device.
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{
-                mb: 2,
-                fontStyle: 'italic',
-                color: 'text.secondary',
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                padding: 1,
-                borderRadius: 1,
-              }}
-            >
-              <strong>Note:</strong> Luca Ledger stores no data remotely. All
-              your financial information remains exclusively on your local
-              machine, and this will continue to be the case during the
-              transition to Version 2. Future versions may include optional
-              cloud sync features, but local storage will be the default.
-            </Typography>
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1 }}
-            >
-              What to Expect
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{ mb: 2 }}
-            >
-              After the migration, you&apos;ll continue using Luca Ledger as
-              normal, with the added benefit of encryption and improved data
-              handling. More information, including the official release date,
-              will be provided as we get closer to launch. We anticipate the
-              release to be in early 2026.
+              For questions or support, please visit our{' '}
+              <a
+                href='https://github.com/LucaFinancial/LucaLedger/issues'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                GitHub Issues
+              </a>{' '}
+              page or contact us through GitHub.
             </Typography>
 
             <Typography
@@ -195,8 +244,8 @@ export default function AnnouncementBanner() {
               color='text.secondary'
               sx={{ fontStyle: 'italic' }}
             >
-              Stay tuned for updates! We&apos;re excited to bring you these
-              improvements.
+              Thank you for using Luca Ledger! We&apos;re excited to bring you
+              the improvements in Version 2.
             </Typography>
           </Box>
         </Collapse>
