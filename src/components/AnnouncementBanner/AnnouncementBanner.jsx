@@ -21,37 +21,6 @@ const STORAGE_KEY = 'announcementBannerDismissed_v2';
 export default function AnnouncementBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [countdown, setCountdown] = useState('');
-
-  // Calculate countdown to December 13, 2025
-  useEffect(() => {
-    const calculateCountdown = () => {
-      const releaseDate = new Date('2025-12-13T00:00:00');
-      const now = new Date();
-      const diff = releaseDate - now;
-
-      if (diff <= 0) {
-        setCountdown('Released!');
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-
-      if (days > 0) {
-        setCountdown(`${days} day${days !== 1 ? 's' : ''} remaining`);
-      } else {
-        setCountdown(`${hours} hour${hours !== 1 ? 's' : ''} remaining`);
-      }
-    };
-
-    calculateCountdown();
-    const interval = setInterval(calculateCountdown, 1000 * 60 * 60); // Update every hour
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const storedVersion = localStorage.getItem('appVersion');
@@ -118,27 +87,14 @@ export default function AnnouncementBanner() {
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
         >
-          🎉 Exciting News: Version 2.0.0 Coming December 13, 2025!
+          🎉 Exciting News: Version 2.0.0 Coming Soon!
         </Typography>
-        {countdown && (
-          <Typography
-            variant='body2'
-            sx={{
-              mb: 1,
-              fontWeight: 'bold',
-              color: 'primary.main',
-            }}
-          >
-            ⏰ {countdown}
-          </Typography>
-        )}
         <Typography
           variant='body2'
           sx={{ mb: 2 }}
         >
-          Luca Ledger Version 2 will be released on{' '}
-          <strong>December 13, 2025</strong>. Version 1 will continue to be
-          available at{' '}
+          Luca Ledger Version 2 will bring exciting new features and
+          improvements. Version 1 will continue to be available at{' '}
           <a
             href='https://v1.lucaledger.app'
             target='_blank'
@@ -160,9 +116,7 @@ export default function AnnouncementBanner() {
           }}
         >
           ⚠️ Action Required: If you are not ready to upgrade to v2, please move
-          your data to the new v1 URL before{' '}
-          <span style={{ textDecoration: 'underline' }}>December 13, 2025</span>
-          .
+          your data to the new v1 URL before the v2 release.
         </Typography>
 
         <Button
@@ -171,7 +125,7 @@ export default function AnnouncementBanner() {
           endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           sx={{ mt: 1, mb: expanded ? 2 : 0 }}
         >
-          {expanded ? 'Show Less' : 'Learn More'}
+          {expanded ? 'Show Less' : "See What's Coming in v2"}
         </Button>
 
         <Collapse in={expanded}>
@@ -180,7 +134,7 @@ export default function AnnouncementBanner() {
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
-              What You Need to Know
+              Version 2 Features
             </Typography>
             <Typography
               variant='body2'
@@ -188,64 +142,27 @@ export default function AnnouncementBanner() {
               sx={{ mb: 2 }}
             >
               <ul style={{ marginTop: 0, paddingLeft: '20px' }}>
+                <li>Replace Landing Page</li>
+                <li>New Feature: Bulk Edit for Transactions</li>
+                <li>User Settings Page</li>
+                <li>Account Settings</li>
+                <li>Enhance Security: Encrypt Data</li>
+                <li>Fix File Loading</li>
                 <li>
-                  <strong>Version 1 remains available:</strong> You can continue
-                  using v1 at{' '}
-                  <a
-                    href='https://v1.lucaledger.app'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    https://v1.lucaledger.app
-                  </a>
+                  Add Clear Button and Adjust Width of Filter Text Box in Ledger
+                  View
                 </li>
                 <li>
-                  <strong>Preview Version 2:</strong> Test the new version at{' '}
-                  <a
-                    href='https://beta.lucaledger.app'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    https://beta.lucaledger.app
-                  </a>
+                  Data Refactor (Unified Store, Cutover to new data format,
+                  Cleanup &amp; removal of deprecated format)
                 </li>
+                <li>Remove footer from ledger view</li>
+                <li>Convert Amounts to Integer Minor Units</li>
                 <li>
-                  <strong>Data migration:</strong> Your data is stored locally
-                  in your browser. To use v1 <em>after</em> the v2 release,
-                  you&apos;ll need to export your data from the current URL and
-                  import it at the new v1 URL before December 13, 2025.
+                  Change saved file extension to <code>.json</code>
                 </li>
+                <li>Remove the release message from v2</li>
               </ul>
-            </Typography>
-
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1 }}
-            >
-              Need Help?
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{ mb: 2 }}
-            >
-              For questions or support, please visit our{' '}
-              <a
-                href='https://github.com/LucaFinancial/LucaLedger/issues'
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                GitHub Issues
-              </a>{' '}
-              page or contact us through GitHub.
-            </Typography>
-
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ fontStyle: 'italic' }}
-            >
-              Thank you for using Luca Ledger! We&apos;re excited to bring you
-              the improvements in Version 2.
             </Typography>
           </Box>
         </Collapse>
