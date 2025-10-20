@@ -127,6 +127,15 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   link.href = url;
   link.click();
   URL.revokeObjectURL(url);
+
+  // Warning about unencrypted file
+  setTimeout(() => {
+    alert(
+      'Security Notice: The file you downloaded is NOT encrypted. ' +
+        'Your financial data is stored in plain text in this file. ' +
+        'Please store it securely (e.g., in an encrypted folder or password manager).'
+    );
+  }, 500);
 };
 
 export const saveAccountWithTransactions =
@@ -152,4 +161,13 @@ export const saveAccountWithTransactions =
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
+
+    // Warning about unencrypted file
+    setTimeout(() => {
+      alert(
+        'Security Notice: The file you downloaded is NOT encrypted. ' +
+          'Your financial data is stored in plain text in this file. ' +
+          'Please store it securely (e.g., in an encrypted folder or password manager).'
+      );
+    }, 500);
   };

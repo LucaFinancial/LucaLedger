@@ -1,12 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
-
-const localStorageMiddleware = (store) => (next) => (action) => {
-  const result = next(action);
-  localStorage.setItem('reduxState', JSON.stringify(store.getState()));
-  return result;
-};
+import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
@@ -87,5 +82,5 @@ export default configureStore({
   reducer: rootReducer,
   preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(localStorageMiddleware),
+    getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
