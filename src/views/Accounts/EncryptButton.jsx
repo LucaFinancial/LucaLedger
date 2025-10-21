@@ -33,9 +33,12 @@ export default function EncryptButton() {
   const accounts = useSelector(selectAccounts);
   const transactions = useSelector(selectTransactions);
 
-  // Only show button if encryption is not enabled and prompt was dismissed
+  // Show button if encryption is not enabled and there's data to encrypt
+  // Either the prompt was dismissed OR there's actual data in the system
+  const hasData = accounts.length > 0 || transactions.length > 0;
   const shouldShow =
-    encryptionStatus === EncryptionStatus.UNENCRYPTED && promptDismissedAt;
+    encryptionStatus === EncryptionStatus.UNENCRYPTED &&
+    (promptDismissedAt || hasData);
 
   const handleClick = () => {
     setShowPasswordSetup(true);
