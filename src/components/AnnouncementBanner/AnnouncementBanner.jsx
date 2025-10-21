@@ -180,6 +180,41 @@ export default function AnnouncementBanner() {
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1 }}
             >
+              Version 2 Features
+            </Typography>
+            <Typography
+              variant='body2'
+              component='div'
+              sx={{ mb: 2 }}
+            >
+              <ul style={{ marginTop: 0, paddingLeft: '20px' }}>
+                <li>Replace Landing Page</li>
+                <li>New Feature: Bulk Edit for Transactions</li>
+                <li>User Settings Page</li>
+                <li>Account Settings</li>
+                <li>Enhance Security: Encrypt Data</li>
+                <li>Fix File Loading</li>
+                <li>
+                  Add Clear Button and Adjust Width of Filter Text Box in Ledger
+                  View
+                </li>
+                <li>
+                  Data Refactor (Unified Store, Cutover to new data format,
+                  Cleanup &amp; removal of deprecated format)
+                </li>
+                <li>Remove footer from ledger view</li>
+                <li>Convert Amounts to Integer Minor Units</li>
+                <li>
+                  Change saved file extension to <code>.json</code>
+                </li>
+                <li>Remove the release message from v2</li>
+              </ul>
+            </Typography>
+
+            <Typography
+              variant='subtitle2'
+              sx={{ fontWeight: 'bold', mb: 1 }}
+            >
               What You Need to Know
             </Typography>
             <Typography
