@@ -21,6 +21,7 @@ import {
   initializeEncryption,
   unlockEncryption,
   hasValidSessionToken,
+  restoreSessionFromToken,
   clearActiveDEK,
   getActiveDEK,
 } from '@/crypto/keyManager';
@@ -46,6 +47,8 @@ export default function EncryptionProvider() {
   const [showUnlock, setShowUnlock] = useState(false);
   const [unlockError, setUnlockError] = useState(null);
   const [migrating, setMigrating] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // Get Redux state for migration
   const selectAccounts = (state) => state.accounts;
@@ -62,15 +65,37 @@ export default function EncryptionProvider() {
         // Data is encrypted, need to unlock
         dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
 
-        // Check if we have a valid session token
+        // Check if we have a valid session token - if so, try to auto-restore
         if (hasValidSessionToken()) {
-          // Try to restore session (will need password validation elsewhere)
-          dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
-          setShowUnlock(true);
-        } else {
-          dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
-          setShowUnlock(true);
+          try {
+            setLoading(true);
+            setLoadingMessage('Loading your data...');
+
+            // Auto-restore session without password
+            const result = await restoreSessionFromToken();
+
+            if (result) {
+              const { dek, expiresAt } = result;
+
+              // Load encrypted data into Redux
+              await loadEncryptedDataIntoRedux(dek);
+
+              // Update auth status
+              dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
+              dispatch(setSessionExpiresAt(expiresAt));
+
+              setLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('Failed to auto-restore session:', error);
+          }
+          setLoading(false);
         }
+
+        // No valid session or restore failed, show unlock dialog
+        dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
+        setShowUnlock(true);
       } else if (hasLocalStorage) {
         // Has unencrypted data, show prompt
         dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
@@ -152,10 +177,28 @@ export default function EncryptionProvider() {
     dispatch(setAuthStatus(AuthStatus.AUTHENTICATED)); // Allow access without encryption
   };
 
+  const loadEncryptedDataIntoRedux = async (dek) => {
+    // Load encrypted data into Redux
+    const [encryptedAccounts, encryptedTransactions] = await Promise.all([
+      getAllEncryptedRecords('accounts', dek),
+      getAllEncryptedRecords('transactions', dek),
+    ]);
+
+    // Use batch dispatch to avoid multiple re-renders
+    encryptedAccounts.forEach((account) => {
+      dispatch(addAccount(account));
+    });
+
+    encryptedTransactions.forEach((transaction) => {
+      dispatch(addTransaction(transaction));
+    });
+  };
+
   const handleUnlock = async (password, stayLoggedIn) => {
     try {
       setUnlockError(null);
-      setMigrating(true);
+      setLoading(true);
+      setLoadingMessage('Loading your data...');
 
       // Unlock encryption (this sets the active DEK)
       const { expiresAt } = await unlockEncryption(password, stayLoggedIn);
@@ -163,29 +206,7 @@ export default function EncryptionProvider() {
       // Get the DEK that was just set by unlockEncryption
       const dek = getActiveDEK();
       if (dek) {
-        // Load encrypted data into Redux
-        const [encryptedAccounts, encryptedTransactions] = await Promise.all([
-          getAllEncryptedRecords('accounts', dek),
-          getAllEncryptedRecords('transactions', dek),
-        ]);
-
-        // Load accounts in batches to avoid blocking UI
-        for (const account of encryptedAccounts) {
-          dispatch(addAccount(account));
-          // Small delay to prevent UI freezing with large datasets
-          if (encryptedAccounts.length > 100) {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-          }
-        }
-
-        // Load transactions in batches to avoid blocking UI
-        for (const transaction of encryptedTransactions) {
-          dispatch(addTransaction(transaction));
-          // Small delay to prevent UI freezing with large datasets
-          if (encryptedTransactions.length > 1000) {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-          }
-        }
+        await loadEncryptedDataIntoRedux(dek);
       }
 
       // Update auth status
@@ -194,12 +215,12 @@ export default function EncryptionProvider() {
         dispatch(setSessionExpiresAt(expiresAt));
       }
 
-      setMigrating(false);
+      setLoading(false);
       setShowUnlock(false);
     } catch (error) {
       console.error('Unlock failed:', error);
       setUnlockError('Incorrect password. Please try again.');
-      setMigrating(false);
+      setLoading(false);
     }
   };
 
@@ -220,8 +241,8 @@ export default function EncryptionProvider() {
     await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
   };
 
-  // Show migration progress
-  if (migrating) {
+  // Show migration or loading progress
+  if (migrating || loading) {
     return (
       <Box
         sx={{
@@ -243,13 +264,15 @@ export default function EncryptionProvider() {
           variant='h6'
           sx={{ mt: 2, color: 'white' }}
         >
-          Encrypting your data...
+          {migrating ? 'Encrypting your data...' : loadingMessage}
         </Typography>
         <Typography
           variant='body2'
           sx={{ mt: 1, color: 'white' }}
         >
-          This may take a moment. Please do not close the app.
+          {migrating
+            ? 'This may take a moment. Please do not close the app.'
+            : 'Please wait...'}
         </Typography>
       </Box>
     );
