@@ -1,4 +1,4 @@
-import { doublePrecisionFormatString } from '@/utils';
+import { formatCentsAsDollars } from '@/utils';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
@@ -46,7 +46,7 @@ const AccountRow = ({ account }) => (
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </Typography>
                 <Typography variant='h6'>
-                  ${doublePrecisionFormatString(account[type])}
+                  ${formatCentsAsDollars(account[type])}
                 </Typography>
               </Grid>
             ))}
