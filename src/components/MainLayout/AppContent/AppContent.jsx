@@ -4,6 +4,7 @@ import Accounts from '@/views/Accounts';
 import Dashboard from '@/views/Dashboard';
 import Landing from '@/views/Landing';
 import Ledger from '@/views/Ledger';
+import Settings from '@/views/Settings';
 
 export default function AppContent() {
   return (
@@ -23,6 +24,10 @@ export default function AppContent() {
       <Route
         path='/accounts/:accountId'
         element={<Ledger />}
+      />
+      <Route
+        path='/settings'
+        element={<Settings />}
       />
       <Route
         path='*'
