@@ -25,6 +25,12 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [type, setType] = useState(account.type);
   const [statementDay, setStatementDay] = useState(account.statementDay || 1);
   const [isDirty, setIsDirty] = useState(false);
+  // Store initial values to compare against
+  const [initialName, setInitialName] = useState(account.name);
+  const [initialType, setInitialType] = useState(account.type);
+  const [initialStatementDay, setInitialStatementDay] = useState(
+    account.statementDay || 1
+  );
 
   // Reset state when modal opens with new account
   useEffect(() => {
@@ -32,19 +38,23 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       setName(account.name);
       setType(account.type);
       setStatementDay(account.statementDay || 1);
+      setInitialName(account.name);
+      setInitialType(account.type);
+      setInitialStatementDay(account.statementDay || 1);
       setIsDirty(false);
     }
-  }, [open, account]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, account.id]); // Only depend on open and account.id to avoid resetting when account properties change
 
   // Track if any changes have been made
   useEffect(() => {
     const hasChanges =
-      name !== account.name ||
-      type !== account.type ||
+      name !== initialName ||
+      type !== initialType ||
       (type === constants.AccountType.CREDIT_CARD &&
-        statementDay !== (account.statementDay || 1));
+        statementDay !== initialStatementDay);
     setIsDirty(hasChanges);
-  }, [name, type, statementDay, account]);
+  }, [name, type, statementDay, initialName, initialType, initialStatementDay]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -77,7 +87,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
 
   const handleSaveChanges = () => {
     // Save name if changed
-    if (name !== account.name) {
+    if (name !== initialName) {
       dispatch(
         actions.updateAccountProperty(
           account,
@@ -88,7 +98,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     }
 
     // Save type if changed
-    if (type !== account.type) {
+    if (type !== initialType) {
       if (type === constants.AccountType.CREDIT_CARD) {
         // When switching to credit card, update both type and statement day
         const updatedAccount = { ...account, type, statementDay };
@@ -104,7 +114,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       }
     } else if (
       type === constants.AccountType.CREDIT_CARD &&
-      statementDay !== (account.statementDay || 1)
+      statementDay !== initialStatementDay
     ) {
       // Save statement day if changed for credit card
       dispatch(
@@ -126,10 +136,10 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       event.stopPropagation();
     }
 
-    // Reset to original values
-    setName(account.name);
-    setType(account.type);
-    setStatementDay(account.statementDay || 1);
+    // Reset to initial values (values when modal opened)
+    setName(initialName);
+    setType(initialType);
+    setStatementDay(initialStatementDay);
     setIsDirty(false);
     onClose();
   };
