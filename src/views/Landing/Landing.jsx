@@ -140,7 +140,9 @@ export default function Landing() {
           How to Use the App
         </Typography>
         <Typography paragraph>
-          Getting started with Luca Ledger is easy. Follow these simple steps:
+          Luca Ledger is designed to be intuitive and easy to use. This section
+          will guide you through the essential features to help you manage your
+          finances effectively.
         </Typography>
         <Typography component='div'>
           <ol style={{ lineHeight: '2' }}>
@@ -152,13 +154,12 @@ export default function Landing() {
               >
                 Accounts
               </MuiLink>{' '}
-              page and click &quot;Create New Account&quot; to set up your first
+              page and click &quot;Create New Account&quot; to set up a
               checking, savings, or credit card account.
             </li>
             <li>
               <strong>Add Transactions:</strong> Click on any account to view
-              its ledger. Here you can add, edit, and categorize your
-              transactions.
+              its ledger and add, edit, or categorize transactions.
             </li>
             <li>
               <strong>View Your Dashboard:</strong> Visit the{' '}
@@ -168,50 +169,19 @@ export default function Landing() {
               >
                 Dashboard
               </MuiLink>{' '}
-              to see a comprehensive overview of all your accounts and their
-              current balances.
+              to see an overview of all your accounts and current balances.
             </li>
             <li>
               <strong>Track Your Spending:</strong> Use the balance cards to
-              monitor your checking, savings, and credit card totals at a
-              glance.
+              monitor checking, savings, and credit card totals at a glance.
             </li>
             <li>
               <strong>Manage Your Data:</strong> Use the save/load functionality
-              in the header to backup your data or restore from a previous
-              backup.
+              in the header to backup or restore your data.
             </li>
           </ol>
         </Typography>
-        <Typography
-          paragraph
-          sx={{ mt: 2, fontStyle: 'italic', color: 'text.secondary' }}
-        >
-          Tip: For detailed instructions and advanced features, refer to the
-          User Guide accessible from the application.
-        </Typography>
       </Paper>
-
-      {/* Footer */}
-      <Box sx={{ mt: 4, textAlign: 'center', color: 'text.secondary' }}>
-        <Typography variant='body2'>
-          Ready to get started? Navigate to{' '}
-          <MuiLink
-            href='/accounts'
-            underline='hover'
-          >
-            Accounts
-          </MuiLink>{' '}
-          to create your first account, or visit the{' '}
-          <MuiLink
-            href='/dashboard'
-            underline='hover'
-          >
-            Dashboard
-          </MuiLink>{' '}
-          to see your financial overview.
-        </Typography>
-      </Box>
     </Container>
   );
 }
