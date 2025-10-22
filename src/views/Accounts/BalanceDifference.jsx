@@ -16,6 +16,7 @@ export default function BalanceDifference({
   }
 
   const lastStatus = filterArray[filterArray.length - 1];
+  // Calculate difference in cents (integer)
   const difference = transactions
     .filter((t) => t.status === lastStatus)
     .reduce((acc, t) => acc + Number(t.amount), 0);
@@ -61,7 +62,7 @@ export default function BalanceDifference({
         </span>
       )}
       $
-      {Math.abs(difference).toLocaleString(undefined, {
+      {(Math.abs(difference) / 100).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}

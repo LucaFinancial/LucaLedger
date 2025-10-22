@@ -28,17 +28,35 @@ export const loadAccount = (data) => (dispatch) => {
       dispatch(addAccount(accountData));
     });
 
+    // Load transactions and convert amounts if needed (migration from v1 float to v2 integer)
     data.transactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
+      const amount = transaction.amount;
+      // If amount is not an integer, convert it from dollars to cents
+      const integerAmount = Number.isInteger(amount)
+        ? amount
+        : Math.round(amount * 100);
+      dispatch(addTransaction({ ...transaction, amount: integerAmount }));
     });
   } else {
+    // Legacy v1 format: single account with embedded transactions
     const { transactions, ...accountData } = data;
 
     dispatch(addAccount(accountData));
 
     if (transactions && Array.isArray(transactions)) {
       transactions.forEach((transaction) => {
-        dispatch(addTransaction({ ...transaction, accountId: data.id }));
+        // Convert v1 float amounts to v2 integer cents
+        const amount = transaction.amount;
+        const integerAmount = Number.isInteger(amount)
+          ? amount
+          : Math.round(amount * 100);
+        dispatch(
+          addTransaction({
+            ...transaction,
+            accountId: data.id,
+            amount: integerAmount,
+          })
+        );
       });
     }
   }
@@ -68,11 +86,18 @@ export const loadAccountAsync = () => async (dispatch) => {
   }
 
   const transactions = data.transactions
-    ? data.transactions.map((t) => ({
-        ...t,
-        amount: parseFloat(t.amount),
-        accountId: account.id,
-      }))
+    ? data.transactions.map((t) => {
+        // Convert v1 float amounts to v2 integer cents
+        const amount = parseFloat(t.amount);
+        const integerAmount = Number.isInteger(amount)
+          ? amount
+          : Math.round(amount * 100);
+        return {
+          ...t,
+          amount: integerAmount,
+          accountId: account.id,
+        };
+      })
     : [];
 
   dispatch(addAccount(account));

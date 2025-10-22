@@ -41,7 +41,7 @@ export default function StatementSeparatorRow({
       return !t.description.toLowerCase().includes('payment');
     });
 
-  // Calculate charges by status
+  // Calculate charges by status (in cents)
   const allCharges = statementTransactions.reduce(
     (sum, t) => sum + Number(t.amount),
     0
@@ -53,8 +53,9 @@ export default function StatementSeparatorRow({
     .filter((t) => t.status?.trim() === 'scheduled')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const formatAmount = (amount) => {
-    return Math.abs(amount).toLocaleString(undefined, {
+  // Format cents as dollars for display
+  const formatAmount = (centsAmount) => {
+    return (Math.abs(centsAmount) / 100).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });

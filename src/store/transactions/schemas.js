@@ -10,7 +10,10 @@ const commonTransactionSchema = yup.object({
     .required('Transaction status is required')
     .oneOf(Object.values(TransactionStatusEnum), 'Invalid status value'),
   date: yup.date().required('Transaction date is required'),
-  amount: yup.number().required('Transaction amount is required'),
+  amount: yup
+    .number()
+    .integer('Amount must be an integer (cents)')
+    .required('Transaction amount is required'),
   description: yup.string().required('Transaction description is required'),
 });
 
