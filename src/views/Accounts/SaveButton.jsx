@@ -20,7 +20,7 @@ export default function SaveButton() {
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${dayjs().format('YYYY-MM-DD')}.ll`;
+    link.download = `${dayjs().format('YYYY-MM-DD')}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);

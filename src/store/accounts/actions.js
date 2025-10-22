@@ -144,7 +144,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const url = URL.createObjectURL(saveBlob);
   const link = document.createElement('a');
   const timestamp = new Date().toISOString().split('T')[0];
-  link.download = `luca-ledger-${timestamp}.ll`;
+  link.download = `luca-ledger-${timestamp}.json`;
   link.href = url;
   link.click();
   URL.revokeObjectURL(url);
@@ -178,7 +178,7 @@ export const saveAccountWithTransactions =
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${account.name}.ll`;
+    link.download = `${account.name}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
