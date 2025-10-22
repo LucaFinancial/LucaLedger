@@ -82,10 +82,31 @@ export const loadAccountAsync = () => async (dispatch) => {
   });
 };
 
-export const removeAccountById = (id) => (dispatch, getState) => {
+export const removeAccountById = (id) => async (dispatch, getState) => {
   const state = getState();
   const transactions =
     transactionSelectors.selectTransactionsByAccountId(id)(state);
+
+  // Handle encrypted data if enabled
+  const isEncrypted = state.encryption?.status === 'encrypted';
+  if (isEncrypted) {
+    const { deleteEncryptedRecord } = await import('@/crypto/database');
+    try {
+      // Delete account from encrypted database
+      await deleteEncryptedRecord('accounts', id);
+
+      // Delete all related transactions from encrypted database
+      await Promise.all(
+        transactions.map((transaction) =>
+          deleteEncryptedRecord('transactions', transaction.id)
+        )
+      );
+    } catch (error) {
+      console.error('Failed to delete encrypted data:', error);
+      // Don't proceed with Redux state update if encrypted deletion fails
+      throw error;
+    }
+  }
 
   transactions.forEach((transaction) => {
     dispatch(removeTransaction(transaction.id));
@@ -127,6 +148,15 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   link.href = url;
   link.click();
   URL.revokeObjectURL(url);
+
+  // Warning about unencrypted file
+  setTimeout(() => {
+    alert(
+      'Security Notice: The file you downloaded is NOT encrypted. ' +
+        'Your financial data is stored in plain text in this file. ' +
+        'Please store it securely (e.g., in an encrypted folder or password manager).'
+    );
+  }, 500);
 };
 
 export const saveAccountWithTransactions =
@@ -152,4 +182,13 @@ export const saveAccountWithTransactions =
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
+
+    // Warning about unencrypted file
+    setTimeout(() => {
+      alert(
+        'Security Notice: The file you downloaded is NOT encrypted. ' +
+          'Your financial data is stored in plain text in this file. ' +
+          'Please store it securely (e.g., in an encrypted folder or password manager).'
+      );
+    }, 500);
   };
