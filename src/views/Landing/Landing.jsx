@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -6,24 +7,72 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 
+// Reusable Section Component
+function Section({ title, children }) {
+  return (
+    <Paper
+      elevation={3}
+      sx={{
+        p: 4,
+        mb: 3,
+        borderRadius: 2,
+        background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+        '&:hover': {
+          boxShadow: 6,
+        },
+        transition: 'box-shadow 0.3s ease-in-out',
+      }}
+    >
+      <Typography
+        variant='h4'
+        gutterBottom
+        sx={{
+          fontWeight: 600,
+          color: 'primary.main',
+          borderBottom: '2px solid',
+          borderColor: 'primary.light',
+          pb: 1,
+          mb: 3,
+        }}
+      >
+        {title}
+      </Typography>
+      {children}
+    </Paper>
+  );
+}
+
+Section.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 export default function Landing() {
   return (
     <Container
       maxWidth='lg'
       sx={{ py: 4 }}
     >
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 5, textAlign: 'center' }}>
         <Typography
-          variant='h3'
+          variant='h2'
           component='h1'
           gutterBottom
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 2,
+          }}
         >
           Welcome to Luca Ledger
         </Typography>
         <Typography
-          variant='h6'
+          variant='h5'
           color='text.secondary'
           paragraph
+          sx={{ maxWidth: '800px', mx: 'auto', fontWeight: 400 }}
         >
           A simple, powerful personal finance management application for
           tracking your expenses across multiple accounts.
@@ -31,16 +80,7 @@ export default function Landing() {
       </Box>
 
       {/* Overview Section */}
-      <Paper
-        elevation={2}
-        sx={{ p: 3, mb: 3 }}
-      >
-        <Typography
-          variant='h4'
-          gutterBottom
-        >
-          Overview
-        </Typography>
+      <Section title='Overview'>
         <Typography paragraph>
           Luca Ledger is a React-based personal finance management application
           designed to help you track expenses, manage multiple accounts, and
@@ -48,24 +88,57 @@ export default function Landing() {
           supports multiple account types including Checking, Savings, and
           Credit Card accounts.
         </Typography>
-      </Paper>
+      </Section>
 
-      {/* Upcoming Features Section */}
-      <Paper
-        elevation={2}
-        sx={{ p: 3, mb: 3 }}
-      >
-        <Typography
-          variant='h4'
-          gutterBottom
-        >
-          Upcoming Features
-        </Typography>
+      {/* New in Version 2 Section */}
+      <Section title='New in Version 2'>
         <Typography component='div'>
           <ul style={{ lineHeight: '1.8' }}>
             <li>
-              <strong>Data Encryption at Rest:</strong> Your financial data will
-              be encrypted when stored, ensuring maximum security and privacy
+              <strong>Bulk Edit for Transactions:</strong> Efficiently edit
+              multiple transactions at once, saving time and improving data
+              management
+            </li>
+            <li>
+              <strong>Enhanced Security:</strong> Data encryption at rest with
+              industry standard AES-256 encryption and migration from
+              localStorage to IndexedDB for better performance and security
+            </li>
+            <li>
+              <strong>Improved File Handling:</strong> All accounts and
+              transactions are now stored in a single unified file format, with
+              transactions separated from account data for better organization
+            </li>
+            <li>
+              <strong>Clear Filter Button in Ledger View:</strong> Small
+              improvement to quickly clear filter text in the ledger view with a
+              convenient clear button
+            </li>
+            <li>
+              <strong>Data Refactor:</strong> Unified store architecture with
+              migration to new data format and cleanup of deprecated structures
+              for improved performance
+            </li>
+          </ul>
+        </Typography>
+      </Section>
+
+      {/* Coming Next Section */}
+      <Section title='Coming Next'>
+        <Typography component='div'>
+          <ul style={{ lineHeight: '1.8' }}>
+            <li>
+              <strong>Convert Amounts to Integer Minor Units:</strong> Improved
+              precision for monetary calculations by storing amounts in minor
+              units (cents)
+            </li>
+            <li>
+              <strong>User Settings Page:</strong> Customize your experience
+              with personalized settings and preferences
+            </li>
+            <li>
+              <strong>Account Settings Page:</strong> Manage account-specific
+              settings and configurations
             </li>
             <li>
               <strong>Recurring Transactions:</strong> Set up automatic
@@ -86,23 +159,13 @@ export default function Landing() {
             </li>
           </ul>
         </Typography>
-      </Paper>
+      </Section>
 
       {/* Data Storage Section */}
-      <Paper
-        elevation={2}
-        sx={{ p: 3, mb: 3 }}
-      >
-        <Typography
-          variant='h4'
-          gutterBottom
-        >
-          Data Storage &amp; Privacy
-        </Typography>
+      <Section title='Data Storage & Privacy'>
         <Typography paragraph>
           Your data privacy is our top priority. Luca Ledger stores all your
-          financial data locally in your browser&apos;s localStorage. This
-          means:
+          financial data locally in your browser&apos;s IndexedDB. This means:
         </Typography>
         <Typography component='div'>
           <ul style={{ lineHeight: '1.8' }}>
@@ -114,31 +177,25 @@ export default function Landing() {
               <strong>Offline Capability:</strong> The application works
               completely offline once loaded
             </li>
+            <li>
+              <strong>Enhanced Security:</strong> Optional data encryption at
+              rest with industry standard AES-256 encryption to protect your
+              financial information
+            </li>
+            <li>
+              <strong>Improved Data Format:</strong> Version 2 introduces an
+              improved data structure with IndexedDB storage that provides
+              better performance, enhanced security, and more flexibility for
+              future features. If you&apos;re upgrading from an earlier version,
+              your data will be automatically migrated to the new format on
+              first load
+            </li>
           </ul>
         </Typography>
-        <Typography
-          paragraph
-          sx={{ mt: 2 }}
-        >
-          <strong>Version 2 Data Format:</strong> The latest version introduces
-          an improved data structure that provides better performance and more
-          flexibility for future features. If you&apos;re upgrading from an
-          earlier version, your data will be automatically migrated to the new
-          format on first load.
-        </Typography>
-      </Paper>
+      </Section>
 
       {/* How to Use Section */}
-      <Paper
-        elevation={2}
-        sx={{ p: 3, mb: 3 }}
-      >
-        <Typography
-          variant='h4'
-          gutterBottom
-        >
-          How to Use the App
-        </Typography>
+      <Section title='How to Use the App'>
         <Typography paragraph>
           Getting started with Luca Ledger is easy. Follow these simple steps:
         </Typography>
@@ -190,7 +247,7 @@ export default function Landing() {
           Tip: For detailed instructions and advanced features, refer to the
           User Guide accessible from the application.
         </Typography>
-      </Paper>
+      </Section>
 
       {/* Footer */}
       <Box sx={{ mt: 4, textAlign: 'center', color: 'text.secondary' }}>
