@@ -18,7 +18,7 @@ import {
 import { storeMetadata, getMetadata } from './database';
 
 const SESSION_TOKEN_KEY = 'encryptionSessionToken';
-const SESSION_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+const SESSION_DURATION = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
 
 // In-memory storage for the active DEK
 let activeDEK = null;
@@ -99,7 +99,7 @@ export async function initializeEncryption(password, stayLoggedIn = false) {
       sessionPassword,
       expiresAt,
     };
-    localStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
+    sessionStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
   }
 
   return { dek, expiresAt };
@@ -160,19 +160,19 @@ export async function unlockEncryption(password, stayLoggedIn = false) {
       sessionPassword,
       expiresAt,
     };
-    localStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
+    sessionStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
   }
 
   return { dek, expiresAt };
 }
 
 /**
- * Restore session from localStorage token
+ * Restore session from sessionStorage token
  * Unwraps the DEK using session credentials
  * @returns {Promise<{dek: CryptoKey, expiresAt: number}|null>}
  */
 export async function restoreSessionFromToken() {
-  const tokenString = localStorage.getItem(SESSION_TOKEN_KEY);
+  const tokenString = sessionStorage.getItem(SESSION_TOKEN_KEY);
 
   if (!tokenString) {
     return null;
@@ -182,12 +182,12 @@ export async function restoreSessionFromToken() {
     const token = JSON.parse(tokenString);
 
     if (token.expiresAt < Date.now()) {
-      localStorage.removeItem(SESSION_TOKEN_KEY);
+      sessionStorage.removeItem(SESSION_TOKEN_KEY);
       return null;
     }
 
     if (!token.sessionWrappedDEK || !token.sessionPassword) {
-      localStorage.removeItem(SESSION_TOKEN_KEY);
+      sessionStorage.removeItem(SESSION_TOKEN_KEY);
       return null;
     }
 
@@ -208,7 +208,7 @@ export async function restoreSessionFromToken() {
     return { dek, expiresAt: token.expiresAt };
   } catch (error) {
     console.error('Failed to restore session from token:', error);
-    localStorage.removeItem(SESSION_TOKEN_KEY);
+    sessionStorage.removeItem(SESSION_TOKEN_KEY);
     return null;
   }
 }
@@ -218,7 +218,7 @@ export async function restoreSessionFromToken() {
  * @returns {boolean}
  */
 export function hasValidSessionToken() {
-  const tokenString = localStorage.getItem(SESSION_TOKEN_KEY);
+  const tokenString = sessionStorage.getItem(SESSION_TOKEN_KEY);
 
   if (!tokenString) {
     return false;
@@ -233,10 +233,10 @@ export function hasValidSessionToken() {
 }
 
 /**
- * Clear session token from localStorage
+ * Clear session token from sessionStorage
  */
 export function clearSessionToken() {
-  localStorage.removeItem(SESSION_TOKEN_KEY);
+  sessionStorage.removeItem(SESSION_TOKEN_KEY);
 }
 
 /**
