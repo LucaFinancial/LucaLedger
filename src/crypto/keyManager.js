@@ -1,7 +1,7 @@
 /**
  * Key Manager for handling DEK in memory and session tokens
  * DEK is kept in memory during active session
- * For "stay logged in", DEK is exported and stored in localStorage (security tradeoff)
+ * Session tokens store wrapped DEK for "stay logged in" functionality
  */
 
 import {
@@ -76,15 +76,13 @@ export async function initializeEncryption(password, stayLoggedIn = false) {
 
   let expiresAt = null;
 
-  // If "stay logged in", store wrapped DEK with a separate session key
-  // This is more secure than storing the raw DEK
+  // Store session token for "stay logged in" functionality
   if (stayLoggedIn) {
     expiresAt = Date.now() + SESSION_DURATION;
 
-    // Create a session-specific DEK wrapping
-    // We'll wrap the DEK with a fresh session key and store that key
+    // Wrap DEK with a random session key
     const sessionSalt = generateSalt();
-    const sessionPassword = crypto.randomUUID(); // Random session password
+    const sessionPassword = crypto.randomUUID();
     const sessionKWK = await deriveKeyFromPassword(
       sessionPassword,
       sessionSalt
@@ -98,7 +96,7 @@ export async function initializeEncryption(password, stayLoggedIn = false) {
       sessionWrappedDEK: arrayBufferToBase64(sessionWrappedDEK),
       sessionSalt: uint8ArrayToBase64(sessionSalt),
       sessionIV: uint8ArrayToBase64(sessionIV),
-      sessionPassword, // Store the random session password
+      sessionPassword,
       expiresAt,
     };
     localStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
@@ -139,13 +137,13 @@ export async function unlockEncryption(password, stayLoggedIn = false) {
 
   let expiresAt = null;
 
-  // If "stay logged in", store wrapped DEK with a separate session key
+  // Store session token for "stay logged in" functionality
   if (stayLoggedIn) {
     expiresAt = Date.now() + SESSION_DURATION;
 
-    // Create a session-specific DEK wrapping
+    // Wrap DEK with a random session key
     const sessionSalt = generateSalt();
-    const sessionPassword = crypto.randomUUID(); // Random session password
+    const sessionPassword = crypto.randomUUID();
     const sessionKWK = await deriveKeyFromPassword(
       sessionPassword,
       sessionSalt
@@ -159,7 +157,7 @@ export async function unlockEncryption(password, stayLoggedIn = false) {
       sessionWrappedDEK: arrayBufferToBase64(sessionWrappedDEK),
       sessionSalt: uint8ArrayToBase64(sessionSalt),
       sessionIV: uint8ArrayToBase64(sessionIV),
-      sessionPassword, // Store the random session password
+      sessionPassword,
       expiresAt,
     };
     localStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
@@ -169,8 +167,8 @@ export async function unlockEncryption(password, stayLoggedIn = false) {
 }
 
 /**
- * Restore session from localStorage token (without password)
- * Unwraps the DEK using session credentials stored in the token
+ * Restore session from localStorage token
+ * Unwraps the DEK using session credentials
  * @returns {Promise<{dek: CryptoKey, expiresAt: number}|null>}
  */
 export async function restoreSessionFromToken() {
@@ -183,114 +181,33 @@ export async function restoreSessionFromToken() {
   try {
     const token = JSON.parse(tokenString);
 
-    // Check if token is expired
     if (token.expiresAt < Date.now()) {
       localStorage.removeItem(SESSION_TOKEN_KEY);
       return null;
     }
 
-    // Check if this is the new format with wrapped DEK
-    if (token.sessionWrappedDEK && token.sessionPassword) {
-      // New secure format: unwrap DEK using session credentials
-      const sessionSalt = base64ToUint8Array(token.sessionSalt);
-      const sessionWrappedDEK = base64ToArrayBuffer(token.sessionWrappedDEK);
-      const sessionIV = base64ToUint8Array(token.sessionIV);
-
-      // Derive session KWK from session password
-      const sessionKWK = await deriveKeyFromPassword(
-        token.sessionPassword,
-        sessionSalt
-      );
-
-      // Unwrap the DEK
-      const dek = await unwrapKey(sessionWrappedDEK, sessionIV, sessionKWK);
-
-      // Set active DEK in memory
-      setActiveDEK(dek);
-
-      return { dek, expiresAt: token.expiresAt };
-    }
-
-    // Legacy format: raw DEK (for backward compatibility during transition)
-    if (token.dek) {
-      const dekRaw = base64ToArrayBuffer(token.dek);
-      const dek = await crypto.subtle.importKey(
-        'raw',
-        dekRaw,
-        { name: 'AES-GCM', length: 256 },
-        true,
-        ['encrypt', 'decrypt']
-      );
-
-      // Set active DEK in memory
-      setActiveDEK(dek);
-
-      return { dek, expiresAt: token.expiresAt };
-    }
-
-    // Unrecognized format
-    localStorage.removeItem(SESSION_TOKEN_KEY);
-    return null;
-  } catch (error) {
-    console.error('Failed to restore session from token:', error);
-    localStorage.removeItem(SESSION_TOKEN_KEY);
-    return null;
-  }
-}
-
-/**
- * Try to restore session from localStorage token (legacy - still requires password)
- * @param {string} password - User password
- * @returns {Promise<{dek: CryptoKey, expiresAt: number}|null>}
- */
-export async function restoreSession(password) {
-  const tokenString = localStorage.getItem(SESSION_TOKEN_KEY);
-
-  if (!tokenString) {
-    return null;
-  }
-
-  try {
-    const token = JSON.parse(tokenString);
-
-    // Check if token is expired
-    if (token.expiresAt < Date.now()) {
+    if (!token.sessionWrappedDEK || !token.sessionPassword) {
       localStorage.removeItem(SESSION_TOKEN_KEY);
       return null;
     }
 
-    // New format: DEK is exported directly
-    if (token.dek) {
-      const dekRaw = base64ToArrayBuffer(token.dek);
-      const dek = await crypto.subtle.importKey(
-        'raw',
-        dekRaw,
-        { name: 'AES-GCM', length: 256 },
-        true,
-        ['encrypt', 'decrypt']
-      );
+    // Unwrap DEK using session credentials
+    const sessionSalt = base64ToUint8Array(token.sessionSalt);
+    const sessionWrappedDEK = base64ToArrayBuffer(token.sessionWrappedDEK);
+    const sessionIV = base64ToUint8Array(token.sessionIV);
 
-      setActiveDEK(dek);
-      return { dek, expiresAt: token.expiresAt };
-    }
+    const sessionKWK = await deriveKeyFromPassword(
+      token.sessionPassword,
+      sessionSalt
+    );
 
-    // Old format: DEK is wrapped (still needs password)
-    const salt = base64ToUint8Array(token.salt);
-    const wrappedDEK = base64ToArrayBuffer(token.wrappedDEK);
-    const iv = base64ToUint8Array(token.iv);
+    const dek = await unwrapKey(sessionWrappedDEK, sessionIV, sessionKWK);
 
-    // Derive KWK from password
-    const kwk = await deriveKeyFromPassword(password, salt);
-
-    // Unwrap DEK
-    const dek = await unwrapKey(wrappedDEK, iv, kwk);
-
-    // Set active DEK in memory
     setActiveDEK(dek);
 
     return { dek, expiresAt: token.expiresAt };
   } catch (error) {
-    console.error('Failed to restore session:', error);
+    console.error('Failed to restore session from token:', error);
     localStorage.removeItem(SESSION_TOKEN_KEY);
     return null;
   }
