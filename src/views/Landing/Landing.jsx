@@ -50,7 +50,7 @@ export default function Landing() {
         </Typography>
       </Paper>
 
-      {/* Upcoming Features Section */}
+      {/* New in v2 Section */}
       <Paper
         elevation={2}
         sx={{ p: 3, mb: 3 }}
@@ -59,13 +59,63 @@ export default function Landing() {
           variant='h4'
           gutterBottom
         >
-          Upcoming Features
+          New in v2
         </Typography>
         <Typography component='div'>
           <ul style={{ lineHeight: '1.8' }}>
             <li>
-              <strong>Data Encryption at Rest:</strong> Your financial data will
-              be encrypted when stored, ensuring maximum security and privacy
+              <strong>Bulk Edit for Transactions:</strong> Efficiently edit
+              multiple transactions at once, saving time and improving data
+              management
+            </li>
+            <li>
+              <strong>Enhanced Security:</strong> Data encryption at rest with
+              military-grade AES-256 encryption and migration from localStorage
+              to IndexedDB for better performance and security
+            </li>
+            <li>
+              <strong>Improved File Handling:</strong> All accounts and
+              transactions are now stored in a single unified file format, with
+              transactions separated from account data for better organization
+            </li>
+            <li>
+              <strong>Clear Button in Ledger View:</strong> Quickly clear filter
+              text in the ledger view with a convenient clear button
+            </li>
+            <li>
+              <strong>Data Refactor:</strong> Unified store architecture with
+              migration to new data format and cleanup of deprecated structures
+              for improved performance
+            </li>
+          </ul>
+        </Typography>
+      </Paper>
+
+      {/* Coming Next Section */}
+      <Paper
+        elevation={2}
+        sx={{ p: 3, mb: 3 }}
+      >
+        <Typography
+          variant='h4'
+          gutterBottom
+        >
+          Coming Next
+        </Typography>
+        <Typography component='div'>
+          <ul style={{ lineHeight: '1.8' }}>
+            <li>
+              <strong>Convert Amounts to Integer Minor Units:</strong> Improved
+              precision for monetary calculations by storing amounts in minor
+              units (cents)
+            </li>
+            <li>
+              <strong>User Settings Page:</strong> Customize your experience
+              with personalized settings and preferences
+            </li>
+            <li>
+              <strong>Account Settings Page:</strong> Manage account-specific
+              settings and configurations
             </li>
             <li>
               <strong>Recurring Transactions:</strong> Set up automatic
@@ -101,8 +151,7 @@ export default function Landing() {
         </Typography>
         <Typography paragraph>
           Your data privacy is our top priority. Luca Ledger stores all your
-          financial data locally in your browser&apos;s localStorage. This
-          means:
+          financial data locally in your browser&apos;s IndexedDB. This means:
         </Typography>
         <Typography component='div'>
           <ul style={{ lineHeight: '1.8' }}>
@@ -114,6 +163,11 @@ export default function Landing() {
               <strong>Offline Capability:</strong> The application works
               completely offline once loaded
             </li>
+            <li>
+              <strong>Enhanced Security:</strong> Optional data encryption at
+              rest with military-grade AES-256 encryption to protect your
+              financial information
+            </li>
           </ul>
         </Typography>
         <Typography
@@ -121,10 +175,10 @@ export default function Landing() {
           sx={{ mt: 2 }}
         >
           <strong>Version 2 Data Format:</strong> The latest version introduces
-          an improved data structure that provides better performance and more
-          flexibility for future features. If you&apos;re upgrading from an
-          earlier version, your data will be automatically migrated to the new
-          format on first load.
+          an improved data structure with IndexedDB storage that provides better
+          performance, enhanced security, and more flexibility for future
+          features. If you&apos;re upgrading from an earlier version, your data
+          will be automatically migrated to the new format on first load.
         </Typography>
       </Paper>
 
