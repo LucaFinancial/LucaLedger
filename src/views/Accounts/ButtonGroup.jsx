@@ -3,6 +3,7 @@ import { Box, Grid } from '@mui/material';
 import LoadButton from './LoadButton';
 import CreateNewButton from './CreateNewButton';
 import SaveButton from './SaveButton';
+import EncryptButton from './EncryptButton';
 
 export default function ButtonGroup() {
   return (
@@ -39,6 +40,12 @@ export default function ButtonGroup() {
           key={2}
         >
           <SaveButton />
+        </Grid>
+        <Grid
+          item
+          key={3}
+        >
+          <EncryptButton />
         </Grid>
       </Grid>
     </Box>
