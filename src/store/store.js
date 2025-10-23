@@ -71,6 +71,29 @@ const migrateState = (persistedState) => {
     }
   }
 
+  // Convert float amounts to integer cents (v2 format)
+  if (state.transactions && Array.isArray(state.transactions)) {
+    let convertedCount = 0;
+    state.transactions = state.transactions.map((transaction) => {
+      const amount = transaction.amount;
+      // If amount is not an integer, convert from dollars to cents
+      if (!Number.isInteger(amount)) {
+        convertedCount++;
+        return {
+          ...transaction,
+          amount: Math.round(amount * 100),
+        };
+      }
+      return transaction;
+    });
+    if (convertedCount > 0) {
+      console.log(
+        `Migration: Converted ${convertedCount} transaction amounts from float to integer cents`
+      );
+      needsPersist = true;
+    }
+  }
+
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }

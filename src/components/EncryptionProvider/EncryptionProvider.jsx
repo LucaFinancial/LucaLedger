@@ -189,9 +189,29 @@ export default function EncryptionProvider() {
       dispatch(addAccount(account));
     });
 
+    // Migrate transaction amounts from float to integer cents if needed
+    let convertedCount = 0;
     encryptedTransactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
+      const amount = transaction.amount;
+      // If amount is not an integer, convert from dollars to cents
+      if (!Number.isInteger(amount)) {
+        convertedCount++;
+        dispatch(
+          addTransaction({
+            ...transaction,
+            amount: Math.round(amount * 100),
+          })
+        );
+      } else {
+        dispatch(addTransaction(transaction));
+      }
     });
+
+    if (convertedCount > 0) {
+      console.log(
+        `Migration: Converted ${convertedCount} encrypted transaction amounts from float to integer cents`
+      );
+    }
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {
