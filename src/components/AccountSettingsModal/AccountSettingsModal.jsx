@@ -86,44 +86,31 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   };
 
   const handleSaveChanges = () => {
-    // Save name if changed
+    // Collect all changes into a single update object
+    const updates = {};
+
     if (name !== initialName) {
-      dispatch(
-        actions.updateAccountProperty(
-          account,
-          constants.AccountFields.NAME,
-          name
-        )
-      );
+      updates.name = name;
     }
 
-    // Save type if changed
     if (type !== initialType) {
+      updates.type = type;
+      // When switching to credit card, ensure statement day is included
       if (type === constants.AccountType.CREDIT_CARD) {
-        // When switching to credit card, update both type and statement day
-        const updatedAccount = { ...account, type, statementDay };
-        dispatch(actions.updateAccount(updatedAccount));
-      } else {
-        dispatch(
-          actions.updateAccountProperty(
-            account,
-            constants.AccountFields.TYPE,
-            type
-          )
-        );
+        updates.statementDay = statementDay;
       }
     } else if (
       type === constants.AccountType.CREDIT_CARD &&
       statementDay !== initialStatementDay
     ) {
-      // Save statement day if changed for credit card
-      dispatch(
-        actions.updateAccountProperty(
-          account,
-          constants.AccountFields.STATEMENT_DAY,
-          statementDay
-        )
-      );
+      // Save statement day if changed for existing credit card
+      updates.statementDay = statementDay;
+    }
+
+    // Apply all updates in a single dispatch
+    if (Object.keys(updates).length > 0) {
+      const updatedAccount = { ...account, ...updates };
+      dispatch(actions.updateAccount(updatedAccount));
     }
 
     setIsDirty(false);
