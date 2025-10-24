@@ -1,9 +1,8 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, CircularProgress } from '@mui/material';
 import { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { actions, selectors } from '@/store/accounts';
-import LoadingOverlay from '@/components/LoadingOverlay';
 
 export default function LoadButton() {
   const dispatch = useDispatch();
@@ -45,8 +44,16 @@ export default function LoadButton() {
         color='primary'
         onClick={handleLoadAccountsClick}
         disabled={loading}
+        startIcon={
+          loading ? (
+            <CircularProgress
+              size={20}
+              color='inherit'
+            />
+          ) : null
+        }
       >
-        Load Accounts
+        {loading ? 'Loading...' : 'Load Accounts'}
       </Button>
       <input
         type='file'
@@ -55,10 +62,6 @@ export default function LoadButton() {
         onChange={handleChange}
         style={{ display: 'none' }}
         multiple
-      />
-      <LoadingOverlay
-        open={loading}
-        message='Loading your accounts and transactions...'
       />
     </Box>
   );

@@ -9,6 +9,8 @@ import {
   removeAccount,
   setLoading,
   setError,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
@@ -28,25 +30,25 @@ export const loadAccount = (data) => async (dispatch) => {
   try {
     dispatch(setLoading(true));
     dispatch(setError(null));
+    dispatch(clearLoadingAccountIds());
 
-    // Add a small delay to ensure UI updates before processing large files
+    // Add a small delay to ensure UI updates before processing
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-      // Process in chunks to avoid blocking the UI
+      // Load all accounts and mark them as loading
       const chunkSize = 100;
-
-      // Load accounts
       for (let i = 0; i < data.accounts.length; i += chunkSize) {
         const chunk = data.accounts.slice(i, i + chunkSize);
         chunk.forEach((accountData) => {
           dispatch(addAccount(accountData));
+          dispatch(addLoadingAccountId(accountData.id));
         });
         // Yield to UI thread
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
 
-      // Load transactions
+      // Load all transactions
       for (let i = 0; i < data.transactions.length; i += chunkSize) {
         const chunk = data.transactions.slice(i, i + chunkSize);
         chunk.forEach((transaction) => {
@@ -59,6 +61,7 @@ export const loadAccount = (data) => async (dispatch) => {
       const { transactions, ...accountData } = data;
 
       dispatch(addAccount(accountData));
+      dispatch(addLoadingAccountId(accountData.id));
 
       if (transactions && Array.isArray(transactions)) {
         // Process transactions in chunks
@@ -74,10 +77,12 @@ export const loadAccount = (data) => async (dispatch) => {
       }
     }
 
+    dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
   } catch (error) {
     console.error('Error loading account:', error);
     dispatch(setError(error.message || 'Failed to load account'));
+    dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
     throw error;
   }

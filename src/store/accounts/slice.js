@@ -6,6 +6,7 @@ const accounts = createSlice({
     data: [],
     loading: false,
     error: null,
+    loadingAccountIds: [],
   },
   reducers: {
     addAccount: (state, action) => {
@@ -28,6 +29,19 @@ const accounts = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
+    addLoadingAccountId: (state, action) => {
+      if (!state.loadingAccountIds.includes(action.payload)) {
+        state.loadingAccountIds.push(action.payload);
+      }
+    },
+    removeLoadingAccountId: (state, action) => {
+      state.loadingAccountIds = state.loadingAccountIds.filter(
+        (id) => id !== action.payload
+      );
+    },
+    clearLoadingAccountIds: (state) => {
+      state.loadingAccountIds = [];
+    },
   },
 });
 
@@ -39,4 +53,7 @@ export const {
   removeAccount,
   setLoading,
   setError,
+  addLoadingAccountId,
+  removeLoadingAccountId,
+  clearLoadingAccountIds,
 } = accounts.actions;
