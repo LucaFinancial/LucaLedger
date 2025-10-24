@@ -7,6 +7,8 @@ import {
   addAccount,
   updateAccount as updateAccountNormalized,
   removeAccount,
+  setLoading,
+  setError,
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
@@ -22,25 +24,62 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount = (data) => (dispatch) => {
-  if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-    data.accounts.forEach((accountData) => {
+export const loadAccount = (data) => async (dispatch) => {
+  try {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+
+    // Add a small delay to ensure UI updates before processing large files
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
+      // Process in chunks to avoid blocking the UI
+      const chunkSize = 100;
+
+      // Load accounts
+      for (let i = 0; i < data.accounts.length; i += chunkSize) {
+        const chunk = data.accounts.slice(i, i + chunkSize);
+        chunk.forEach((accountData) => {
+          dispatch(addAccount(accountData));
+        });
+        // Yield to UI thread
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+
+      // Load transactions
+      for (let i = 0; i < data.transactions.length; i += chunkSize) {
+        const chunk = data.transactions.slice(i, i + chunkSize);
+        chunk.forEach((transaction) => {
+          dispatch(addTransaction(transaction));
+        });
+        // Yield to UI thread
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    } else {
+      const { transactions, ...accountData } = data;
+
       dispatch(addAccount(accountData));
-    });
 
-    data.transactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
-  } else {
-    const { transactions, ...accountData } = data;
-
-    dispatch(addAccount(accountData));
-
-    if (transactions && Array.isArray(transactions)) {
-      transactions.forEach((transaction) => {
-        dispatch(addTransaction({ ...transaction, accountId: data.id }));
-      });
+      if (transactions && Array.isArray(transactions)) {
+        // Process transactions in chunks
+        const chunkSize = 100;
+        for (let i = 0; i < transactions.length; i += chunkSize) {
+          const chunk = transactions.slice(i, i + chunkSize);
+          chunk.forEach((transaction) => {
+            dispatch(addTransaction({ ...transaction, accountId: data.id }));
+          });
+          // Yield to UI thread
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+      }
     }
+
+    dispatch(setLoading(false));
+  } catch (error) {
+    console.error('Error loading account:', error);
+    dispatch(setError(error.message || 'Failed to load account'));
+    dispatch(setLoading(false));
+    throw error;
   }
 };
 
