@@ -1,10 +1,12 @@
 import { Box, Button, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
+import AccountSettingsModal from '@/components/AccountSettingsModal';
 import { SettingsPanelItem } from './SettingsPanelItem';
 import { selectors as transactionSelectors } from '@/store/transactions';
 
@@ -13,6 +15,7 @@ export default function SettingsPanel({
   selectedCount,
   onBulkEditClick,
 }) {
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(account.id)
   );
@@ -46,6 +49,14 @@ export default function SettingsPanel({
     } else {
       return `Edit ${selectedCount} Transactions`;
     }
+  };
+
+  const handleSettingsClick = () => {
+    setSettingsModalOpen(true);
+  };
+
+  const handleSettingsModalClose = () => {
+    setSettingsModalOpen(false);
   };
 
   return (
@@ -100,6 +111,16 @@ export default function SettingsPanel({
         </SettingsPanelItem>
         <SettingsPanelItem>
           <Button
+            variant='outlined'
+            fullWidth
+            onClick={handleSettingsClick}
+            sx={{ mt: 2 }}
+          >
+            Account Settings
+          </Button>
+        </SettingsPanelItem>
+        <SettingsPanelItem>
+          <Button
             variant='contained'
             fullWidth
             disabled={selectedCount === 0}
@@ -110,6 +131,11 @@ export default function SettingsPanel({
           </Button>
         </SettingsPanelItem>
       </Box>
+      <AccountSettingsModal
+        open={settingsModalOpen}
+        onClose={handleSettingsModalClose}
+        account={account}
+      />
     </Box>
   );
 }
