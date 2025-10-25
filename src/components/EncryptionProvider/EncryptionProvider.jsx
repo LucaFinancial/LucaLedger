@@ -31,8 +31,8 @@ import {
   clearAllData,
   getAllEncryptedRecords,
 } from '@/crypto/database';
-import { addAccount } from '@/store/accounts/slice';
-import { addTransaction } from '@/store/transactions/slice';
+import { setAccounts } from '@/store/accounts/slice';
+import { setTransactions } from '@/store/transactions/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 
@@ -184,14 +184,9 @@ export default function EncryptionProvider() {
       getAllEncryptedRecords('transactions', dek),
     ]);
 
-    // Use batch dispatch to avoid multiple re-renders
-    encryptedAccounts.forEach((account) => {
-      dispatch(addAccount(account));
-    });
-
-    encryptedTransactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
+    // Replace entire state (not add) to avoid duplicates from preloadedState
+    dispatch(setAccounts(encryptedAccounts));
+    dispatch(setTransactions(encryptedTransactions));
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {

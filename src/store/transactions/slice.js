@@ -4,6 +4,10 @@ const transactions = createSlice({
   name: 'transactions',
   initialState: [],
   reducers: {
+    setTransactions: (state, action) => {
+      // Replace all transactions (used when loading from encrypted storage)
+      return action.payload;
+    },
     addTransaction: (state, action) => {
       state.push(action.payload);
     },
@@ -33,6 +37,7 @@ const transactions = createSlice({
 export default transactions.reducer;
 
 export const {
+  setTransactions,
   addTransaction,
   updateTransaction,
   updateMultipleTransactions,
