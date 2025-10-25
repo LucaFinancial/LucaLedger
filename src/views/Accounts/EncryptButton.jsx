@@ -107,13 +107,33 @@ export default function EncryptButton() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
+    // Debug logging
+    console.log('[EncryptButton] Migrating data to encrypted storage');
+    console.log('[EncryptButton] accounts:', accounts);
+    console.log('[EncryptButton] accounts type:', typeof accounts);
+    console.log('[EncryptButton] accounts is array:', Array.isArray(accounts));
+    console.log('[EncryptButton] transactions:', transactions);
+    console.log('[EncryptButton] transactions type:', typeof transactions);
+    console.log(
+      '[EncryptButton] transactions is array:',
+      Array.isArray(transactions)
+    );
+
+    // Ensure accounts is an array (defensive check for migration edge cases)
+    const accountsArray = Array.isArray(accounts) ? accounts : [];
+    const transactionsArray = Array.isArray(transactions) ? transactions : [];
+
+    console.log(
+      `[EncryptButton] Processing ${accountsArray.length} accounts and ${transactionsArray.length} transactions`
+    );
+
     // Prepare accounts and transactions for batch encryption
-    const accountRecords = accounts.map((account) => ({
+    const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
     }));
 
-    const transactionRecords = transactions.map((transaction) => ({
+    const transactionRecords = transactionsArray.map((transaction) => ({
       id: transaction.id,
       data: transaction,
     }));
