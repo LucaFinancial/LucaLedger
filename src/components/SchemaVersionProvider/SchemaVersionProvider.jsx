@@ -6,16 +6,9 @@ export default function SchemaVersionProvider() {
     const checkAndSetSchemaVersion = async () => {
       const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
 
-      // Only update if we have valid data loaded and schema version has changed
-      if (
-        storedSchemaVersion &&
-        storedSchemaVersion !== CURRENT_SCHEMA_VERSION
-      ) {
-        localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
-        console.log(
-          `Data schema version updated from ${storedSchemaVersion} to ${CURRENT_SCHEMA_VERSION}`
-        );
-      } else if (!storedSchemaVersion) {
+      // Only set initial schema version for new unencrypted data
+      // Migration processes handle updating from old versions
+      if (!storedSchemaVersion) {
         // Check for unencrypted data in localStorage
         const reduxState = localStorage.getItem('reduxState');
         let hasData = false;
