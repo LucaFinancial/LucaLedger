@@ -68,10 +68,42 @@ const migrateState = (persistedState) => {
   // Migrate old array-based accounts structure to new object structure
   if (state.accounts && Array.isArray(state.accounts)) {
     console.log(
-      'Migration: Converting accounts from array to object structure'
+      '[Migration] Converting accounts from array to object structure'
+    );
+    console.log(
+      `[Migration] Found ${state.accounts.length} accounts in array format`
     );
     state.accounts = {
       data: state.accounts,
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
+    };
+    console.log('[Migration] Conversion complete, persisting to localStorage');
+    needsPersist = true;
+  }
+
+  // Ensure accounts object structure exists
+  if (!state.accounts) {
+    console.log('[Migration] No accounts found, initializing empty structure');
+    state.accounts = {
+      data: [],
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
+    };
+    needsPersist = true;
+  }
+
+  // Verify accounts is in correct format
+  if (state.accounts && !state.accounts.data) {
+    console.warn(
+      '[Migration] WARNING: accounts exists but is missing data property!',
+      state.accounts
+    );
+    // Force correct structure
+    state.accounts = {
+      data: Array.isArray(state.accounts) ? state.accounts : [],
       loading: false,
       error: null,
       loadingAccountIds: [],

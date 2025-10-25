@@ -78,7 +78,19 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
     handleEncryptedPersistence(action, state);
   } else if (!isEncrypted) {
     // Fall back to localStorage persistence
-    localStorage.setItem('reduxState', JSON.stringify(state));
+    // Ensure accounts is in the correct object format before saving
+    const stateToSave = {
+      ...state,
+      accounts: Array.isArray(state.accounts)
+        ? {
+            data: state.accounts,
+            loading: false,
+            error: null,
+            loadingAccountIds: [],
+          }
+        : state.accounts,
+    };
+    localStorage.setItem('reduxState', JSON.stringify(stateToSave));
   }
 
   return result;
