@@ -107,13 +107,17 @@ export default function EncryptButton() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
+    // Ensure accounts is an array (defensive check for migration edge cases)
+    const accountsArray = Array.isArray(accounts) ? accounts : [];
+    const transactionsArray = Array.isArray(transactions) ? transactions : [];
+
     // Prepare accounts and transactions for batch encryption
-    const accountRecords = accounts.map((account) => ({
+    const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
     }));
 
-    const transactionRecords = transactions.map((transaction) => ({
+    const transactionRecords = transactionsArray.map((transaction) => ({
       id: transaction.id,
       data: transaction,
     }));
