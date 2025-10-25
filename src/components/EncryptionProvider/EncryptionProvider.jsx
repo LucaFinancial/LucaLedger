@@ -189,9 +189,36 @@ export default function EncryptionProvider() {
       dispatch(addAccount(account));
     });
 
-    encryptedTransactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
+    // Migrate transaction amounts based on schema version
+    // Schema 2.0.0 and below: amounts stored as floats (dollars)
+    // Schema 2.0.1 and above: amounts stored as integers (cents)
+    const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
+    const needsMigration =
+      !storedSchemaVersion || storedSchemaVersion === '2.0.0';
+
+    if (needsMigration && encryptedTransactions.length > 0) {
+      console.log(
+        `Migration v2.0.0→v2.0.1: Converting ${encryptedTransactions.length} encrypted transaction amounts from dollars to cents`
+      );
+
+      encryptedTransactions.forEach((transaction) => {
+        dispatch(
+          addTransaction({
+            ...transaction,
+            // Convert from dollars to cents (multiply by 100)
+            amount: Math.round(transaction.amount * 100),
+          })
+        );
+      });
+
+      // Update schema version immediately to prevent re-migration
+      localStorage.setItem('dataSchemaVersion', '2.0.1');
+    } else {
+      // No migration needed, amounts already in cents
+      encryptedTransactions.forEach((transaction) => {
+        dispatch(addTransaction(transaction));
+      });
+    }
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {

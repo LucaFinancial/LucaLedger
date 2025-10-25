@@ -1,4 +1,4 @@
-import { doublePrecisionFormatString } from '@/utils';
+import { formatCentsAsDollars } from '@/utils';
 import { Card, CardContent, LinearProgress, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
@@ -15,7 +15,7 @@ const BalanceCard = ({ title, amount, total, color }) => (
         variant='h4'
         component='div'
       >
-        ${doublePrecisionFormatString(amount)}
+        ${formatCentsAsDollars(amount)}
       </Typography>
       <LinearProgress
         variant='determinate'

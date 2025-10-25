@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { formatCentsAsDollars } from '@/utils';
 
 export default function BalanceDisplay({ label, balance }) {
   const textStyle = {
@@ -27,11 +28,7 @@ export default function BalanceDisplay({ label, balance }) {
         sx={textStyle}
         display='block'
       >
-        $
-        {balance.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        ${formatCentsAsDollars(balance)}
       </Typography>
     </Box>
   );

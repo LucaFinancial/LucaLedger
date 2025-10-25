@@ -15,11 +15,13 @@ export default function BalanceRow({
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
+  // Calculate total in cents (integer)
   const total = transactions
     .filter((t) => filterArray.includes(t.status))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const formattedTotal = Math.abs(total).toLocaleString(undefined, {
+  // Format cents as dollars for display
+  const formattedTotal = (Math.abs(total) / 100).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

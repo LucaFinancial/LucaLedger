@@ -11,7 +11,7 @@ export const generateTransaction = (initialData = {}) => {
     accountId: initialData.accountId || null,
     status: TransactionStatusEnum.PLANNED,
     date: dayjs().format(config.dateFormatString),
-    amount: 0.0,
+    amount: 0, // Integer cents (0 cents = $0.00)
     description: 'Enter transaction description',
     ...initialData,
   };

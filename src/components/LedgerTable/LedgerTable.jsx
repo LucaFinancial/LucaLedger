@@ -34,7 +34,7 @@ export default function LedgerTable({
   );
 
   const transactionsWithBalance = useMemo(() => {
-    let currentBalance = 0.0;
+    let currentBalance = 0; // Integer cents (0 cents = $0.00)
     return sortedTransactions.map((transaction) => {
       currentBalance += transaction.amount;
       return { ...transaction, balance: currentBalance };

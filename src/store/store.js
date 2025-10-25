@@ -5,10 +5,22 @@ import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
+  console.log(
+    '[migrateState] Called with:',
+    persistedState ? 'data present' : 'null/undefined'
+  );
+
   if (!persistedState) return {};
 
   let state = { ...persistedState };
   let needsPersist = false;
+
+  console.log('[migrateState] State structure:', {
+    hasAccounts: !!state.accounts,
+    hasTransactions: !!state.transactions,
+    transactionCount: state.transactions?.length || 0,
+    accountsLegacy: !!state.accountsLegacy,
+  });
 
   const hasLegacyData =
     state.accountsLegacy &&
@@ -126,6 +138,59 @@ const migrateState = (persistedState) => {
     }
   }
 
+  // Convert float amounts to integer cents based on schema version
+  // Schema 2.0.0 and below: amounts stored as floats (dollars)
+  // Schema 2.0.1 and above: amounts stored as integers (cents)
+  const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
+
+  console.log('[Migration Check]', {
+    storedSchemaVersion,
+    hasTransactions: !!(
+      state.transactions && Array.isArray(state.transactions)
+    ),
+    transactionCount: state.transactions?.length || 0,
+    firstAmount: state.transactions?.[0]?.amount,
+    needsMigration: !storedSchemaVersion || storedSchemaVersion === '2.0.0',
+  });
+
+  if (
+    state.transactions &&
+    Array.isArray(state.transactions) &&
+    state.transactions.length > 0
+  ) {
+    // If schema version is 2.0.0 or not set (legacy data), convert all amounts
+    if (!storedSchemaVersion || storedSchemaVersion === '2.0.0') {
+      let convertedCount = 0;
+      state.transactions = state.transactions.map((transaction) => {
+        const amount = transaction.amount;
+        convertedCount++;
+        return {
+          ...transaction,
+          // Convert from dollars to cents (multiply by 100)
+          amount: Math.round(amount * 100),
+        };
+      });
+
+      console.log(
+        `Migration v2.0.0→v2.0.1: Converted ${convertedCount} transaction amounts from dollars to cents`
+      );
+      console.log('[Migration Sample]', {
+        before: state.transactions[0]?.amount / 100,
+        after: state.transactions[0]?.amount,
+      });
+
+      // Update schema version immediately to prevent re-migration
+      localStorage.setItem('dataSchemaVersion', '2.0.1');
+      needsPersist = true;
+    }
+  } else if (!storedSchemaVersion) {
+    // No transactions yet, but set schema to 2.0.1 for new data
+    localStorage.setItem('dataSchemaVersion', '2.0.1');
+    console.log(
+      'Schema version initialized to 2.0.1 (no existing transactions)'
+    );
+  }
+
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
@@ -133,9 +198,28 @@ const migrateState = (persistedState) => {
   return state;
 };
 
+// Helper to safely load persisted state
+const loadPersistedState = () => {
+  try {
+    const serialized = localStorage.getItem('reduxState');
+    console.log(
+      '[Store Init] localStorage reduxState:',
+      serialized ? `${serialized.substring(0, 100)}...` : 'null'
+    );
+    if (serialized === null) {
+      console.log('[Store Init] No persisted state found');
+      return null;
+    }
+    return JSON.parse(serialized);
+  } catch (err) {
+    console.error('[Store Init] Error loading persisted state:', err);
+    return null;
+  }
+};
+
 export default configureStore({
   reducer: rootReducer,
-  preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
+  preloadedState: migrateState(loadPersistedState()),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
