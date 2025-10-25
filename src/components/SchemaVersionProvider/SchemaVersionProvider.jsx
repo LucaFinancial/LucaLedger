@@ -23,8 +23,16 @@ export default function SchemaVersionProvider() {
         if (reduxState) {
           try {
             const parsedState = JSON.parse(reduxState);
-            // If we have valid data structures, assume it's current schema
-            if (parsedState.accounts || parsedState.transactions) {
+            // Check if we have actual data (not just empty structures)
+            const hasAccounts =
+              parsedState.accounts?.data?.length > 0 ||
+              (Array.isArray(parsedState.accounts) &&
+                parsedState.accounts.length > 0);
+            const hasTransactions =
+              Array.isArray(parsedState.transactions) &&
+              parsedState.transactions.length > 0;
+
+            if (hasAccounts || hasTransactions) {
               hasData = true;
             }
           } catch (error) {
