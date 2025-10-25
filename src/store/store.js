@@ -126,25 +126,34 @@ const migrateState = (persistedState) => {
     }
   }
 
-  // Convert float amounts to integer cents (v2 format)
-  if (state.transactions && Array.isArray(state.transactions)) {
-    let convertedCount = 0;
-    state.transactions = state.transactions.map((transaction) => {
-      const amount = transaction.amount;
-      // If amount is not an integer, convert from dollars to cents
-      if (!Number.isInteger(amount)) {
+  // Convert float amounts to integer cents based on schema version
+  // Schema 2.0.0 and below: amounts stored as floats (dollars)
+  // Schema 2.0.1 and above: amounts stored as integers (cents)
+  const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
+
+  if (
+    state.transactions &&
+    Array.isArray(state.transactions) &&
+    state.transactions.length > 0
+  ) {
+    // If schema version is 2.0.0 or not set (legacy data), convert all amounts
+    if (!storedSchemaVersion || storedSchemaVersion === '2.0.0') {
+      let convertedCount = 0;
+      state.transactions = state.transactions.map((transaction) => {
+        const amount = transaction.amount;
         convertedCount++;
         return {
           ...transaction,
+          // Convert from dollars to cents (multiply by 100)
           amount: Math.round(amount * 100),
         };
-      }
-      return transaction;
-    });
-    if (convertedCount > 0) {
+      });
+
       console.log(
-        `Migration: Converted ${convertedCount} transaction amounts from float to integer cents`
+        `Migration v2.0.0→v2.0.1: Converted ${convertedCount} transaction amounts from dollars to cents`
       );
+
+      // Schema version will be updated by SchemaVersionProvider
       needsPersist = true;
     }
   }

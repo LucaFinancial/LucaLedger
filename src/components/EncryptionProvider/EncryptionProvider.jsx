@@ -189,28 +189,32 @@ export default function EncryptionProvider() {
       dispatch(addAccount(account));
     });
 
-    // Migrate transaction amounts from float to integer cents if needed
-    let convertedCount = 0;
-    encryptedTransactions.forEach((transaction) => {
-      const amount = transaction.amount;
-      // If amount is not an integer, convert from dollars to cents
-      if (!Number.isInteger(amount)) {
-        convertedCount++;
+    // Migrate transaction amounts based on schema version
+    // Schema 2.0.0 and below: amounts stored as floats (dollars)
+    // Schema 2.0.1 and above: amounts stored as integers (cents)
+    const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
+    const needsMigration =
+      !storedSchemaVersion || storedSchemaVersion === '2.0.0';
+
+    if (needsMigration && encryptedTransactions.length > 0) {
+      console.log(
+        `Migration v2.0.0→v2.0.1: Converting ${encryptedTransactions.length} encrypted transaction amounts from dollars to cents`
+      );
+
+      encryptedTransactions.forEach((transaction) => {
         dispatch(
           addTransaction({
             ...transaction,
-            amount: Math.round(amount * 100),
+            // Convert from dollars to cents (multiply by 100)
+            amount: Math.round(transaction.amount * 100),
           })
         );
-      } else {
+      });
+    } else {
+      // No migration needed, amounts already in cents
+      encryptedTransactions.forEach((transaction) => {
         dispatch(addTransaction(transaction));
-      }
-    });
-
-    if (convertedCount > 0) {
-      console.log(
-        `Migration: Converted ${convertedCount} encrypted transaction amounts from float to integer cents`
-      );
+      });
     }
   };
 

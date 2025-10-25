@@ -30,7 +30,7 @@ import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
 import { version } from '../../../package.json';
 
 // This should match the SchemaVersionProvider constant
-const CURRENT_SCHEMA_VERSION = '2.0.0';
+const CURRENT_SCHEMA_VERSION = '2.0.1';
 
 export default function Settings() {
   const dispatch = useDispatch();

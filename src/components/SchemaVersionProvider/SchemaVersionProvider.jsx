@@ -3,7 +3,8 @@ import { hasEncryptedData } from '@/crypto/database';
 
 // This should be imported from the LucaSchema module when available
 // For now, we'll use a constant that matches the expected v2 schema version
-const CURRENT_SCHEMA_VERSION = '2.0.0';
+// Version 2.0.1: Monetary amounts stored as integer cents instead of float dollars
+const CURRENT_SCHEMA_VERSION = '2.0.1';
 
 export default function SchemaVersionProvider() {
   useEffect(() => {

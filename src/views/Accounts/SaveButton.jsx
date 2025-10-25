@@ -12,7 +12,7 @@ export default function SaveButton() {
 
   const handleSave = () => {
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: '2.0.1',
       accounts,
       transactions,
     };

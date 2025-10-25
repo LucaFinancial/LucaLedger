@@ -35,9 +35,15 @@ export const loadAccount = (data) => async (dispatch) => {
     // Add a small delay to ensure UI updates before processing
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-      // Load all accounts and mark them as loading
+    if (
+      (data.schemaVersion === '2.0.0' || data.schemaVersion === '2.0.1') &&
+      data.accounts &&
+      data.transactions
+    ) {
+      // v2 format with separate accounts and transactions
       const chunkSize = 100;
+
+      // Load all accounts and mark them as loading
       for (let i = 0; i < data.accounts.length; i += chunkSize) {
         const chunk = data.accounts.slice(i, i + chunkSize);
         chunk.forEach((accountData) => {
@@ -48,43 +54,57 @@ export const loadAccount = (data) => async (dispatch) => {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
 
-      // Load all transactions and convert amounts if needed (migration from v1 float to v2 integer)
+      // Load all transactions with schema-based migration
+      // Schema 2.0.0: amounts in dollars (need conversion to cents)
+      // Schema 2.0.1+: amounts already in cents (no conversion needed)
+      const fileSchemaVersion = data.schemaVersion || '2.0.0';
+      const needsMigration = fileSchemaVersion === '2.0.0';
+
+      if (needsMigration) {
+        console.log(
+          `Migration v2.0.0→v2.0.1: Converting ${data.transactions.length} file transaction amounts from dollars to cents`
+        );
+      }
+
       for (let i = 0; i < data.transactions.length; i += chunkSize) {
         const chunk = data.transactions.slice(i, i + chunkSize);
         chunk.forEach((transaction) => {
           const amount = transaction.amount;
-          // If amount is not an integer, convert it from dollars to cents
-          const integerAmount = Number.isInteger(amount)
-            ? amount
-            : Math.round(amount * 100);
-          dispatch(addTransaction({ ...transaction, amount: integerAmount }));
+          // Convert from dollars to cents if loading from v2.0.0 file
+          const finalAmount = needsMigration
+            ? Math.round(amount * 100)
+            : amount;
+          dispatch(addTransaction({ ...transaction, amount: finalAmount }));
         });
         // Yield to UI thread
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
     } else {
       // Legacy v1 format: single account with embedded transactions
+      // All v1 data has amounts in dollars and needs conversion to cents
       const { transactions, ...accountData } = data;
 
       dispatch(addAccount(accountData));
       dispatch(addLoadingAccountId(accountData.id));
 
       if (transactions && Array.isArray(transactions)) {
+        console.log(
+          `Migration v1→v2.0.1: Converting ${transactions.length} transaction amounts from dollars to cents`
+        );
+
         // Process transactions in chunks with migration logic
         const chunkSize = 100;
         for (let i = 0; i < transactions.length; i += chunkSize) {
           const chunk = transactions.slice(i, i + chunkSize);
           chunk.forEach((transaction) => {
-            // Convert v1 float amounts to v2 integer cents
+            // Convert v1 amounts from dollars to cents (always multiply by 100)
             const amount = transaction.amount;
-            const integerAmount = Number.isInteger(amount)
-              ? amount
-              : Math.round(amount * 100);
+            const centsAmount = Math.round(amount * 100);
             dispatch(
               addTransaction({
                 ...transaction,
                 accountId: data.id,
-                amount: integerAmount,
+                amount: centsAmount,
               })
             );
           });
@@ -130,14 +150,12 @@ export const loadAccountAsync = () => async (dispatch) => {
 
   const transactions = data.transactions
     ? data.transactions.map((t) => {
-        // Convert v1 float amounts to v2 integer cents
+        // Legacy v1 format always has amounts in dollars - convert to cents
         const amount = parseFloat(t.amount);
-        const integerAmount = Number.isInteger(amount)
-          ? amount
-          : Math.round(amount * 100);
+        const centsAmount = Math.round(amount * 100);
         return {
           ...t,
-          amount: integerAmount,
+          amount: centsAmount,
           accountId: account.id,
         };
       })
@@ -202,7 +220,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const transactions = state.transactions;
 
   const data = {
-    schemaVersion: '2.0.0',
+    schemaVersion: '2.0.1',
     accounts,
     transactions,
   };
@@ -237,7 +255,7 @@ export const saveAccountWithTransactions =
     if (!account) return;
 
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: '2.0.1',
       accounts: [account],
       transactions,
     };
