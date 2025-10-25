@@ -9,6 +9,10 @@ const accounts = createSlice({
     loadingAccountIds: [],
   },
   reducers: {
+    setAccounts: (state, action) => {
+      // Replace all accounts (used when loading from encrypted storage)
+      state.data = action.payload;
+    },
     addAccount: (state, action) => {
       state.data.push(action.payload);
     },
@@ -48,6 +52,7 @@ const accounts = createSlice({
 export default accounts.reducer;
 
 export const {
+  setAccounts,
   addAccount,
   updateAccount,
   removeAccount,
