@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { hasEncryptedData } from '@/crypto/database';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SchemaVersionProvider() {
@@ -36,22 +35,8 @@ export default function SchemaVersionProvider() {
           }
         }
 
-        // Also check for encrypted data in IndexedDB
-        if (!hasData) {
-          try {
-            const hasEncrypted = await hasEncryptedData();
-            if (hasEncrypted) {
-              hasData = true;
-            }
-          } catch (error) {
-            console.error(
-              'Error checking encrypted data for schema version:',
-              error
-            );
-          }
-        }
-
-        // Set schema version if we found any data
+        // Set schema version ONLY for unencrypted data
+        // For encrypted data, let the migration process in EncryptionProvider handle it
         if (hasData) {
           localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
           console.log(
