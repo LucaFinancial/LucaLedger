@@ -131,6 +131,16 @@ const migrateState = (persistedState) => {
   // Schema 2.0.1 and above: amounts stored as integers (cents)
   const storedSchemaVersion = localStorage.getItem('dataSchemaVersion');
 
+  console.log('[Migration Check]', {
+    storedSchemaVersion,
+    hasTransactions: !!(
+      state.transactions && Array.isArray(state.transactions)
+    ),
+    transactionCount: state.transactions?.length || 0,
+    firstAmount: state.transactions?.[0]?.amount,
+    needsMigration: !storedSchemaVersion || storedSchemaVersion === '2.0.0',
+  });
+
   if (
     state.transactions &&
     Array.isArray(state.transactions) &&
@@ -152,10 +162,21 @@ const migrateState = (persistedState) => {
       console.log(
         `Migration v2.0.0→v2.0.1: Converted ${convertedCount} transaction amounts from dollars to cents`
       );
+      console.log('[Migration Sample]', {
+        before: state.transactions[0]?.amount / 100,
+        after: state.transactions[0]?.amount,
+      });
 
-      // Schema version will be updated by SchemaVersionProvider
+      // Update schema version immediately to prevent re-migration
+      localStorage.setItem('dataSchemaVersion', '2.0.1');
       needsPersist = true;
     }
+  } else if (!storedSchemaVersion) {
+    // No transactions yet, but set schema to 2.0.1 for new data
+    localStorage.setItem('dataSchemaVersion', '2.0.1');
+    console.log(
+      'Schema version initialized to 2.0.1 (no existing transactions)'
+    );
   }
 
   if (needsPersist) {
