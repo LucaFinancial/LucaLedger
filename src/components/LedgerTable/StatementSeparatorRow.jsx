@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 
 import { computeStatementMonth } from './utils';
+import { centsToDollars } from '@/utils';
 
 export default function StatementSeparatorRow({
   statementDay,
@@ -53,8 +54,9 @@ export default function StatementSeparatorRow({
     .filter((t) => t.status?.trim() === 'scheduled')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const formatAmount = (amount) => {
-    return Math.abs(amount).toLocaleString(undefined, {
+  const formatAmount = (amountInCents) => {
+    const amountInDollars = centsToDollars(amountInCents);
+    return Math.abs(amountInDollars).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
