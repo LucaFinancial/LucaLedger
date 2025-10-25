@@ -33,6 +33,8 @@ import {
 } from '@/crypto/database';
 import { addAccount } from '@/store/accounts/slice';
 import { addTransaction } from '@/store/transactions/slice';
+import { selectors as accountSelectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -50,11 +52,9 @@ export default function EncryptionProvider() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // Get Redux state for migration
-  const selectAccounts = (state) => state.accounts;
-  const selectTransactions = (state) => state.transactions;
-  const accounts = useSelector(selectAccounts);
-  const transactions = useSelector(selectTransactions);
+  // Get Redux state for migration using proper selectors
+  const accounts = useSelector(accountSelectors.selectAccounts);
+  const transactions = useSelector(transactionSelectors.selectTransactions);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -245,13 +245,17 @@ export default function EncryptionProvider() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
+    // Ensure accounts and transactions are arrays (defensive check)
+    const accountsArray = Array.isArray(accounts) ? accounts : [];
+    const transactionsArray = Array.isArray(transactions) ? transactions : [];
+
     // Prepare accounts and transactions for batch encryption
-    const accountRecords = accounts.map((account) => ({
+    const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
     }));
 
-    const transactionRecords = transactions.map((transaction) => ({
+    const transactionRecords = transactionsArray.map((transaction) => ({
       id: transaction.id,
       data: transaction,
     }));

@@ -8,6 +8,7 @@ import { selectors as transactionSelectors } from '@/store/transactions';
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
+  const loading = useSelector(accountSelectors.selectAccountsLoading);
 
   const handleSave = () => {
     const data = {
@@ -31,6 +32,7 @@ export default function SaveButton() {
       variant='contained'
       color='primary'
       onClick={handleSave}
+      disabled={loading}
     >
       Save Accounts
     </Button>

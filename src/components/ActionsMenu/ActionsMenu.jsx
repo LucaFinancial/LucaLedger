@@ -10,16 +10,19 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { actions as accountActions } from '@/store/accounts';
+import AccountSettingsModal from '@/components/AccountSettingsModal';
 
 import {
   Delete as DeleteIcon,
   Save as SaveIcon,
   MoreVert as MoreVertIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 
 export default function ActionsMenu({ account }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const dispatch = useDispatch();
 
   const handleClick = (event) => {
@@ -46,6 +49,16 @@ export default function ActionsMenu({ account }) {
     // Use normalized save action
     dispatch(accountActions.saveAccountWithTransactions(account.id));
     handleClose();
+  };
+
+  const handleSettings = (event) => {
+    event.stopPropagation();
+    setSettingsModalOpen(true);
+    handleClose();
+  };
+
+  const handleSettingsModalClose = () => {
+    setSettingsModalOpen(false);
   };
 
   return (
@@ -77,6 +90,12 @@ export default function ActionsMenu({ account }) {
         open={open}
         onClose={handleClose}
       >
+        <MenuItem onClick={handleSettings}>
+          <ListItemIcon>
+            <SettingsIcon fontSize='small' />
+          </ListItemIcon>
+          <Typography variant='inherit'>Account Settings</Typography>
+        </MenuItem>
         <MenuItem onClick={handleSave}>
           <ListItemIcon>
             <SaveIcon fontSize='small' />
@@ -90,6 +109,11 @@ export default function ActionsMenu({ account }) {
           <Typography variant='inherit'>Delete</Typography>
         </MenuItem>
       </Menu>
+      <AccountSettingsModal
+        open={settingsModalOpen}
+        onClose={handleSettingsModalClose}
+        account={account}
+      />
     </>
   );
 }

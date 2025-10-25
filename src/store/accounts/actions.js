@@ -7,6 +7,10 @@ import {
   addAccount,
   updateAccount as updateAccountNormalized,
   removeAccount,
+  setLoading,
+  setError,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
@@ -22,43 +26,82 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount = (data) => (dispatch) => {
-  if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-    data.accounts.forEach((accountData) => {
+export const loadAccount = (data) => async (dispatch) => {
+  try {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+    dispatch(clearLoadingAccountIds());
+
+    // Add a small delay to ensure UI updates before processing
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
+      // Load all accounts and mark them as loading
+      const chunkSize = 100;
+      for (let i = 0; i < data.accounts.length; i += chunkSize) {
+        const chunk = data.accounts.slice(i, i + chunkSize);
+        chunk.forEach((accountData) => {
+          dispatch(addAccount(accountData));
+          dispatch(addLoadingAccountId(accountData.id));
+        });
+        // Yield to UI thread
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+
+      // Load all transactions and convert amounts if needed (migration from v1 float to v2 integer)
+      for (let i = 0; i < data.transactions.length; i += chunkSize) {
+        const chunk = data.transactions.slice(i, i + chunkSize);
+        chunk.forEach((transaction) => {
+          const amount = transaction.amount;
+          // If amount is not an integer, convert it from dollars to cents
+          const integerAmount = Number.isInteger(amount)
+            ? amount
+            : Math.round(amount * 100);
+          dispatch(addTransaction({ ...transaction, amount: integerAmount }));
+        });
+        // Yield to UI thread
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    } else {
+      // Legacy v1 format: single account with embedded transactions
+      const { transactions, ...accountData } = data;
+
       dispatch(addAccount(accountData));
-    });
+      dispatch(addLoadingAccountId(accountData.id));
 
-    // Load transactions and convert amounts if needed (migration from v1 float to v2 integer)
-    data.transactions.forEach((transaction) => {
-      const amount = transaction.amount;
-      // If amount is not an integer, convert it from dollars to cents
-      const integerAmount = Number.isInteger(amount)
-        ? amount
-        : Math.round(amount * 100);
-      dispatch(addTransaction({ ...transaction, amount: integerAmount }));
-    });
-  } else {
-    // Legacy v1 format: single account with embedded transactions
-    const { transactions, ...accountData } = data;
-
-    dispatch(addAccount(accountData));
-
-    if (transactions && Array.isArray(transactions)) {
-      transactions.forEach((transaction) => {
-        // Convert v1 float amounts to v2 integer cents
-        const amount = transaction.amount;
-        const integerAmount = Number.isInteger(amount)
-          ? amount
-          : Math.round(amount * 100);
-        dispatch(
-          addTransaction({
-            ...transaction,
-            accountId: data.id,
-            amount: integerAmount,
-          })
-        );
-      });
+      if (transactions && Array.isArray(transactions)) {
+        // Process transactions in chunks with migration logic
+        const chunkSize = 100;
+        for (let i = 0; i < transactions.length; i += chunkSize) {
+          const chunk = transactions.slice(i, i + chunkSize);
+          chunk.forEach((transaction) => {
+            // Convert v1 float amounts to v2 integer cents
+            const amount = transaction.amount;
+            const integerAmount = Number.isInteger(amount)
+              ? amount
+              : Math.round(amount * 100);
+            dispatch(
+              addTransaction({
+                ...transaction,
+                accountId: data.id,
+                amount: integerAmount,
+              })
+            );
+          });
+          // Yield to UI thread
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+      }
     }
+
+    dispatch(clearLoadingAccountIds());
+    dispatch(setLoading(false));
+  } catch (error) {
+    console.error('Error loading account:', error);
+    dispatch(setError(error.message || 'Failed to load account'));
+    dispatch(clearLoadingAccountIds());
+    dispatch(setLoading(false));
+    throw error;
   }
 };
 
@@ -155,7 +198,7 @@ export const updateAccountProperty =
 
 export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
-  const accounts = state.accounts;
+  const accounts = state.accounts.data;
   const transactions = state.transactions;
 
   const data = {
@@ -187,7 +230,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
 export const saveAccountWithTransactions =
   (accountId) => (dispatch, getState) => {
     const state = getState();
-    const account = state.accounts.find((a) => a.id === accountId);
+    const account = state.accounts.data.find((a) => a.id === accountId);
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
 

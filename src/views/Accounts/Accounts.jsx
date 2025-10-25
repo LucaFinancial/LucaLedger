@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectors as accountSelectors } from '@/store/accounts';
 import AccountCard from './AccountCard';
 import ButtonGroup from './ButtonGroup';
+import BetaBanner from '@/components/BetaBanner';
 
 const accountSortByName = (a, b) => a.name.localeCompare(b.name);
 
@@ -17,6 +18,9 @@ export default function Accounts() {
       flexDirection='column'
       alignItems='center'
     >
+      <Box sx={{ width: '100%', px: 3, pt: 3 }}>
+        <BetaBanner />
+      </Box>
       <Typography
         variant='h3'
         style={{ fontWeight: 'bold', padding: '25px' }}

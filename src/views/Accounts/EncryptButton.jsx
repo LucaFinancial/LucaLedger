@@ -12,6 +12,13 @@ import {
   setError,
   AuthStatus,
 } from '@/store/encryption';
+import { selectors as accountSelectors } from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
+import {
+  setLoading as setAccountsLoading,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
+} from '@/store/accounts/slice';
 import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
 import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
 
@@ -23,15 +30,14 @@ export default function EncryptButton() {
   const promptDismissedAt = useSelector(
     encryptionSelectors.selectPromptDismissedAt
   );
+  const accountsLoading = useSelector(accountSelectors.selectAccountsLoading);
 
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [migrating, setMigrating] = useState(false);
 
-  // Get Redux state for migration
-  const selectAccounts = (state) => state.accounts;
-  const selectTransactions = (state) => state.transactions;
-  const accounts = useSelector(selectAccounts);
-  const transactions = useSelector(selectTransactions);
+  // Get Redux state for migration using proper selectors
+  const accounts = useSelector(accountSelectors.selectAccounts);
+  const transactions = useSelector(transactionSelectors.selectTransactions);
 
   // Show button if encryption is not enabled and there's data to encrypt
   // Either the prompt was dismissed OR there's actual data in the system
@@ -50,6 +56,13 @@ export default function EncryptButton() {
 
     try {
       dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTING));
+
+      // Show loading indicators on all account cards
+      dispatch(setAccountsLoading(true));
+      dispatch(clearLoadingAccountIds());
+      accounts.forEach((account) => {
+        dispatch(addLoadingAccountId(account.id));
+      });
 
       // Initialize encryption and get DEK
       const { dek, expiresAt } = await initializeEncryption(
@@ -70,10 +83,15 @@ export default function EncryptButton() {
         dispatch(setSessionExpiresAt(expiresAt));
       }
 
+      // Clear loading indicators
+      dispatch(clearLoadingAccountIds());
+      dispatch(setAccountsLoading(false));
       setMigrating(false);
     } catch (error) {
       console.error('Encryption setup failed:', error);
       dispatch(setError('Failed to set up encryption: ' + error.message));
+      dispatch(clearLoadingAccountIds());
+      dispatch(setAccountsLoading(false));
       setMigrating(false);
 
       // Rollback
@@ -89,13 +107,17 @@ export default function EncryptButton() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
+    // Ensure accounts is an array (defensive check for migration edge cases)
+    const accountsArray = Array.isArray(accounts) ? accounts : [];
+    const transactionsArray = Array.isArray(transactions) ? transactions : [];
+
     // Prepare accounts and transactions for batch encryption
-    const accountRecords = accounts.map((account) => ({
+    const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
     }));
 
-    const transactionRecords = transactions.map((transaction) => ({
+    const transactionRecords = transactionsArray.map((transaction) => ({
       id: transaction.id,
       data: transaction,
     }));
@@ -116,7 +138,7 @@ export default function EncryptButton() {
         color='warning'
         startIcon={<LockIcon />}
         onClick={handleClick}
-        disabled={migrating}
+        disabled={migrating || accountsLoading}
         sx={{ minWidth: '150px' }}
       >
         {migrating ? 'Encrypting...' : 'Encrypt Data'}
