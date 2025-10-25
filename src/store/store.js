@@ -20,14 +20,22 @@ const migrateState = (persistedState) => {
       'Migration: Converting remaining legacy data to normalized format...'
     );
 
-    if (!state.accounts) state.accounts = [];
+    // Initialize accounts with new structure if needed
+    if (!state.accounts || Array.isArray(state.accounts)) {
+      state.accounts = {
+        data: state.accounts || [],
+        loading: false,
+        error: null,
+        loadingAccountIds: [],
+      };
+    }
     if (!state.transactions) state.transactions = [];
 
     const needsMigration =
-      state.accounts.length === 0 || state.transactions.length === 0;
+      state.accounts.data.length === 0 || state.transactions.length === 0;
 
     if (needsMigration) {
-      state.accounts = state.accountsLegacy.map((account) => ({
+      state.accounts.data = state.accountsLegacy.map((account) => ({
         id: account.id,
         name: account.name,
         type: account.type,
@@ -48,7 +56,7 @@ const migrateState = (persistedState) => {
       state.transactions = allTransactions;
 
       console.log(
-        `Migration: Converted ${state.accounts.length} accounts and ${allTransactions.length} transactions to normalized format`
+        `Migration: Converted ${state.accounts.data.length} accounts and ${allTransactions.length} transactions to normalized format`
       );
     }
 
@@ -57,11 +65,31 @@ const migrateState = (persistedState) => {
     needsPersist = true;
   }
 
-  // Remove version field from existing accounts if present
+  // Migrate old array-based accounts structure to new object structure
   if (state.accounts && Array.isArray(state.accounts)) {
-    const hadVersion = state.accounts.some((account) => 'version' in account);
+    console.log(
+      'Migration: Converting accounts from array to object structure'
+    );
+    state.accounts = {
+      data: state.accounts,
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
+    };
+    needsPersist = true;
+  }
+
+  // Remove version field from existing accounts if present
+  if (
+    state.accounts &&
+    state.accounts.data &&
+    Array.isArray(state.accounts.data)
+  ) {
+    const hadVersion = state.accounts.data.some(
+      (account) => 'version' in account
+    );
     if (hadVersion) {
-      state.accounts = state.accounts.map((account) => {
+      state.accounts.data = state.accounts.data.map((account) => {
         // eslint-disable-next-line no-unused-vars
         const { version, ...accountWithoutVersion } = account;
         return accountWithoutVersion;
