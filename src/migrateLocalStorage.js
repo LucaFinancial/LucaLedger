@@ -9,6 +9,11 @@ import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 // Check if migration is needed
 const schemaVersion = localStorage.getItem('dataSchemaVersion');
 
+console.log(
+  'Stored and current schema versions:',
+  schemaVersion,
+  CURRENT_SCHEMA_VERSION
+);
 if (!schemaVersion || schemaVersion === '2.0.0') {
   console.log('[Migration] Starting localStorage conversion...');
   const reduxStateRaw = localStorage.getItem('reduxState');

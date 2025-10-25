@@ -1,8 +1,9 @@
+import './migrateLocalStorage';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
-import './migrateLocalStorage';
 
 import './index.css';
 
