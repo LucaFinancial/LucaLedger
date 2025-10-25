@@ -28,9 +28,7 @@ import {
 import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
 import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
 import { version } from '../../../package.json';
-
-// This should match the SchemaVersionProvider constant
-const CURRENT_SCHEMA_VERSION = '2.0.0';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function Settings() {
   const dispatch = useDispatch();

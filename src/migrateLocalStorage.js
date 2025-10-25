@@ -4,6 +4,8 @@
  * Schema 2.0.0 → 2.0.1
  */
 
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+
 // Check if migration is needed
 const schemaVersion = localStorage.getItem('dataSchemaVersion');
 
@@ -49,8 +51,10 @@ if (!schemaVersion || schemaVersion === '2.0.0') {
         console.log('[Migration] Saved converted data back to localStorage');
 
         // Update schema version
-        localStorage.setItem('dataSchemaVersion', '2.0.1');
-        console.log('[Migration] Updated schema version to 2.0.1');
+        localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+        console.log(
+          `[Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`
+        );
       }
     } catch (error) {
       console.error('[Migration] Failed to convert localStorage:', error);

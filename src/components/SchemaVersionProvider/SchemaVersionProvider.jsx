@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import { hasEncryptedData } from '@/crypto/database';
-
-// This should be imported from the LucaSchema module when available
-// For now, we'll use a constant that matches the expected v2 schema version
-const CURRENT_SCHEMA_VERSION = '2.0.0';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SchemaVersionProvider() {
   useEffect(() => {
