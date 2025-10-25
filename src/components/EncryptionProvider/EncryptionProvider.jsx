@@ -189,7 +189,7 @@ export default function EncryptionProvider() {
 
   const loadEncryptedDataIntoRedux = async (dek) => {
     // Check schema version from localStorage
-    const schemaVersion = localStorage.getItem('dataSchemaVersion');
+    let schemaVersion = localStorage.getItem('dataSchemaVersion');
 
     // Load encrypted data into Redux
     let [encryptedAccounts, encryptedTransactions] = await Promise.all([
@@ -205,6 +205,10 @@ export default function EncryptionProvider() {
         encryptedTransactions.length > 0);
 
     if (needsMigration) {
+      // Update schema version IMMEDIATELY to prevent double migration
+      // if this function is called twice concurrently
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+
       console.log(
         `[IndexedDB Migration] Migrating encrypted data from schema ${
           schemaVersion || 'unknown'
@@ -229,8 +233,6 @@ export default function EncryptionProvider() {
 
       await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
 
-      // Update schema version in localStorage
-      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
       console.log(
         `[IndexedDB Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`
       );
