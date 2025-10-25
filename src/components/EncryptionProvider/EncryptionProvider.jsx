@@ -210,6 +210,9 @@ export default function EncryptionProvider() {
           })
         );
       });
+
+      // Update schema version immediately to prevent re-migration
+      localStorage.setItem('dataSchemaVersion', '2.0.1');
     } else {
       // No migration needed, amounts already in cents
       encryptedTransactions.forEach((transaction) => {
