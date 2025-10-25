@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import AccountRow from './AccountRow';
 import BalanceGroup from './BalanceGroup';
+import BetaBanner from '@/components/BetaBanner';
 
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -13,6 +14,7 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <BetaBanner />
       <Typography
         variant='h4'
         sx={{ mb: 4 }}
