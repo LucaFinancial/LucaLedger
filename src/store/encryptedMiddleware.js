@@ -78,6 +78,18 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
     handleEncryptedPersistence(action, state);
   } else if (!isEncrypted) {
     // Fall back to localStorage persistence
+    // Preserve existing schemaVersion from localStorage
+    const existingState = localStorage.getItem('reduxState');
+    let schemaVersion = null;
+    if (existingState) {
+      try {
+        const parsed = JSON.parse(existingState);
+        schemaVersion = parsed.schemaVersion;
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+
     // Ensure accounts is in the correct object format before saving
     const stateToSave = {
       ...state,
@@ -90,6 +102,12 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
           }
         : state.accounts,
     };
+
+    // Preserve schemaVersion if it existed
+    if (schemaVersion) {
+      stateToSave.schemaVersion = schemaVersion;
+    }
+
     localStorage.setItem('reduxState', JSON.stringify(stateToSave));
   }
 

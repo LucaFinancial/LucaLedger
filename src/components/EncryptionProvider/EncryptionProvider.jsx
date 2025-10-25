@@ -31,8 +31,8 @@ import {
   clearAllData,
   getAllEncryptedRecords,
 } from '@/crypto/database';
-import { addAccount } from '@/store/accounts/slice';
-import { addTransaction } from '@/store/transactions/slice';
+import { setAccounts } from '@/store/accounts/slice';
+import { setTransactions } from '@/store/transactions/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 
@@ -148,8 +148,32 @@ export default function EncryptionProvider() {
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
 
-      // Clear localStorage
-      localStorage.removeItem('reduxState');
+      // Preserve schema version before clearing localStorage
+      const reduxState = localStorage.getItem('reduxState');
+      let schemaVersion = null;
+      if (reduxState) {
+        try {
+          const parsed = JSON.parse(reduxState);
+          schemaVersion = parsed.schemaVersion;
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+
+      // Clear localStorage but preserve metadata
+      const emptyState = {
+        accounts: {
+          data: [],
+          loading: false,
+          error: null,
+          loadingAccountIds: [],
+        },
+        transactions: [],
+      };
+      if (schemaVersion) {
+        emptyState.schemaVersion = schemaVersion;
+      }
+      localStorage.setItem('reduxState', JSON.stringify(emptyState));
 
       // Update encryption status
       dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
@@ -178,20 +202,43 @@ export default function EncryptionProvider() {
   };
 
   const loadEncryptedDataIntoRedux = async (dek) => {
+    // Clear localStorage to prevent duplicate data loading
+    // But preserve metadata like schema version
+    const reduxState = localStorage.getItem('reduxState');
+    let schemaVersion = null;
+    if (reduxState) {
+      try {
+        const parsed = JSON.parse(reduxState);
+        schemaVersion = parsed.schemaVersion;
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+
     // Load encrypted data into Redux
     const [encryptedAccounts, encryptedTransactions] = await Promise.all([
       getAllEncryptedRecords('accounts', dek),
       getAllEncryptedRecords('transactions', dek),
     ]);
 
-    // Use batch dispatch to avoid multiple re-renders
-    encryptedAccounts.forEach((account) => {
-      dispatch(addAccount(account));
-    });
+    // Clear localStorage data but preserve schema version
+    const emptyState = {
+      accounts: {
+        data: [],
+        loading: false,
+        error: null,
+        loadingAccountIds: [],
+      },
+      transactions: [],
+    };
+    if (schemaVersion) {
+      emptyState.schemaVersion = schemaVersion;
+    }
+    localStorage.setItem('reduxState', JSON.stringify(emptyState));
 
-    encryptedTransactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
+    // Replace entire state (not add) to avoid duplicates from preloadedState
+    dispatch(setAccounts(encryptedAccounts));
+    dispatch(setTransactions(encryptedTransactions));
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {
