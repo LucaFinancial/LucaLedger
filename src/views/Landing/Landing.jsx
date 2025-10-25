@@ -6,6 +6,7 @@ import {
   Container,
   Link as MuiLink,
 } from '@mui/material';
+import BetaBanner from '@/components/BetaBanner';
 
 // Reusable Section Component
 function Section({ title, children }) {
@@ -53,6 +54,7 @@ export default function Landing() {
       maxWidth='lg'
       sx={{ py: 4 }}
     >
+      <BetaBanner />
       <Box sx={{ mb: 5, textAlign: 'center' }}>
         <Typography
           variant='h2'
