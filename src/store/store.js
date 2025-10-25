@@ -5,10 +5,22 @@ import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
+  console.log(
+    '[migrateState] Called with:',
+    persistedState ? 'data present' : 'null/undefined'
+  );
+
   if (!persistedState) return {};
 
   let state = { ...persistedState };
   let needsPersist = false;
+
+  console.log('[migrateState] State structure:', {
+    hasAccounts: !!state.accounts,
+    hasTransactions: !!state.transactions,
+    transactionCount: state.transactions?.length || 0,
+    accountsLegacy: !!state.accountsLegacy,
+  });
 
   const hasLegacyData =
     state.accountsLegacy &&
@@ -186,9 +198,28 @@ const migrateState = (persistedState) => {
   return state;
 };
 
+// Helper to safely load persisted state
+const loadPersistedState = () => {
+  try {
+    const serialized = localStorage.getItem('reduxState');
+    console.log(
+      '[Store Init] localStorage reduxState:',
+      serialized ? `${serialized.substring(0, 100)}...` : 'null'
+    );
+    if (serialized === null) {
+      console.log('[Store Init] No persisted state found');
+      return null;
+    }
+    return JSON.parse(serialized);
+  } catch (err) {
+    console.error('[Store Init] Error loading persisted state:', err);
+    return null;
+  }
+};
+
 export default configureStore({
   reducer: rootReducer,
-  preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
+  preloadedState: migrateState(loadPersistedState()),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
