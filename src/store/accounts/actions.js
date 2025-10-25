@@ -174,7 +174,7 @@ export const updateAccountProperty =
 
 export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
-  const accounts = state.accounts;
+  const accounts = state.accounts.data;
   const transactions = state.transactions;
 
   const data = {
@@ -206,7 +206,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
 export const saveAccountWithTransactions =
   (accountId) => (dispatch, getState) => {
     const state = getState();
-    const account = state.accounts.find((a) => a.id === accountId);
+    const account = state.accounts.data.find((a) => a.id === accountId);
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
 
