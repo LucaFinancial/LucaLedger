@@ -18,7 +18,7 @@ export default function Accounts() {
       flexDirection='column'
       alignItems='center'
     >
-      <Box sx={{ width: '100%', px: 3, mt: 2 }}>
+      <Box sx={{ width: '100%', px: 3, pt: 3 }}>
         <BetaBanner />
       </Box>
       <Typography

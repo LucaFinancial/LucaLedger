@@ -50,13 +50,13 @@ Section.propTypes = {
 
 export default function Landing() {
   return (
-    <Box sx={{ py: 4 }}>
-      <Box sx={{ px: 3 }}>
+    <Box>
+      <Box sx={{ px: 3, pt: 3 }}>
         <BetaBanner />
       </Box>
       <Container
         maxWidth='lg'
-        sx={{ mt: 2 }}
+        sx={{ py: 4 }}
       >
         <Box sx={{ mb: 5, textAlign: 'center' }}>
           <Typography
