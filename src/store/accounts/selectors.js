@@ -12,10 +12,10 @@ import { createSelector } from '@reduxjs/toolkit';
  * 2. Unmemoized selectors that filter/find arrays return new references every call
  * 3. This causes unnecessary re-renders even when the underlying data is unchanged
  *
- * Pattern: createSelector([inputSelectors...], resultFunction)
- * - Input selectors extract the minimal data needed
- * - Result function transforms that data
- * - Results are cached and only recomputed when inputs change
+ * Pattern for parametric selectors:
+ * - We use a factory function that returns a memoized selector
+ * - The parameter (e.g., accountId) is passed as part of the input selector
+ * - This ensures proper memoization based on both state AND parameter changes
  */
 
 // Basic selectors with migration-safe fallbacks
@@ -51,19 +51,25 @@ export const selectLoadingAccountIds = (state) => {
 /**
  * Memoized selector factory for checking if an account is loading
  * Returns a memoized selector that checks if a specific account ID is in the loading list.
- * The selector is memoized per accountId to prevent unnecessary re-renders.
+ *
+ * Usage in components:
+ *   const isLoading = useSelector(selectIsAccountLoading(accountId));
+ *
+ * The selector properly memoizes based on both the loading IDs array AND the accountId.
  */
 export const selectIsAccountLoading = (accountId) =>
-  createSelector([selectLoadingAccountIds], (loadingAccountIds) =>
-    loadingAccountIds.includes(accountId)
+  createSelector(
+    [selectLoadingAccountIds, () => accountId],
+    (loadingAccountIds, id) => loadingAccountIds.includes(id)
   );
 
 /**
  * Memoized selector factory for finding an account by ID
  * Returns a memoized selector that finds an account with the given ID.
- * The selector is memoized per accountId to prevent unnecessary re-renders.
+ *
+ * The selector properly memoizes based on both the accounts array AND the accountId.
  */
 export const selectAccountById = (accountId) =>
-  createSelector([selectAccounts], (accounts) =>
-    accounts.find((account) => account.id === accountId)
+  createSelector([selectAccounts, () => accountId], (accounts, id) =>
+    accounts.find((account) => account.id === id)
   );

@@ -12,10 +12,10 @@ import { createSelector } from '@reduxjs/toolkit';
  * 2. Unmemoized selectors that filter/map arrays return new array references every call
  * 3. This causes unnecessary re-renders even when the underlying data is unchanged
  *
- * Pattern: createSelector([inputSelectors...], resultFunction)
- * - Input selectors extract the minimal data needed
- * - Result function transforms that data
- * - Results are cached and only recomputed when inputs change
+ * Pattern for parametric selectors:
+ * - We use a factory function that returns a memoized selector
+ * - The parameter (e.g., accountId) is passed as part of the input selector
+ * - This ensures proper memoization based on both state AND parameter changes
  */
 
 // Basic selectors
@@ -24,31 +24,43 @@ export const selectTransactions = (state) => state.transactions;
 /**
  * Memoized selector factory for transactions by account ID
  * Returns a memoized selector that filters transactions for a specific account.
- * The selector is memoized per accountId to prevent creating new arrays on every call.
+ *
+ * Usage in components:
+ *   const transactions = useSelector(selectTransactionsByAccountId(accountId));
+ *
+ * The selector properly memoizes based on both the transactions array AND the accountId.
  */
 export const selectTransactionsByAccountId = (accountId) =>
-  createSelector([selectTransactions], (transactions) =>
-    transactions.filter((transaction) => transaction.accountId === accountId)
+  createSelector([selectTransactions, () => accountId], (transactions, id) =>
+    transactions.filter((transaction) => transaction.accountId === id)
   );
 
 /**
  * Memoized selector for a single transaction by ID
  * Returns the transaction matching the given ID, or undefined if not found.
+ *
+ * The selector properly memoizes based on both the transactions array AND the transactionId.
  */
 export const selectTransactionById = (transactionId) =>
-  createSelector([selectTransactions], (transactions) =>
-    transactions.find((transaction) => transaction.id === transactionId)
+  createSelector(
+    [selectTransactions, () => transactionId],
+    (transactions, id) =>
+      transactions.find((transaction) => transaction.id === id)
   );
 
 /**
  * Memoized selector factory for transactions by multiple account IDs
  * Used by hooks that need transactions for multiple accounts.
- * The selector is memoized per accountIds array to prevent creating new arrays on every call.
+ *
+ * The selector properly memoizes based on both the transactions array AND the accountIds.
  */
 export const selectTransactionsByAccountIds = (accountIds) =>
-  createSelector([selectTransactions], (transactions) => {
-    const accountIdsSet = new Set(accountIds);
-    return transactions.filter((transaction) =>
-      accountIdsSet.has(transaction.accountId)
-    );
-  });
+  createSelector(
+    [selectTransactions, () => accountIds],
+    (transactions, ids) => {
+      const accountIdsSet = new Set(ids);
+      return transactions.filter((transaction) =>
+        accountIdsSet.has(transaction.accountId)
+      );
+    }
+  );
