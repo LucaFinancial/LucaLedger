@@ -48,6 +48,12 @@ export default function CategorySelect({
     return opts;
   }, [categories]);
 
+  // Check if the current categoryId is valid
+  const isInvalidCategory = useMemo(() => {
+    if (!value) return false;
+    return !flatCategories.some((cat) => cat.id === value);
+  }, [value, flatCategories]);
+
   // Find the current selected option
   const selectedOption = useMemo(() => {
     if (!value) return null;
@@ -65,11 +71,13 @@ export default function CategorySelect({
     return found;
   }, [value, options]);
 
-  // Check if the current categoryId is valid
-  const isInvalidCategory = useMemo(() => {
-    if (!value) return false;
-    return !flatCategories.some((cat) => cat.id === value);
-  }, [value, flatCategories]);
+  // Include invalid category in options if present
+  const optionsWithInvalid = useMemo(() => {
+    if (isInvalidCategory && selectedOption) {
+      return [...options, selectedOption];
+    }
+    return options;
+  }, [options, isInvalidCategory, selectedOption]);
 
   const handleChange = (event, newValue) => {
     if (newValue) {
@@ -83,7 +91,7 @@ export default function CategorySelect({
     <Autocomplete
       value={selectedOption}
       onChange={handleChange}
-      options={options}
+      options={optionsWithInvalid}
       groupBy={(option) => option.group}
       getOptionLabel={(option) => option.name}
       isOptionEqualToValue={(option, value) => {
