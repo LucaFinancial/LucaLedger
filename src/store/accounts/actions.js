@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import { validateAccount } from '@/validation/validator';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import {
   addAccount,
   updateAccount as updateAccountNormalized,
@@ -48,8 +49,8 @@ export const loadAccount = (data) => async (dispatch) => {
     let accountsToLoad = [];
     let transactionsToLoad = [];
 
-    if (schemaVersion === '2.0.1') {
-      // Schema 2.0.1: amounts already in cents, load as-is
+    if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+      // Schema 2.0.1+: amounts in cents
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
     } else if (
@@ -88,7 +89,7 @@ export const loadAccount = (data) => async (dispatch) => {
 
     // Update schema version in localStorage to current version
     // This prevents migrations from running on already-converted data
-    localStorage.setItem('dataSchemaVersion', '2.0.1');
+    localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
 
     dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
@@ -191,7 +192,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const transactions = state.transactions;
 
   const data = {
-    schemaVersion: '2.0.0',
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
   };
@@ -226,7 +227,7 @@ export const saveAccountWithTransactions =
     if (!account) return;
 
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts: [account],
       transactions,
     };
