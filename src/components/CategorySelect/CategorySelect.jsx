@@ -80,14 +80,20 @@ export default function CategorySelect({
         <TextField
           {...params}
           label={label}
-          placeholder={placeholder}
+          placeholder={isInvalidCategory ? 'Invalid category' : placeholder}
           size={size}
           variant={variant}
           error={error || isInvalidCategory}
-          helperText={
+          helperText={helperText}
+          sx={
             isInvalidCategory
-              ? 'Invalid category - category not found'
-              : helperText
+              ? {
+                  '& .MuiInputBase-input::placeholder': {
+                    color: 'error.main',
+                    opacity: 1,
+                  },
+                }
+              : undefined
           }
         />
       )}
