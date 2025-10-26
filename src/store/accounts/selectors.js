@@ -13,9 +13,15 @@ import { createSelector } from '@reduxjs/toolkit';
  * 3. This causes unnecessary re-renders even when the underlying data is unchanged
  *
  * Pattern for parametric selectors:
- * - We use a factory function that returns a memoized selector
- * - The parameter (e.g., accountId) is passed as part of the input selector
- * - This ensures proper memoization based on both state AND parameter changes
+ * - Each call to the factory function creates a new selector instance
+ * - In React components using useSelector, the instance is created once and reused
+ * - Each instance memoizes based on both the accounts/loading arrays AND the parameter
+ * - This is the standard Redux pattern for selectors with runtime parameters
+ * - Results are cached within each selector instance, preventing unnecessary recomputation
+ *
+ * Note: For shared memoization across components with the same parameter, consider
+ * using a library like re-reselect. For this application, per-instance memoization
+ * is sufficient and follows Redux best practices.
  */
 
 // Basic selectors with migration-safe fallbacks
