@@ -2,17 +2,35 @@ import { createSlice } from '@reduxjs/toolkit';
 import { validateTransactionSync } from '@/validation/validator';
 
 /**
+ * Sanitizes transaction data before validation
+ * Handles legacy data issues like trailing spaces in status
+ */
+const sanitizeTransaction = (transaction) => {
+  const sanitized = { ...transaction };
+
+  // Remove trailing spaces from status (legacy data cleanup)
+  if (typeof sanitized.status === 'string') {
+    sanitized.status = sanitized.status.trim();
+  }
+
+  return sanitized;
+};
+
+/**
  * Validates and cleans a transaction object
  * Removes any properties not defined in the schema
  */
 const cleanTransaction = (transaction) => {
   try {
-    return validateTransactionSync(transaction);
+    // Sanitize first to fix legacy data issues
+    const sanitized = sanitizeTransaction(transaction);
+    // Then validate to remove invalid properties
+    return validateTransactionSync(sanitized);
   } catch (error) {
     console.error('Invalid transaction data:', error);
-    // Return the transaction as-is if validation fails
+    // Return the sanitized version even if validation fails
     // This prevents data loss but logs the issue
-    return transaction;
+    return sanitizeTransaction(transaction);
   }
 };
 

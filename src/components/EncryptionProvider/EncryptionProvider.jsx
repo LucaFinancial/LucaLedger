@@ -198,19 +198,10 @@ export default function EncryptionProvider() {
       getAllEncryptedRecords('transactions', dek),
     ]);
 
-    // Helper function to trim transaction status
-    const trimStatus = (status) => {
-      if (typeof status === 'string') {
-        return status.trim();
-      }
-      return status;
-    };
-
-    // Check if we need to migrate from older schema versions
+    // Check if we need to migrate from schema 2.0.0 to 2.0.1
     const needsMigration =
       !schemaVersion ||
       schemaVersion === '2.0.0' ||
-      schemaVersion === '2.0.1' ||
       (schemaVersion < CURRENT_SCHEMA_VERSION &&
         encryptedTransactions.length > 0);
 
@@ -226,7 +217,6 @@ export default function EncryptionProvider() {
       );
 
       let amountConversionCount = 0;
-      let statusTrimCount = 0;
 
       // Migrate transactions
       const migratedTransactions = encryptedTransactions.map((transaction) => {
@@ -241,30 +231,12 @@ export default function EncryptionProvider() {
           amountConversionCount++;
         }
 
-        // Migration 2.0.1 → 2.0.2: Remove trailing spaces from status
-        if (
-          (!schemaVersion ||
-            schemaVersion === '2.0.0' ||
-            schemaVersion === '2.0.1') &&
-          typeof updated.status === 'string' &&
-          updated.status !== updated.status.trim()
-        ) {
-          updated.status = trimStatus(updated.status);
-          statusTrimCount++;
-        }
-
         return updated;
       });
 
       if (amountConversionCount > 0) {
         console.log(
           `[IndexedDB Migration] Converted ${amountConversionCount} transaction amounts to cents`
-        );
-      }
-
-      if (statusTrimCount > 0) {
-        console.log(
-          `[IndexedDB Migration] Trimmed trailing spaces from ${statusTrimCount} transaction statuses`
         );
       }
 
