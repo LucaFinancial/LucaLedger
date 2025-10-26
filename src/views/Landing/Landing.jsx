@@ -125,14 +125,6 @@ export default function Landing() {
                 migration to new data format and cleanup of deprecated
                 structures for improved performance
               </li>
-            </ul>
-          </Typography>
-        </Section>
-
-        {/* Coming Next Section */}
-        <Section title='Coming Next'>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
               <li>
                 <strong>Convert Amounts to Integer Minor Units:</strong>{' '}
                 Improved precision for monetary calculations by storing amounts
@@ -145,6 +137,22 @@ export default function Landing() {
               <li>
                 <strong>Account Settings Page:</strong> Manage account-specific
                 settings and configurations
+              </li>
+            </ul>
+          </Typography>
+        </Section>
+
+        {/* Coming Next Section */}
+        <Section title='Coming Next'>
+          <Typography component='div'>
+            <ul style={{ lineHeight: '1.8' }}>
+              <li>
+                <strong>Double-entry Accounting:</strong> Implement double-entry
+                bookkeeping for accurate financial tracking
+              </li>
+              <li>
+                <strong>Transaction Categories:</strong> Improved category
+                management with custom categories and subcategories
               </li>
               <li>
                 <strong>Recurring Transactions:</strong> Set up automatic
@@ -159,10 +167,6 @@ export default function Landing() {
               <li>
                 <strong>Budget Management:</strong> Set and track budgets for
                 different categories to stay on top of your spending goals
-              </li>
-              <li>
-                <strong>Transaction Categories:</strong> Improved category
-                management with custom categories and subcategories
               </li>
             </ul>
           </Typography>
