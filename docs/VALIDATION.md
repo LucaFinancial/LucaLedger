@@ -132,7 +132,7 @@ Credit Card accounts extend the common schema with a `statementDay` field:
     "accountId": { "type": "string", "minLength": 1 },
     "status": { 
       "type": "string", 
-      "enum": ["pending ", "complete ", "scheduled ", "planned "] 
+      "enum": ["pending ", "complete ", "scheduled ", "planned "]
     },
     "date": { 
       "type": "string", 
@@ -146,7 +146,9 @@ Credit Card accounts extend the common schema with a `statementDay` field:
 }
 ```
 
-**Note**: Transaction dates use the format `YYYY/MM/DD` (e.g., `2025/10/26`) as defined in the application config.
+**Note**: 
+- Transaction dates use the format `YYYY/MM/DD` (e.g., `2025/10/26`) as defined in the application config.
+- Status values have trailing spaces (this is the existing implementation in `TransactionStatusEnum`).
 
 ## Error Messages
 

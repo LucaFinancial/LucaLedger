@@ -6,6 +6,7 @@
  */
 
 // Valid transaction status values
+// NOTE: These have trailing spaces to match the existing TransactionStatusEnum implementation
 const validStatuses = ['pending ', 'complete ', 'scheduled ', 'planned '];
 
 // Schema for transactions
