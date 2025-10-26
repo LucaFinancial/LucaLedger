@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { actions } from '@/store/transactions';
+import { dollarsToCents } from '@/utils';
 import AmountField from './AmountField';
 import DescriptionField from './DescriptionField';
 import FrequencyField from './FrequencyField';
@@ -29,10 +30,12 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
   const [occurrences, setOccurrences] = useState(null);
 
   const handleCreate = () => {
+    // Convert amount from dollars to cents for storage
+    const amountInCents = dollarsToCents(parseFloat(amount || 0));
     dispatch(
       actions.createRepeatTransaction({
         startDate,
-        amount: Number(amount),
+        amount: amountInCents,
         description,
         frequency,
         frequencyCount,
@@ -52,7 +55,7 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
       setTimeout(() => {
         setStartDate(dayjs());
         setDescription('');
-        setAmount(0.0);
+        setAmount('');
         setFrequency(null);
         setFrequencyCount(null);
         setOccurrences(null);
