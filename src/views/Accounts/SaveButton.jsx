@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -12,7 +13,7 @@ export default function SaveButton() {
 
   const handleSave = () => {
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts,
       transactions,
     };

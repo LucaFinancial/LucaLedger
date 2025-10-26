@@ -35,6 +35,8 @@ import { setAccounts } from '@/store/accounts/slice';
 import { setTransactions } from '@/store/transactions/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import { dollarsToCents } from '@/utils';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -148,8 +150,17 @@ export default function EncryptionProvider() {
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
 
-      // Clear localStorage
-      localStorage.removeItem('reduxState');
+      // Clear localStorage data (schema version is in dataSchemaVersion, not reduxState)
+      const emptyState = {
+        accounts: {
+          data: [],
+          loading: false,
+          error: null,
+          loadingAccountIds: [],
+        },
+        transactions: [],
+      };
+      localStorage.setItem('reduxState', JSON.stringify(emptyState));
 
       // Update encryption status
       dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
@@ -178,11 +189,81 @@ export default function EncryptionProvider() {
   };
 
   const loadEncryptedDataIntoRedux = async (dek) => {
+    // Check schema version from localStorage
+    let schemaVersion = localStorage.getItem('dataSchemaVersion');
+
     // Load encrypted data into Redux
-    const [encryptedAccounts, encryptedTransactions] = await Promise.all([
+    let [encryptedAccounts, encryptedTransactions] = await Promise.all([
       getAllEncryptedRecords('accounts', dek),
       getAllEncryptedRecords('transactions', dek),
     ]);
+
+    // Check if we need to migrate from schema 2.0.0 to 2.0.1
+    const needsMigration =
+      !schemaVersion ||
+      schemaVersion === '2.0.0' ||
+      (schemaVersion < CURRENT_SCHEMA_VERSION &&
+        encryptedTransactions.length > 0);
+
+    if (needsMigration) {
+      // Update schema version IMMEDIATELY to prevent double migration
+      // if this function is called twice concurrently
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+
+      console.log(
+        `[IndexedDB Migration] Migrating encrypted data from schema ${
+          schemaVersion || 'unknown'
+        } to ${CURRENT_SCHEMA_VERSION}`
+      );
+
+      // Convert all transaction amounts from dollars (float) to cents (integer)
+      const migratedTransactions = encryptedTransactions.map((transaction) => ({
+        ...transaction,
+        amount: dollarsToCents(transaction.amount),
+      }));
+
+      console.log(
+        `[IndexedDB Migration] Converted ${migratedTransactions.length} transaction amounts to cents`
+      );
+
+      // Save migrated transactions back to IndexedDB
+      const transactionRecords = migratedTransactions.map((transaction) => ({
+        id: transaction.id,
+        data: transaction,
+      }));
+
+      await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
+
+      console.log(
+        `[IndexedDB Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`
+      );
+
+      // Use migrated data
+      encryptedTransactions = migratedTransactions;
+    } else if (schemaVersion === CURRENT_SCHEMA_VERSION) {
+      // Data already migrated, but ensure schema version is set
+      console.log(
+        `[IndexedDB] Schema version already at ${CURRENT_SCHEMA_VERSION}`
+      );
+    } else if (encryptedTransactions.length > 0 && !schemaVersion) {
+      // Has data but no schema version - set it
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+      console.log(
+        `[IndexedDB] Set initial schema version to ${CURRENT_SCHEMA_VERSION}`
+      );
+    }
+
+    // Clear localStorage data to prevent duplicates
+    const emptyState = {
+      accounts: {
+        data: [],
+        loading: false,
+        error: null,
+        loadingAccountIds: [],
+      },
+      transactions: [],
+    };
+    localStorage.setItem('reduxState', JSON.stringify(emptyState));
 
     // Replace entire state (not add) to avoid duplicates from preloadedState
     dispatch(setAccounts(encryptedAccounts));

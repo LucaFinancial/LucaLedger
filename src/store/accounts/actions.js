@@ -14,6 +14,7 @@ import {
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
+import { dollarsToCents } from '@/utils';
 
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
@@ -35,47 +36,71 @@ export const loadAccount = (data) => async (dispatch) => {
     // Add a small delay to ensure UI updates before processing
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-      // Load all accounts and mark them as loading
-      const chunkSize = 100;
-      for (let i = 0; i < data.accounts.length; i += chunkSize) {
-        const chunk = data.accounts.slice(i, i + chunkSize);
-        chunk.forEach((accountData) => {
-          dispatch(addAccount(accountData));
-          dispatch(addLoadingAccountId(accountData.id));
-        });
-        // Yield to UI thread
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
+    // Determine schema version - must be present
+    const schemaVersion = data.schemaVersion || data.version;
 
-      // Load all transactions
-      for (let i = 0; i < data.transactions.length; i += chunkSize) {
-        const chunk = data.transactions.slice(i, i + chunkSize);
-        chunk.forEach((transaction) => {
-          dispatch(addTransaction(transaction));
-        });
-        // Yield to UI thread
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
+    if (!schemaVersion) {
+      throw new Error(
+        'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.'
+      );
+    }
+
+    let accountsToLoad = [];
+    let transactionsToLoad = [];
+
+    if (schemaVersion === '2.0.1') {
+      // Schema 2.0.1: amounts already in cents, load as-is
+      accountsToLoad = data.accounts;
+      transactionsToLoad = data.transactions;
+    } else if (
+      schemaVersion === '2.0.0' &&
+      data.accounts &&
+      data.transactions
+    ) {
+      // Schema 2.0.0: amounts in dollars, convert to cents
+      accountsToLoad = data.accounts;
+      transactionsToLoad = data.transactions.map((transaction) => {
+        const converted = {
+          ...transaction,
+          amount: dollarsToCents(transaction.amount),
+        };
+        // Remove balance field if it exists
+        // eslint-disable-next-line no-unused-vars
+        const { balance, ...clean } = converted;
+        return clean;
+      });
     } else {
-      const { transactions, ...accountData } = data;
+      // Schema 1.0.0: single account with nested transactions
+      // eslint-disable-next-line no-unused-vars
+      const { transactions, version, ...accountData } = data;
+      accountsToLoad = [accountData];
+      transactionsToLoad = (transactions || []).map((transaction) => {
+        const converted = {
+          ...transaction,
+          accountId: data.id,
+          amount: dollarsToCents(transaction.amount),
+        };
+        // Remove balance field if it exists
+        // eslint-disable-next-line no-unused-vars
+        const { balance, ...clean } = converted;
+        return clean;
+      });
+    }
 
+    // Load all accounts
+    accountsToLoad.forEach((accountData) => {
       dispatch(addAccount(accountData));
       dispatch(addLoadingAccountId(accountData.id));
+    });
 
-      if (transactions && Array.isArray(transactions)) {
-        // Process transactions in chunks
-        const chunkSize = 100;
-        for (let i = 0; i < transactions.length; i += chunkSize) {
-          const chunk = transactions.slice(i, i + chunkSize);
-          chunk.forEach((transaction) => {
-            dispatch(addTransaction({ ...transaction, accountId: data.id }));
-          });
-          // Yield to UI thread
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        }
-      }
-    }
+    // Load all transactions
+    transactionsToLoad.forEach((transaction) => {
+      dispatch(addTransaction(transaction));
+    });
+
+    // Update schema version in localStorage to current version
+    // This prevents migrations from running on already-converted data
+    localStorage.setItem('dataSchemaVersion', '2.0.1');
 
     dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
