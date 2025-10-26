@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 
 import config from '@/config';
 import { generateTransaction } from './generators';
-import schemas from './schemas';
 import {
   addTransaction,
   updateTransaction as updateTransactionNormalized,
@@ -68,7 +67,6 @@ export const createRepeatTransaction = createAsyncThunk(
           description,
         };
         const newTransaction = generateTransaction(initialData);
-        schemas.transaction.validateSync(newTransaction);
 
         dispatch(addTransaction(newTransaction));
 

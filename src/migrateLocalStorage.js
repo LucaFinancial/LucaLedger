@@ -33,16 +33,10 @@ if (!schemaVersion || schemaVersion === '2.0.0') {
         state.transactions = state.transactions.map((transaction) => {
           if (typeof transaction.amount === 'number') {
             // Convert dollars to cents
-            const amountInCents = dollarsToCents(transaction.amount);
             convertedCount++;
-
-            // Remove balance field if exists (cleanup)
-            // eslint-disable-next-line no-unused-vars
-            const { balance, ...cleanTransaction } = transaction;
-
             return {
-              ...cleanTransaction,
-              amount: amountInCents,
+              ...transaction,
+              amount: dollarsToCents(transaction.amount),
             };
           }
           return transaction;

@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { TransactionStatusEnum } from './constants';
-import schemas from './schemas';
+import { validateTransactionSync } from '@/validation/validator';
 
 export const generateTransaction = (initialData = {}) => {
   const transaction = {
@@ -17,7 +17,7 @@ export const generateTransaction = (initialData = {}) => {
   };
 
   try {
-    schemas.transaction.validateSync(transaction, { abortEarly: false });
+    validateTransactionSync(transaction);
     return transaction;
   } catch (error) {
     console.error(error);
