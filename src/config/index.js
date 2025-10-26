@@ -1,8 +1,9 @@
 import categoriesData from './categories.json';
 
-const config = {
+// Export categories for use throughout the app
+export const categories = categoriesData.categories;
+
+// Default export for convenience
+export default {
   categories: categoriesData.categories,
 };
-
-export { config };
-export default config;

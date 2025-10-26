@@ -8,17 +8,17 @@
     },
     {
       "id": "22fdf132-bf6f-4ad3-8bb2-e3fe5a2ffa4c",
-      "slug": "food-dining",
-      "name": "Food & Dining",
+      "slug": "food",
+      "name": "Food",
       "subcategories": [
         {
           "id": "d2e43ae6-11b1-46f9-92d6-578f2fbac48d",
-          "slug": "food-dining-groceries",
+          "slug": "food-groceries",
           "name": "Groceries"
         },
         {
           "id": "8a802e37-7427-4aa6-b705-506d6a684dda",
-          "slug": "food-dining-restaurants",
+          "slug": "food-restaurants",
           "name": "Restaurants"
         }
       ]
@@ -37,6 +37,11 @@
           "id": "21d96c64-6d31-494f-a1bc-3e3739660bf0",
           "slug": "transportation-public-transit",
           "name": "Public Transit"
+        },
+        {
+          "id": "26e3902e-cd89-4158-b1d4-b584689f2f11",
+          "slug": "transportation-auto-loan",
+          "name": "Auto Loan"
         }
       ]
     },
@@ -47,13 +52,8 @@
       "subcategories": [
         {
           "id": "c64aa1a0-6986-44a5-b96b-e57ec7cfb536",
-          "slug": "utilities-electricity",
-          "name": "Electricity"
-        },
-        {
-          "id": "f951da7b-06b4-44dc-a588-3e53bb0c6016",
-          "slug": "utilities-water",
-          "name": "Water"
+          "slug": "utilities-gas-electric",
+          "name": "Gas & Electric"
         }
       ]
     },
@@ -71,6 +71,11 @@
           "id": "07eaf4c5-6f5c-4c06-900b-382dfada73e2",
           "slug": "income-bonus",
           "name": "Bonus"
+        },
+        {
+          "id": "7ef1c594-d762-47f0-a84d-1989f520d8bb",
+          "slug": "income-interest",
+          "name": "Interest"
         }
       ]
     }

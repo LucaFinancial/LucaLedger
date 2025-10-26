@@ -2,8 +2,12 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
-import { NONE_CATEGORY_ID } from './categories/constants';
-import config from '@/config';
+import categoriesData from '@/config/categories.json';
+
+// Get the None category ID from config
+const NONE_CATEGORY_ID = categoriesData.categories.find(
+  (cat) => cat.slug === 'none'
+)?.id;
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
@@ -155,7 +159,7 @@ const migrateState = (persistedState) => {
   }
 
   // Always include categories from config (they are not persisted)
-  state.categories = config.categories;
+  state.categories = categoriesData.categories;
 
   return state;
 };
