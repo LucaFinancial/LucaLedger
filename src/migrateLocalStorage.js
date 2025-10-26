@@ -6,7 +6,6 @@
 
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
-import { validateTransactionSync } from '@/validation/validator';
 
 // Check if migration is needed
 const schemaVersion = localStorage.getItem('dataSchemaVersion');
@@ -33,13 +32,12 @@ if (!schemaVersion || schemaVersion === '2.0.0') {
         // Convert each transaction amount
         state.transactions = state.transactions.map((transaction) => {
           if (typeof transaction.amount === 'number') {
-            // Convert dollars to cents and validate to clean up invalid properties
-            const converted = {
+            // Convert dollars to cents
+            convertedCount++;
+            return {
               ...transaction,
               amount: dollarsToCents(transaction.amount),
             };
-            convertedCount++;
-            return validateTransactionSync(converted);
           }
           return transaction;
         });

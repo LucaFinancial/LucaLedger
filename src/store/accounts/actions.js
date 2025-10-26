@@ -2,10 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
-import {
-  validateAccount,
-  validateTransactionSync,
-} from '@/validation/validator';
+import { validateAccount } from '@/validation/validator';
 import {
   addAccount,
   updateAccount as updateAccountNormalized,
@@ -62,28 +59,20 @@ export const loadAccount = (data) => async (dispatch) => {
     ) {
       // Schema 2.0.0: amounts in dollars, convert to cents
       accountsToLoad = data.accounts;
-      transactionsToLoad = data.transactions.map((transaction) => {
-        const converted = {
-          ...transaction,
-          amount: dollarsToCents(transaction.amount),
-        };
-        // Validate to remove any invalid properties
-        return validateTransactionSync(converted);
-      });
+      transactionsToLoad = data.transactions.map((transaction) => ({
+        ...transaction,
+        amount: dollarsToCents(transaction.amount),
+      }));
     } else {
       // Schema 1.0.0: single account with nested transactions
       // eslint-disable-next-line no-unused-vars
       const { transactions, version, ...accountData } = data;
       accountsToLoad = [accountData];
-      transactionsToLoad = (transactions || []).map((transaction) => {
-        const converted = {
-          ...transaction,
-          accountId: data.id,
-          amount: dollarsToCents(transaction.amount),
-        };
-        // Validate to remove any invalid properties
-        return validateTransactionSync(converted);
-      });
+      transactionsToLoad = (transactions || []).map((transaction) => ({
+        ...transaction,
+        accountId: data.id,
+        amount: dollarsToCents(transaction.amount),
+      }));
     }
 
     // Load all accounts
