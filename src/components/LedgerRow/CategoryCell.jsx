@@ -24,6 +24,7 @@ export default function CategoryCell({ transaction }) {
         value={transaction.categoryId}
         onChange={handleCategoryChange}
         size='small'
+        variant='standard'
         fullWidth
         label=''
         placeholder='Category'

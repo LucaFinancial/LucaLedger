@@ -95,6 +95,10 @@ export default function CategorySelect({
                 }
               : undefined
           }
+          InputProps={{
+            ...params.InputProps,
+            disableUnderline: variant === 'standard',
+          }}
         />
       )}
       renderOption={(props, option) => (
