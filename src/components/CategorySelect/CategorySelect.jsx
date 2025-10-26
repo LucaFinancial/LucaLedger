@@ -10,6 +10,7 @@ export default function CategorySelect({
   size = 'small',
   variant = 'outlined',
   label = 'Category',
+  placeholder = '',
   error = false,
   helperText = '',
   fullWidth = false,
@@ -79,6 +80,7 @@ export default function CategorySelect({
         <TextField
           {...params}
           label={label}
+          placeholder={placeholder}
           size={size}
           variant={variant}
           error={error || isInvalidCategory}
@@ -142,6 +144,7 @@ CategorySelect.propTypes = {
   size: PropTypes.oneOf(['small', 'medium']),
   variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
   label: PropTypes.string,
+  placeholder: PropTypes.string,
   error: PropTypes.bool,
   helperText: PropTypes.string,
   fullWidth: PropTypes.bool,

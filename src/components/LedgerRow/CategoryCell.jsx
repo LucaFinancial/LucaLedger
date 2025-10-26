@@ -25,6 +25,8 @@ export default function CategoryCell({ transaction }) {
         onChange={handleCategoryChange}
         size='small'
         fullWidth
+        label=''
+        placeholder='Category'
       />
     </TableCell>
   );
