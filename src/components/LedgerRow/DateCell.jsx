@@ -2,7 +2,7 @@ import { Box, Button, TableCell, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -19,6 +19,11 @@ export default function DateCell({ transaction }) {
   const [dateValue, setDateValue] = useState(
     dayjs(transaction.date, config.dateFormatString)
   );
+
+  // Sync local state when transaction.date changes (e.g., from bulk edit)
+  useEffect(() => {
+    setDateValue(dayjs(transaction.date, config.dateFormatString));
+  }, [transaction.date]);
 
   const handleSave = (value) => {
     dispatch(
