@@ -216,15 +216,29 @@ export default function EncryptionProvider() {
         } to ${CURRENT_SCHEMA_VERSION}`
       );
 
-      // Convert all transaction amounts from dollars (float) to cents (integer)
-      const migratedTransactions = encryptedTransactions.map((transaction) => ({
-        ...transaction,
-        amount: dollarsToCents(transaction.amount),
-      }));
+      let amountConversionCount = 0;
 
-      console.log(
-        `[IndexedDB Migration] Converted ${migratedTransactions.length} transaction amounts to cents`
-      );
+      // Migrate transactions
+      const migratedTransactions = encryptedTransactions.map((transaction) => {
+        let updated = { ...transaction };
+
+        // Migration 2.0.0 → 2.0.1: Convert amounts from dollars to cents
+        if (
+          (!schemaVersion || schemaVersion === '2.0.0') &&
+          typeof updated.amount === 'number'
+        ) {
+          updated.amount = dollarsToCents(updated.amount);
+          amountConversionCount++;
+        }
+
+        return updated;
+      });
+
+      if (amountConversionCount > 0) {
+        console.log(
+          `[IndexedDB Migration] Converted ${amountConversionCount} transaction amounts to cents`
+        );
+      }
 
       // Save migrated transactions back to IndexedDB
       const transactionRecords = migratedTransactions.map((transaction) => ({

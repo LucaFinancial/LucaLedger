@@ -46,39 +46,23 @@ export const loadAccount = (data) => async (dispatch) => {
       );
     }
 
-    // Helper function to trim transaction status
-    const trimStatus = (status) => {
-      if (typeof status === 'string') {
-        return status.trim();
-      }
-      return status;
-    };
-
     let accountsToLoad = [];
     let transactionsToLoad = [];
 
-    if (schemaVersion === '2.0.2') {
-      // Schema 2.0.2: amounts in cents, status without trailing spaces
+    if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+      // Schema 2.0.1+: amounts in cents
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
-    } else if (schemaVersion === '2.0.1') {
-      // Schema 2.0.1: amounts in cents, but status has trailing spaces
-      accountsToLoad = data.accounts;
-      transactionsToLoad = data.transactions.map((transaction) => ({
-        ...transaction,
-        status: trimStatus(transaction.status),
-      }));
     } else if (
       schemaVersion === '2.0.0' &&
       data.accounts &&
       data.transactions
     ) {
-      // Schema 2.0.0: amounts in dollars, status has trailing spaces
+      // Schema 2.0.0: amounts in dollars, convert to cents
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions.map((transaction) => ({
         ...transaction,
         amount: dollarsToCents(transaction.amount),
-        status: trimStatus(transaction.status),
       }));
     } else {
       // Schema 1.0.0: single account with nested transactions
@@ -89,7 +73,6 @@ export const loadAccount = (data) => async (dispatch) => {
         ...transaction,
         accountId: data.id,
         amount: dollarsToCents(transaction.amount),
-        status: trimStatus(transaction.status),
       }));
     }
 
