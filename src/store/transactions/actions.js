@@ -99,7 +99,11 @@ export const updateTransactionProperty =
       [property]: value,
     };
 
-    dispatch(updateTransactionNormalized(updatedTransaction));
+    // Validate and clean the transaction (removes additional properties like balance)
+    const cleanedTransaction =
+      schemas.transaction.validateSync(updatedTransaction);
+
+    dispatch(updateTransactionNormalized(cleanedTransaction));
   };
 
 export const removeTransactionById =

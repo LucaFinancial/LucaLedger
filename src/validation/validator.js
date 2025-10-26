@@ -30,6 +30,7 @@ const ajv = new Ajv({
   allErrors: true,
   useDefaults: true,
   coerceTypes: false,
+  removeAdditional: true,
 });
 
 // Add support for string formats (date, email, uri, etc.)

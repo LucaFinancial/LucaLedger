@@ -45,7 +45,7 @@ const transactionSchema = {
     },
   },
   required: ['id', 'accountId', 'status', 'date', 'amount', 'description'],
-  additionalProperties: true, // Allow additional properties for extensibility
+  additionalProperties: false,
 };
 
 export const transactionSchemas = {
