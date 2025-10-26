@@ -23,40 +23,33 @@ export default function BulkEditModal({
 }) {
   const [selectedState, setSelectedState] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
-  const [initialState, setInitialState] = useState({ status: '', date: null });
 
   const handleClose = () => {
     setSelectedState('');
     setSelectedDate(null);
-    setInitialState({ status: '', date: null });
     onClose();
   };
 
   const handleApply = () => {
     const updates = {};
 
-    // Only include status if it was changed
-    if (selectedState && selectedState !== initialState.status) {
+    // Only include status if it was set
+    if (selectedState) {
       updates.status = selectedState;
     }
 
-    // Only include date if it was changed and is valid
-    if (
-      selectedDate &&
-      selectedDate.isValid() &&
-      selectedDate !== initialState.date
-    ) {
+    // Only include date if it was set and is valid
+    if (selectedDate && selectedDate.isValid()) {
       updates.date = selectedDate;
     }
 
-    // Only apply if at least one field was changed
+    // Only apply if at least one field was set
     if (Object.keys(updates).length > 0) {
       onApplyChanges(updates);
     }
 
     setSelectedState('');
     setSelectedDate(null);
-    setInitialState({ status: '', date: null });
   };
 
   return (
@@ -113,7 +106,9 @@ export default function BulkEditModal({
         <Button
           onClick={handleApply}
           variant='contained'
-          disabled={!selectedState && !selectedDate}
+          disabled={
+            !selectedState && (!selectedDate || !selectedDate.isValid())
+          }
         >
           Change All
         </Button>
