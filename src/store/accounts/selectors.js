@@ -1,3 +1,23 @@
+import { createSelector } from '@reduxjs/toolkit';
+
+/**
+ * Memoized Redux Selectors for Accounts
+ *
+ * These selectors use createSelector from Redux Toolkit to prevent unnecessary
+ * re-renders by memoizing their results. A memoized selector only returns a new
+ * reference when its input dependencies actually change, not on every call.
+ *
+ * This is critical for performance because:
+ * 1. React components re-render when their props change by reference
+ * 2. Unmemoized selectors that filter/find arrays return new references every call
+ * 3. This causes unnecessary re-renders even when the underlying data is unchanged
+ *
+ * Pattern: createSelector([inputSelectors...], resultFunction)
+ * - Input selectors extract the minimal data needed
+ * - Result function transforms that data
+ * - Results are cached and only recomputed when inputs change
+ */
+
 // Basic selectors with migration-safe fallbacks
 export const selectAccounts = (state) => {
   // Handle migration transition: accounts might still be an array during load
@@ -28,15 +48,22 @@ export const selectLoadingAccountIds = (state) => {
   return state.accounts?.loadingAccountIds || [];
 };
 
-export const selectIsAccountLoading = (accountId) => (state) => {
-  if (Array.isArray(state.accounts)) {
-    return false;
-  }
-  return state.accounts?.loadingAccountIds?.includes(accountId) || false;
-};
+/**
+ * Memoized selector factory for checking if an account is loading
+ * Returns a memoized selector that checks if a specific account ID is in the loading list.
+ * The selector is memoized per accountId to prevent unnecessary re-renders.
+ */
+export const selectIsAccountLoading = (accountId) =>
+  createSelector([selectLoadingAccountIds], (loadingAccountIds) =>
+    loadingAccountIds.includes(accountId)
+  );
 
-// Account selectors
-export const selectAccountById = (accountId) => (state) => {
-  const accounts = selectAccounts(state);
-  return accounts.find((account) => account.id === accountId);
-};
+/**
+ * Memoized selector factory for finding an account by ID
+ * Returns a memoized selector that finds an account with the given ID.
+ * The selector is memoized per accountId to prevent unnecessary re-renders.
+ */
+export const selectAccountById = (accountId) =>
+  createSelector([selectAccounts], (accounts) =>
+    accounts.find((account) => account.id === accountId)
+  );
