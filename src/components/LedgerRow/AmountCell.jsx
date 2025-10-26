@@ -69,7 +69,7 @@ export default function AmountCell({ transaction }) {
   };
 
   const handleEdit = () => {
-    if (value === 0) setValue('');
+    if (value === '0.00') setValue('');
     setEdit(true);
     setTimeout(() => {
       inputRef.current.focus();
