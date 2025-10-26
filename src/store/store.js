@@ -4,11 +4,6 @@ import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
 import categoriesData from '@/config/categories.json';
 
-// Get the None category ID from config
-const NONE_CATEGORY_ID = categoriesData.categories.find(
-  (cat) => cat.slug === 'none'
-)?.id;
-
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
@@ -128,28 +123,6 @@ const migrateState = (persistedState) => {
         return accountWithoutVersion;
       });
       console.log('Migration: Removed version field from accounts');
-      needsPersist = true;
-    }
-  }
-
-  // Migrate transactions with missing or "0" categoryId to None category
-  if (state.transactions && Array.isArray(state.transactions)) {
-    let categoryMigrationCount = 0;
-    state.transactions = state.transactions.map((transaction) => {
-      if (!transaction.categoryId || transaction.categoryId === '0') {
-        categoryMigrationCount++;
-        return {
-          ...transaction,
-          categoryId: NONE_CATEGORY_ID,
-        };
-      }
-      return transaction;
-    });
-
-    if (categoryMigrationCount > 0) {
-      console.log(
-        `[Migration] Set categoryId to None for ${categoryMigrationCount} transactions`
-      );
       needsPersist = true;
     }
   }
