@@ -86,7 +86,10 @@ export default function CategorySelect({
       options={options}
       groupBy={(option) => option.group}
       getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, value) => option.id === value.id}
+      isOptionEqualToValue={(option, value) => {
+        if (!option || !value) return false;
+        return option.id === value.id;
+      }}
       disableClearable={false}
       renderInput={(params) => (
         <TextField
