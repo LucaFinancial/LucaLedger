@@ -131,3 +131,23 @@ export const updateMultipleTransactionsStatus =
       })
     );
   };
+
+export const updateMultipleTransactionsFields =
+  (transactionIds, updates) => (dispatch) => {
+    // Process date if present - convert dayjs to string format
+    const processedUpdates = { ...updates };
+    if (
+      updates.date &&
+      typeof updates.date === 'object' &&
+      updates.date.format
+    ) {
+      processedUpdates.date = updates.date.format(config.dateFormatString);
+    }
+
+    dispatch(
+      updateMultipleTransactions({
+        transactionIds,
+        updates: processedUpdates,
+      })
+    );
+  };

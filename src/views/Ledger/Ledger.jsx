@@ -119,11 +119,11 @@ export default function Ledger() {
     setBulkEditModalOpen(false);
   };
 
-  const handleBulkEditApply = (newStatus) => {
+  const handleBulkEditApply = (updates) => {
     dispatch(
-      transactionActions.updateMultipleTransactionsStatus(
+      transactionActions.updateMultipleTransactionsFields(
         Array.from(selectedTransactions),
-        newStatus
+        updates
       )
     );
     setSelectedTransactions(new Set());
