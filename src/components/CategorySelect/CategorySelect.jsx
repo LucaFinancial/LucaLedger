@@ -51,7 +51,18 @@ export default function CategorySelect({
   // Find the current selected option
   const selectedOption = useMemo(() => {
     if (!value) return null;
-    return options.find((opt) => opt.id === value) || null;
+    const found = options.find((opt) => opt.id === value);
+    // If invalid category, create a placeholder option
+    if (!found) {
+      return {
+        id: value,
+        name: 'Invalid category',
+        slug: 'invalid',
+        isParent: false,
+        group: 'Invalid',
+      };
+    }
+    return found;
   }, [value, options]);
 
   // Check if the current categoryId is valid
@@ -76,6 +87,7 @@ export default function CategorySelect({
       groupBy={(option) => option.group}
       getOptionLabel={(option) => option.name}
       isOptionEqualToValue={(option, value) => option.id === value.id}
+      disableClearable={false}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -88,6 +100,9 @@ export default function CategorySelect({
           sx={
             isInvalidCategory
               ? {
+                  '& .MuiInputBase-input': {
+                    color: 'error.main',
+                  },
                   '& .MuiInputBase-input::placeholder': {
                     color: 'error.main',
                     opacity: 1,
