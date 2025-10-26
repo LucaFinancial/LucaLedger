@@ -97,49 +97,218 @@ export default function Landing() {
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
-              <li>
-                <strong>Bulk Edit for Transactions:</strong> Efficiently edit
-                multiple transactions at once, saving time and improving data
-                management
-              </li>
-              <li>
-                <strong>Enhanced Security:</strong> Data encryption at rest with
-                industry standard AES-256 encryption and migration from
-                localStorage to IndexedDB for better performance and security
-              </li>
-              <li>
-                <strong>Improved File Handling:</strong> All accounts and
-                transactions are now stored in a single unified file format,
-                with transactions separated from account data for better
-                organization
-              </li>
-              <li>
-                <strong>Clear Filter Button in Ledger View:</strong> Small
-                improvement to quickly clear filter text in the ledger view with
-                a convenient clear button
-              </li>
-              <li>
-                <strong>Data Refactor:</strong> Unified store architecture with
-                migration to new data format and cleanup of deprecated
-                structures for improved performance
-              </li>
-              <li>
-                <strong>Convert Amounts to Integer Minor Units:</strong>{' '}
-                Improved precision for monetary calculations by storing amounts
-                in minor units (cents)
-              </li>
-              <li>
-                <strong>User Settings Page:</strong> Customize your experience
-                with personalized settings and preferences
-              </li>
-              <li>
-                <strong>Account Settings Page:</strong> Manage account-specific
-                settings and configurations
-              </li>
-            </ul>
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Transaction Categories */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: 'success.main',
+                backgroundColor: 'success.50',
+                '&:hover': {
+                  backgroundColor: 'success.100',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: 'success.dark', mb: 1 }}
+              >
+                📊 Transaction Categories
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Organize your finances with custom categories and subcategories.
+                Track spending by category and gain insights into where your
+                money goes.
+              </Typography>
+            </Paper>
+
+            {/* Bulk Edit */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: 'primary.main',
+                backgroundColor: 'primary.50',
+                '&:hover': {
+                  backgroundColor: 'primary.100',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: 'primary.dark', mb: 1 }}
+              >
+                ✏️ Bulk Edit for Transactions
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Efficiently edit multiple transactions at once, saving time and
+                improving data management.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Security */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: 'warning.main',
+                backgroundColor: 'warning.50',
+                '&:hover': {
+                  backgroundColor: 'warning.100',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: 'warning.dark', mb: 1 }}
+              >
+                🔒 Enhanced Security
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Data encryption at rest with industry standard AES-256
+                encryption and migration from localStorage to IndexedDB for
+                better performance and security.
+              </Typography>
+            </Paper>
+
+            {/* Improved File Handling */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: 'info.main',
+                backgroundColor: 'info.50',
+                '&:hover': {
+                  backgroundColor: 'info.100',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: 'info.dark', mb: 1 }}
+              >
+                📁 Unified File Format
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                All accounts and transactions are now stored in a single unified
+                file format, with transactions separated from account data for
+                better organization.
+              </Typography>
+            </Paper>
+
+            {/* Precision Improvements */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: 'secondary.main',
+                backgroundColor: 'secondary.50',
+                '&:hover': {
+                  backgroundColor: 'secondary.100',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: 'secondary.dark', mb: 1 }}
+              >
+                💰 Improved Precision
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Enhanced monetary calculations by storing amounts in minor units
+                (cents), eliminating floating-point errors.
+              </Typography>
+            </Paper>
+
+            {/* Additional Features */}
+            <Box sx={{ mt: 1 }}>
+              <Typography
+                variant='h6'
+                sx={{ mb: 2, color: 'text.primary', fontWeight: 500 }}
+              >
+                Plus many more improvements:
+              </Typography>
+              <Box
+                component='ul'
+                sx={{
+                  listStyle: 'none',
+                  pl: 0,
+                  m: 0,
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  component='li'
+                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                >
+                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
+                  <Typography variant='body2'>
+                    Clear filter button in ledger view
+                  </Typography>
+                </Box>
+                <Box
+                  component='li'
+                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                >
+                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
+                  <Typography variant='body2'>
+                    User settings page for personalization
+                  </Typography>
+                </Box>
+                <Box
+                  component='li'
+                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                >
+                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
+                  <Typography variant='body2'>
+                    Account-specific settings page
+                  </Typography>
+                </Box>
+                <Box
+                  component='li'
+                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                >
+                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
+                  <Typography variant='body2'>
+                    Unified store architecture
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </Section>
 
         {/* Coming Next Section */}
@@ -149,10 +318,6 @@ export default function Landing() {
               <li>
                 <strong>Double-entry Accounting:</strong> Implement double-entry
                 bookkeeping for accurate financial tracking
-              </li>
-              <li>
-                <strong>Transaction Categories:</strong> Improved category
-                management with custom categories and subcategories
               </li>
               <li>
                 <strong>Recurring Transactions:</strong> Set up automatic
