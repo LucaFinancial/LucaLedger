@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
-import schemas from './schemas';
+import { validateAccount } from '@/validation/validator';
 import {
   addAccount,
   updateAccount as updateAccountNormalized,
@@ -129,10 +129,10 @@ export const loadAccountAsync = () => async (dispatch) => {
     data.type || AccountType.CHECKING,
     data.statementDay || (data.type === AccountType.CREDIT_CARD ? 1 : null)
   );
-  try {
-    await schemas[account.type].validate(account);
-  } catch (error) {
-    console.error(error);
+
+  const validationResult = await validateAccount(account, account.type);
+  if (!validationResult.valid) {
+    console.error(validationResult.errors);
     return;
   }
 

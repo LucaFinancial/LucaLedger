@@ -4,4 +4,3 @@ export * as constants from './constants';
 export * as actions from './actions';
 export * as generators from './generators';
 export * as selectors from './selectors';
-export { default as schemas } from './schemas';

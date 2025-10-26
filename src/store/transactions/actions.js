@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 import config from '@/config';
 import { generateTransaction } from './generators';
-import schemas from './schemas';
+import { validateTransactionSync } from '@/validation/validator';
 import {
   addTransaction,
   updateTransaction as updateTransactionNormalized,
@@ -68,7 +68,7 @@ export const createRepeatTransaction = createAsyncThunk(
           description,
         };
         const newTransaction = generateTransaction(initialData);
-        schemas.transaction.validateSync(newTransaction);
+        validateTransactionSync(newTransaction);
 
         dispatch(addTransaction(newTransaction));
 
@@ -100,8 +100,7 @@ export const updateTransactionProperty =
     };
 
     // Validate and clean the transaction (removes additional properties like balance)
-    const cleanedTransaction =
-      schemas.transaction.validateSync(updatedTransaction);
+    const cleanedTransaction = validateTransactionSync(updatedTransaction);
 
     dispatch(updateTransactionNormalized(cleanedTransaction));
   };
