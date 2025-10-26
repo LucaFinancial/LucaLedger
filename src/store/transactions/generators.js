@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { v4 as uuid } from 'uuid';
 
-import config from '@/config.js';
+import config from '@/config';
 import { TransactionStatusEnum } from './constants';
 import { validateTransactionSync } from '@/validation/validator';
 
