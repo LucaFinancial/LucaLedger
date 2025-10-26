@@ -1,16 +1,19 @@
 import { TableCell } from '@mui/material';
 import PropTypes from 'prop-types';
+import { centsToDollars } from '@/utils';
 
 export default function BalanceCell({ amount }) {
+  const amountInDollars = centsToDollars(amount);
+
   const cellStyle = {
-    backgroundColor: amount < 0.0 ? '#CC4040' : 'inherit',
+    backgroundColor: amountInDollars < 0 ? '#CC4040' : 'inherit',
     width: '100px',
   };
 
   return (
     <TableCell style={cellStyle}>
       {'$ '}
-      {amount.toLocaleString(undefined, {
+      {amountInDollars.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}

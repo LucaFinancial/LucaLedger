@@ -4,14 +4,16 @@ import dayjs from 'dayjs';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
+  const loading = useSelector(accountSelectors.selectAccountsLoading);
 
   const handleSave = () => {
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts,
       transactions,
     };
@@ -20,7 +22,7 @@ export default function SaveButton() {
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${dayjs().format('YYYY-MM-DD')}.ll`;
+    link.download = `${dayjs().format('YYYY-MM-DD')}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -31,6 +33,7 @@ export default function SaveButton() {
       variant='contained'
       color='primary'
       onClick={handleSave}
+      disabled={loading}
     >
       Save Accounts
     </Button>

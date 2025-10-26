@@ -7,9 +7,14 @@ import {
   addAccount,
   updateAccount as updateAccountNormalized,
   removeAccount,
+  setLoading,
+  setError,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
+import { dollarsToCents } from '@/utils';
 
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
@@ -22,25 +27,89 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount = (data) => (dispatch) => {
-  if (data.schemaVersion === '2.0.0' && data.accounts && data.transactions) {
-    data.accounts.forEach((accountData) => {
-      dispatch(addAccount(accountData));
-    });
+export const loadAccount = (data) => async (dispatch) => {
+  try {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+    dispatch(clearLoadingAccountIds());
 
-    data.transactions.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
-  } else {
-    const { transactions, ...accountData } = data;
+    // Add a small delay to ensure UI updates before processing
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
-    dispatch(addAccount(accountData));
+    // Determine schema version - must be present
+    const schemaVersion = data.schemaVersion || data.version;
 
-    if (transactions && Array.isArray(transactions)) {
-      transactions.forEach((transaction) => {
-        dispatch(addTransaction({ ...transaction, accountId: data.id }));
+    if (!schemaVersion) {
+      throw new Error(
+        'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.'
+      );
+    }
+
+    let accountsToLoad = [];
+    let transactionsToLoad = [];
+
+    if (schemaVersion === '2.0.1') {
+      // Schema 2.0.1: amounts already in cents, load as-is
+      accountsToLoad = data.accounts;
+      transactionsToLoad = data.transactions;
+    } else if (
+      schemaVersion === '2.0.0' &&
+      data.accounts &&
+      data.transactions
+    ) {
+      // Schema 2.0.0: amounts in dollars, convert to cents
+      accountsToLoad = data.accounts;
+      transactionsToLoad = data.transactions.map((transaction) => {
+        const converted = {
+          ...transaction,
+          amount: dollarsToCents(transaction.amount),
+        };
+        // Remove balance field if it exists
+        // eslint-disable-next-line no-unused-vars
+        const { balance, ...clean } = converted;
+        return clean;
+      });
+    } else {
+      // Schema 1.0.0: single account with nested transactions
+      // eslint-disable-next-line no-unused-vars
+      const { transactions, version, ...accountData } = data;
+      accountsToLoad = [accountData];
+      transactionsToLoad = (transactions || []).map((transaction) => {
+        const converted = {
+          ...transaction,
+          accountId: data.id,
+          amount: dollarsToCents(transaction.amount),
+        };
+        // Remove balance field if it exists
+        // eslint-disable-next-line no-unused-vars
+        const { balance, ...clean } = converted;
+        return clean;
       });
     }
+
+    // Load all accounts
+    accountsToLoad.forEach((accountData) => {
+      dispatch(addAccount(accountData));
+      dispatch(addLoadingAccountId(accountData.id));
+    });
+
+    // Load all transactions
+    transactionsToLoad.forEach((transaction) => {
+      dispatch(addTransaction(transaction));
+    });
+
+    // Update schema version in localStorage to current version
+    // This prevents migrations from running on already-converted data
+    localStorage.setItem('dataSchemaVersion', '2.0.1');
+
+    dispatch(clearLoadingAccountIds());
+    dispatch(setLoading(false));
+  } catch (error) {
+    console.error('Error loading account:', error);
+    dispatch(setError(error.message || 'Failed to load account'));
+    dispatch(clearLoadingAccountIds());
+    dispatch(setLoading(false));
+    throw error;
   }
 };
 
@@ -130,7 +199,7 @@ export const updateAccountProperty =
 
 export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
-  const accounts = state.accounts;
+  const accounts = state.accounts.data;
   const transactions = state.transactions;
 
   const data = {
@@ -144,7 +213,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const url = URL.createObjectURL(saveBlob);
   const link = document.createElement('a');
   const timestamp = new Date().toISOString().split('T')[0];
-  link.download = `luca-ledger-${timestamp}.ll`;
+  link.download = `luca-ledger-${timestamp}.json`;
   link.href = url;
   link.click();
   URL.revokeObjectURL(url);
@@ -162,7 +231,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
 export const saveAccountWithTransactions =
   (accountId) => (dispatch, getState) => {
     const state = getState();
-    const account = state.accounts.find((a) => a.id === accountId);
+    const account = state.accounts.data.find((a) => a.id === accountId);
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
 
@@ -178,7 +247,7 @@ export const saveAccountWithTransactions =
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${account.name}.ll`;
+    link.download = `${account.name}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);

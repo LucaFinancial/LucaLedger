@@ -12,6 +12,7 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 import {
+  centsToDollars,
   doublePrecisionFormatString,
   parseFloatDoublePrecision,
 } from '@/utils';
@@ -128,7 +129,7 @@ export default function AmountCell({ transaction }) {
           variant='body1'
           onClick={handleEdit}
         >
-          $ {doublePrecisionFormatString(transaction.amount)}
+          $ {doublePrecisionFormatString(centsToDollars(transaction.amount))}
         </Typography>
       )}
     </TableCell>

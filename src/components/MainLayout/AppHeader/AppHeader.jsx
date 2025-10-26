@@ -1,11 +1,19 @@
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  IconButton,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import VersionDisplay from '@/components/VersionDisplay';
-import EncryptionStatus from '@/components/EncryptionStatus';
 import NavItem from './NavItem';
 
-import { Home as HomeIcon } from '@mui/icons-material';
+import {
+  Home as HomeIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
 
 export default function AppHeader() {
   return (
@@ -38,8 +46,16 @@ export default function AppHeader() {
           Luca Ledger
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <EncryptionStatus />
-          <VersionDisplay />
+          <Tooltip title='Settings'>
+            <IconButton
+              component={Link}
+              to='/settings'
+              aria-label='Settings'
+              sx={{ color: 'white' }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>
