@@ -98,6 +98,10 @@ export const loadAccount = (data) => async (dispatch) => {
       dispatch(addTransaction(transaction));
     });
 
+    // Update schema version in localStorage to current version
+    // This prevents migrations from running on already-converted data
+    localStorage.setItem('dataSchemaVersion', '2.0.1');
+
     dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
   } catch (error) {
