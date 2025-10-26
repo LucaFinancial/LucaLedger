@@ -80,6 +80,7 @@ export default function DateCell({ transaction }) {
     <Box style={{ display: 'flex', flexDirection: 'column' }}>
       <DatePicker
         open={isOpen}
+        onClose={() => setIsOpen(false)}
         value={dateValue}
         onAccept={handleAccept}
         onChange={handleTypingChange}
