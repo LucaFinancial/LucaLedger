@@ -8,7 +8,9 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Typography,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { constants } from '@/store/transactions';
@@ -20,15 +22,34 @@ export default function BulkEditModal({
   onApplyChanges,
 }) {
   const [selectedState, setSelectedState] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const handleClose = () => {
     setSelectedState('');
+    setSelectedDate(null);
     onClose();
   };
 
   const handleApply = () => {
-    onApplyChanges(selectedState);
+    const updates = {};
+
+    // Only include status if it was set
+    if (selectedState) {
+      updates.status = selectedState;
+    }
+
+    // Only include date if it was set and is valid
+    if (selectedDate && selectedDate.isValid()) {
+      updates.date = selectedDate;
+    }
+
+    // Only apply if at least one field was set
+    if (Object.keys(updates).length > 0) {
+      onApplyChanges(updates);
+    }
+
     setSelectedState('');
+    setSelectedDate(null);
   };
 
   return (
@@ -64,13 +85,30 @@ export default function BulkEditModal({
             ))}
           </Select>
         </FormControl>
+        <FormControl
+          fullWidth
+          sx={{ mt: 3 }}
+        >
+          <Typography sx={{ mb: 1 }}>Select new date</Typography>
+          <DatePicker
+            value={selectedDate}
+            onChange={(newValue) => setSelectedDate(newValue)}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+              },
+            }}
+          />
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           onClick={handleApply}
           variant='contained'
-          disabled={!selectedState}
+          disabled={
+            !selectedState && (!selectedDate || !selectedDate.isValid())
+          }
         >
           Change All
         </Button>
