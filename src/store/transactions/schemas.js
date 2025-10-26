@@ -1,19 +1,34 @@
-import * as yup from 'yup';
+/**
+ * Transaction validation schemas using AJV
+ *
+ * This file provides a compatibility layer for existing code that imports
+ * transaction schemas. The actual schema definitions are in /src/validation/transactionSchemas.js
+ *
+ * @deprecated - Import from @/validation instead for new code
+ */
 
-import { TransactionStatusEnum } from './constants';
+import {
+  validateTransactionSync,
+  validateTransaction,
+} from '@/validation/validator';
 
-const commonTransactionSchema = yup.object({
-  id: yup.string().required('Transaction ID is required'),
-  accountId: yup.string().required('Account ID is required'),
-  status: yup
-    .string()
-    .required('Transaction status is required')
-    .oneOf(Object.values(TransactionStatusEnum), 'Invalid status value'),
-  date: yup.date().required('Transaction date is required'),
-  amount: yup.number().required('Transaction amount is required'),
-  description: yup.string().required('Transaction description is required'),
-});
+// Compatibility wrapper to match Yup's validateSync API
+class SchemaValidator {
+  validateSync(transaction) {
+    return validateTransactionSync(transaction);
+  }
+
+  async validate(transaction) {
+    const result = validateTransaction(transaction);
+    if (!result.valid) {
+      const error = new Error(result.errors[0]);
+      error.errors = result.errors;
+      throw error;
+    }
+    return transaction;
+  }
+}
 
 export default {
-  transaction: commonTransactionSchema,
+  transaction: new SchemaValidator(),
 };

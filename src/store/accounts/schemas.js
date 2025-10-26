@@ -1,28 +1,38 @@
-import * as yup from 'yup';
+/**
+ * Account validation schemas using AJV
+ *
+ * This file provides a compatibility layer for existing code that imports
+ * account schemas. The actual schema definitions are in /src/validation/accountSchemas.js
+ *
+ * @deprecated - Import from @/validation instead for new code
+ */
 
 import { AccountType } from './constants';
+import { validateAccountSync, validateAccount } from '@/validation/validator';
 
-const commonAccountSchema = yup
-  .object({
-    id: yup.string().required('ID is required'),
-    name: yup.string().required('Name is required'),
-    type: yup.string().required('Type is required'),
-  })
-  .noUnknown();
+// Compatibility wrapper to match Yup's validateSync API
+class SchemaValidator {
+  constructor(accountType) {
+    this.accountType = accountType;
+  }
 
-const creditCardSchema = commonAccountSchema
-  .shape({
-    statementDay: yup
-      .number()
-      .integer()
-      .min(1)
-      .max(31)
-      .required('Statement day is required'),
-  })
-  .noUnknown();
+  validateSync(account) {
+    return validateAccountSync(account, this.accountType);
+  }
+
+  async validate(account) {
+    const result = validateAccount(account, this.accountType);
+    if (!result.valid) {
+      const error = new Error(result.errors[0]);
+      error.errors = result.errors;
+      throw error;
+    }
+    return account;
+  }
+}
 
 export default {
-  [AccountType.SAVINGS]: commonAccountSchema,
-  [AccountType.CHECKING]: commonAccountSchema,
-  [AccountType.CREDIT_CARD]: creditCardSchema,
+  [AccountType.SAVINGS]: new SchemaValidator(AccountType.SAVINGS),
+  [AccountType.CHECKING]: new SchemaValidator(AccountType.CHECKING),
+  [AccountType.CREDIT_CARD]: new SchemaValidator(AccountType.CREDIT_CARD),
 };
