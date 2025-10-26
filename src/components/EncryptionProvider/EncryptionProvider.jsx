@@ -36,6 +36,7 @@ import { setTransactions } from '@/store/transactions/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import { dollarsToCents } from '@/utils';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -218,7 +219,7 @@ export default function EncryptionProvider() {
       // Convert all transaction amounts from dollars (float) to cents (integer)
       const migratedTransactions = encryptedTransactions.map((transaction) => ({
         ...transaction,
-        amount: Math.round(transaction.amount * 100),
+        amount: dollarsToCents(transaction.amount),
       }));
 
       console.log(

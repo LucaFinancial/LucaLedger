@@ -5,6 +5,7 @@
  */
 
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import { dollarsToCents } from '@/utils';
 
 // Check if migration is needed
 const schemaVersion = localStorage.getItem('dataSchemaVersion');
@@ -32,7 +33,7 @@ if (!schemaVersion || schemaVersion === '2.0.0') {
         state.transactions = state.transactions.map((transaction) => {
           if (typeof transaction.amount === 'number') {
             // Convert dollars to cents
-            const amountInCents = Math.round(transaction.amount * 100);
+            const amountInCents = dollarsToCents(transaction.amount);
             convertedCount++;
 
             // Remove balance field if exists (cleanup)
