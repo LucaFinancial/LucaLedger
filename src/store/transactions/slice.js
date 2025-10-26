@@ -15,10 +15,7 @@ const transactions = createSlice({
       const updatedTransaction = action.payload;
       const index = state.findIndex((t) => t.id === updatedTransaction.id);
       if (index !== -1) {
-        // Remove balance property if it exists (it's a computed value, not stored)
-        // eslint-disable-next-line no-unused-vars
-        const { balance, ...cleanTransaction } = updatedTransaction;
-        state[index] = { ...state[index], ...cleanTransaction };
+        state[index] = { ...state[index], ...updatedTransaction };
       }
     },
     updateMultipleTransactions: (state, action) => {

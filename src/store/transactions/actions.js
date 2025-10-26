@@ -99,7 +99,7 @@ export const updateTransactionProperty =
       [property]: value,
     };
 
-    // Validate and clean the transaction (removes additional properties like balance)
+    // Validate and clean the transaction (schema removes additional properties)
     const cleanedTransaction = validateTransactionSync(updatedTransaction);
 
     dispatch(updateTransactionNormalized(cleanedTransaction));

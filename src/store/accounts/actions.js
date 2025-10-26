@@ -2,7 +2,10 @@ import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
-import { validateAccount } from '@/validation/validator';
+import {
+  validateAccount,
+  validateTransactionSync,
+} from '@/validation/validator';
 import {
   addAccount,
   updateAccount as updateAccountNormalized,
@@ -64,10 +67,8 @@ export const loadAccount = (data) => async (dispatch) => {
           ...transaction,
           amount: dollarsToCents(transaction.amount),
         };
-        // Remove balance field if it exists
-        // eslint-disable-next-line no-unused-vars
-        const { balance, ...clean } = converted;
-        return clean;
+        // Validate to remove any invalid properties
+        return validateTransactionSync(converted);
       });
     } else {
       // Schema 1.0.0: single account with nested transactions
@@ -80,10 +81,8 @@ export const loadAccount = (data) => async (dispatch) => {
           accountId: data.id,
           amount: dollarsToCents(transaction.amount),
         };
-        // Remove balance field if it exists
-        // eslint-disable-next-line no-unused-vars
-        const { balance, ...clean } = converted;
-        return clean;
+        // Validate to remove any invalid properties
+        return validateTransactionSync(converted);
       });
     }
 

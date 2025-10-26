@@ -6,6 +6,7 @@
 
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
+import { validateTransactionSync } from '@/validation/validator';
 
 // Check if migration is needed
 const schemaVersion = localStorage.getItem('dataSchemaVersion');
@@ -32,18 +33,13 @@ if (!schemaVersion || schemaVersion === '2.0.0') {
         // Convert each transaction amount
         state.transactions = state.transactions.map((transaction) => {
           if (typeof transaction.amount === 'number') {
-            // Convert dollars to cents
-            const amountInCents = dollarsToCents(transaction.amount);
-            convertedCount++;
-
-            // Remove balance field if exists (cleanup)
-            // eslint-disable-next-line no-unused-vars
-            const { balance, ...cleanTransaction } = transaction;
-
-            return {
-              ...cleanTransaction,
-              amount: amountInCents,
+            // Convert dollars to cents and validate to clean up invalid properties
+            const converted = {
+              ...transaction,
+              amount: dollarsToCents(transaction.amount),
             };
+            convertedCount++;
+            return validateTransactionSync(converted);
           }
           return transaction;
         });
