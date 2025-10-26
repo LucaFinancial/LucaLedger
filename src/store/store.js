@@ -2,6 +2,9 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
+import { setCategories } from './categories';
+import { NONE_CATEGORY_ID } from './categories/constants';
+import config from '@/config';
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
@@ -126,6 +129,28 @@ const migrateState = (persistedState) => {
     }
   }
 
+  // Migrate transactions with missing or "0" categoryId to None category
+  if (state.transactions && Array.isArray(state.transactions)) {
+    let categoryMigrationCount = 0;
+    state.transactions = state.transactions.map((transaction) => {
+      if (!transaction.categoryId || transaction.categoryId === '0') {
+        categoryMigrationCount++;
+        return {
+          ...transaction,
+          categoryId: NONE_CATEGORY_ID,
+        };
+      }
+      return transaction;
+    });
+
+    if (categoryMigrationCount > 0) {
+      console.log(
+        `[Migration] Set categoryId to None for ${categoryMigrationCount} transactions`
+      );
+      needsPersist = true;
+    }
+  }
+
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
@@ -133,9 +158,14 @@ const migrateState = (persistedState) => {
   return state;
 };
 
-export default configureStore({
+const store = configureStore({
   reducer: rootReducer,
   preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
+
+// Load categories from config on app initialization
+store.dispatch(setCategories(config.categories));
+
+export default store;

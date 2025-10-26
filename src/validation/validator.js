@@ -23,6 +23,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { accountSchemas } from './accountSchemas';
 import { transactionSchemas } from './transactionSchemas';
+import { categorySchemas } from './categorySchemas';
 
 // Create and configure AJV instance
 const ajv = new Ajv({
@@ -44,6 +45,9 @@ Object.keys(accountSchemas).forEach((accountType) => {
 
 // Compile schema for transactions
 const transactionValidator = ajv.compile(transactionSchemas.transaction);
+
+// Compile schema for categories
+const categoryValidator = ajv.compile(categorySchemas.category);
 
 /**
  * Formats AJV errors into user-friendly messages
@@ -156,6 +160,37 @@ export function validateTransactionSync(transaction) {
 }
 
 /**
+ * Validates a category against its schema
+ * @param {Object} category - Category data to validate
+ * @returns {Object} { valid: boolean, errors: Array }
+ */
+export function validateCategory(category) {
+  const valid = categoryValidator(category);
+
+  return {
+    valid,
+    errors: valid ? [] : formatErrors(categoryValidator.errors),
+  };
+}
+
+/**
+ * Validates a category and throws an error if invalid
+ * @param {Object} category - Category data to validate
+ * @throws {Error} Validation error with details
+ */
+export function validateCategorySync(category) {
+  const result = validateCategory(category);
+
+  if (!result.valid) {
+    const error = new Error(result.errors[0]);
+    error.errors = result.errors;
+    throw error;
+  }
+
+  return category;
+}
+
+/**
  * Gets the AJV instance for advanced use cases
  * @returns {Ajv} Configured AJV instance
  */
@@ -168,5 +203,7 @@ export default {
   validateAccountSync,
   validateTransaction,
   validateTransactionSync,
+  validateCategory,
+  validateCategorySync,
   getAjvInstance,
 };

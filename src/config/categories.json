@@ -1,0 +1,78 @@
+{
+  "categories": [
+    {
+      "id": "ddcfe46e-8b90-485b-9aa7-2719e393936b",
+      "slug": "none",
+      "name": "None",
+      "subcategories": []
+    },
+    {
+      "id": "22fdf132-bf6f-4ad3-8bb2-e3fe5a2ffa4c",
+      "slug": "food-dining",
+      "name": "Food & Dining",
+      "subcategories": [
+        {
+          "id": "d2e43ae6-11b1-46f9-92d6-578f2fbac48d",
+          "slug": "food-dining-groceries",
+          "name": "Groceries"
+        },
+        {
+          "id": "8a802e37-7427-4aa6-b705-506d6a684dda",
+          "slug": "food-dining-restaurants",
+          "name": "Restaurants"
+        }
+      ]
+    },
+    {
+      "id": "8dfce5f3-8bd8-49c3-b950-eeadbc93f9aa",
+      "slug": "transportation",
+      "name": "Transportation",
+      "subcategories": [
+        {
+          "id": "a53e92f4-38b6-492d-a506-53b1ec2e4529",
+          "slug": "transportation-gas",
+          "name": "Gas"
+        },
+        {
+          "id": "21d96c64-6d31-494f-a1bc-3e3739660bf0",
+          "slug": "transportation-public-transit",
+          "name": "Public Transit"
+        }
+      ]
+    },
+    {
+      "id": "a4be9906-3b71-496b-a299-5bfadbcc5ab6",
+      "slug": "utilities",
+      "name": "Utilities",
+      "subcategories": [
+        {
+          "id": "c64aa1a0-6986-44a5-b96b-e57ec7cfb536",
+          "slug": "utilities-electricity",
+          "name": "Electricity"
+        },
+        {
+          "id": "f951da7b-06b4-44dc-a588-3e53bb0c6016",
+          "slug": "utilities-water",
+          "name": "Water"
+        }
+      ]
+    },
+    {
+      "id": "4d3986e1-82fa-4001-be27-1e88984fd3c5",
+      "slug": "income",
+      "name": "Income",
+      "subcategories": [
+        {
+          "id": "ebae384f-9516-404a-ac26-6a9502688a1d",
+          "slug": "income-salary",
+          "name": "Salary"
+        },
+        {
+          "id": "07eaf4c5-6f5c-4c06-900b-382dfada73e2",
+          "slug": "income-bonus",
+          "name": "Bonus"
+        }
+      ]
+    }
+  ]
+}

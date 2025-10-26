@@ -42,6 +42,11 @@ const transactionSchema = {
       minLength: 1,
       description: 'Description of the transaction',
     },
+    categoryId: {
+      type: 'string',
+      minLength: 1,
+      description: 'Category UUID for this transaction',
+    },
   },
   required: ['id', 'accountId', 'status', 'date', 'amount', 'description'],
   additionalProperties: false,

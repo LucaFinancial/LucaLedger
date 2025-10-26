@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { TransactionStatusEnum } from './constants';
+import { NONE_CATEGORY_ID } from '../categories/constants';
 import { validateTransactionSync } from '@/validation/validator';
 
 export const generateTransaction = (initialData = {}) => {
@@ -13,6 +14,7 @@ export const generateTransaction = (initialData = {}) => {
     date: dayjs().format(config.dateFormatString),
     amount: 0,
     description: 'Enter transaction description',
+    categoryId: NONE_CATEGORY_ID,
     ...initialData,
   };
 
