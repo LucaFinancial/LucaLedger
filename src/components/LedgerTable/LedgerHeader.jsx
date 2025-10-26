@@ -7,6 +7,7 @@ export default function LedgerHeader() {
         <TableCell sx={{ width: '48px' }}></TableCell>
         <TableCell>Status</TableCell>
         <TableCell>Date</TableCell>
+        <TableCell>Category</TableCell>
         <TableCell>Description</TableCell>
         <TableCell>Amount</TableCell>
         <TableCell>Balance</TableCell>

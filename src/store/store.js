@@ -2,7 +2,6 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
-import { setCategories } from './categories';
 import { NONE_CATEGORY_ID } from './categories/constants';
 import config from '@/config';
 
@@ -155,6 +154,9 @@ const migrateState = (persistedState) => {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
 
+  // Always include categories from config (they are not persisted)
+  state.categories = config.categories;
+
   return state;
 };
 
@@ -164,8 +166,5 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
-
-// Load categories from config on app initialization
-store.dispatch(setCategories(config.categories));
 
 export default store;
