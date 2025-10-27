@@ -34,6 +34,15 @@ export default function Ledger() {
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
+  // Calculate filtered transactions for "Select All (Filtered)" button
+  const filteredTransactions = filterValue
+    ? transactions.filter((transaction) =>
+        transaction.description
+          .toLowerCase()
+          .includes(filterValue.toLowerCase())
+      )
+    : [];
+
   const allMonths = transactions?.length
     ? [
         ...new Set(
@@ -130,6 +139,12 @@ export default function Ledger() {
     setBulkEditModalOpen(false);
   };
 
+  const handleSelectAllFiltered = () => {
+    // Select all transactions that match the current filter
+    const filteredIds = new Set(filteredTransactions.map((t) => t.id));
+    setSelectedTransactions(filteredIds);
+  };
+
   return (
     <Box
       sx={{
@@ -170,6 +185,7 @@ export default function Ledger() {
             display: 'flex',
             flexDirection: 'row',
             padding: '15px',
+            gap: 1,
           }}
         >
           <TextField
@@ -195,6 +211,15 @@ export default function Ledger() {
               ),
             }}
           />
+          {filterValue && filteredTransactions.length > 0 && (
+            <Button
+              variant='outlined'
+              onClick={handleSelectAllFiltered}
+              aria-label='Select all filtered transactions'
+            >
+              Select All ({filteredTransactions.length})
+            </Button>
+          )}
           <Button onClick={handleCollapseAll}>Collapse All</Button>
           <Button onClick={handleExpandAll}>Expand All</Button>
           <Button onClick={handleReset}>Reset</Button>
