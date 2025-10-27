@@ -16,6 +16,21 @@ import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import dayjs from 'dayjs';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+
+// Colors for pie chart segments
+const COLORS = [
+  '#2196f3', // blue
+  '#4caf50', // green
+  '#ff9800', // orange
+  '#f44336', // red
+  '#9c27b0', // purple
+  '#00bcd4', // cyan
+  '#ffeb3b', // yellow
+  '#795548', // brown
+  '#607d8b', // blue grey
+  '#e91e63', // pink
+];
 
 /**
  * CategoryTotals component displays transaction totals for a category
@@ -208,69 +223,114 @@ export default function CategoryTotals({ category }) {
         </ToggleButtonGroup>
       </Box>
 
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: 4,
-          mb: 3,
-        }}
-      >
-        {/* Past Amount */}
-        <Box>
-          <Typography
-            variant='caption'
-            color='text.secondary'
+      <Box sx={{ display: 'flex', gap: 3, mb: 3, alignItems: 'center' }}>
+        {/* Pie Chart */}
+        <Box sx={{ width: 300, height: 250 }}>
+          <ResponsiveContainer
+            width='100%'
+            height='100%'
           >
-            Past
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
-              fontWeight: 600,
-            }}
-          >
-            ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
-          </Typography>
+            <PieChart>
+              <Pie
+                data={subcategoryTotals
+                  .filter((sub) => sub.count > 0)
+                  .map((sub) => ({
+                    name: sub.name,
+                    value: Math.abs(sub.total),
+                  }))}
+                cx='50%'
+                cy='50%'
+                labelLine={false}
+                outerRadius={80}
+                fill='#8884d8'
+                dataKey='value'
+                label={({ name, percent }) =>
+                  `${name}: ${(percent * 100).toFixed(0)}%`
+                }
+              >
+                {subcategoryTotals
+                  .filter((sub) => sub.count > 0)
+                  .map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+              </Pie>
+              <Tooltip
+                formatter={(value) =>
+                  `$${doublePrecisionFormatString(Number(value))}`
+                }
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </Box>
 
-        {/* Future Amount */}
-        <Box>
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
-            Future
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
-              fontWeight: 600,
-            }}
-          >
-            ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
-          </Typography>
-        </Box>
+        {/* Past/Future/Total Summary */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 4,
+            flex: 1,
+          }}
+        >
+          {/* Past Amount */}
+          <Box>
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              Past
+            </Typography>
+            <Typography
+              variant='h6'
+              sx={{
+                color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
+                fontWeight: 600,
+              }}
+            >
+              ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
+            </Typography>
+          </Box>
 
-        {/* Total Amount */}
-        <Box>
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
-            Total
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: totals.total >= 0 ? 'success.main' : 'error.main',
-              fontWeight: 600,
-            }}
-          >
-            ${doublePrecisionFormatString(Math.abs(totals.total))}
-          </Typography>
+          {/* Future Amount */}
+          <Box>
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              Future
+            </Typography>
+            <Typography
+              variant='h6'
+              sx={{
+                color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
+                fontWeight: 600,
+              }}
+            >
+              ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
+            </Typography>
+          </Box>
+
+          {/* Total Amount */}
+          <Box>
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              Total
+            </Typography>
+            <Typography
+              variant='h6'
+              sx={{
+                color: totals.total >= 0 ? 'success.main' : 'error.main',
+                fontWeight: 600,
+              }}
+            >
+              ${doublePrecisionFormatString(Math.abs(totals.total))}
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
