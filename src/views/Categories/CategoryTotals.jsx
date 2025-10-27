@@ -225,7 +225,7 @@ export default function CategoryTotals({ category }) {
 
       <Box sx={{ display: 'flex', gap: 3, mb: 3, alignItems: 'center' }}>
         {/* Pie Chart */}
-        <Box sx={{ width: 300, height: 250 }}>
+        <Box sx={{ width: 550, height: 280, ml: 4 }}>
           <ResponsiveContainer
             width='100%'
             height='100%'
@@ -241,7 +241,7 @@ export default function CategoryTotals({ category }) {
                 cx='50%'
                 cy='50%'
                 labelLine={false}
-                outerRadius={80}
+                outerRadius={90}
                 fill='#8884d8'
                 dataKey='value'
                 label={({ name, percent }) =>
