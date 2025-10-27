@@ -38,6 +38,10 @@ export default function AppHeader() {
             linkTo='/accounts'
             navText='Accounts'
           />
+          <NavItem
+            linkTo='/categories'
+            navText='Categories'
+          />
         </Box>
         <Typography
           variant='h4'
