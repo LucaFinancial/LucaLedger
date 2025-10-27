@@ -163,38 +163,6 @@ export default function Categories() {
           </Accordion>
         ))}
       </Box>
-
-      {/* Category Insights Placeholder */}
-      <Paper
-        sx={{
-          p: 3,
-          backgroundColor: 'rgba(156, 39, 176, 0.08)',
-          border: '1px dashed rgba(156, 39, 176, 0.5)',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-          }}
-        >
-          <Typography variant='h6'>Category Insights</Typography>
-          <Chip
-            label='Coming Soon'
-            color='secondary'
-            variant='outlined'
-          />
-        </Box>
-        <Typography
-          variant='body2'
-          sx={{ fontStyle: 'italic' }}
-        >
-          Category-based analytics, spending trends, and insights will appear
-          here
-        </Typography>
-      </Paper>
     </Box>
   );
 }
