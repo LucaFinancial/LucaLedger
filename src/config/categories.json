@@ -1,176 +1,176 @@
 {
   "categories": [
     {
-      "id": "ddcfe46e-8b90-485b-9aa7-2719e393936b",
+      "id": "",
       "slug": "none",
       "name": "None",
       "subcategories": []
     },
     {
-      "id": "4d3986e1-82fa-4001-be27-1e88984fd3c5",
+      "id": "",
       "slug": "income",
       "name": "Income",
       "subcategories": [
         {
-          "id": "ebae384f-9516-404a-ac26-6a9502688a1d",
+          "id": "",
           "slug": "income-salary",
           "name": "Salary"
         },
         {
-          "id": "07eaf4c5-6f5c-4c06-900b-382dfada73e2",
+          "id": "",
           "slug": "income-bonus",
           "name": "Bonus"
         },
         {
-          "id": "7ef1c594-d762-47f0-a84d-1989f520d8bb",
+          "id": "",
           "slug": "income-interest",
           "name": "Interest"
         },
         {
-          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "id": "",
           "slug": "income-freelance",
           "name": "Freelance"
         },
         {
-          "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+          "id": "",
           "slug": "income-investment",
           "name": "Investment"
         },
         {
-          "id": "d4e5f6a7-b8c9-0123-def0-234567890123",
+          "id": "",
           "slug": "income-distribution",
           "name": "Distribution"
         },
         {
-          "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+          "id": "",
           "slug": "income-other",
           "name": "Other"
         }
       ]
     },
     {
-      "id": "22fdf132-bf6f-4ad3-8bb2-e3fe5a2ffa4c",
+      "id": "",
       "slug": "food",
       "name": "Food",
       "subcategories": [
         {
-          "id": "d2e43ae6-11b1-46f9-92d6-578f2fbac48d",
+          "id": "",
           "slug": "food-groceries",
           "name": "Groceries"
         },
         {
-          "id": "8a802e37-7427-4aa6-b705-506d6a684dda",
+          "id": "",
           "slug": "food-restaurants",
           "name": "Restaurants"
         }
       ]
     },
     {
-      "id": "8dfce5f3-8bd8-49c3-b950-eeadbc93f9aa",
+      "id": "",
       "slug": "transportation",
       "name": "Transportation",
       "subcategories": [
         {
-          "id": "a53e92f4-38b6-492d-a506-53b1ec2e4529",
+          "id": "",
           "slug": "transportation-gas",
           "name": "Gas & Fuel"
         },
         {
-          "id": "21d96c64-6d31-494f-a1bc-3e3739660bf0",
+          "id": "",
           "slug": "transportation-public-transit",
           "name": "Public Transit"
         },
         {
-          "id": "26e3902e-cd89-4158-b1d4-b584689f2f11",
+          "id": "",
           "slug": "transportation-auto-loan",
           "name": "Auto Loan"
         },
         {
-          "id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+          "id": "",
           "slug": "transportation-parking",
           "name": "Parking"
         },
         {
-          "id": "b8c9d0e1-f2a3-4567-2345-678901234567",
+          "id": "",
           "slug": "transportation-maintenance",
           "name": "Maintenance & Repairs"
         },
         {
-          "id": "c9d0e1f2-a3b4-5678-3456-789012345678",
+          "id": "",
           "slug": "transportation-insurance",
           "name": "Auto Insurance"
         },
         {
-          "id": "d0e1f2a3-b4c5-6789-4567-890123456789",
+          "id": "",
           "slug": "transportation-rideshare",
           "name": "Rideshare & Taxi"
         }
       ]
     },
     {
-      "id": "a4be9906-3b71-496b-a299-5bfadbcc5ab6",
+      "id": "",
       "slug": "utilities",
       "name": "Utilities",
       "subcategories": [
         {
-          "id": "c64aa1a0-6986-44a5-b96b-e57ec7cfb536",
+          "id": "",
           "slug": "utilities-gas-electric",
           "name": "Gas & Electric"
         },
         {
-          "id": "e1f2a3b4-c5d6-7890-5678-901234567890",
+          "id": "",
           "slug": "utilities-water",
           "name": "Water & Sewer"
         },
         {
-          "id": "f2a3b4c5-d6e7-8901-6789-012345678901",
+          "id": "",
           "slug": "utilities-internet",
           "name": "Internet"
         },
         {
-          "id": "a3b4c5d6-e7f8-9012-7890-123456789012",
+          "id": "",
           "slug": "utilities-phone",
           "name": "Phone"
         },
         {
-          "id": "b4c5d6e7-f8a9-0123-8901-234567890123",
+          "id": "",
           "slug": "utilities-trash",
           "name": "Trash & Recycling"
         }
       ]
     },
     {
-      "id": "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b",
+      "id": "",
       "slug": "housing",
       "name": "Housing",
       "subcategories": [
         {
-          "id": "c5d6e7f8-a9b0-1234-9012-345678901234",
+          "id": "",
           "slug": "housing-rent",
           "name": "Rent"
         },
         {
-          "id": "d6e7f8a9-b0c1-2345-0123-456789012345",
+          "id": "",
           "slug": "housing-mortgage",
           "name": "Mortgage"
         },
         {
-          "id": "e7f8a9b0-c1d2-3456-1234-567890123456",
+          "id": "",
           "slug": "housing-insurance",
           "name": "Home Insurance"
         },
         {
-          "id": "f8a9b0c1-d2e3-4567-2345-678901234567",
+          "id": "",
           "slug": "housing-property-tax",
           "name": "Property Tax"
         },
         {
-          "id": "a9b0c1d2-e3f4-5678-3456-789012345678",
+          "id": "",
           "slug": "housing-maintenance",
           "name": "Maintenance & Repairs"
         },
         {
-          "id": "b0c1d2e3-f4a5-6789-4567-890123456789",
+          "id": "",
           "slug": "housing-hoa",
           "name": "HOA Fees"
         }
@@ -178,407 +178,407 @@
     },
 
     {
-      "id": "a4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d",
+      "id": "",
       "slug": "healthcare",
       "name": "Healthcare",
       "subcategories": [
         {
-          "id": "c7d8e9f0-a1b2-3456-1234-567890123456",
+          "id": "",
           "slug": "healthcare-doctor",
           "name": "Doctor"
         },
         {
-          "id": "d8e9f0a1-b2c3-4567-2345-678901234567",
+          "id": "",
           "slug": "healthcare-dentist",
           "name": "Dentist"
         },
         {
-          "id": "e9f0a1b2-c3d4-5678-3456-789012345678",
+          "id": "",
           "slug": "healthcare-pharmacy",
           "name": "Pharmacy & Prescriptions"
         },
         {
-          "id": "f0a1b2c3-d4e5-6789-4567-890123456789",
+          "id": "",
           "slug": "healthcare-insurance",
           "name": "Health Insurance"
         },
         {
-          "id": "a1b2c3d4-e5f6-7890-5678-901234567890",
+          "id": "",
           "slug": "healthcare-vision",
           "name": "Vision & Eye Care"
         }
       ]
     },
     {
-      "id": "b5c6d7e8-f9a0-1b2c-3d4e-5f6a7b8c9d0e",
+      "id": "",
       "slug": "entertainment",
       "name": "Entertainment",
       "subcategories": [
         {
-          "id": "b2c3d4e5-f6a7-8901-6789-012345678901",
+          "id": "",
           "slug": "entertainment-streaming",
           "name": "Streaming Services"
         },
         {
-          "id": "c3d4e5f6-a7b8-9012-7890-123456789012",
+          "id": "",
           "slug": "entertainment-movies",
           "name": "Movies & Theater"
         },
         {
-          "id": "d4e5f6a7-b8c9-0123-8901-234567890123",
+          "id": "",
           "slug": "entertainment-concerts",
           "name": "Concerts & Events"
         },
         {
-          "id": "e5f6a7b8-c9d0-1234-9012-345678901234",
+          "id": "",
           "slug": "entertainment-hobbies",
           "name": "Hobbies"
         },
         {
-          "id": "f6a7b8c9-d0e1-2345-0123-456789012345",
+          "id": "",
           "slug": "entertainment-sports",
           "name": "Sports & Recreation"
         },
         {
-          "id": "a7b8c9d0-e1f2-3456-1234-567890123456",
+          "id": "",
           "slug": "entertainment-books",
           "name": "Books & Magazines"
         }
       ]
     },
     {
-      "id": "c6d7e8f9-a0b1-2c3d-4e5f-6a7b8c9d0e1f",
+      "id": "",
       "slug": "education",
       "name": "Education",
       "subcategories": [
         {
-          "id": "b8c9d0e1-f2a3-4567-2345-678901234567",
+          "id": "",
           "slug": "education-tuition",
           "name": "Tuition"
         },
         {
-          "id": "c9d0e1f2-a3b4-5678-3456-789012345678",
+          "id": "",
           "slug": "education-books",
           "name": "Books & Supplies"
         },
         {
-          "id": "d0e1f2a3-b4c5-6789-4567-890123456789",
+          "id": "",
           "slug": "education-courses",
           "name": "Online Courses"
         },
         {
-          "id": "e1f2a3b4-c5d6-7890-5678-901234567890",
+          "id": "",
           "slug": "education-student-loans",
           "name": "Student Loans"
         },
         {
-          "id": "f1a2b3c4-d5e6-7891-6789-012345678902",
+          "id": "",
           "slug": "education-fees",
           "name": "Fees"
         }
       ]
     },
     {
-      "id": "d7e8f9a0-b1c2-3d4e-5f6a-7b8c9d0e1f2a",
+      "id": "",
       "slug": "personal",
       "name": "Personal",
       "subcategories": [
         {
-          "id": "b4c5d6e7-f8a9-0123-8901-234567890123",
+          "id": "",
           "slug": "personal-gym",
           "name": "Gym & Fitness"
         },
         {
-          "id": "c5d6e7f8-a9b0-1234-9012-345678901234",
+          "id": "",
           "slug": "personal-hair-beauty",
           "name": "Hair & Beauty"
         },
         {
-          "id": "d6e7f8a9-b0c1-2345-0123-456789012345",
+          "id": "",
           "slug": "personal-laundry",
           "name": "Laundry & Dry Cleaning"
         },
         {
-          "id": "c1d2e3f4-a5b6-7890-5678-901234567890",
+          "id": "",
           "slug": "personal-clothing",
           "name": "Clothing & Accessories"
         },
         {
-          "id": "f4a5b6c7-d8e9-0123-8901-234567890123",
+          "id": "",
           "slug": "personal-care-products",
           "name": "Personal Care Products"
         },
         {
-          "id": "v3w4x5y6-z7a8-9b0c-1d2e-3f4a5b6c7d8e",
+          "id": "",
           "slug": "personal-electronics",
           "name": "Electronics"
         }
       ]
     },
     {
-      "id": "m7n8o9p0-q1r2-3s4t-5u6v-7w8x9y0z1a2b",
+      "id": "",
       "slug": "household",
       "name": "Household",
       "subcategories": [
         {
-          "id": "e3f4a5b6-c7d8-9012-7890-123456789012",
+          "id": "",
           "slug": "household-furnishings",
           "name": "Furnishings & Decor"
         },
         {
-          "id": "n8o9p0q1-r2s3-4t5u-6v7w-8x9y0z1a2b3c",
+          "id": "",
           "slug": "household-kitchen",
           "name": "Kitchen & Dining"
         },
         {
-          "id": "o9p0q1r2-s3t4-5u6v-7w8x-9y0z1a2b3c4d",
+          "id": "",
           "slug": "household-cleaning",
           "name": "Cleaning Supplies"
         },
         {
-          "id": "p0q1r2s3-t4u5-6v7w-8x9y-0z1a2b3c4d5e",
+          "id": "",
           "slug": "household-organization",
           "name": "Organization & Storage"
         },
         {
-          "id": "q1r2s3t4-u5v6-7w8x-9y0z-1a2b3c4d5e6f",
+          "id": "",
           "slug": "household-garden",
           "name": "Garden & Outdoor"
         },
         {
-          "id": "r2s3t4u5-v6w7-8x9y-0z1a-2b3c4d5e6f7a",
+          "id": "",
           "slug": "household-smart-home",
           "name": "Smart Home & Electronics"
         }
       ]
     },
     {
-      "id": "e7f8a9b0-c1d2-3e4f-5a6b-7c8d9e0f1a2b",
+      "id": "",
       "slug": "family",
       "name": "Family & Children",
       "subcategories": [
         {
-          "id": "f2a3b4c5-d6e7-8901-6789-012345678901",
+          "id": "",
           "slug": "family-childcare",
           "name": "Childcare & Daycare"
         },
         {
-          "id": "g3h4i5j6-k7l8-9013-8902-345678901236",
+          "id": "",
           "slug": "family-school-supplies",
           "name": "School Supplies"
         },
         {
-          "id": "k7l8m9n0-o1p2-3q4r-5s6t-7u8v9w0x1y2z",
+          "id": "",
           "slug": "family-school-fees",
           "name": "School Fees"
         },
         {
-          "id": "h4i5j6k7-l8m9-0124-9013-456789012347",
+          "id": "",
           "slug": "family-activities",
           "name": "Family Activities"
         },
         {
-          "id": "i5j6k7l8-m9n0-1235-0124-567890123458",
+          "id": "",
           "slug": "family-clothing",
           "name": "Children's Clothing"
         },
         {
-          "id": "l8m9n0o1-p2q3-4r5s-6t7u-8v9w0x1y2z3a",
+          "id": "",
           "slug": "family-toys",
           "name": "Toys & Games"
         },
         {
-          "id": "m9n0o1p2-q3r4-5s6t-7u8v-9w0x1y2z3a4b",
+          "id": "",
           "slug": "family-electronics",
           "name": "Electronics & Video Games"
         },
         {
-          "id": "j6k7l8m9-n0o1-2346-1235-678901234569",
+          "id": "",
           "slug": "family-allowance",
           "name": "Allowance"
         },
         {
-          "id": "a5b6c7d8-e9f0-1234-9012-345678901234",
+          "id": "",
           "slug": "family-gifts",
           "name": "Gifts"
         }
       ]
     },
     {
-      "id": "p7q8r9s0-t1u2-3v4w-5x6y-7z8a9b0c1d2e",
+      "id": "",
       "slug": "pets",
       "name": "Pets",
       "subcategories": [
         {
-          "id": "a3b4c5d6-e7f8-9012-7890-123456789012",
+          "id": "",
           "slug": "pets-veterinary",
           "name": "Veterinary Care"
         },
         {
-          "id": "q8r9s0t1-u2v3-4w5x-6y7z-8a9b0c1d2e3f",
+          "id": "",
           "slug": "pets-food",
           "name": "Pet Food & Treats"
         },
         {
-          "id": "r9s0t1u2-v3w4-5x6y-7z8a-9b0c1d2e3f4a",
+          "id": "",
           "slug": "pets-supplies",
           "name": "Pet Supplies"
         },
         {
-          "id": "s0t1u2v3-w4x5-6y7z-8a9b-0c1d2e3f4a5b",
+          "id": "",
           "slug": "pets-grooming",
           "name": "Grooming"
         },
         {
-          "id": "t1u2v3w4-x5y6-7z8a-9b0c-1d2e3f4a5b6c",
+          "id": "",
           "slug": "pets-boarding",
           "name": "Boarding & Pet Sitting"
         },
         {
-          "id": "u2v3w4x5-y6z7-8a9b-0c1d-2e3f4a5b6c7d",
+          "id": "",
           "slug": "pets-insurance",
           "name": "Pet Insurance"
         }
       ]
     },
     {
-      "id": "e8f9a0b1-c2d3-4e5f-6a7b-8c9d0e1f2a3b",
+      "id": "",
       "slug": "travel",
       "name": "Travel & Vacation",
       "subcategories": [
         {
-          "id": "e7f8a9b0-c1d2-3456-1234-567890123456",
+          "id": "",
           "slug": "travel-flights",
           "name": "Flights"
         },
         {
-          "id": "f8a9b0c1-d2e3-4567-2345-678901234567",
+          "id": "",
           "slug": "travel-hotels",
           "name": "Hotels & Lodging"
         },
         {
-          "id": "a9b0c1d2-e3f4-5678-3456-789012345678",
+          "id": "",
           "slug": "travel-rental-car",
           "name": "Rental Car"
         },
         {
-          "id": "b0c1d2e3-f4a5-6789-4567-890123456789",
+          "id": "",
           "slug": "travel-activities",
           "name": "Activities & Tours"
         }
       ]
     },
     {
-      "id": "f9a0b1c2-d3e4-5f6a-7b8c-9d0e1f2a3b4c",
+      "id": "",
       "slug": "financial",
       "name": "Financial",
       "subcategories": [
         {
-          "id": "c1d2e3f4-a5b6-7890-5678-901234567890",
+          "id": "",
           "slug": "financial-credit-card-payment",
           "name": "Credit Card Payment"
         },
         {
-          "id": "d2e3f4a5-b6c7-8901-6789-012345678901",
+          "id": "",
           "slug": "financial-bank-fees",
           "name": "Bank Fees"
         },
         {
-          "id": "a2b3c4d5-e6f7-8902-7890-123456789013",
+          "id": "",
           "slug": "financial-interest-fees",
           "name": "Interest Fees"
         },
         {
-          "id": "e3f4a5b6-c7d8-9012-7890-123456789012",
+          "id": "",
           "slug": "financial-investment-fees",
           "name": "Investment Fees"
         },
         {
-          "id": "f4a5b6c7-d8e9-0123-8901-234567890123",
+          "id": "",
           "slug": "financial-transfer",
           "name": "Transfer"
         },
         {
-          "id": "a5b6c7d8-e9f0-1234-9012-345678901234",
+          "id": "",
           "slug": "financial-taxes",
           "name": "Taxes"
         },
         {
-          "id": "b6c7d8e9-f0a1-2345-0123-456789012345",
+          "id": "",
           "slug": "financial-life-insurance",
           "name": "Life Insurance"
         }
       ]
     },
     {
-      "id": "a0b1c2d3-e4f5-6a7b-8c9d-0e1f2a3b4c5d",
+      "id": "",
       "slug": "business",
       "name": "Business Expenses",
       "subcategories": [
         {
-          "id": "c7d8e9f0-a1b2-3456-1234-567890123456",
+          "id": "",
           "slug": "business-office-supplies",
           "name": "Office Supplies"
         },
         {
-          "id": "d8e9f0a1-b2c3-4567-2345-678901234567",
+          "id": "",
           "slug": "business-software",
           "name": "Software & Subscriptions"
         },
         {
-          "id": "b3c4d5e6-f7a8-9013-8902-345678901235",
+          "id": "",
           "slug": "business-hosting",
           "name": "Hosting & Cloud Services"
         },
         {
-          "id": "e1f2a3b4-c5d6-7e8f-9a0b-1c2d3e4f5a6b",
+          "id": "",
           "slug": "business-ai-automation",
           "name": "AI & Automation Services"
         },
         {
-          "id": "e9f0a1b2-c3d4-5678-3456-789012345678",
+          "id": "",
           "slug": "business-advertising",
           "name": "Advertising & Marketing"
         },
         {
-          "id": "f0a1b2c3-d4e5-6789-4567-890123456789",
+          "id": "",
           "slug": "business-meals",
           "name": "Business Meals"
         },
         {
-          "id": "a1b2c3d4-e5f6-7890-5678-901234567890",
+          "id": "",
           "slug": "business-travel",
           "name": "Business Travel"
         },
         {
-          "id": "d5e6f7a8-b9c0-1235-0124-567890123457",
+          "id": "",
           "slug": "business-equipment",
           "name": "Equipment & Tools"
         },
         {
-          "id": "d2e3f4a5-b6c7-8901-6789-012345678901",
+          "id": "",
           "slug": "business-electronics",
           "name": "Electronics & Technology"
         }
       ]
     },
     {
-      "id": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      "id": "",
       "slug": "charity",
       "name": "Charity & Donations",
       "subcategories": [
         {
-          "id": "b2c3d4e5-f6a7-8901-6789-012345678901",
+          "id": "",
           "slug": "charity-donations",
           "name": "Donations"
         },
         {
-          "id": "c3d4e5f6-a7b8-9012-7890-123456789012",
+          "id": "",
           "slug": "charity-religious",
           "name": "Religious Organizations"
         },
         {
-          "id": "d4e5f6a7-b8c9-0123-8901-234567890123",
+          "id": "",
           "slug": "charity-other",
           "name": "Other"
         }
