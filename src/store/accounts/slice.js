@@ -1,4 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { validateAccountSync } from '@/validation/validator';
+
+/**
+ * Validates and cleans an account object
+ * Removes any properties not defined in the schema
+ */
+const cleanAccount = (account) => {
+  try {
+    return validateAccountSync(account, account.type);
+  } catch (error) {
+    console.error('Invalid account data:', error);
+    // Return the account as-is if validation fails
+    // This prevents data loss but logs the issue
+    return account;
+  }
+};
 
 const accounts = createSlice({
   name: 'accounts',
@@ -11,13 +27,14 @@ const accounts = createSlice({
   reducers: {
     setAccounts: (state, action) => {
       // Replace all accounts (used when loading from encrypted storage)
-      state.data = action.payload;
+      // Validate and clean each account
+      state.data = action.payload.map(cleanAccount);
     },
     addAccount: (state, action) => {
-      state.data.push(action.payload);
+      state.data.push(cleanAccount(action.payload));
     },
     updateAccount: (state, action) => {
-      const updatedAccount = action.payload;
+      const updatedAccount = cleanAccount(action.payload);
       const index = state.data.findIndex((a) => a.id === updatedAccount.id);
       if (index !== -1) {
         state.data[index] = updatedAccount;

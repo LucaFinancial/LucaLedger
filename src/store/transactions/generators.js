@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { TransactionStatusEnum } from './constants';
-import schemas from './schemas';
+import { validateTransactionSync } from '@/validation/validator';
 
 export const generateTransaction = (initialData = {}) => {
   const transaction = {
@@ -11,13 +11,13 @@ export const generateTransaction = (initialData = {}) => {
     accountId: initialData.accountId || null,
     status: TransactionStatusEnum.PLANNED,
     date: dayjs().format(config.dateFormatString),
-    amount: 0.0,
+    amount: 0,
     description: 'Enter transaction description',
     ...initialData,
   };
 
   try {
-    schemas.transaction.validateSync(transaction, { abortEarly: false });
+    validateTransactionSync(transaction);
     return transaction;
   } catch (error) {
     console.error(error);

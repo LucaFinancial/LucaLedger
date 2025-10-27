@@ -1,24 +1,38 @@
 import { Box, Button, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useState, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import AccountSettingsModal from '@/components/AccountSettingsModal';
 import { SettingsPanelItem } from './SettingsPanelItem';
-import { selectors as transactionSelectors } from '@/store/transactions';
+import {
+  selectors as transactionSelectors,
+  actions as transactionActions,
+} from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 
 export default function SettingsPanel({
   account,
   selectedCount,
   onBulkEditClick,
 }) {
+  const dispatch = useDispatch();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(account.id)
   );
+  const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
+
+  // Find transactions with invalid categories
+  const invalidCategoryCount = useMemo(() => {
+    return transactions.filter((transaction) => {
+      if (!transaction.categoryId) return false;
+      return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+    }).length;
+  }, [transactions, flatCategories]);
 
   const completedBalance = transactions
     .filter((transaction) => transaction.status === 'complete ')
@@ -57,6 +71,25 @@ export default function SettingsPanel({
 
   const handleSettingsModalClose = () => {
     setSettingsModalOpen(false);
+  };
+
+  const handleClearInvalidCategories = () => {
+    // Find all transactions with invalid categories and clear them
+    const transactionsToUpdate = transactions
+      .filter((transaction) => {
+        if (!transaction.categoryId) return false;
+        return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+      })
+      .map((t) => t.id);
+
+    if (transactionsToUpdate.length > 0) {
+      dispatch(
+        transactionActions.updateMultipleTransactionsFields(
+          transactionsToUpdate,
+          { categoryId: null }
+        )
+      );
+    }
   };
 
   return (
@@ -128,6 +161,19 @@ export default function SettingsPanel({
             sx={{ mt: 2 }}
           >
             {getBulkEditButtonText()}
+          </Button>
+        </SettingsPanelItem>
+        <SettingsPanelItem>
+          <Button
+            variant='outlined'
+            color='warning'
+            fullWidth
+            disabled={invalidCategoryCount === 0}
+            onClick={handleClearInvalidCategories}
+            sx={{ mt: 2 }}
+          >
+            Clear Invalid Categories
+            {invalidCategoryCount > 0 && ` (${invalidCategoryCount})`}
           </Button>
         </SettingsPanelItem>
       </Box>

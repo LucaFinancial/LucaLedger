@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
-import schemas from './schemas';
+import { validateAccountSync } from '@/validation/validator';
 
 export const generateAccount = (initialData = {}) => {
   const accountType = initialData.type || AccountType.CHECKING;
@@ -10,7 +10,7 @@ export const generateAccount = (initialData = {}) => {
     type: accountType,
     ...initialData,
   };
-  schemas[accountType].validateSync(account);
+  validateAccountSync(account, accountType);
   return account;
 };
 

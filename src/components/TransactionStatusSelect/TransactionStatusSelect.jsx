@@ -48,12 +48,18 @@ export default function TransactionStatusSelect({ transaction }) {
         value={status}
         label='Status'
         onChange={handleChange}
+        sx={{
+          textTransform: 'capitalize',
+        }}
       >
         {Object.keys(constants.TransactionStatusEnum).map((key) => {
           return (
             <MenuItem
               key={key}
               value={constants.TransactionStatusEnum[key]}
+              sx={{
+                textTransform: 'capitalize',
+              }}
             >
               {constants.TransactionStatusEnum[key]}
             </MenuItem>

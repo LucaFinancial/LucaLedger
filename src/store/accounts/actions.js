@@ -2,7 +2,8 @@ import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
-import schemas from './schemas';
+import { validateAccount } from '@/validation/validator';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import {
   addAccount,
   updateAccount as updateAccountNormalized,
@@ -48,8 +49,8 @@ export const loadAccount = (data) => async (dispatch) => {
     let accountsToLoad = [];
     let transactionsToLoad = [];
 
-    if (schemaVersion === '2.0.1') {
-      // Schema 2.0.1: amounts already in cents, load as-is
+    if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+      // Schema 2.0.1+: amounts in cents
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
     } else if (
@@ -59,32 +60,20 @@ export const loadAccount = (data) => async (dispatch) => {
     ) {
       // Schema 2.0.0: amounts in dollars, convert to cents
       accountsToLoad = data.accounts;
-      transactionsToLoad = data.transactions.map((transaction) => {
-        const converted = {
-          ...transaction,
-          amount: dollarsToCents(transaction.amount),
-        };
-        // Remove balance field if it exists
-        // eslint-disable-next-line no-unused-vars
-        const { balance, ...clean } = converted;
-        return clean;
-      });
+      transactionsToLoad = data.transactions.map((transaction) => ({
+        ...transaction,
+        amount: dollarsToCents(transaction.amount),
+      }));
     } else {
       // Schema 1.0.0: single account with nested transactions
       // eslint-disable-next-line no-unused-vars
       const { transactions, version, ...accountData } = data;
       accountsToLoad = [accountData];
-      transactionsToLoad = (transactions || []).map((transaction) => {
-        const converted = {
-          ...transaction,
-          accountId: data.id,
-          amount: dollarsToCents(transaction.amount),
-        };
-        // Remove balance field if it exists
-        // eslint-disable-next-line no-unused-vars
-        const { balance, ...clean } = converted;
-        return clean;
-      });
+      transactionsToLoad = (transactions || []).map((transaction) => ({
+        ...transaction,
+        accountId: data.id,
+        amount: dollarsToCents(transaction.amount),
+      }));
     }
 
     // Load all accounts
@@ -100,7 +89,7 @@ export const loadAccount = (data) => async (dispatch) => {
 
     // Update schema version in localStorage to current version
     // This prevents migrations from running on already-converted data
-    localStorage.setItem('dataSchemaVersion', '2.0.1');
+    localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
 
     dispatch(clearLoadingAccountIds());
     dispatch(setLoading(false));
@@ -129,10 +118,10 @@ export const loadAccountAsync = () => async (dispatch) => {
     data.type || AccountType.CHECKING,
     data.statementDay || (data.type === AccountType.CREDIT_CARD ? 1 : null)
   );
-  try {
-    await schemas[account.type].validate(account);
-  } catch (error) {
-    console.error(error);
+
+  const validationResult = await validateAccount(account, account.type);
+  if (!validationResult.valid) {
+    console.error(validationResult.errors);
     return;
   }
 
@@ -203,7 +192,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const transactions = state.transactions;
 
   const data = {
-    schemaVersion: '2.0.0',
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
   };
@@ -238,7 +227,7 @@ export const saveAccountWithTransactions =
     if (!account) return;
 
     const data = {
-      schemaVersion: '2.0.0',
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts: [account],
       transactions,
     };

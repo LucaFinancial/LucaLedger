@@ -8,10 +8,13 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Typography,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { constants } from '@/store/transactions';
+import CategorySelect from '@/components/CategorySelect';
 
 export default function BulkEditModal({
   open,
@@ -20,15 +23,42 @@ export default function BulkEditModal({
   onApplyChanges,
 }) {
   const [selectedState, setSelectedState] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleClose = () => {
     setSelectedState('');
+    setSelectedDate(null);
+    setSelectedCategory(null);
     onClose();
   };
 
   const handleApply = () => {
-    onApplyChanges(selectedState);
+    const updates = {};
+
+    // Only include status if it was set
+    if (selectedState) {
+      updates.status = selectedState;
+    }
+
+    // Only include date if it was set and is valid
+    if (selectedDate && selectedDate.isValid()) {
+      updates.date = selectedDate;
+    }
+
+    // Only include category if it was set
+    if (selectedCategory) {
+      updates.categoryId = selectedCategory;
+    }
+
+    // Only apply if at least one field was set
+    if (Object.keys(updates).length > 0) {
+      onApplyChanges(updates);
+    }
+
     setSelectedState('');
+    setSelectedDate(null);
+    setSelectedCategory(null);
   };
 
   return (
@@ -64,13 +94,43 @@ export default function BulkEditModal({
             ))}
           </Select>
         </FormControl>
+        <FormControl
+          fullWidth
+          sx={{ mt: 3 }}
+        >
+          <Typography sx={{ mb: 1 }}>Select new date</Typography>
+          <DatePicker
+            value={selectedDate}
+            onChange={(newValue) => setSelectedDate(newValue)}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+              },
+            }}
+          />
+        </FormControl>
+        <FormControl
+          fullWidth
+          sx={{ mt: 3 }}
+        >
+          <Typography sx={{ mb: 1 }}>Select new category</Typography>
+          <CategorySelect
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            fullWidth
+          />
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           onClick={handleApply}
           variant='contained'
-          disabled={!selectedState}
+          disabled={
+            !selectedState &&
+            (!selectedDate || !selectedDate.isValid()) &&
+            !selectedCategory
+          }
         >
           Change All
         </Button>

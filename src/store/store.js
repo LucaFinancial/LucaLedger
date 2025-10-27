@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
+import categoriesData from '@/config/categories.json';
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
@@ -130,12 +131,17 @@ const migrateState = (persistedState) => {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
 
+  // Always include categories from config (they are not persisted)
+  state.categories = categoriesData.categories;
+
   return state;
 };
 
-export default configureStore({
+const store = configureStore({
   reducer: rootReducer,
   preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
+
+export default store;
