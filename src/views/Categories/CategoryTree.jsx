@@ -33,10 +33,19 @@ export default function CategoryTree({ categories }) {
     const width = dimensions.width;
     const height = dimensions.height;
 
+    // Create zoom behavior
+    const zoom = d3
+      .zoom()
+      .scaleExtent([0.5, 3])
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform);
+      });
+
+    // Apply zoom to svg
+    svg.call(zoom);
+
     // Create a container group for the tree
-    const g = svg
-      .append('g')
-      .attr('transform', `translate(${width / 2},${50})`);
+    const g = svg.append('g').attr('transform', `translate(${width / 2},${100})`);
 
     // Transform categories data into hierarchical structure
     const hierarchyData = {
@@ -58,10 +67,17 @@ export default function CategoryTree({ categories }) {
 
     // Create hierarchy
     const root = d3.hierarchy(hierarchyData);
+
+    // Use a larger horizontal spread for the tree layout
     const treeLayout = d3
       .tree()
-      .size([width - 100, height - 150])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 1.2));
+      .size([width - 200, height - 150])
+      .separation((a, b) => {
+        // Increase separation based on depth and siblings
+        const baseSeparation = a.parent === b.parent ? 1.5 : 2;
+        // Add more space for top-level categories
+        return a.depth === 1 ? baseSeparation * 1.5 : baseSeparation;
+      });
 
     treeLayout(root);
 
@@ -108,7 +124,7 @@ export default function CategoryTree({ categories }) {
 
       // Adjust vertical spacing between levels
       nodes.forEach((d) => {
-        d.y = d.depth * 180;
+        d.y = d.depth * 200; // Increased spacing from 180 to 200
       });
 
       // Update nodes
@@ -149,17 +165,25 @@ export default function CategoryTree({ categories }) {
         .style('stroke-width', 2)
         .style('cursor', getCursorStyle);
 
+      // Add text background for better readability
+      const textGroup = nodeEnter.append('g').attr('class', 'text-group');
+
+      // Add background rectangle
+      textGroup
+        .append('rect')
+        .attr('class', 'text-background')
+        .attr('fill', 'white')
+        .attr('fill-opacity', 0.85)
+        .attr('stroke', '#e0e0e0')
+        .attr('stroke-width', 0.5)
+        .attr('rx', 3);
+
       // Add labels
-      nodeEnter
+      textGroup
         .append('text')
-        .attr('dy', (d) => (d.depth === 0 ? -15 : 3))
-        .attr('x', (d) =>
-          d.depth === 0 ? 0 : d.children || d._children ? -10 : 10
-        )
-        .attr('text-anchor', (d) => {
-          if (d.depth === 0) return 'middle';
-          return d.children || d._children ? 'end' : 'start';
-        })
+        .attr('dy', (d) => (d.depth === 0 ? -15 : 20)) // Move labels below nodes to avoid overlap
+        .attr('x', 0) // Center all labels horizontally
+        .attr('text-anchor', 'middle') // Center text alignment
         .text((d) => {
           // Truncate long names on small screens
           const maxLength = dimensions.width < 600 ? 15 : 25;
@@ -173,6 +197,18 @@ export default function CategoryTree({ categories }) {
         .style('font-weight', (d) => (d.depth === 1 ? 'bold' : 'normal'))
         .style('fill', '#333')
         .style('pointer-events', 'none');
+
+      // Size the background rectangles based on text
+      textGroup.each(function () {
+        const textElement = d3.select(this).select('text');
+        const bbox = textElement.node().getBBox();
+        d3.select(this)
+          .select('rect')
+          .attr('x', bbox.x - 4)
+          .attr('y', bbox.y - 2)
+          .attr('width', bbox.width + 8)
+          .attr('height', bbox.height + 4);
+      });
 
       // Transition nodes to their new position
       const nodeUpdate = nodeEnter.merge(node);

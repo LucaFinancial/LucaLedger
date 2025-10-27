@@ -56,6 +56,7 @@ export default function Categories() {
         >
           Click on category nodes to expand or collapse their subcategories. Use
           keyboard navigation (Enter or Space) to toggle nodes when focused.
+          Scroll to zoom, or click and drag to pan the tree.
         </Typography>
         <CategoryTree categories={categories} />
       </Paper>
