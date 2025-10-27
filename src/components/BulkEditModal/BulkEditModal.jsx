@@ -14,6 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { constants } from '@/store/transactions';
+import CategorySelect from '@/components/CategorySelect';
 
 export default function BulkEditModal({
   open,
@@ -23,10 +24,12 @@ export default function BulkEditModal({
 }) {
   const [selectedState, setSelectedState] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleClose = () => {
     setSelectedState('');
     setSelectedDate(null);
+    setSelectedCategory(null);
     onClose();
   };
 
@@ -43,6 +46,11 @@ export default function BulkEditModal({
       updates.date = selectedDate;
     }
 
+    // Only include category if it was set
+    if (selectedCategory) {
+      updates.categoryId = selectedCategory;
+    }
+
     // Only apply if at least one field was set
     if (Object.keys(updates).length > 0) {
       onApplyChanges(updates);
@@ -50,6 +58,7 @@ export default function BulkEditModal({
 
     setSelectedState('');
     setSelectedDate(null);
+    setSelectedCategory(null);
   };
 
   return (
@@ -100,6 +109,17 @@ export default function BulkEditModal({
             }}
           />
         </FormControl>
+        <FormControl
+          fullWidth
+          sx={{ mt: 3 }}
+        >
+          <Typography sx={{ mb: 1 }}>Select new category</Typography>
+          <CategorySelect
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            fullWidth
+          />
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
@@ -107,7 +127,9 @@ export default function BulkEditModal({
           onClick={handleApply}
           variant='contained'
           disabled={
-            !selectedState && (!selectedDate || !selectedDate.isValid())
+            !selectedState &&
+            (!selectedDate || !selectedDate.isValid()) &&
+            !selectedCategory
           }
         >
           Change All
