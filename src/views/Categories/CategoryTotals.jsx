@@ -197,14 +197,26 @@ export default function CategoryTotals({ category }) {
 
   return (
     <Paper
+      elevation={0}
       sx={{
-        p: 2,
         mb: 2,
         backgroundColor: 'rgba(76, 175, 80, 0.08)',
         border: '1px solid rgba(76, 175, 80, 0.3)',
+        position: 'relative',
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+      {/* Header with title and time period toggle - overlays the chart */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          pb: 1,
+          position: 'relative',
+          zIndex: 2,
+        }}
+      >
         <Typography
           variant='subtitle2'
           sx={{ fontWeight: 600 }}
@@ -223,9 +235,25 @@ export default function CategoryTotals({ category }) {
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 3, mb: 3, alignItems: 'center' }}>
+      {/* Chart and Summary Row */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          px: 2,
+          pb: 1,
+          alignItems: 'center',
+          mt: -5,
+        }}
+      >
         {/* Pie Chart */}
-        <Box sx={{ width: 550, height: 280, ml: 4 }}>
+        <Box
+          sx={{
+            flex: 5,
+            height: 220,
+            p: 1,
+          }}
+        >
           <ResponsiveContainer
             width='100%'
             height='100%'
@@ -241,7 +269,7 @@ export default function CategoryTotals({ category }) {
                 cx='50%'
                 cy='50%'
                 labelLine={false}
-                outerRadius={90}
+                outerRadius={70}
                 fill='#8884d8'
                 dataKey='value'
                 label={({ name, percent }) =>
@@ -337,7 +365,7 @@ export default function CategoryTotals({ category }) {
       {/* Subcategory Breakdown */}
       {subcategoryTotals.length > 0 &&
         subcategoryTotals.some((s) => s.count > 0) && (
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ px: 2, pb: 2 }}>
             <Table size='small'>
               <TableHead>
                 <TableRow>
