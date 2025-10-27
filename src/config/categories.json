@@ -1,584 +1,583 @@
 {
   "categories": [
     {
-      "id": "",
+      "id": "00000001-0000-0000-0000-000000000002",
       "slug": "none",
       "name": "None",
       "subcategories": []
     },
     {
-      "id": "",
+      "id": "00000002-0000-0000-0000-000000000003",
       "slug": "income",
       "name": "Income",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000003-0000-0000-0000-000000000004",
           "slug": "income-salary",
           "name": "Salary"
         },
         {
-          "id": "",
+          "id": "00000004-0000-0000-0000-000000000005",
           "slug": "income-bonus",
           "name": "Bonus"
         },
         {
-          "id": "",
+          "id": "00000005-0000-0000-0000-000000000006",
           "slug": "income-interest",
           "name": "Interest"
         },
         {
-          "id": "",
+          "id": "00000006-0000-0000-0000-000000000007",
           "slug": "income-freelance",
           "name": "Freelance"
         },
         {
-          "id": "",
+          "id": "00000007-0000-0000-0000-000000000008",
           "slug": "income-investment",
           "name": "Investment"
         },
         {
-          "id": "",
+          "id": "00000008-0000-0000-0000-000000000009",
           "slug": "income-distribution",
           "name": "Distribution"
         },
         {
-          "id": "",
+          "id": "00000009-0000-0000-0000-00000000000a",
           "slug": "income-other",
           "name": "Other"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000000a-0000-0000-0000-00000000000b",
       "slug": "food",
       "name": "Food",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000000b-0000-0000-0000-00000000000c",
           "slug": "food-groceries",
           "name": "Groceries"
         },
         {
-          "id": "",
+          "id": "0000000c-0000-0000-0000-00000000000d",
           "slug": "food-restaurants",
           "name": "Restaurants"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000000d-0000-0000-0000-00000000000e",
       "slug": "transportation",
       "name": "Transportation",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000000e-0000-0000-0000-00000000000f",
           "slug": "transportation-gas",
           "name": "Gas & Fuel"
         },
         {
-          "id": "",
+          "id": "0000000f-0000-0000-0000-000000000010",
           "slug": "transportation-public-transit",
           "name": "Public Transit"
         },
         {
-          "id": "",
+          "id": "00000010-0000-0000-0000-000000000011",
           "slug": "transportation-auto-loan",
           "name": "Auto Loan"
         },
         {
-          "id": "",
+          "id": "00000011-0000-0000-0000-000000000012",
           "slug": "transportation-parking",
           "name": "Parking"
         },
         {
-          "id": "",
+          "id": "00000012-0000-0000-0000-000000000013",
           "slug": "transportation-maintenance",
           "name": "Maintenance & Repairs"
         },
         {
-          "id": "",
+          "id": "00000013-0000-0000-0000-000000000014",
           "slug": "transportation-insurance",
           "name": "Auto Insurance"
         },
         {
-          "id": "",
+          "id": "00000014-0000-0000-0000-000000000015",
           "slug": "transportation-rideshare",
           "name": "Rideshare & Taxi"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000015-0000-0000-0000-000000000016",
       "slug": "utilities",
       "name": "Utilities",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000016-0000-0000-0000-000000000017",
           "slug": "utilities-gas-electric",
           "name": "Gas & Electric"
         },
         {
-          "id": "",
+          "id": "00000017-0000-0000-0000-000000000018",
           "slug": "utilities-water",
           "name": "Water & Sewer"
         },
         {
-          "id": "",
+          "id": "00000018-0000-0000-0000-000000000019",
           "slug": "utilities-internet",
           "name": "Internet"
         },
         {
-          "id": "",
+          "id": "00000019-0000-0000-0000-00000000001a",
           "slug": "utilities-phone",
           "name": "Phone"
         },
         {
-          "id": "",
+          "id": "0000001a-0000-0000-0000-00000000001b",
           "slug": "utilities-trash",
           "name": "Trash & Recycling"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000001b-0000-0000-0000-00000000001c",
       "slug": "housing",
       "name": "Housing",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000001c-0000-0000-0000-00000000001d",
           "slug": "housing-rent",
           "name": "Rent"
         },
         {
-          "id": "",
+          "id": "0000001d-0000-0000-0000-00000000001e",
           "slug": "housing-mortgage",
           "name": "Mortgage"
         },
         {
-          "id": "",
+          "id": "0000001e-0000-0000-0000-00000000001f",
           "slug": "housing-insurance",
           "name": "Home Insurance"
         },
         {
-          "id": "",
+          "id": "0000001f-0000-0000-0000-000000000020",
           "slug": "housing-property-tax",
           "name": "Property Tax"
         },
         {
-          "id": "",
+          "id": "00000020-0000-0000-0000-000000000021",
           "slug": "housing-maintenance",
           "name": "Maintenance & Repairs"
         },
         {
-          "id": "",
+          "id": "00000021-0000-0000-0000-000000000022",
           "slug": "housing-hoa",
           "name": "HOA Fees"
         }
       ]
     },
-
     {
-      "id": "",
+      "id": "00000022-0000-0000-0000-000000000023",
       "slug": "healthcare",
       "name": "Healthcare",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000023-0000-0000-0000-000000000024",
           "slug": "healthcare-doctor",
           "name": "Doctor"
         },
         {
-          "id": "",
+          "id": "00000024-0000-0000-0000-000000000025",
           "slug": "healthcare-dentist",
           "name": "Dentist"
         },
         {
-          "id": "",
+          "id": "00000025-0000-0000-0000-000000000026",
           "slug": "healthcare-pharmacy",
           "name": "Pharmacy & Prescriptions"
         },
         {
-          "id": "",
+          "id": "00000026-0000-0000-0000-000000000027",
           "slug": "healthcare-insurance",
           "name": "Health Insurance"
         },
         {
-          "id": "",
+          "id": "00000027-0000-0000-0000-000000000028",
           "slug": "healthcare-vision",
           "name": "Vision & Eye Care"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000028-0000-0000-0000-000000000029",
       "slug": "entertainment",
       "name": "Entertainment",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000029-0000-0000-0000-00000000002a",
           "slug": "entertainment-streaming",
           "name": "Streaming Services"
         },
         {
-          "id": "",
+          "id": "0000002a-0000-0000-0000-00000000002b",
           "slug": "entertainment-movies",
           "name": "Movies & Theater"
         },
         {
-          "id": "",
+          "id": "0000002b-0000-0000-0000-00000000002c",
           "slug": "entertainment-concerts",
           "name": "Concerts & Events"
         },
         {
-          "id": "",
+          "id": "0000002c-0000-0000-0000-00000000002d",
           "slug": "entertainment-hobbies",
           "name": "Hobbies"
         },
         {
-          "id": "",
+          "id": "0000002d-0000-0000-0000-00000000002e",
           "slug": "entertainment-sports",
           "name": "Sports & Recreation"
         },
         {
-          "id": "",
+          "id": "0000002e-0000-0000-0000-00000000002f",
           "slug": "entertainment-books",
           "name": "Books & Magazines"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000002f-0000-0000-0000-000000000030",
       "slug": "education",
       "name": "Education",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000030-0000-0000-0000-000000000031",
           "slug": "education-tuition",
           "name": "Tuition"
         },
         {
-          "id": "",
+          "id": "00000031-0000-0000-0000-000000000032",
           "slug": "education-books",
           "name": "Books & Supplies"
         },
         {
-          "id": "",
+          "id": "00000032-0000-0000-0000-000000000033",
           "slug": "education-courses",
           "name": "Online Courses"
         },
         {
-          "id": "",
+          "id": "00000033-0000-0000-0000-000000000034",
           "slug": "education-student-loans",
           "name": "Student Loans"
         },
         {
-          "id": "",
+          "id": "00000034-0000-0000-0000-000000000035",
           "slug": "education-fees",
           "name": "Fees"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000035-0000-0000-0000-000000000036",
       "slug": "personal",
       "name": "Personal",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000036-0000-0000-0000-000000000037",
           "slug": "personal-gym",
           "name": "Gym & Fitness"
         },
         {
-          "id": "",
+          "id": "00000037-0000-0000-0000-000000000038",
           "slug": "personal-hair-beauty",
           "name": "Hair & Beauty"
         },
         {
-          "id": "",
+          "id": "00000038-0000-0000-0000-000000000039",
           "slug": "personal-laundry",
           "name": "Laundry & Dry Cleaning"
         },
         {
-          "id": "",
+          "id": "00000039-0000-0000-0000-00000000003a",
           "slug": "personal-clothing",
           "name": "Clothing & Accessories"
         },
         {
-          "id": "",
+          "id": "0000003a-0000-0000-0000-00000000003b",
           "slug": "personal-care-products",
           "name": "Personal Care Products"
         },
         {
-          "id": "",
+          "id": "0000003b-0000-0000-0000-00000000003c",
           "slug": "personal-electronics",
           "name": "Electronics"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000003c-0000-0000-0000-00000000003d",
       "slug": "household",
       "name": "Household",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000003d-0000-0000-0000-00000000003e",
           "slug": "household-furnishings",
           "name": "Furnishings & Decor"
         },
         {
-          "id": "",
+          "id": "0000003e-0000-0000-0000-00000000003f",
           "slug": "household-kitchen",
           "name": "Kitchen & Dining"
         },
         {
-          "id": "",
+          "id": "0000003f-0000-0000-0000-000000000040",
           "slug": "household-cleaning",
           "name": "Cleaning Supplies"
         },
         {
-          "id": "",
+          "id": "00000040-0000-0000-0000-000000000041",
           "slug": "household-organization",
           "name": "Organization & Storage"
         },
         {
-          "id": "",
+          "id": "00000041-0000-0000-0000-000000000042",
           "slug": "household-garden",
           "name": "Garden & Outdoor"
         },
         {
-          "id": "",
+          "id": "00000042-0000-0000-0000-000000000043",
           "slug": "household-smart-home",
           "name": "Smart Home & Electronics"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000043-0000-0000-0000-000000000044",
       "slug": "family",
       "name": "Family & Children",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000044-0000-0000-0000-000000000045",
           "slug": "family-childcare",
           "name": "Childcare & Daycare"
         },
         {
-          "id": "",
+          "id": "00000045-0000-0000-0000-000000000046",
           "slug": "family-school-supplies",
           "name": "School Supplies"
         },
         {
-          "id": "",
+          "id": "00000046-0000-0000-0000-000000000047",
           "slug": "family-school-fees",
           "name": "School Fees"
         },
         {
-          "id": "",
+          "id": "00000047-0000-0000-0000-000000000048",
           "slug": "family-activities",
           "name": "Family Activities"
         },
         {
-          "id": "",
+          "id": "00000048-0000-0000-0000-000000000049",
           "slug": "family-clothing",
           "name": "Children's Clothing"
         },
         {
-          "id": "",
+          "id": "00000049-0000-0000-0000-00000000004a",
           "slug": "family-toys",
           "name": "Toys & Games"
         },
         {
-          "id": "",
+          "id": "0000004a-0000-0000-0000-00000000004b",
           "slug": "family-electronics",
           "name": "Electronics & Video Games"
         },
         {
-          "id": "",
+          "id": "0000004b-0000-0000-0000-00000000004c",
           "slug": "family-allowance",
           "name": "Allowance"
         },
         {
-          "id": "",
+          "id": "0000004c-0000-0000-0000-00000000004d",
           "slug": "family-gifts",
           "name": "Gifts"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000004d-0000-0000-0000-00000000004e",
       "slug": "pets",
       "name": "Pets",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000004e-0000-0000-0000-00000000004f",
           "slug": "pets-veterinary",
           "name": "Veterinary Care"
         },
         {
-          "id": "",
+          "id": "0000004f-0000-0000-0000-000000000050",
           "slug": "pets-food",
           "name": "Pet Food & Treats"
         },
         {
-          "id": "",
+          "id": "00000050-0000-0000-0000-000000000051",
           "slug": "pets-supplies",
           "name": "Pet Supplies"
         },
         {
-          "id": "",
+          "id": "00000051-0000-0000-0000-000000000052",
           "slug": "pets-grooming",
           "name": "Grooming"
         },
         {
-          "id": "",
+          "id": "00000052-0000-0000-0000-000000000053",
           "slug": "pets-boarding",
           "name": "Boarding & Pet Sitting"
         },
         {
-          "id": "",
+          "id": "00000053-0000-0000-0000-000000000054",
           "slug": "pets-insurance",
           "name": "Pet Insurance"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000054-0000-0000-0000-000000000055",
       "slug": "travel",
       "name": "Travel & Vacation",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000055-0000-0000-0000-000000000056",
           "slug": "travel-flights",
           "name": "Flights"
         },
         {
-          "id": "",
+          "id": "00000056-0000-0000-0000-000000000057",
           "slug": "travel-hotels",
           "name": "Hotels & Lodging"
         },
         {
-          "id": "",
+          "id": "00000057-0000-0000-0000-000000000058",
           "slug": "travel-rental-car",
           "name": "Rental Car"
         },
         {
-          "id": "",
+          "id": "00000058-0000-0000-0000-000000000059",
           "slug": "travel-activities",
           "name": "Activities & Tours"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000059-0000-0000-0000-00000000005a",
       "slug": "financial",
       "name": "Financial",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000005a-0000-0000-0000-00000000005b",
           "slug": "financial-credit-card-payment",
           "name": "Credit Card Payment"
         },
         {
-          "id": "",
+          "id": "0000005b-0000-0000-0000-00000000005c",
           "slug": "financial-bank-fees",
           "name": "Bank Fees"
         },
         {
-          "id": "",
+          "id": "0000005c-0000-0000-0000-00000000005d",
           "slug": "financial-interest-fees",
           "name": "Interest Fees"
         },
         {
-          "id": "",
+          "id": "0000005d-0000-0000-0000-00000000005e",
           "slug": "financial-investment-fees",
           "name": "Investment Fees"
         },
         {
-          "id": "",
+          "id": "0000005e-0000-0000-0000-00000000005f",
           "slug": "financial-transfer",
           "name": "Transfer"
         },
         {
-          "id": "",
+          "id": "0000005f-0000-0000-0000-000000000060",
           "slug": "financial-taxes",
           "name": "Taxes"
         },
         {
-          "id": "",
+          "id": "00000060-0000-0000-0000-000000000061",
           "slug": "financial-life-insurance",
           "name": "Life Insurance"
         }
       ]
     },
     {
-      "id": "",
+      "id": "00000061-0000-0000-0000-000000000062",
       "slug": "business",
       "name": "Business Expenses",
       "subcategories": [
         {
-          "id": "",
+          "id": "00000062-0000-0000-0000-000000000063",
           "slug": "business-office-supplies",
           "name": "Office Supplies"
         },
         {
-          "id": "",
+          "id": "00000063-0000-0000-0000-000000000064",
           "slug": "business-software",
           "name": "Software & Subscriptions"
         },
         {
-          "id": "",
+          "id": "00000064-0000-0000-0000-000000000065",
           "slug": "business-hosting",
           "name": "Hosting & Cloud Services"
         },
         {
-          "id": "",
+          "id": "00000065-0000-0000-0000-000000000066",
           "slug": "business-ai-automation",
           "name": "AI & Automation Services"
         },
         {
-          "id": "",
+          "id": "00000066-0000-0000-0000-000000000067",
           "slug": "business-advertising",
           "name": "Advertising & Marketing"
         },
         {
-          "id": "",
+          "id": "00000067-0000-0000-0000-000000000068",
           "slug": "business-meals",
           "name": "Business Meals"
         },
         {
-          "id": "",
+          "id": "00000068-0000-0000-0000-000000000069",
           "slug": "business-travel",
           "name": "Business Travel"
         },
         {
-          "id": "",
+          "id": "00000069-0000-0000-0000-00000000006a",
           "slug": "business-equipment",
           "name": "Equipment & Tools"
         },
         {
-          "id": "",
+          "id": "0000006a-0000-0000-0000-00000000006b",
           "slug": "business-electronics",
           "name": "Electronics & Technology"
         }
       ]
     },
     {
-      "id": "",
+      "id": "0000006b-0000-0000-0000-00000000006c",
       "slug": "charity",
       "name": "Charity & Donations",
       "subcategories": [
         {
-          "id": "",
+          "id": "0000006c-0000-0000-0000-00000000006d",
           "slug": "charity-donations",
           "name": "Donations"
         },
         {
-          "id": "",
+          "id": "0000006d-0000-0000-0000-00000000006e",
           "slug": "charity-religious",
           "name": "Religious Organizations"
         },
         {
-          "id": "",
+          "id": "0000006e-0000-0000-0000-00000000006f",
           "slug": "charity-other",
           "name": "Other"
         }
