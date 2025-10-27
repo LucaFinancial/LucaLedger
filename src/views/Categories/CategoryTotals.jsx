@@ -1,6 +1,5 @@
 import {
   Box,
-  Grid,
   Paper,
   ToggleButton,
   ToggleButtonGroup,
@@ -28,20 +27,26 @@ export default function CategoryTotals({ category }) {
 
   // Calculate totals for this category and all its subcategories
   const { totals, subcategoryTotals } = useMemo(() => {
-    // Determine date range based on selected time period
     const now = dayjs();
+    const today = now.startOf('day');
+
+    // Determine date range based on selected time period
     let startDate;
+    let endDate;
 
     switch (timePeriod) {
       case 'month':
         startDate = now.startOf('month');
+        endDate = now.endOf('month');
         break;
       case 'year':
         startDate = now.startOf('year');
+        endDate = now.endOf('year');
         break;
       case 'all':
       default:
-        startDate = null; // No filter
+        startDate = null;
+        endDate = null;
         break;
     }
 
@@ -54,18 +59,39 @@ export default function CategoryTotals({ category }) {
     // Filter transactions by category and date range
     const categoryTransactions = allTransactions.filter((transaction) => {
       if (!categoryIds.has(transaction.categoryId)) return false;
-      if (startDate && dayjs(transaction.date).isBefore(startDate)) {
-        return false;
+
+      // For date filtering, only include transactions within the time period
+      if (startDate && endDate) {
+        const transactionDate = dayjs(transaction.date);
+        if (
+          transactionDate.isBefore(startDate, 'day') ||
+          transactionDate.isAfter(endDate, 'day')
+        ) {
+          return false;
+        }
       }
+
       return true;
     });
 
-    // Calculate overall totals (amounts are in cents, convert to dollars)
-    const totalCents = categoryTransactions.reduce(
-      (sum, transaction) => sum + Number(transaction.amount),
-      0
+    // Split transactions into past and future
+    const pastTransactions = categoryTransactions.filter((t) => {
+      const transactionDate = dayjs(t.date).startOf('day');
+      return transactionDate.isBefore(today) || transactionDate.isSame(today);
+    });
+    const futureTransactions = categoryTransactions.filter((t) => {
+      const transactionDate = dayjs(t.date).startOf('day');
+      return transactionDate.isAfter(today);
+    });
+
+    // Calculate totals
+    const pastTotal = centsToDollars(
+      pastTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
     );
-    const total = centsToDollars(totalCents);
+    const futureTotal = centsToDollars(
+      futureTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+    );
+    const total = pastTotal + futureTotal;
     const count = categoryTransactions.length;
 
     // Calculate subcategory breakdown
@@ -73,14 +99,28 @@ export default function CategoryTotals({ category }) {
       const subTransactions = categoryTransactions.filter(
         (t) => t.categoryId === subcategory.id
       );
-      const subTotalCents = subTransactions.reduce(
-        (sum, t) => sum + Number(t.amount),
-        0
+      const subPastTransactions = subTransactions.filter((t) => {
+        const transactionDate = dayjs(t.date).startOf('day');
+        return transactionDate.isBefore(today) || transactionDate.isSame(today);
+      });
+      const subFutureTransactions = subTransactions.filter((t) => {
+        const transactionDate = dayjs(t.date).startOf('day');
+        return transactionDate.isAfter(today);
+      });
+
+      const pastTotal = centsToDollars(
+        subPastTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
       );
+      const futureTotal = centsToDollars(
+        subFutureTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+      );
+
       return {
         id: subcategory.id,
         name: subcategory.name,
-        total: centsToDollars(subTotalCents),
+        pastTotal,
+        futureTotal,
+        total: pastTotal + futureTotal,
         count: subTransactions.length,
       };
     });
@@ -89,7 +129,7 @@ export default function CategoryTotals({ category }) {
     subTotals.sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
 
     return {
-      totals: { total, count },
+      totals: { pastTotal, futureTotal, total, count },
       subcategoryTotals: subTotals,
     };
   }, [allTransactions, category, timePeriod]);
@@ -168,76 +208,98 @@ export default function CategoryTotals({ category }) {
         </ToggleButtonGroup>
       </Box>
 
-      <Grid
-        container
-        spacing={2}
-        sx={{ mb: 3 }}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 4,
+          mb: 3,
+        }}
       >
-        {/* Total Amount */}
-        <Grid
-          item
-          xs={12}
-          sm={6}
-        >
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
-              Total Amount
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.total >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.total))}
-            </Typography>
-          </Box>
-        </Grid>
+        {/* Past Amount */}
+        <Box>
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            Past
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
+              fontWeight: 600,
+            }}
+          >
+            ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
+          </Typography>
+        </Box>
 
-        {/* Transaction Count */}
-        <Grid
-          item
-          xs={12}
-          sm={6}
-        >
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
-              Transactions
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{ fontWeight: 600 }}
-            >
-              {totals.count}
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
+        {/* Future Amount */}
+        <Box>
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            Future
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
+              fontWeight: 600,
+            }}
+          >
+            ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
+          </Typography>
+        </Box>
+
+        {/* Total Amount */}
+        <Box>
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            Total
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: totals.total >= 0 ? 'success.main' : 'error.main',
+              fontWeight: 600,
+            }}
+          >
+            ${doublePrecisionFormatString(Math.abs(totals.total))}
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Subcategory Breakdown */}
       {subcategoryTotals.length > 0 &&
         subcategoryTotals.some((s) => s.count > 0) && (
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ display: 'block', mb: 1, fontWeight: 600 }}
-            >
-              Subcategory Breakdown
-            </Typography>
+          <Box sx={{ mt: 2 }}>
             <Table size='small'>
               <TableHead>
                 <TableRow>
-                  <TableCell>Subcategory</TableCell>
-                  <TableCell align='right'>Amount</TableCell>
-                  <TableCell align='right'>Count</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
+                  <TableCell
+                    align='right'
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Past
+                  </TableCell>
+                  <TableCell
+                    align='right'
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Future
+                  </TableCell>
+                  <TableCell
+                    align='right'
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Total
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -249,13 +311,35 @@ export default function CategoryTotals({ category }) {
                       <TableCell
                         align='right'
                         sx={{
-                          color: sub.total >= 0 ? 'success.main' : 'error.main',
+                          color:
+                            sub.pastTotal >= 0 ? 'success.main' : 'error.main',
                           fontWeight: 500,
+                        }}
+                      >
+                        ${doublePrecisionFormatString(Math.abs(sub.pastTotal))}
+                      </TableCell>
+                      <TableCell
+                        align='right'
+                        sx={{
+                          color:
+                            sub.futureTotal >= 0
+                              ? 'success.main'
+                              : 'error.main',
+                          fontWeight: 500,
+                        }}
+                      >
+                        $
+                        {doublePrecisionFormatString(Math.abs(sub.futureTotal))}
+                      </TableCell>
+                      <TableCell
+                        align='right'
+                        sx={{
+                          color: sub.total >= 0 ? 'success.main' : 'error.main',
+                          fontWeight: 600,
                         }}
                       >
                         ${doublePrecisionFormatString(Math.abs(sub.total))}
                       </TableCell>
-                      <TableCell align='right'>{sub.count}</TableCell>
                     </TableRow>
                   ))}
               </TableBody>
