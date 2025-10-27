@@ -38,12 +38,26 @@ export default function Dashboard() {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const { totals } = useAccountBalances(accounts);
 
-  // Calculate date ranges
-  const today = dayjs();
-  const currentMonthStart = today.startOf('month');
-  const currentMonthEnd = today.endOf('month');
-  const recentStart = today.subtract(14, 'day');
-  const futureEnd = today.add(30, 'day');
+  // Calculate date ranges (memoized to avoid recalculation)
+  const dateRanges = useMemo(() => {
+    const today = dayjs();
+    return {
+      today,
+      todayEnd: today.endOf('day'),
+      currentMonthStart: today.startOf('month'),
+      currentMonthEnd: today.endOf('month'),
+      recentStart: today.subtract(14, 'day'),
+      futureEnd: today.add(30, 'day'),
+    };
+  }, []);
+
+  // Create account lookup map for performance
+  const accountMap = useMemo(() => {
+    return accounts.reduce((map, account) => {
+      map[account.id] = account.name;
+      return map;
+    }, {});
+  }, [accounts]);
 
   // Filter transactions by time period
   const recentTransactions = useMemo(() => {
@@ -51,8 +65,8 @@ export default function Dashboard() {
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         return (
-          txDate.isAfter(recentStart) &&
-          txDate.isBefore(today.add(1, 'day')) &&
+          txDate.isAfter(dateRanges.recentStart) &&
+          txDate.isBefore(dateRanges.todayEnd) &&
           tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
         );
       })
@@ -62,19 +76,19 @@ export default function Dashboard() {
         return dateB.diff(dateA);
       })
       .slice(0, 10);
-  }, [allTransactions, recentStart, today]);
+  }, [allTransactions, dateRanges]);
 
   // Current month transactions
   const currentMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
       return (
-        txDate.isAfter(currentMonthStart.subtract(1, 'day')) &&
-        txDate.isBefore(currentMonthEnd.add(1, 'day')) &&
+        txDate.isSameOrAfter(dateRanges.currentMonthStart) &&
+        txDate.isSameOrBefore(dateRanges.currentMonthEnd) &&
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     });
-  }, [allTransactions, currentMonthStart, currentMonthEnd]);
+  }, [allTransactions, dateRanges]);
 
   // Calculate current month totals
   const currentMonthTotals = useMemo(() => {
@@ -96,8 +110,8 @@ export default function Dashboard() {
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         return (
-          txDate.isAfter(today) &&
-          txDate.isBefore(futureEnd.add(1, 'day')) &&
+          txDate.isAfter(dateRanges.today) &&
+          txDate.isSameOrBefore(dateRanges.futureEnd) &&
           (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
             tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
         );
@@ -107,7 +121,7 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateA.diff(dateB);
       });
-  }, [allTransactions, today, futureEnd]);
+  }, [allTransactions, dateRanges]);
 
   // Calculate future totals
   const futureTotals = useMemo(() => {
@@ -123,8 +137,7 @@ export default function Dashboard() {
   };
 
   const getAccountName = (accountId) => {
-    const account = accounts.find((a) => a.id === accountId);
-    return account ? account.name : 'Unknown Account';
+    return accountMap[accountId] || 'Unknown Account';
   };
 
   return (
@@ -252,7 +265,7 @@ export default function Dashboard() {
               Current Month Overview
             </Typography>
             <Chip
-              label={today.format('MMMM YYYY')}
+              label={dateRanges.today.format('MMMM YYYY')}
               size='small'
               sx={{ backgroundColor: '#2196f3', color: 'white' }}
             />
