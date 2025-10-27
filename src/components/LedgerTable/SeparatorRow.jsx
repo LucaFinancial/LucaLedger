@@ -40,7 +40,7 @@ export default function SeparatorRow({
       }}
     >
       <TableCell
-        colSpan={7}
+        colSpan={8}
         sx={{
           backgroundColor: isYear ? '#f5f5f5' : '#fafafa',
           fontWeight: isYear ? 'bold' : 'normal',
