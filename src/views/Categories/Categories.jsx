@@ -131,40 +131,50 @@ export default function Categories() {
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                {/* Category Totals */}
-                <CategoryTotals category={category} />
-
-                {/* Subcategories List */}
-                {category.subcategories.length > 0 ? (
-                  <List sx={{ pl: 2 }}>
-                    {category.subcategories.map((subcategory) => (
-                      <ListItem
-                        key={subcategory.id}
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {/* Subcategories List */}
+                  <Box sx={{ flexShrink: 0, width: 220 }}>
+                    {category.subcategories.length > 0 ? (
+                      <List sx={{ pl: 2 }}>
+                        {category.subcategories.map((subcategory) => (
+                          <ListItem
+                            key={subcategory.id}
+                            sx={{
+                              py: 1,
+                              borderLeft: '3px solid',
+                              borderColor: 'primary.main',
+                              mb: 0.5,
+                            }}
+                          >
+                            <ListItemText
+                              primary={subcategory.name}
+                              primaryTypographyProps={{
+                                variant: 'body1',
+                                color: 'text.secondary',
+                              }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Typography
+                        variant='body2'
                         sx={{
-                          py: 1,
-                          borderLeft: '3px solid',
-                          borderColor: 'primary.main',
-                          mb: 0.5,
+                          pl: 2,
+                          fontStyle: 'italic',
+                          color: 'text.secondary',
                         }}
                       >
-                        <ListItemText
-                          primary={subcategory.name}
-                          primaryTypographyProps={{
-                            variant: 'body1',
-                            color: 'text.secondary',
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography
-                    variant='body2'
-                    sx={{ pl: 2, fontStyle: 'italic', color: 'text.secondary' }}
-                  >
-                    No subcategories
-                  </Typography>
-                )}
+                        No subcategories
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Category Totals */}
+                  <Box sx={{ flex: 1 }}>
+                    <CategoryTotals category={category} />
+                  </Box>
+                </Box>
               </AccordionDetails>
             </Accordion>
           ))

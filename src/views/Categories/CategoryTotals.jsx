@@ -205,15 +205,17 @@ export default function CategoryTotals({ category }) {
         position: 'relative',
       }}
     >
-      {/* Header with title and time period toggle - overlays the chart */}
+      {/* Header with title and time period toggle - absolutely positioned overlay */}
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
           p: 2,
-          pb: 1,
-          position: 'relative',
           zIndex: 2,
         }}
       >
@@ -240,10 +242,9 @@ export default function CategoryTotals({ category }) {
         sx={{
           display: 'flex',
           gap: 3,
-          px: 2,
+          pr: 2,
           pb: 1,
-          alignItems: 'center',
-          mt: -5,
+          alignItems: 'flex-start',
         }}
       >
         {/* Pie Chart */}
@@ -251,7 +252,8 @@ export default function CategoryTotals({ category }) {
           sx={{
             flex: 5,
             height: 220,
-            p: 1,
+            border: '1px solid rgba(0, 0, 0, 0.12)',
+            borderRadius: 1,
           }}
         >
           <ResponsiveContainer
@@ -269,7 +271,7 @@ export default function CategoryTotals({ category }) {
                 cx='50%'
                 cy='50%'
                 labelLine={false}
-                outerRadius={70}
+                outerRadius={55}
                 fill='#8884d8'
                 dataKey='value'
                 label={({ name, percent }) =>
@@ -298,66 +300,76 @@ export default function CategoryTotals({ category }) {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 4,
+            flexDirection: 'column',
+            gap: 1,
             flex: 1,
+            pt: 6,
           }}
         >
-          {/* Past Amount */}
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
-              Past
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
-            </Typography>
-          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 4,
+            }}
+          >
+            {/* Past Amount */}
+            <Box>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+              >
+                Past
+              </Typography>
+              <Typography
+                variant='h6'
+                sx={{
+                  color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
+                  fontWeight: 600,
+                }}
+              >
+                ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
+              </Typography>
+            </Box>
 
-          {/* Future Amount */}
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
-              Future
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
-            </Typography>
-          </Box>
+            {/* Future Amount */}
+            <Box>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+              >
+                Future
+              </Typography>
+              <Typography
+                variant='h6'
+                sx={{
+                  color:
+                    totals.futureTotal >= 0 ? 'success.main' : 'error.main',
+                  fontWeight: 600,
+                }}
+              >
+                ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
+              </Typography>
+            </Box>
 
-          {/* Total Amount */}
-          <Box>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
-              Total
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.total >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.total))}
-            </Typography>
+            {/* Total Amount */}
+            <Box>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+              >
+                Total
+              </Typography>
+              <Typography
+                variant='h6'
+                sx={{
+                  color: totals.total >= 0 ? 'success.main' : 'error.main',
+                  fontWeight: 600,
+                }}
+              >
+                ${doublePrecisionFormatString(Math.abs(totals.total))}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </Box>
