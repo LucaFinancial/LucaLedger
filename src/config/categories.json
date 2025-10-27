@@ -352,54 +352,89 @@
       ]
     },
     {
-      "id": "00000043-0000-0000-0000-000000000044",
-      "slug": "family",
-      "name": "Family & Children",
+      "id": "0000007a-0000-0000-0000-00000000007b",
+      "slug": "children",
+      "name": "Children",
       "subcategories": [
         {
           "id": "00000044-0000-0000-0000-000000000045",
-          "slug": "family-childcare",
+          "slug": "children-childcare",
           "name": "Childcare & Daycare"
         },
         {
           "id": "00000045-0000-0000-0000-000000000046",
-          "slug": "family-school-supplies",
+          "slug": "children-school-supplies",
           "name": "School Supplies"
         },
         {
           "id": "00000046-0000-0000-0000-000000000047",
-          "slug": "family-school-fees",
+          "slug": "children-school-fees",
           "name": "School Fees"
         },
         {
-          "id": "00000047-0000-0000-0000-000000000048",
-          "slug": "family-activities",
-          "name": "Family Activities"
-        },
-        {
           "id": "00000048-0000-0000-0000-000000000049",
-          "slug": "family-clothing",
-          "name": "Children's Clothing"
+          "slug": "children-clothing",
+          "name": "Clothing"
         },
         {
           "id": "00000049-0000-0000-0000-00000000004a",
-          "slug": "family-toys",
+          "slug": "children-toys",
           "name": "Toys & Games"
         },
         {
           "id": "0000004a-0000-0000-0000-00000000004b",
-          "slug": "family-electronics",
+          "slug": "children-electronics",
           "name": "Electronics & Video Games"
         },
         {
           "id": "0000004b-0000-0000-0000-00000000004c",
-          "slug": "family-allowance",
+          "slug": "children-allowance",
           "name": "Allowance"
         },
         {
-          "id": "0000004c-0000-0000-0000-00000000004d",
-          "slug": "family-gifts",
-          "name": "Gifts"
+          "id": "0000007b-0000-0000-0000-00000000007c",
+          "slug": "children-books",
+          "name": "Books & Educational Materials"
+        },
+        {
+          "id": "00000070-0000-0000-0000-000000000071",
+          "slug": "children-sports",
+          "name": "Sports & Athletics"
+        },
+        {
+          "id": "00000071-0000-0000-0000-000000000072",
+          "slug": "children-dance",
+          "name": "Dance & Gymnastics"
+        },
+        {
+          "id": "00000072-0000-0000-0000-000000000073",
+          "slug": "children-music",
+          "name": "Music Lessons"
+        },
+        {
+          "id": "00000073-0000-0000-0000-000000000074",
+          "slug": "children-art",
+          "name": "Art & Crafts Classes"
+        },
+        {
+          "id": "00000074-0000-0000-0000-000000000075",
+          "slug": "children-tutoring",
+          "name": "Tutoring & Academic Programs"
+        },
+        {
+          "id": "00000075-0000-0000-0000-000000000076",
+          "slug": "children-camps",
+          "name": "Summer Camps & Programs"
+        },
+        {
+          "id": "00000076-0000-0000-0000-000000000077",
+          "slug": "children-clubs",
+          "name": "Clubs & Organizations"
+        },
+        {
+          "id": "00000077-0000-0000-0000-000000000078",
+          "slug": "children-equipment",
+          "name": "Equipment & Gear"
         }
       ]
     },
