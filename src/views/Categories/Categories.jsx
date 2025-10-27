@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import config from '@/config';
+import CategoryTotals from './CategoryTotals';
 
 export default function Categories() {
   const categories = config.categories || [];
@@ -96,37 +97,8 @@ export default function Categories() {
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              {/* Category Totals Placeholder */}
-              <Paper
-                sx={{
-                  p: 2,
-                  mb: 2,
-                  backgroundColor: 'rgba(76, 175, 80, 0.08)',
-                  border: '1px dashed rgba(76, 175, 80, 0.5)',
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <Typography variant='body2'>Category Totals</Typography>
-                  <Chip
-                    label='Coming Soon'
-                    color='success'
-                    variant='outlined'
-                    size='small'
-                  />
-                </Box>
-                <Typography
-                  variant='caption'
-                  sx={{ display: 'block', mt: 1, fontStyle: 'italic' }}
-                >
-                  Transaction totals and spending analytics will appear here
-                </Typography>
-              </Paper>
+              {/* Category Totals */}
+              <CategoryTotals category={category} />
 
               {/* Subcategories List */}
               {category.subcategories.length > 0 ? (
