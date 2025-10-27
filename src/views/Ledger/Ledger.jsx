@@ -35,6 +35,7 @@ export default function Ledger() {
   );
 
   // Calculate filtered transactions for "Select All (Filtered)" button
+  // Only include transactions that match the filter (not already-selected ones)
   const filteredTransactions = filterValue
     ? transactions.filter((transaction) =>
         transaction.description
