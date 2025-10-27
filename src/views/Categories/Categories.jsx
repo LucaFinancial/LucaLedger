@@ -15,7 +15,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import config from '@/config';
 
 export default function Categories() {
-  const categories = config.categories;
+  const categories = config.categories || [];
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
@@ -85,7 +85,11 @@ export default function Categories() {
                   {category.name}
                 </Typography>
                 <Chip
-                  label={`${category.subcategories.length} subcategories`}
+                  label={`${category.subcategories.length} ${
+                    category.subcategories.length === 1
+                      ? 'subcategory'
+                      : 'subcategories'
+                  }`}
                   size='small'
                   variant='outlined'
                 />
