@@ -90,13 +90,23 @@ export default function CategoryTree({ categories }) {
     function update(source) {
       const duration = 300;
 
+      // Helper function for node fill color
+      const getNodeFillColor = (d) => {
+        if (d.depth === 0) return '#1976d2';
+        if (d.depth === 1) return d._children ? '#42a5f5' : '#90caf9';
+        return d._children ? '#64b5f6' : '#bbdefb';
+      };
+
+      // Helper function for cursor style
+      const getCursorStyle = (d) => (d._children ? 'pointer' : 'default');
+
       // Recompute layout
       treeLayout(root);
 
       const nodes = root.descendants();
       const links = root.links();
 
-      // Adjust positions for radial layout
+      // Adjust vertical spacing between levels
       nodes.forEach((d) => {
         d.y = d.depth * 180;
       });
@@ -134,14 +144,10 @@ export default function CategoryTree({ categories }) {
       nodeEnter
         .append('circle')
         .attr('r', (d) => (d.depth === 0 ? 8 : d.depth === 1 ? 6 : 4))
-        .style('fill', (d) => {
-          if (d.depth === 0) return '#1976d2';
-          if (d.depth === 1) return d._children ? '#42a5f5' : '#90caf9';
-          return d._children ? '#64b5f6' : '#bbdefb';
-        })
+        .style('fill', getNodeFillColor)
         .style('stroke', '#1976d2')
         .style('stroke-width', 2)
-        .style('cursor', (d) => (d._children ? 'pointer' : 'default'));
+        .style('cursor', getCursorStyle);
 
       // Add labels
       nodeEnter
@@ -177,12 +183,8 @@ export default function CategoryTree({ categories }) {
 
       nodeUpdate
         .select('circle')
-        .style('fill', (d) => {
-          if (d.depth === 0) return '#1976d2';
-          if (d.depth === 1) return d._children ? '#42a5f5' : '#90caf9';
-          return d._children ? '#64b5f6' : '#bbdefb';
-        })
-        .style('cursor', (d) => (d._children ? 'pointer' : 'default'));
+        .style('fill', getNodeFillColor)
+        .style('cursor', getCursorStyle);
 
       // Remove exiting nodes
       const nodeExit = node
