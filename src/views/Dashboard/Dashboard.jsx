@@ -65,8 +65,10 @@ export default function Dashboard() {
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         return (
-          txDate.isAfter(dateRanges.recentStart) &&
-          txDate.isBefore(dateRanges.todayEnd) &&
+          (txDate.isAfter(dateRanges.recentStart) ||
+            txDate.isSame(dateRanges.recentStart, 'day')) &&
+          (txDate.isBefore(dateRanges.todayEnd) ||
+            txDate.isSame(dateRanges.todayEnd, 'day')) &&
           tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
         );
       })
@@ -83,8 +85,10 @@ export default function Dashboard() {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
       return (
-        txDate.isSameOrAfter(dateRanges.currentMonthStart) &&
-        txDate.isSameOrBefore(dateRanges.currentMonthEnd) &&
+        (txDate.isAfter(dateRanges.currentMonthStart) ||
+          txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
+        (txDate.isBefore(dateRanges.currentMonthEnd) ||
+          txDate.isSame(dateRanges.currentMonthEnd, 'day')) &&
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     });
@@ -111,7 +115,8 @@ export default function Dashboard() {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         return (
           txDate.isAfter(dateRanges.today) &&
-          txDate.isSameOrBefore(dateRanges.futureEnd) &&
+          (txDate.isBefore(dateRanges.futureEnd) ||
+            txDate.isSame(dateRanges.futureEnd, 'day')) &&
           (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
             tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
         );
