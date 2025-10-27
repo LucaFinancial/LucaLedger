@@ -99,36 +99,40 @@ export default function CategorySelect({
         return option.id === value.id;
       }}
       disableClearable={false}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          placeholder={isInvalidCategory ? 'Invalid category' : placeholder}
-          size={size}
-          variant={variant}
-          error={error || isInvalidCategory}
-          helperText={helperText}
-          sx={
-            isInvalidCategory
-              ? {
-                  '& .MuiInputBase-input': {
-                    color: 'error.main',
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'error.main',
-                    opacity: 1,
-                  },
-                }
-              : undefined
-          }
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              disableUnderline: variant === 'standard',
-            },
-          }}
-        />
-      )}
+      renderInput={(params) => {
+        const inputProps = {
+          ...params.InputProps,
+        };
+        if (variant === 'standard') {
+          inputProps.disableUnderline = true;
+        }
+
+        return (
+          <TextField
+            {...params}
+            label={label}
+            placeholder={isInvalidCategory ? 'Invalid category' : placeholder}
+            size={size}
+            variant={variant}
+            error={error || isInvalidCategory}
+            helperText={helperText}
+            sx={
+              isInvalidCategory
+                ? {
+                    '& .MuiInputBase-input': {
+                      color: 'error.main',
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: 'error.main',
+                      opacity: 1,
+                    },
+                  }
+                : undefined
+            }
+            InputProps={inputProps}
+          />
+        );
+      }}
       renderOption={(props, option) => (
         <Box
           component='li'
