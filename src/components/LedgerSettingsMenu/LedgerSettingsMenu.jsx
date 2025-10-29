@@ -147,3 +147,8 @@ LedgerSettingsMenu.propTypes = {
   selectedCount: PropTypes.number,
   invalidCategoryCount: PropTypes.number,
 };
+
+LedgerSettingsMenu.defaultProps = {
+  selectedCount: 0,
+  invalidCategoryCount: 0,
+};
