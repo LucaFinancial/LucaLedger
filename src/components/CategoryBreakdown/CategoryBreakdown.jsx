@@ -12,7 +12,10 @@ import {
 } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectors as transactionSelectors } from '@/store/transactions';
+import {
+  constants as transactionConstants,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import dayjs from 'dayjs';
@@ -57,6 +60,16 @@ export default function CategoryBreakdown() {
   const categoryData = useMemo(() => {
     const now = dayjs();
     const today = now.startOf('day');
+
+    // Create category lookup map for O(1) lookups
+    const categoryMap = new Map();
+    allCategories.forEach((cat) => {
+      categoryMap.set(cat.id, { id: cat.id, name: cat.name });
+      cat.subcategories.forEach((subcat) => {
+        // Map subcategory to parent category
+        categoryMap.set(subcat.id, { id: cat.id, name: cat.name });
+      });
+    });
 
     let startDate;
     let endDate;
@@ -112,15 +125,17 @@ export default function CategoryBreakdown() {
 
       // For YTD, only include completed transactions
       if (timePeriod === 'ytd') {
-        return tx.status === 'COMPLETE';
+        return (
+          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        );
       }
 
       // For future-only periods, include scheduled/planned
       if (timePeriod === 'next-month') {
         return (
-          tx.status === 'SCHEDULED' ||
-          tx.status === 'PLANNED' ||
-          tx.status === 'COMPLETE'
+          tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
+          tx.status === transactionConstants.TransactionStatusEnum.PLANNED ||
+          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
         );
       }
 
@@ -130,7 +145,7 @@ export default function CategoryBreakdown() {
       }
 
       // For past month, only completed
-      return tx.status === 'COMPLETE';
+      return tx.status === transactionConstants.TransactionStatusEnum.COMPLETE;
     });
 
     // Calculate totals by category (only expenses, amount < 0)
@@ -149,33 +164,20 @@ export default function CategoryBreakdown() {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
       const isActual = txDate.isBefore(today) || txDate.isSame(today, 'day');
 
-      if (isActual && tx.status === 'COMPLETE') {
+      if (
+        isActual &&
+        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+      ) {
         actualExpenses += expenseAmount;
       } else {
         projectedExpenses += expenseAmount;
       }
 
-      // Find category
+      // Find category using lookup map
       const categoryId = tx.categoryId;
       if (!categoryId) return;
 
-      // Find category info
-      let categoryInfo = null;
-      for (const cat of allCategories) {
-        if (cat.id === categoryId) {
-          categoryInfo = { id: cat.id, name: cat.name };
-          break;
-        }
-        // Check subcategories
-        for (const subcat of cat.subcategories) {
-          if (subcat.id === categoryId) {
-            categoryInfo = { id: cat.id, name: cat.name }; // Use parent category
-            break;
-          }
-        }
-        if (categoryInfo) break;
-      }
-
+      const categoryInfo = categoryMap.get(categoryId);
       if (!categoryInfo) return;
 
       if (!categoryTotals.has(categoryInfo.id)) {
@@ -193,7 +195,10 @@ export default function CategoryBreakdown() {
       catData.total += expenseAmount;
       catData.count += 1;
 
-      if (isActual && tx.status === 'COMPLETE') {
+      if (
+        isActual &&
+        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+      ) {
         catData.actual += expenseAmount;
       } else {
         catData.projected += expenseAmount;
