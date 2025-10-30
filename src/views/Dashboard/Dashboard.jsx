@@ -31,6 +31,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import BetaBanner from '@/components/BetaBanner';
+import CategoryBreakdown from '@/components/CategoryBreakdown';
 import { useMemo } from 'react';
 
 export default function Dashboard() {
@@ -400,30 +401,8 @@ export default function Dashboard() {
             </Grid>
           </Grid>
 
-          {/* Placeholder for Spending by Category */}
-          <Paper
-            sx={{
-              p: 3,
-              mb: 2,
-              backgroundColor: '#f5f5f5',
-              border: '2px dashed #bdbdbd',
-              textAlign: 'center',
-            }}
-          >
-            <InfoOutlinedIcon sx={{ fontSize: 40, color: '#9e9e9e', mb: 1 }} />
-            <Typography
-              variant='h6'
-              sx={{ color: 'text.secondary', mb: 1 }}
-            >
-              Spending by Category — Coming Soon
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{ color: 'text.secondary' }}
-            >
-              Visual breakdown of spending by category for the current month
-            </Typography>
-          </Paper>
+          {/* Category Breakdown */}
+          <CategoryBreakdown />
 
           {/* Placeholder for Trend Chart */}
           <Paper
