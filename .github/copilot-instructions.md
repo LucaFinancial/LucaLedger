@@ -242,6 +242,30 @@ This will automatically close issue #42 when the PR is merged to the default bra
 
 **Note:** If you're working on an issue but don't want it to close automatically (e.g., partial work, related but separate), use "Related to #123" or "Part of #123" instead.
 
+### Merge Conflict Resolution
+
+**CRITICAL**: When asked to resolve merge conflicts in a pull request branch:
+
+**NEVER** merge main, release, or any other branch into the PR branch unless explicitly instructed to do so AND the PR is targeting that specific branch.
+
+**DO:**
+1. Only resolve conflicts that exist between the PR branch and its target branch
+2. Check what branch the PR is merging INTO (typically visible in the PR description or GitHub UI)
+3. If the PR is merging into a feature branch or release branch, only consider conflicts with that branch
+4. Use `git status` and `git diff` to identify actual conflicts in files you've modified
+5. Resolve conflicts by keeping the changes from your PR branch that are relevant to the issue being fixed
+
+**DON'T:**
+1. Don't merge main branch into feature branches
+2. Don't merge release branches into feature branches unless the PR explicitly targets that release branch
+3. Don't use `git merge` with other branches unless you're absolutely certain that's what's being requested
+4. Don't assume "merge conflicts" means you should merge another branch - it usually means resolving conflicts that arise when the PR is merged
+
+**When in doubt:**
+- Ask for clarification about which branch the PR is targeting
+- Check the PR description to see what branch it's merging into
+- Only resolve conflicts in files that are part of your changes
+
 ## Troubleshooting
 
 ### Common Issues
