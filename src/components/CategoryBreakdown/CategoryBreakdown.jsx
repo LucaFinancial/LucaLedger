@@ -161,8 +161,13 @@ export default function CategoryBreakdown() {
       const expenseAmount = Math.abs(tx.amount);
       totalExpenses += expenseAmount;
 
-      // Completed transactions are actual, others are projected
-      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
+      const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
+      const isActual = txDate.isBefore(today) || txDate.isSame(today, 'day');
+
+      if (
+        isActual &&
+        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+      ) {
         actualExpenses += expenseAmount;
       } else {
         projectedExpenses += expenseAmount;
@@ -190,8 +195,10 @@ export default function CategoryBreakdown() {
       catData.total += expenseAmount;
       catData.count += 1;
 
-      // Completed transactions are actual, others are projected
-      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
+      if (
+        isActual &&
+        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+      ) {
         catData.actual += expenseAmount;
       } else {
         catData.projected += expenseAmount;
@@ -220,7 +227,10 @@ export default function CategoryBreakdown() {
   };
 
   const formatCurrency = (amount) => {
-    return `$${doublePrecisionFormatString(amount)}`;
+    // Handle NaN, null, undefined by defaulting to 0
+    const safeAmount =
+      isNaN(amount) || amount === null || amount === undefined ? 0 : amount;
+    return `$${doublePrecisionFormatString(safeAmount)}`;
   };
 
   // If no expenses, show a message
