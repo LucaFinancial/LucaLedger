@@ -1,9 +1,11 @@
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { centsToDollars } from '@/utils';
 
 export default function BalanceDisplay({ label, balance }) {
+  const balanceInDollars = centsToDollars(balance);
   const textStyle = {
-    color: balance < 0 ? 'red' : 'inherit',
+    color: balanceInDollars < 0 ? 'red' : 'inherit',
   };
 
   return (
@@ -28,7 +30,7 @@ export default function BalanceDisplay({ label, balance }) {
         display='block'
       >
         $
-        {balance.toLocaleString(undefined, {
+        {balanceInDollars.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}

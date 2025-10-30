@@ -1,19 +1,32 @@
-import { Card, CardContent, Typography } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  CircularProgress,
+} from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-import { constants } from '@/store/transactionsLegacy';
+import { constants } from '@/store/transactions';
+import { selectors as accountSelectors } from '@/store/accounts';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
 
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
+  const isLoading = useSelector(
+    accountSelectors.selectIsAccountLoading(account.id)
+  );
 
   const cardLength = '320px';
 
   const handleClick = () => {
-    navigate(`/accounts/${account.id}`);
+    if (!isLoading) {
+      navigate(`/accounts/${account.id}`);
+    }
   };
 
   return (
@@ -22,23 +35,43 @@ export default function AccountCard({ account }) {
       onClick={handleClick}
       sx={{
         width: cardLength,
-        // height: cardLength,
+        position: 'relative',
         '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.04)',
-          cursor: 'pointer',
+          backgroundColor: isLoading ? 'inherit' : 'rgba(0, 0, 0, 0.04)',
+          cursor: isLoading ? 'default' : 'pointer',
         },
       }}
     >
+      {isLoading && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            zIndex: 1,
+          }}
+        >
+          <CircularProgress size={60} />
+        </Box>
+      )}
       <CardContent style={{ position: 'relative' }}>
         <Typography variant='h4'>{account.name}</Typography>
         <Typography variant='subtitle1'>{account.type}</Typography>
         <BalanceRow
-          account={account}
+          accountId={account.id}
+          accountType={account.type}
           balanceType={'Current'}
           filterArray={[constants.TransactionStatusEnum.COMPLETE]}
         />
         <BalanceRow
-          account={account}
+          accountId={account.id}
+          accountType={account.type}
           balanceType={'Pending'}
           filterArray={[
             constants.TransactionStatusEnum.COMPLETE,
@@ -46,7 +79,8 @@ export default function AccountCard({ account }) {
           ]}
         />
         <BalanceRow
-          account={account}
+          accountId={account.id}
+          accountType={account.type}
           balanceType={'Scheduled'}
           filterArray={[
             constants.TransactionStatusEnum.COMPLETE,
@@ -75,11 +109,5 @@ AccountCard.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
-    transactions: PropTypes.arrayOf(
-      PropTypes.shape({
-        status: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
-      })
-    ).isRequired,
   }).isRequired,
 };

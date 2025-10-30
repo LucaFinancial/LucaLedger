@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions, constants } from '@/store/transactionsLegacy';
+import { actions, constants } from '@/store/transactions';
 
 export default function TransactionStatusSelect({ transaction }) {
   const dispatch = useDispatch();
@@ -48,12 +48,18 @@ export default function TransactionStatusSelect({ transaction }) {
         value={status}
         label='Status'
         onChange={handleChange}
+        sx={{
+          textTransform: 'capitalize',
+        }}
       >
         {Object.keys(constants.TransactionStatusEnum).map((key) => {
           return (
             <MenuItem
               key={key}
               value={constants.TransactionStatusEnum[key]}
+              sx={{
+                textTransform: 'capitalize',
+              }}
             >
               {constants.TransactionStatusEnum[key]}
             </MenuItem>

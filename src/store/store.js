@@ -1,86 +1,147 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
+import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
+import categoriesData from '@/config/categories.json';
 
-const localStorageMiddleware = (store) => (next) => (action) => {
-  const result = next(action);
-  localStorage.setItem('reduxState', JSON.stringify(store.getState()));
-  return result;
-};
-
-// Migration function to handle renaming 'accounts' to 'accountsLegacy'
+// Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
   if (!persistedState) return {};
 
   let state = { ...persistedState };
   let needsPersist = false;
 
-  // If we have 'accounts' but not 'accountsLegacy', migrate it
-  if (state.accounts && !state.accountsLegacy) {
-    const { accounts, ...rest } = state;
-    state = {
-      ...rest,
-      accountsLegacy: accounts,
+  const hasLegacyData =
+    state.accountsLegacy &&
+    Array.isArray(state.accountsLegacy) &&
+    state.accountsLegacy.length > 0;
+
+  if (hasLegacyData) {
+    console.log(
+      'Migration: Converting remaining legacy data to normalized format...'
+    );
+
+    // Initialize accounts with new structure if needed
+    if (!state.accounts || Array.isArray(state.accounts)) {
+      state.accounts = {
+        data: state.accounts || [],
+        loading: false,
+        error: null,
+        loadingAccountIds: [],
+      };
+    }
+    if (!state.transactions) state.transactions = [];
+
+    const needsMigration =
+      state.accounts.data.length === 0 || state.transactions.length === 0;
+
+    if (needsMigration) {
+      state.accounts.data = state.accountsLegacy.map((account) => ({
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        statementDay: account.statementDay,
+      }));
+
+      const allTransactions = [];
+      state.accountsLegacy.forEach((account) => {
+        if (account.transactions && Array.isArray(account.transactions)) {
+          account.transactions.forEach((transaction) => {
+            allTransactions.push({
+              ...transaction,
+              accountId: account.id,
+            });
+          });
+        }
+      });
+      state.transactions = allTransactions;
+
+      console.log(
+        `Migration: Converted ${state.accounts.data.length} accounts and ${allTransactions.length} transactions to normalized format`
+      );
+    }
+
+    delete state.accountsLegacy;
+    console.log('Migration: Cleared legacy data from storage');
+    needsPersist = true;
+  }
+
+  // Migrate old array-based accounts structure to new object structure
+  if (state.accounts && Array.isArray(state.accounts)) {
+    console.log(
+      '[Migration] Converting accounts from array to object structure'
+    );
+    state.accounts = {
+      data: state.accounts,
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
     };
     needsPersist = true;
   }
 
-  // Migration: Add accountId to all transactions
-  if (state.accountsLegacy && Array.isArray(state.accountsLegacy)) {
-    let totalUpdated = 0;
-    const updatedAccounts = state.accountsLegacy.map((account) => {
-      if (!account.transactions || !Array.isArray(account.transactions)) {
-        return account;
-      }
+  // Ensure accounts object structure exists
+  if (!state.accounts) {
+    state.accounts = {
+      data: [],
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
+    };
+    needsPersist = true;
+  }
 
-      let accountUpdated = 0;
-      const updatedTransactions = account.transactions.map((transaction) => {
-        // Only add accountId if it's missing
-        if (!transaction.accountId) {
-          accountUpdated++;
-          return {
-            ...transaction,
-            accountId: account.id,
-          };
-        }
-        return transaction;
+  // Verify accounts is in correct format
+  if (state.accounts && !state.accounts.data) {
+    console.warn(
+      '[Migration] WARNING: accounts exists but is missing data property!',
+      state.accounts
+    );
+    // Force correct structure
+    state.accounts = {
+      data: Array.isArray(state.accounts) ? state.accounts : [],
+      loading: false,
+      error: null,
+      loadingAccountIds: [],
+    };
+    needsPersist = true;
+  }
+
+  // Remove version field from existing accounts if present
+  if (
+    state.accounts &&
+    state.accounts.data &&
+    Array.isArray(state.accounts.data)
+  ) {
+    const hadVersion = state.accounts.data.some(
+      (account) => 'version' in account
+    );
+    if (hadVersion) {
+      state.accounts.data = state.accounts.data.map((account) => {
+        // eslint-disable-next-line no-unused-vars
+        const { version, ...accountWithoutVersion } = account;
+        return accountWithoutVersion;
       });
-
-      if (accountUpdated > 0) {
-        totalUpdated += accountUpdated;
-        console.log(
-          `Migration: Added accountId to ${accountUpdated} transactions in account "${
-            account.name || account.id
-          }"`
-        );
-      }
-
-      return {
-        ...account,
-        transactions: updatedTransactions,
-      };
-    });
-
-    if (totalUpdated > 0) {
-      console.log(
-        `Migration: Successfully updated ${totalUpdated} transactions across ${state.accountsLegacy.length} accounts`
-      );
-      state.accountsLegacy = updatedAccounts;
+      console.log('Migration: Removed version field from accounts');
       needsPersist = true;
     }
   }
 
-  // Persist the migrated state immediately
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
 
+  // Always include categories from config (they are not persisted)
+  state.categories = categoriesData.categories;
+
   return state;
 };
 
-export default configureStore({
+const store = configureStore({
   reducer: rootReducer,
   preloadedState: migrateState(JSON.parse(localStorage.getItem('reduxState'))),
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(localStorageMiddleware),
+    getDefaultMiddleware().concat(encryptedPersistenceMiddleware),
 });
+
+export default store;

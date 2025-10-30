@@ -1,14 +1,15 @@
 import { Box, Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 
-import { selectors } from '@/store/accountsLegacy';
+import { selectors as accountSelectors } from '@/store/accounts';
 import AccountCard from './AccountCard';
 import ButtonGroup from './ButtonGroup';
+import BetaBanner from '@/components/BetaBanner';
 
 const accountSortByName = (a, b) => a.name.localeCompare(b.name);
 
 export default function Accounts() {
-  const accounts = useSelector(selectors.selectAccounts);
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const sortedAccounts = [...accounts].sort(accountSortByName);
 
   return (
@@ -17,6 +18,9 @@ export default function Accounts() {
       flexDirection='column'
       alignItems='center'
     >
+      <Box sx={{ width: '100%', px: 3, pt: 3 }}>
+        <BetaBanner />
+      </Box>
       <Typography
         variant='h3'
         style={{ fontWeight: 'bold', padding: '25px' }}

@@ -1,11 +1,23 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
+import BulkEditModal from '@/components/BulkEditModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accountsLegacy';
-import { Box, Button, TextField } from '@mui/material';
+import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  actions as transactionActions,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from '@mui/material';
+import { Clear } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
 import NewTransactionButton from './NewTransactionButton';
@@ -13,13 +25,29 @@ import NewTransactionButton from './NewTransactionButton';
 export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [filterValue, setFilterValue] = useState('');
-  const account = useSelector(selectors.selectAccountById(accountId));
+  const [selectedTransactions, setSelectedTransactions] = useState(new Set());
+  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
 
-  const allMonths = account?.transactions?.length
+  // Calculate filtered transactions for "Select All (Filtered)" button
+  // Only include transactions that match the filter (not already-selected ones)
+  const filteredTransactions = filterValue
+    ? transactions.filter((transaction) =>
+        transaction.description
+          .toLowerCase()
+          .includes(filterValue.toLowerCase())
+      )
+    : [];
+
+  const allMonths = transactions?.length
     ? [
         ...new Set(
-          account.transactions.map((t) => {
+          transactions.map((t) => {
             const date = dayjs(t.date);
             return `${date.format('YYYY')}-${date.format('MMMM')}`;
           })
@@ -81,6 +109,43 @@ export default function Ledger() {
     setCollapsedGroups(getDefaultCollapsedGroups());
   };
 
+  const handleSelectionChange = (transactionId, isSelected) => {
+    setSelectedTransactions((prev) => {
+      const newSet = new Set(prev);
+      if (isSelected) {
+        newSet.add(transactionId);
+      } else {
+        newSet.delete(transactionId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkEditClick = () => {
+    setBulkEditModalOpen(true);
+  };
+
+  const handleBulkEditClose = () => {
+    setBulkEditModalOpen(false);
+  };
+
+  const handleBulkEditApply = (updates) => {
+    dispatch(
+      transactionActions.updateMultipleTransactionsFields(
+        Array.from(selectedTransactions),
+        updates
+      )
+    );
+    setSelectedTransactions(new Set());
+    setBulkEditModalOpen(false);
+  };
+
+  const handleSelectAllFiltered = () => {
+    // Select all transactions that match the current filter
+    const filteredIds = new Set(filteredTransactions.map((t) => t.id));
+    setSelectedTransactions(filteredIds);
+  };
+
   return (
     <Box
       sx={{
@@ -98,7 +163,11 @@ export default function Ledger() {
           borderRight: '1px solid black',
         }}
       >
-        <SettingsPanel account={account} />
+        <SettingsPanel
+          account={account}
+          selectedCount={selectedTransactions.size}
+          onBulkEditClick={handleBulkEditClick}
+        />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -117,6 +186,7 @@ export default function Ledger() {
             display: 'flex',
             flexDirection: 'row',
             padding: '15px',
+            gap: 1,
           }}
         >
           <TextField
@@ -126,8 +196,31 @@ export default function Ledger() {
             onChange={(e) => setFilterValue(e.target.value)}
             variant='outlined'
             size='small'
-            sx={{ width: '700px' }}
+            sx={{ width: '400px' }}
+            InputProps={{
+              endAdornment: filterValue && (
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='clear filter'
+                    onClick={() => setFilterValue('')}
+                    edge='end'
+                    size='small'
+                  >
+                    <Clear />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
+          {filterValue && filteredTransactions.length > 0 && (
+            <Button
+              variant='outlined'
+              onClick={handleSelectAllFiltered}
+              aria-label='Select all filtered transactions'
+            >
+              Select All ({filteredTransactions.length})
+            </Button>
+          )}
           <Button onClick={handleCollapseAll}>Collapse All</Button>
           <Button onClick={handleExpandAll}>Expand All</Button>
           <Button onClick={handleReset}>Reset</Button>
@@ -136,9 +229,17 @@ export default function Ledger() {
           filterValue={filterValue}
           collapsedGroups={collapsedGroups}
           setCollapsedGroups={setCollapsedGroups}
+          selectedTransactions={selectedTransactions}
+          onSelectionChange={handleSelectionChange}
         />
         <NewTransactionButton />
         <RepeatedTransactionsModal />
+        <BulkEditModal
+          open={bulkEditModalOpen}
+          onClose={handleBulkEditClose}
+          selectedCount={selectedTransactions.size}
+          onApplyChanges={handleBulkEditApply}
+        />
       </Box>
     </Box>
   );
