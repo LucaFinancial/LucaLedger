@@ -161,13 +161,8 @@ export default function CategoryBreakdown() {
       const expenseAmount = Math.abs(tx.amount);
       totalExpenses += expenseAmount;
 
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
-      const isActual = txDate.isBefore(today) || txDate.isSame(today, 'day');
-
-      if (
-        isActual &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-      ) {
+      // Completed transactions are actual, others are projected
+      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
         actualExpenses += expenseAmount;
       } else {
         projectedExpenses += expenseAmount;
@@ -195,10 +190,8 @@ export default function CategoryBreakdown() {
       catData.total += expenseAmount;
       catData.count += 1;
 
-      if (
-        isActual &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-      ) {
+      // Completed transactions are actual, others are projected
+      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
         catData.actual += expenseAmount;
       } else {
         catData.projected += expenseAmount;
