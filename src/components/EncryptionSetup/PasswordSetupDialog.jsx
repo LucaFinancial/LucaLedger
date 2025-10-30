@@ -12,6 +12,7 @@ import {
   Alert,
   FormControlLabel,
   Checkbox,
+  Tooltip,
 } from '@mui/material';
 import {
   Visibility,
@@ -180,16 +181,22 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
           </Box>
         )}
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={stayLoggedIn}
-              onChange={(e) => setStayLoggedIn(e.target.checked)}
-            />
-          }
-          label='Stay logged in for 14 days'
-          sx={{ mt: 2 }}
-        />
+        <Tooltip
+          title='Keep you logged in while this browser tab remains open. You will need to enter your password again if you close the tab or browser.'
+          arrow
+          placement='top'
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={stayLoggedIn}
+                onChange={(e) => setStayLoggedIn(e.target.checked)}
+              />
+            }
+            label='Stay logged in during this session'
+            sx={{ mt: 2 }}
+          />
+        </Tooltip>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
