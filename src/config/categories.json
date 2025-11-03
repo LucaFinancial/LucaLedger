@@ -1,12 +1,6 @@
 {
   "categories": [
     {
-      "id": "00000001-0000-0000-0000-000000000002",
-      "slug": "none",
-      "name": "None",
-      "subcategories": []
-    },
-    {
       "id": "00000002-0000-0000-0000-000000000003",
       "slug": "income",
       "name": "Income",
