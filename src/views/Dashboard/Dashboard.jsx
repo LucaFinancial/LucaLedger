@@ -77,8 +77,7 @@ export default function Dashboard() {
         const dateA = dayjs(a.date, 'YYYY/MM/DD');
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateB.diff(dateA);
-      })
-      .slice(0, 10);
+      });
   }, [allTransactions, dateRanges]);
 
   // Current month transactions
@@ -188,7 +187,7 @@ export default function Dashboard() {
           </Box>
         </AccordionSummary>
         <AccordionDetails>
-          <TableContainer>
+          <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
             <Table size='small'>
               <TableHead>
                 <TableRow>
