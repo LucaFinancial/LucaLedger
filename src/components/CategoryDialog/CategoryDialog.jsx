@@ -1,15 +1,11 @@
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  Radio,
-  RadioGroup,
   TextField,
   Typography,
 } from '@mui/material';
@@ -29,8 +25,7 @@ export default function CategoryDialog({
   const categories = useSelector(selectors.selectAllCategories);
 
   const [name, setName] = useState('');
-  const [type, setType] = useState('parent'); // 'parent' or 'subcategory'
-  const [selectedParentId, setSelectedParentId] = useState('');
+  const [selectedParent, setSelectedParent] = useState(null);
   const [errors, setErrors] = useState({});
 
   // Determine mode: create or edit
@@ -41,25 +36,24 @@ export default function CategoryDialog({
     if (category) {
       // Editing a parent category
       setName(category.name);
-      setType('parent');
+      setSelectedParent(null);
     } else if (subcategory && parentId) {
       // Editing a subcategory
       setName(subcategory.name);
-      setType('subcategory');
-      setSelectedParentId(parentId);
+      const parentCategory = categories.find((cat) => cat.id === parentId);
+      setSelectedParent(parentCategory || null);
     } else if (parentId) {
       // Creating a new subcategory under a specific parent
       setName('');
-      setType('subcategory');
-      setSelectedParentId(parentId);
+      const parentCategory = categories.find((cat) => cat.id === parentId);
+      setSelectedParent(parentCategory || null);
     } else {
-      // Creating a new category (default to parent)
+      // Creating a new category (default to no parent - top level)
       setName('');
-      setType('parent');
-      setSelectedParentId('');
+      setSelectedParent(null);
     }
     setErrors({});
-  }, [open, category, subcategory, parentId]);
+  }, [open, category, subcategory, parentId, categories]);
 
   const validate = () => {
     const newErrors = {};
@@ -68,12 +62,9 @@ export default function CategoryDialog({
       newErrors.name = 'Name is required';
     }
 
-    if (type === 'subcategory' && !selectedParentId) {
-      newErrors.parent = 'Parent category is required';
-    }
-
     // Check for duplicate names
-    if (type === 'parent') {
+    if (!selectedParent) {
+      // Creating/editing a top-level category
       const duplicate = categories.find(
         (cat) =>
           cat.name.toLowerCase() === name.trim().toLowerCase() &&
@@ -83,17 +74,15 @@ export default function CategoryDialog({
         newErrors.name = 'A category with this name already exists';
       }
     } else {
-      const parent = categories.find((cat) => cat.id === selectedParentId);
-      if (parent) {
-        const duplicate = parent.subcategories.find(
-          (sub) =>
-            sub.name.toLowerCase() === name.trim().toLowerCase() &&
-            (!subcategory || sub.id !== subcategory.id)
-        );
-        if (duplicate) {
-          newErrors.name =
-            'A subcategory with this name already exists in this category';
-        }
+      // Creating/editing a subcategory
+      const duplicate = selectedParent.subcategories.find(
+        (sub) =>
+          sub.name.toLowerCase() === name.trim().toLowerCase() &&
+          (!subcategory || sub.id !== subcategory.id)
+      );
+      if (duplicate) {
+        newErrors.name =
+          'A subcategory with this name already exists in this category';
       }
     }
 
@@ -123,11 +112,13 @@ export default function CategoryDialog({
         }
       } else {
         // Create new
-        if (type === 'parent') {
+        if (!selectedParent) {
+          // Create top-level category
           dispatch(categoryActions.createCategory(name.trim()));
         } else {
+          // Create subcategory
           dispatch(
-            categoryActions.createSubcategory(selectedParentId, name.trim())
+            categoryActions.createSubcategory(selectedParent.id, name.trim())
           );
         }
       }
@@ -170,51 +161,30 @@ export default function CategoryDialog({
 
         {!isEdit && (
           <FormControl
-            component='fieldset'
-            sx={{ mb: 2 }}
-          >
-            <FormLabel component='legend'>Type</FormLabel>
-            <RadioGroup
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
-              <FormControlLabel
-                value='parent'
-                control={<Radio />}
-                label='Top Level Category'
-              />
-              <FormControlLabel
-                value='subcategory'
-                control={<Radio />}
-                label='Subcategory'
-              />
-            </RadioGroup>
-          </FormControl>
-        )}
-
-        {type === 'subcategory' && !isEdit && (
-          <FormControl
             fullWidth
-            error={!!errors.parent}
             sx={{ mb: 2 }}
           >
-            <FormLabel>Parent Category</FormLabel>
-            <RadioGroup
-              value={selectedParentId}
-              onChange={(e) => setSelectedParentId(e.target.value)}
-            >
-              {categories.map((cat) => (
-                <FormControlLabel
-                  key={cat.id}
-                  value={cat.id}
-                  control={<Radio />}
-                  label={cat.name}
+            <Autocomplete
+              value={selectedParent}
+              onChange={(event, newValue) => setSelectedParent(newValue)}
+              options={categories}
+              getOptionLabel={(option) => option.name || ''}
+              isOptionEqualToValue={(option, value) => {
+                if (!option || !value) return false;
+                return option.id === value.id;
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label='Parent Category'
+                  placeholder='Search categories or leave empty for top-level'
+                  helperText='Leave empty to create a top-level category'
                 />
-              ))}
-            </RadioGroup>
-            {errors.parent && (
-              <FormHelperText error>{errors.parent}</FormHelperText>
-            )}
+              )}
+              clearable
+              size='medium'
+              fullWidth
+            />
           </FormControl>
         )}
 
