@@ -41,25 +41,36 @@ export default function Categories() {
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [editingParentId, setEditingParentId] = useState(null);
 
-  // Filter categories based on search query
+  // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return categories;
+    let result = categories;
+
+    // Filter based on search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+
+      result = categories.filter((category) => {
+        // Check if category name matches
+        if (category.name.toLowerCase().includes(query)) {
+          return true;
+        }
+
+        // Check if any subcategory name matches
+        return category.subcategories.some((sub) =>
+          sub.name.toLowerCase().includes(query)
+        );
+      });
     }
 
-    const query = searchQuery.toLowerCase();
-
-    return categories.filter((category) => {
-      // Check if category name matches
-      if (category.name.toLowerCase().includes(query)) {
-        return true;
-      }
-
-      // Check if any subcategory name matches
-      return category.subcategories.some((sub) =>
-        sub.name.toLowerCase().includes(query)
-      );
-    });
+    // Sort categories alphabetically and sort subcategories within each category
+    return result
+      .map((category) => ({
+        ...category,
+        subcategories: [...category.subcategories].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        ),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [categories, searchQuery]);
 
   const handleSearchChange = (event) => {
