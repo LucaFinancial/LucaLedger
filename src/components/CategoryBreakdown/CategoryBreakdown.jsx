@@ -227,7 +227,10 @@ export default function CategoryBreakdown() {
   };
 
   const formatCurrency = (amount) => {
-    return `$${doublePrecisionFormatString(amount)}`;
+    // Handle NaN, null, undefined by defaulting to 0
+    const safeAmount =
+      isNaN(amount) || amount === null || amount === undefined ? 0 : amount;
+    return `$${doublePrecisionFormatString(safeAmount)}`;
   };
 
   // If no expenses, show a message
