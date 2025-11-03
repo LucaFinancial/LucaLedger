@@ -15,6 +15,7 @@ import {
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
+import { setCategories } from '@/store/categories';
 import { dollarsToCents } from '@/utils';
 
 export const createNewAccount = () => (dispatch) => {
@@ -48,8 +49,14 @@ export const loadAccount = (data) => async (dispatch) => {
 
     let accountsToLoad = [];
     let transactionsToLoad = [];
+    let categoriesToLoad = null;
 
-    if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+    if (schemaVersion === '2.1.0') {
+      // Schema 2.1.0+: includes categories
+      accountsToLoad = data.accounts;
+      transactionsToLoad = data.transactions;
+      categoriesToLoad = data.categories;
+    } else if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
       // Schema 2.0.1+: amounts in cents
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
@@ -86,6 +93,11 @@ export const loadAccount = (data) => async (dispatch) => {
     transactionsToLoad.forEach((transaction) => {
       dispatch(addTransaction(transaction));
     });
+
+    // Load categories if present
+    if (categoriesToLoad) {
+      dispatch(setCategories(categoriesToLoad));
+    }
 
     // Update schema version in localStorage to current version
     // This prevents migrations from running on already-converted data
@@ -190,11 +202,13 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
   const accounts = state.accounts.data;
   const transactions = state.transactions;
+  const categories = state.categories;
 
   const data = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
+    categories,
   };
 
   const saveString = JSON.stringify(data, null, 2);
@@ -223,6 +237,7 @@ export const saveAccountWithTransactions =
     const account = state.accounts.data.find((a) => a.id === accountId);
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
+    const categories = state.categories;
 
     if (!account) return;
 
@@ -230,6 +245,7 @@ export const saveAccountWithTransactions =
       schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts: [account],
       transactions,
+      categories,
     };
 
     const saveString = JSON.stringify(data, null, 2);

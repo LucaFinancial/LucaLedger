@@ -4,11 +4,13 @@ import dayjs from 'dayjs';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
   const loading = useSelector(accountSelectors.selectAccountsLoading);
 
   const handleSave = () => {
@@ -16,6 +18,7 @@ export default function SaveButton() {
       schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts,
       transactions,
+      categories,
     };
 
     const saveString = JSON.stringify(data, null, 2);

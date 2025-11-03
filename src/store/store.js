@@ -131,8 +131,10 @@ const migrateState = (persistedState) => {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
 
-  // Always include categories from config (they are not persisted)
-  state.categories = categoriesData.categories;
+  // Initialize categories from config if not already present
+  if (!state.categories || state.categories.length === 0) {
+    state.categories = categoriesData.categories;
+  }
 
   return state;
 };

@@ -78,20 +78,20 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
     handleEncryptedPersistence(action, state);
   } else if (!isEncrypted) {
     // Fall back to localStorage persistence
-    // Exclude categories from persistence (they are loaded from config)
+    // Exclude encryption from persistence
     // Ensure accounts is in the correct object format before saving
     // eslint-disable-next-line no-unused-vars
-    const { categories, ...stateWithoutCategories } = state;
+    const { encryption, ...stateWithoutEncryption } = state;
     const stateToSave = {
-      ...stateWithoutCategories,
-      accounts: Array.isArray(stateWithoutCategories.accounts)
+      ...stateWithoutEncryption,
+      accounts: Array.isArray(stateWithoutEncryption.accounts)
         ? {
-            data: stateWithoutCategories.accounts,
+            data: stateWithoutEncryption.accounts,
             loading: false,
             error: null,
             loadingAccountIds: [],
           }
-        : stateWithoutCategories.accounts,
+        : stateWithoutEncryption.accounts,
     };
     localStorage.setItem('reduxState', JSON.stringify(stateToSave));
   }
