@@ -143,8 +143,16 @@ export default function CategorySelect({
     setPrePopulateName('');
   };
 
-  const handleCategoryCreated = () => {
-    // The dialog will handle creation, we just need to close it
+  const handleCategoryCreated = (createdCategory) => {
+    // Automatically select the newly created category
+    if (createdCategory) {
+      onChange(createdCategory.id);
+    }
+    handleDialogClose();
+  };
+
+  const handleDialogCloseWithoutCreation = () => {
+    // Just close the dialog without selecting anything
     handleDialogClose();
   };
 
@@ -253,11 +261,12 @@ export default function CategorySelect({
 
       <CategoryDialog
         open={dialogOpen}
-        onClose={handleCategoryCreated}
+        onClose={handleDialogCloseWithoutCreation}
         category={null}
         subcategory={null}
         parentId={null}
         prePopulateName={prePopulateName}
+        onCategoryCreated={handleCategoryCreated}
       />
     </>
   );

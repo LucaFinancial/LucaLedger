@@ -21,6 +21,7 @@ export default function CategoryDialog({
   subcategory,
   parentId,
   prePopulateName = '',
+  onCategoryCreated,
 }) {
   const dispatch = useDispatch();
   const categories = useSelector(selectors.selectAllCategories);
@@ -97,6 +98,8 @@ export default function CategoryDialog({
     }
 
     try {
+      let createdCategory = null;
+
       if (isEdit) {
         if (category) {
           // Update parent category
@@ -115,14 +118,24 @@ export default function CategoryDialog({
         // Create new
         if (!selectedParent) {
           // Create top-level category
-          dispatch(categoryActions.createCategory(name.trim()));
+          createdCategory = dispatch(
+            categoryActions.createCategory(name.trim())
+          );
         } else {
           // Create subcategory
-          dispatch(
+          const createdSubcategory = dispatch(
             categoryActions.createSubcategory(selectedParent.id, name.trim())
           );
+          // For subcategories, we want to return the subcategory ID, not the parent
+          createdCategory = createdSubcategory;
         }
       }
+
+      // Call the callback with the created category if provided
+      if (createdCategory && onCategoryCreated) {
+        onCategoryCreated(createdCategory);
+      }
+
       onClose();
     } catch (error) {
       setErrors({ submit: error.message });
@@ -218,4 +231,5 @@ CategoryDialog.propTypes = {
   subcategory: PropTypes.object, // Subcategory to edit
   parentId: PropTypes.string, // Parent ID when editing/creating subcategory
   prePopulateName: PropTypes.string, // Pre-populate the name field
+  onCategoryCreated: PropTypes.func, // Callback when category is created
 };
