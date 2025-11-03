@@ -1,9 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import config from '@/config';
 
 const categories = createSlice({
   name: 'categories',
-  initialState: config.categories || [],
+  initialState: [], // Start empty, let store migration handle defaults
   reducers: {
     setCategories: (state, action) => {
       return action.payload;

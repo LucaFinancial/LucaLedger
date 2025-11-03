@@ -21,6 +21,7 @@ export default function CategorySelect({
   const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
   const [inputValue, setInputValue] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [prePopulateName, setPrePopulateName] = useState('');
 
   // Build options list with parent categories and their subcategories
   const options = useMemo(() => {
@@ -75,47 +76,58 @@ export default function CategorySelect({
     return found;
   }, [value, options]);
 
-  // Filter options based on input and add "Create new" option if applicable
+  // Filter options and add create options
   const filteredOptions = useMemo(() => {
     let baseOptions =
       isInvalidCategory && selectedOption
         ? [...options, selectedOption]
         : options;
 
-    // If there's input and few matches, show create option
+    const createOptions = [];
+
+    // Always show "Create New" option at the top
+    createOptions.push({
+      id: '__create_new__',
+      name: 'Create New',
+      slug: '__create_new__',
+      isParent: false,
+      group: 'Create',
+      isCreateOption: true,
+      isGenericCreate: true,
+    });
+
+    // If there's input, show specific "Create 'Search Text'" option
     if (inputValue && inputValue.trim()) {
-      const query = inputValue.toLowerCase();
-      const matches = baseOptions.filter((opt) =>
-        opt.name.toLowerCase().includes(query)
+      const exactMatch = baseOptions.some(
+        (opt) => opt.name.toLowerCase() === inputValue.toLowerCase()
       );
 
-      // If less than 4 matches and input doesn't exactly match an existing category
-      const exactMatch = matches.some(
-        (opt) => opt.name.toLowerCase() === query
-      );
-
-      if (matches.length < 4 && !exactMatch) {
-        return [
-          {
-            id: '__create__',
-            name: `Create "${inputValue}"`,
-            slug: '__create__',
-            isParent: false,
-            group: '➕ Create New',
-            isCreateOption: true,
-          },
-          ...baseOptions,
-        ];
+      if (!exactMatch) {
+        createOptions.push({
+          id: '__create_specific__',
+          name: `Create "${inputValue}"`,
+          slug: '__create_specific__',
+          isParent: false,
+          group: 'Create',
+          isCreateOption: true,
+          isSpecificCreate: true,
+          createText: inputValue,
+        });
       }
     }
 
-    return baseOptions;
+    return [...createOptions, ...baseOptions];
   }, [options, inputValue, isInvalidCategory, selectedOption]);
 
   const handleChange = (event, newValue) => {
     if (newValue) {
-      if (newValue.id === '__create__') {
-        // Open dialog to create new category
+      if (newValue.id === '__create_new__') {
+        // Open dialog for generic create new category
+        setPrePopulateName('');
+        setDialogOpen(true);
+      } else if (newValue.id === '__create_specific__') {
+        // Open dialog with pre-populated name from search
+        setPrePopulateName(newValue.createText || '');
         setDialogOpen(true);
       } else {
         onChange(newValue.id);
@@ -128,6 +140,7 @@ export default function CategorySelect({
   const handleDialogClose = () => {
     setDialogOpen(false);
     setInputValue('');
+    setPrePopulateName('');
   };
 
   const handleCategoryCreated = () => {
@@ -205,22 +218,21 @@ export default function CategorySelect({
         )}
         renderGroup={(params) => (
           <li key={params.key}>
-            <Typography
-              variant='caption'
-              sx={{
-                pl: 1,
-                pt: 1,
-                pb: 0.5,
-                fontWeight: 'bold',
-                color:
-                  params.group === '➕ Create New'
-                    ? 'primary.main'
-                    : 'text.secondary',
-                display: 'block',
-              }}
-            >
-              {params.group}
-            </Typography>
+            {params.group !== 'Create' && (
+              <Typography
+                variant='caption'
+                sx={{
+                  pl: 1,
+                  pt: 1,
+                  pb: 0.5,
+                  fontWeight: 'bold',
+                  color: 'text.secondary',
+                  display: 'block',
+                }}
+              >
+                {params.group}
+              </Typography>
+            )}
             <ul style={{ padding: 0 }}>{params.children}</ul>
           </li>
         )}
@@ -245,6 +257,7 @@ export default function CategorySelect({
         category={null}
         subcategory={null}
         parentId={null}
+        prePopulateName={prePopulateName}
       />
     </>
   );

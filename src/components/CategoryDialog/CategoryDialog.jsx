@@ -20,6 +20,7 @@ export default function CategoryDialog({
   category,
   subcategory,
   parentId,
+  prePopulateName = '',
 }) {
   const dispatch = useDispatch();
   const categories = useSelector(selectors.selectAllCategories);
@@ -44,16 +45,16 @@ export default function CategoryDialog({
       setSelectedParent(parentCategory || null);
     } else if (parentId) {
       // Creating a new subcategory under a specific parent
-      setName('');
+      setName(prePopulateName || '');
       const parentCategory = categories.find((cat) => cat.id === parentId);
       setSelectedParent(parentCategory || null);
     } else {
       // Creating a new category (default to no parent - top level)
-      setName('');
+      setName(prePopulateName || '');
       setSelectedParent(null);
     }
     setErrors({});
-  }, [open, category, subcategory, parentId, categories]);
+  }, [open, category, subcategory, parentId, categories, prePopulateName]);
 
   const validate = () => {
     const newErrors = {};
@@ -216,4 +217,5 @@ CategoryDialog.propTypes = {
   category: PropTypes.object, // Parent category to edit
   subcategory: PropTypes.object, // Subcategory to edit
   parentId: PropTypes.string, // Parent ID when editing/creating subcategory
+  prePopulateName: PropTypes.string, // Pre-populate the name field
 };

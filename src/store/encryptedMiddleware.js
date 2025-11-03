@@ -133,6 +133,31 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'transactions/removeTransaction') {
     // Note: Deletes are handled immediately in the actions
   }
+
+  // Handle category actions
+  if (action.type === 'categories/addCategory') {
+    queueWrite('categories', action.payload.id, action.payload);
+  } else if (action.type === 'categories/updateCategory') {
+    queueWrite('categories', action.payload.id, action.payload);
+  } else if (action.type === 'categories/removeCategory') {
+    // Note: Deletes are handled immediately in the actions
+  } else if (action.type === 'categories/setCategories') {
+    // When setting all categories, queue all of them
+    action.payload.forEach((category) => {
+      queueWrite('categories', category.id, category);
+    });
+  } else if (
+    action.type === 'categories/addSubcategory' ||
+    action.type === 'categories/updateSubcategory' ||
+    action.type === 'categories/removeSubcategory'
+  ) {
+    // For subcategory changes, save the parent category
+    const { categoryId } = action.payload;
+    const category = state.categories.find((cat) => cat.id === categoryId);
+    if (category) {
+      queueWrite('categories', categoryId, category);
+    }
+  }
 }
 
 /**
@@ -142,10 +167,12 @@ export async function loadEncryptedState(dek) {
   try {
     const accounts = await getAllEncryptedRecords('accounts', dek);
     const transactions = await getAllEncryptedRecords('transactions', dek);
+    const categories = await getAllEncryptedRecords('categories', dek);
 
     return {
       accounts: accounts || [],
       transactions: transactions || [],
+      categories: categories || [],
     };
   } catch (error) {
     console.error('Failed to load encrypted state:', error);

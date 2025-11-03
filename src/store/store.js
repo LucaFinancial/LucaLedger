@@ -127,13 +127,15 @@ const migrateState = (persistedState) => {
     }
   }
 
-  if (needsPersist) {
-    localStorage.setItem('reduxState', JSON.stringify(state));
-  }
-
-  // Initialize categories from config if not already present
+  // Initialize categories with defaults if none exist (treat as user data like accounts)
   if (!state.categories || state.categories.length === 0) {
     state.categories = categoriesData.categories;
+    console.log('Initialized default categories as user data');
+    needsPersist = true;
+  }
+
+  if (needsPersist) {
+    localStorage.setItem('reduxState', JSON.stringify(state));
   }
 
   return state;
