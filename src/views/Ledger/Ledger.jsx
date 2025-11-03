@@ -198,6 +198,10 @@ export default function Ledger() {
     }
   };
 
+  const handleClearSelected = () => {
+    setSelectedTransactions(new Set());
+  };
+
   return (
     <Box
       sx={{
@@ -325,6 +329,8 @@ export default function Ledger() {
           onAccountSettings={handleAccountSettingsOpen}
           onClearInvalidCategories={handleClearInvalidCategories}
           invalidCategoryCount={invalidCategoryCount}
+          onClearSelected={handleClearSelected}
+          selectedCount={selectedTransactions.size}
         />
         <AccountSettingsModal
           open={accountSettingsModalOpen}

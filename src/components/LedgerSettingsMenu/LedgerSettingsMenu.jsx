@@ -13,6 +13,7 @@ import {
   UnfoldMore,
   RestartAlt,
   Category,
+  ClearAll,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
@@ -26,6 +27,8 @@ export default function LedgerSettingsMenu({
   onAccountSettings,
   onClearInvalidCategories,
   invalidCategoryCount,
+  onClearSelected,
+  selectedCount,
 }) {
   const handleMenuItemClick = (callback) => {
     callback();
@@ -101,6 +104,18 @@ export default function LedgerSettingsMenu({
         </Typography>
       </Box>
       <MenuItem
+        onClick={() => handleMenuItemClick(onClearSelected)}
+        disabled={selectedCount === 0}
+      >
+        <ListItemIcon>
+          <ClearAll fontSize='small' />
+        </ListItemIcon>
+        <ListItemText>
+          Clear Selected
+          {selectedCount > 0 && ` (${selectedCount})`}
+        </ListItemText>
+      </MenuItem>
+      <MenuItem
         onClick={() => handleMenuItemClick(onClearInvalidCategories)}
         disabled={invalidCategoryCount === 0}
       >
@@ -126,8 +141,11 @@ LedgerSettingsMenu.propTypes = {
   onAccountSettings: PropTypes.func.isRequired,
   onClearInvalidCategories: PropTypes.func.isRequired,
   invalidCategoryCount: PropTypes.number,
+  onClearSelected: PropTypes.func.isRequired,
+  selectedCount: PropTypes.number,
 };
 
 LedgerSettingsMenu.defaultProps = {
   invalidCategoryCount: 0,
+  selectedCount: 0,
 };
