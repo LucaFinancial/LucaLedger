@@ -17,8 +17,9 @@ import {
   InputAdornment,
   TextField,
   Tooltip,
+  Badge,
 } from '@mui/material';
-import { Clear, Settings } from '@mui/icons-material';
+import { Clear, MoreVert, Edit } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -228,15 +229,35 @@ export default function Ledger() {
           }}
         >
           <AccountName account={account} />
-          <Tooltip title='Ledger Settings'>
-            <IconButton
-              onClick={handleSettingsMenuOpen}
-              size='large'
-              aria-label='open ledger settings menu'
-            >
-              <Settings />
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title='Edit Transactions'>
+              <span>
+                <IconButton
+                  onClick={handleBulkEditClick}
+                  size='large'
+                  aria-label='edit selected transactions'
+                  disabled={selectedTransactions.size === 0}
+                >
+                  <Badge
+                    badgeContent={selectedTransactions.size}
+                    color='primary'
+                    max={999}
+                  >
+                    <Edit />
+                  </Badge>
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title='Ledger Settings'>
+              <IconButton
+                onClick={handleSettingsMenuOpen}
+                size='large'
+                aria-label='open ledger settings menu'
+              >
+                <MoreVert />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Box
           sx={{
@@ -302,9 +323,7 @@ export default function Ledger() {
           onExpandAll={handleExpandAll}
           onReset={handleReset}
           onAccountSettings={handleAccountSettingsOpen}
-          onBulkEdit={handleBulkEditClick}
           onClearInvalidCategories={handleClearInvalidCategories}
-          selectedCount={selectedTransactions.size}
           invalidCategoryCount={invalidCategoryCount}
         />
         <AccountSettingsModal

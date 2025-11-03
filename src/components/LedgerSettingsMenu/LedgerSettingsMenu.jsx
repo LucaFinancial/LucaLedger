@@ -12,7 +12,6 @@ import {
   UnfoldLess,
   UnfoldMore,
   RestartAlt,
-  Edit,
   Category,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
@@ -25,9 +24,7 @@ export default function LedgerSettingsMenu({
   onExpandAll,
   onReset,
   onAccountSettings,
-  onBulkEdit,
   onClearInvalidCategories,
-  selectedCount,
   invalidCategoryCount,
 }) {
   const handleMenuItemClick = (callback) => {
@@ -100,24 +97,9 @@ export default function LedgerSettingsMenu({
           variant='subtitle2'
           color='text.secondary'
         >
-          Bulk Actions
+          Data Actions
         </Typography>
       </Box>
-      <MenuItem
-        onClick={() => handleMenuItemClick(onBulkEdit)}
-        disabled={selectedCount === 0}
-      >
-        <ListItemIcon>
-          <Edit fontSize='small' />
-        </ListItemIcon>
-        <ListItemText>
-          {selectedCount === 0
-            ? 'Edit Transactions'
-            : selectedCount === 1
-            ? 'Edit 1 Transaction'
-            : `Edit ${selectedCount} Transactions`}
-        </ListItemText>
-      </MenuItem>
       <MenuItem
         onClick={() => handleMenuItemClick(onClearInvalidCategories)}
         disabled={invalidCategoryCount === 0}
@@ -142,13 +124,10 @@ LedgerSettingsMenu.propTypes = {
   onExpandAll: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
   onAccountSettings: PropTypes.func.isRequired,
-  onBulkEdit: PropTypes.func.isRequired,
   onClearInvalidCategories: PropTypes.func.isRequired,
-  selectedCount: PropTypes.number,
   invalidCategoryCount: PropTypes.number,
 };
 
 LedgerSettingsMenu.defaultProps = {
-  selectedCount: 0,
   invalidCategoryCount: 0,
 };
