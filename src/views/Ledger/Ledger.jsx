@@ -2,21 +2,26 @@ import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
 import BulkEditModal from '@/components/BulkEditModal';
 import SettingsPanel from '@/components/SettingsPanel';
+import LedgerSettingsMenu from '@/components/LedgerSettingsMenu';
+import AccountSettingsModal from '@/components/AccountSettingsModal';
 import { selectors as accountSelectors } from '@/store/accounts';
 import {
   actions as transactionActions,
   selectors as transactionSelectors,
 } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import {
   Box,
   Button,
   IconButton,
   InputAdornment,
   TextField,
+  Tooltip,
+  Badge,
 } from '@mui/material';
-import { Clear } from '@mui/icons-material';
+import { Clear, MoreVert, Edit } from '@mui/icons-material';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
@@ -29,10 +34,22 @@ export default function Ledger() {
   const [filterValue, setFilterValue] = useState('');
   const [selectedTransactions, setSelectedTransactions] = useState(new Set());
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
+  const [accountSettingsModalOpen, setAccountSettingsModalOpen] =
+    useState(false);
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
+  const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
+
+  // Find transactions with invalid categories
+  const invalidCategoryCount = useMemo(() => {
+    return transactions.filter((transaction) => {
+      if (!transaction.categoryId) return false;
+      return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+    }).length;
+  }, [transactions, flatCategories]);
 
   // Calculate filtered transactions for "Select All (Filtered)" button
   // Only include transactions that match the filter (not already-selected ones)
@@ -146,6 +163,41 @@ export default function Ledger() {
     setSelectedTransactions(filteredIds);
   };
 
+  const handleSettingsMenuOpen = (event) => {
+    setSettingsMenuAnchor(event.currentTarget);
+  };
+
+  const handleSettingsMenuClose = () => {
+    setSettingsMenuAnchor(null);
+  };
+
+  const handleAccountSettingsOpen = () => {
+    setAccountSettingsModalOpen(true);
+  };
+
+  const handleAccountSettingsClose = () => {
+    setAccountSettingsModalOpen(false);
+  };
+
+  const handleClearInvalidCategories = () => {
+    // Find all transactions with invalid categories and clear them
+    const transactionsToUpdate = transactions
+      .filter((transaction) => {
+        if (!transaction.categoryId) return false;
+        return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+      })
+      .map((t) => t.id);
+
+    if (transactionsToUpdate.length > 0) {
+      dispatch(
+        transactionActions.updateMultipleTransactionsFields(
+          transactionsToUpdate,
+          { categoryId: null }
+        )
+      );
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -160,14 +212,11 @@ export default function Ledger() {
       <Box
         sx={{
           width: '18%',
-          borderRight: '1px solid black',
+          borderRight: '1px solid',
+          borderColor: 'divider',
         }}
       >
-        <SettingsPanel
-          account={account}
-          selectedCount={selectedTransactions.size}
-          onBulkEditClick={handleBulkEditClick}
-        />
+        <SettingsPanel account={account} />
       </Box>
       <Box sx={{ width: '82%', overflow: 'hidden' }}>
         <Box
@@ -180,6 +229,35 @@ export default function Ledger() {
           }}
         >
           <AccountName account={account} />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title='Edit Transactions'>
+              <span>
+                <IconButton
+                  onClick={handleBulkEditClick}
+                  size='large'
+                  aria-label='edit selected transactions'
+                  disabled={selectedTransactions.size === 0}
+                >
+                  <Badge
+                    badgeContent={selectedTransactions.size}
+                    color='primary'
+                    max={999}
+                  >
+                    <Edit />
+                  </Badge>
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title='Ledger Settings'>
+              <IconButton
+                onClick={handleSettingsMenuOpen}
+                size='large'
+                aria-label='open ledger settings menu'
+              >
+                <MoreVert />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Box
           sx={{
@@ -221,9 +299,6 @@ export default function Ledger() {
               Select All ({filteredTransactions.length})
             </Button>
           )}
-          <Button onClick={handleCollapseAll}>Collapse All</Button>
-          <Button onClick={handleExpandAll}>Expand All</Button>
-          <Button onClick={handleReset}>Reset</Button>
         </Box>
         <LedgerTable
           filterValue={filterValue}
@@ -239,6 +314,22 @@ export default function Ledger() {
           onClose={handleBulkEditClose}
           selectedCount={selectedTransactions.size}
           onApplyChanges={handleBulkEditApply}
+        />
+        <LedgerSettingsMenu
+          anchorEl={settingsMenuAnchor}
+          open={Boolean(settingsMenuAnchor)}
+          onClose={handleSettingsMenuClose}
+          onCollapseAll={handleCollapseAll}
+          onExpandAll={handleExpandAll}
+          onReset={handleReset}
+          onAccountSettings={handleAccountSettingsOpen}
+          onClearInvalidCategories={handleClearInvalidCategories}
+          invalidCategoryCount={invalidCategoryCount}
+        />
+        <AccountSettingsModal
+          open={accountSettingsModalOpen}
+          onClose={handleAccountSettingsClose}
+          account={account}
         />
       </Box>
     </Box>
