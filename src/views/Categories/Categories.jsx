@@ -21,7 +21,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as categoryActions, selectors } from '@/store/categories';
+import {
+  actions as categoryActions,
+  selectors,
+  isSystemCategory,
+} from '@/store/categories';
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
@@ -245,7 +249,7 @@ export default function Categories() {
                           handleDeleteCategory(category.id);
                         }}
                         title='Delete category'
-                        disabled={category.slug === 'none'}
+                        disabled={isSystemCategory(category)}
                       >
                         <DeleteIcon fontSize='small' />
                       </IconButton>

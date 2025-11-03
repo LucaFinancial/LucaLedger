@@ -10,12 +10,15 @@ import {
 
 /**
  * Generate a slug from a name
+ * Falls back to 'untitled' if the name contains only special characters
  */
 const generateSlug = (name) => {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+
+  return slug || 'untitled';
 };
 
 /**

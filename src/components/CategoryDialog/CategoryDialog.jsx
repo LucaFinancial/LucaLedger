@@ -6,10 +6,12 @@ import {
   DialogTitle,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   FormLabel,
   Radio,
   RadioGroup,
   TextField,
+  Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
@@ -211,23 +213,18 @@ export default function CategoryDialog({
               ))}
             </RadioGroup>
             {errors.parent && (
-              <div
-                style={{
-                  color: '#d32f2f',
-                  fontSize: '0.75rem',
-                  marginTop: '4px',
-                }}
-              >
-                {errors.parent}
-              </div>
+              <FormHelperText error>{errors.parent}</FormHelperText>
             )}
           </FormControl>
         )}
 
         {errors.submit && (
-          <div style={{ color: '#d32f2f', marginTop: '8px' }}>
+          <Typography
+            color='error'
+            sx={{ mt: 1 }}
+          >
             {errors.submit}
-          </div>
+          </Typography>
         )}
       </DialogContent>
       <DialogActions>
