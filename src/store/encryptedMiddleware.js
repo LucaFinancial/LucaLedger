@@ -7,6 +7,7 @@ import { getActiveDEK } from '@/crypto/keyManager';
 import {
   storeEncryptedRecord,
   getAllEncryptedRecords,
+  db,
 } from '@/crypto/database';
 import { EncryptionStatus } from './encryption';
 
@@ -142,10 +143,25 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'categories/removeCategory') {
     // Note: Deletes are handled immediately in the actions
   } else if (action.type === 'categories/setCategories') {
-    // When setting all categories, queue all of them
-    action.payload.forEach((category) => {
-      queueWrite('categories', category.id, category);
-    });
+    // When setting all categories, clear existing and add new ones
+    const dek = getActiveDEK();
+    if (dek) {
+      // Clear existing categories and add new ones
+      db.categories
+        .clear()
+        .then(() => {
+          // Store each category directly instead of queuing
+          const promises = action.payload.map((category) =>
+            storeEncryptedRecord('categories', category.id, category)
+          );
+          return Promise.all(promises);
+        })
+        .catch((error) => {
+          console.error('Failed to reset categories in IndexedDB:', error);
+        });
+    }
+    // For unencrypted mode, let the regular persistence handle it via the state update
+    // No special localStorage handling needed here - it will be handled by the main middleware logic
   } else if (
     action.type === 'categories/addSubcategory' ||
     action.type === 'categories/updateSubcategory' ||

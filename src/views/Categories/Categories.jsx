@@ -19,12 +19,18 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as categoryActions, selectors } from '@/store/categories';
+import {
+  actions as categoryActions,
+  selectors,
+  setCategories,
+} from '@/store/categories';
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
+import categoriesData from '@/config/categories.json';
 
 export default function Categories() {
   const dispatch = useDispatch();
@@ -132,6 +138,16 @@ export default function Categories() {
     setEditingParentId(null);
   };
 
+  const handleResetCategories = () => {
+    if (
+      window.confirm(
+        'Are you sure you want to reset all categories to the default set? This will delete all your custom categories and cannot be undone.'
+      )
+    ) {
+      dispatch(setCategories([...categoriesData.categories]));
+    }
+  };
+
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
       <Box
@@ -143,13 +159,23 @@ export default function Categories() {
         }}
       >
         <Typography variant='h4'>Categories</Typography>
-        <Button
-          variant='contained'
-          startIcon={<AddIcon />}
-          onClick={handleCreateCategory}
-        >
-          New Category
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant='outlined'
+            startIcon={<RestartAltIcon />}
+            onClick={handleResetCategories}
+            color='warning'
+          >
+            Reset Categories
+          </Button>
+          <Button
+            variant='contained'
+            startIcon={<AddIcon />}
+            onClick={handleCreateCategory}
+          >
+            New Category
+          </Button>
+        </Box>
       </Box>
 
       {/* View Mode Tabs */}

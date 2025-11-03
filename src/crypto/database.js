@@ -23,6 +23,7 @@ export const db = new Dexie(DB_NAME);
 db.version(DB_VERSION).stores({
   accounts: 'id', // id as primary key
   transactions: 'id', // id as primary key
+  categories: 'id', // id as primary key
   metadata: 'key', // key-value store for encryption metadata
 });
 
