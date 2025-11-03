@@ -3,7 +3,9 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   Chip,
+  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -14,17 +16,26 @@ import {
   Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useMemo, useState } from 'react';
-import config from '@/config';
+import { useDispatch, useSelector } from 'react-redux';
+import { actions as categoryActions, selectors } from '@/store/categories';
+import CategoryDialog from '@/components/CategoryDialog';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
 
 export default function Categories() {
+  const dispatch = useDispatch();
+  const categories = useSelector(selectors.selectAllCategories);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState(0); // 0 = List View, 1 = Tree View
-
-  // Memoize categories to avoid dependency issues
-  const categories = useMemo(() => config.categories || [], []);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingSubcategory, setEditingSubcategory] = useState(null);
+  const [editingParentId, setEditingParentId] = useState(null);
 
   // Filter categories based on search query
   const filteredCategories = useMemo(() => {
@@ -55,14 +66,80 @@ export default function Categories() {
     setViewMode(newValue);
   };
 
+  const handleCreateCategory = () => {
+    setEditingCategory(null);
+    setEditingSubcategory(null);
+    setEditingParentId(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditCategory = (category) => {
+    setEditingCategory(category);
+    setEditingSubcategory(null);
+    setEditingParentId(null);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteCategory = (categoryId) => {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this category? This action cannot be undone.'
+      )
+    ) {
+      dispatch(categoryActions.deleteCategory(categoryId));
+    }
+  };
+
+  const handleCreateSubcategory = (parentId) => {
+    setEditingCategory(null);
+    setEditingSubcategory(null);
+    setEditingParentId(parentId);
+    setDialogOpen(true);
+  };
+
+  const handleEditSubcategory = (parentId, subcategory) => {
+    setEditingCategory(null);
+    setEditingSubcategory(subcategory);
+    setEditingParentId(parentId);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteSubcategory = (parentId, subcategoryId) => {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this subcategory? This action cannot be undone.'
+      )
+    ) {
+      dispatch(categoryActions.deleteSubcategory(parentId, subcategoryId));
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingCategory(null);
+    setEditingSubcategory(null);
+    setEditingParentId(null);
+  };
+
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
-      <Typography
-        variant='h4'
-        sx={{ mb: 3 }}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
       >
-        Categories
-      </Typography>
+        <Typography variant='h4'>Categories</Typography>
+        <Button
+          variant='contained'
+          startIcon={<AddIcon />}
+          onClick={handleCreateCategory}
+        >
+          New Category
+        </Button>
+      </Box>
 
       {/* View Mode Tabs */}
       <Paper sx={{ mb: 3 }}>
@@ -138,6 +215,7 @@ export default function Categories() {
                       <Typography
                         variant='h6'
                         component='h2'
+                        sx={{ flex: 1 }}
                       >
                         {category.name}
                       </Typography>
@@ -150,12 +228,52 @@ export default function Categories() {
                         size='small'
                         variant='outlined'
                       />
+                      <IconButton
+                        size='small'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCategory(category);
+                        }}
+                        title='Edit category'
+                      >
+                        <EditIcon fontSize='small' />
+                      </IconButton>
+                      <IconButton
+                        size='small'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCategory(category.id);
+                        }}
+                        title='Delete category'
+                        disabled={category.slug === 'none'}
+                      >
+                        <DeleteIcon fontSize='small' />
+                      </IconButton>
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       {/* Subcategories List */}
                       <Box sx={{ flexShrink: 0, width: 220 }}>
+                        <Box
+                          sx={{
+                            mb: 1,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Typography variant='subtitle2'>
+                            Subcategories
+                          </Typography>
+                          <IconButton
+                            size='small'
+                            onClick={() => handleCreateSubcategory(category.id)}
+                            title='Add subcategory'
+                          >
+                            <AddIcon fontSize='small' />
+                          </IconButton>
+                        </Box>
                         {category.subcategories.length > 0 ? (
                           <List sx={{ pl: 2 }}>
                             {category.subcategories.map((subcategory) => (
@@ -166,7 +284,40 @@ export default function Categories() {
                                   borderLeft: '3px solid',
                                   borderColor: 'primary.main',
                                   mb: 0.5,
+                                  display: 'flex',
+                                  alignItems: 'center',
                                 }}
+                                secondaryAction={
+                                  <Box>
+                                    <IconButton
+                                      edge='end'
+                                      size='small'
+                                      onClick={() =>
+                                        handleEditSubcategory(
+                                          category.id,
+                                          subcategory
+                                        )
+                                      }
+                                      title='Edit subcategory'
+                                      sx={{ mr: 0.5 }}
+                                    >
+                                      <EditIcon fontSize='small' />
+                                    </IconButton>
+                                    <IconButton
+                                      edge='end'
+                                      size='small'
+                                      onClick={() =>
+                                        handleDeleteSubcategory(
+                                          category.id,
+                                          subcategory.id
+                                        )
+                                      }
+                                      title='Delete subcategory'
+                                    >
+                                      <DeleteIcon fontSize='small' />
+                                    </IconButton>
+                                  </Box>
+                                }
                               >
                                 <ListItemText
                                   primary={subcategory.name}
@@ -221,6 +372,14 @@ export default function Categories() {
           </Paper>
         </>
       )}
+
+      <CategoryDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        category={editingCategory}
+        subcategory={editingSubcategory}
+        parentId={editingParentId}
+      />
     </Box>
   );
 }

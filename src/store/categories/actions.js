@@ -38,7 +38,7 @@ export const createCategory = (name) => (dispatch) => {
 export const updateCategory = (categoryId, updates) => (dispatch, getState) => {
   const state = getState();
   const category = state.categories.find((cat) => cat.id === categoryId);
-  
+
   if (!category) {
     throw new Error(`Category with id ${categoryId} not found`);
   }
@@ -101,7 +101,9 @@ export const updateSubcategory =
       slug: updates.name ? generateSlug(updates.name) : subcategory.slug,
     };
 
-    dispatch(updateSubcategoryAction({ categoryId, subcategory: updatedSubcategory }));
+    dispatch(
+      updateSubcategoryAction({ categoryId, subcategory: updatedSubcategory })
+    );
     return updatedSubcategory;
   };
 
