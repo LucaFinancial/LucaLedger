@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 export default function CategoryTree({ categories }) {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
+  const expandedNodesRef = useRef(new Set()); // Store expanded node IDs
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
   // Update dimensions on resize
@@ -84,25 +85,39 @@ export default function CategoryTree({ categories }) {
 
     treeLayout(root);
 
-    // Initialize all nodes as expanded
+    // Initialize all nodes with persistent expanded state
     root.descendants().forEach((d) => {
       d._children = d.children;
+      const nodeId = d.data.id || d.data.slug;
+
       if (d.depth > 0) {
-        // Start with top-level categories collapsed
-        d.children = null;
+        // Check if this node was previously expanded
+        if (expandedNodesRef.current.has(nodeId)) {
+          d.children = d._children; // Keep expanded
+        } else {
+          d.children = null; // Start collapsed
+        }
       }
     });
 
     // Toggle function
     function toggle(event, d) {
+      const nodeId = d.data.id || d.data.slug;
+
       if (d.children) {
         d._children = d.children;
         d.children = null;
+        // Remove from expanded set
+        expandedNodesRef.current.delete(nodeId);
       } else {
         d.children = d._children;
         d._children = null;
+        // Add to expanded set
+        expandedNodesRef.current.add(nodeId);
       }
       update(d);
+      // Auto-fit after expanding/collapsing to keep optimal view
+      setTimeout(autoFit, 350); // Slight delay to let update animation finish
     }
 
     // Update function
@@ -274,6 +289,57 @@ export default function CategoryTree({ categories }) {
 
     // Initialize the tree
     update(root);
+
+    // Auto-fit the tree to the view
+    function autoFit() {
+      const nodes = root.descendants();
+      if (nodes.length === 0) return;
+
+      // Calculate bounds of all nodes
+      const bounds = nodes.reduce(
+        (acc, d) => {
+          const x = d.x || 0;
+          const y = d.y || 0;
+          return {
+            minX: Math.min(acc.minX, x),
+            maxX: Math.max(acc.maxX, x),
+            minY: Math.min(acc.minY, y),
+            maxY: Math.max(acc.maxY, y),
+          };
+        },
+        { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+      );
+
+      // Add padding
+      const padding = 50;
+      const boundsWidth = bounds.maxX - bounds.minX + padding * 2;
+      const boundsHeight = bounds.maxY - bounds.minY + padding * 2;
+
+      // Calculate scale to fit
+      const scale = Math.min(
+        width / boundsWidth,
+        height / boundsHeight,
+        1.5 // Max scale
+      );
+
+      // Calculate center position
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
+
+      // Calculate translate to center the content
+      const translateX = width / 2 - centerX * scale;
+      const translateY = height / 2 - centerY * scale;
+
+      // Apply the transform
+      const transform = d3.zoomIdentity
+        .translate(translateX, translateY)
+        .scale(scale);
+
+      svg.transition().duration(750).call(zoom.transform, transform);
+    }
+
+    // Auto-fit after initial render
+    setTimeout(autoFit, 100);
   }, [categories, dimensions]);
 
   return (
