@@ -30,6 +30,7 @@ import {
   setCategories,
 } from '@/store/categories';
 import CategoryDialog from '@/components/CategoryDialog';
+import CategoryResetConfirmModal from '@/components/CategoryResetConfirmModal';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
 import categoriesData from '@/config/categories.json';
@@ -45,6 +46,7 @@ export default function Categories() {
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [editingParentId, setEditingParentId] = useState(null);
   const [searchHovered, setSearchHovered] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
 
   // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
@@ -146,13 +148,16 @@ export default function Categories() {
   };
 
   const handleResetCategories = () => {
-    if (
-      window.confirm(
-        'Are you sure you want to reset all categories to the default set? This will delete all your custom categories and cannot be undone.'
-      )
-    ) {
-      dispatch(setCategories([...categoriesData.categories]));
-    }
+    setResetModalOpen(true);
+  };
+
+  const handleConfirmReset = () => {
+    setResetModalOpen(false);
+    dispatch(setCategories([...categoriesData.categories]));
+  };
+
+  const handleCancelReset = () => {
+    setResetModalOpen(false);
   };
 
   return (
@@ -444,6 +449,12 @@ export default function Categories() {
         category={editingCategory}
         subcategory={editingSubcategory}
         parentId={editingParentId}
+      />
+
+      <CategoryResetConfirmModal
+        open={resetModalOpen}
+        onConfirm={handleConfirmReset}
+        onCancel={handleCancelReset}
       />
     </Box>
   );
