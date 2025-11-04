@@ -29,7 +29,7 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount = (data) => async (dispatch) => {
+export const loadAccount = (data) => async (dispatch, getState) => {
   try {
     dispatch(setLoading(true));
     dispatch(setError(null));
@@ -50,14 +50,33 @@ export const loadAccount = (data) => async (dispatch) => {
     let accountsToLoad = [];
     let transactionsToLoad = [];
     let categoriesToLoad = null;
+    let shouldLoadCategories = false;
 
     if (schemaVersion === '2.1.0') {
       // Schema 2.1.0+: includes categories
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
       categoriesToLoad = data.categories;
+
+      // Check if user wants to import categories
+      if (categoriesToLoad && categoriesToLoad.length > 0) {
+        const currentState = getState();
+        const existingCategories = currentState.categories;
+
+        // If user has existing categories, ask if they want to overwrite
+        if (existingCategories && existingCategories.length > 0) {
+          shouldLoadCategories = window.confirm(
+            'This file contains category data. Do you want to overwrite your existing categories with the categories from this file?\n\n' +
+              'Click "OK" to replace your current categories with the imported ones.\n' +
+              'Click "Cancel" to keep your current categories.'
+          );
+        } else {
+          // No existing categories, load them automatically
+          shouldLoadCategories = true;
+        }
+      }
     } else if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
-      // Schema 2.0.1+: amounts in cents
+      // Schema 2.0.1+: amounts in cents, no categories
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions;
     } else if (
@@ -65,14 +84,14 @@ export const loadAccount = (data) => async (dispatch) => {
       data.accounts &&
       data.transactions
     ) {
-      // Schema 2.0.0: amounts in dollars, convert to cents
+      // Schema 2.0.0: amounts in dollars, convert to cents, no categories
       accountsToLoad = data.accounts;
       transactionsToLoad = data.transactions.map((transaction) => ({
         ...transaction,
         amount: dollarsToCents(transaction.amount),
       }));
     } else {
-      // Schema 1.0.0: single account with nested transactions
+      // Schema 1.0.0: single account with nested transactions, no categories
       // eslint-disable-next-line no-unused-vars
       const { transactions, version, ...accountData } = data;
       accountsToLoad = [accountData];
@@ -94,8 +113,8 @@ export const loadAccount = (data) => async (dispatch) => {
       dispatch(addTransaction(transaction));
     });
 
-    // Load categories if present
-    if (categoriesToLoad) {
+    // Load categories if user confirmed or no existing categories
+    if (shouldLoadCategories && categoriesToLoad) {
       dispatch(setCategories(categoriesToLoad));
     }
 
