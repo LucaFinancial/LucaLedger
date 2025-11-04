@@ -111,7 +111,7 @@ export default function LedgerSettingsMenu({
           <ClearAll fontSize='small' />
         </ListItemIcon>
         <ListItemText>
-          Clear Selected
+          Deselect All
           {selectedCount > 0 && ` (${selectedCount})`}
         </ListItemText>
       </MenuItem>
