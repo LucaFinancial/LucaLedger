@@ -90,9 +90,7 @@ export default function CategoryDeleteConfirmModal({
             color='text.secondary'
             component='li'
           >
-            Leave transactions with invalid category references (transactions
-            will keep their category assignments, but they will be marked as
-            invalid)
+            Transactions will be marked with invalid category references
           </Typography>
         </Box>
       </DialogContent>
