@@ -6,6 +6,7 @@ import {
   Button,
   Chip,
   IconButton,
+  InputAdornment,
   List,
   ListItem,
   ListItemText,
@@ -20,6 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -42,6 +44,7 @@ export default function Categories() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [editingParentId, setEditingParentId] = useState(null);
+  const [searchHovered, setSearchHovered] = useState(false);
 
   // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
@@ -77,6 +80,10 @@ export default function Categories() {
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
   };
 
   const handleViewModeChange = (event, newValue) => {
@@ -178,46 +185,66 @@ export default function Categories() {
         </Box>
       </Box>
 
-      {/* View Mode Tabs */}
+      {/* View Mode Tabs and Search */}
       <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={viewMode}
-          onChange={handleViewModeChange}
-          aria-label='category view mode'
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 3,
+            p: 2,
+            pb: 2,
+          }}
         >
-          <Tab label='List View' />
-          <Tab label='Tree View' />
-        </Tabs>
+          <Tabs
+            value={viewMode}
+            onChange={handleViewModeChange}
+            aria-label='category view mode'
+            sx={{ flex: 1 }}
+          >
+            <Tab label='List View' />
+            <Tab label='Tree View' />
+          </Tabs>
+          <TextField
+            placeholder='Search categories...'
+            variant='outlined'
+            size='small'
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onMouseEnter={() => setSearchHovered(true)}
+            onMouseLeave={() => setSearchHovered(false)}
+            sx={{ width: 610 }} // Increased by 75% (350 * 1.75 ≈ 610)
+            InputProps={{
+              endAdornment: searchQuery && (searchHovered || searchQuery) && (
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='clear search'
+                    onClick={handleClearSearch}
+                    edge='end'
+                    size='small'
+                  >
+                    <ClearIcon fontSize='small' />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+        {searchQuery && (
+          <Box sx={{ px: 3, pb: 2 }}>
+            <Typography
+              variant='caption'
+              sx={{ color: 'text.secondary' }}
+            >
+              Showing {filteredCategories.length} of {categories.length}{' '}
+              {filteredCategories.length === 1 ? 'category' : 'categories'}
+            </Typography>
+          </Box>
+        )}
       </Paper>
 
       {viewMode === 0 ? (
         <>
-          {/* Search/Filter */}
-          <Paper
-            sx={{
-              p: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              fullWidth
-              placeholder='Search categories...'
-              variant='outlined'
-              size='small'
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
-            {searchQuery && (
-              <Typography
-                variant='caption'
-                sx={{ display: 'block', mt: 1, color: 'text.secondary' }}
-              >
-                Showing {filteredCategories.length} of {categories.length}{' '}
-                {filteredCategories.length === 1 ? 'category' : 'categories'}
-              </Typography>
-            )}
-          </Paper>
-
           {/* Categories List */}
           <Box sx={{ mb: 3 }}>
             {filteredCategories.length === 0 ? (
@@ -405,7 +432,7 @@ export default function Categories() {
               focused. Scroll to zoom, or click and drag to pan the tree.
             </Typography>
             <Box sx={{ height: 'calc(100vh - 330px)', minHeight: 450 }}>
-              <CategoryTree categories={categories} />
+              <CategoryTree categories={filteredCategories} />
             </Box>
           </Paper>
         </>
