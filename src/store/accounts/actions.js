@@ -15,6 +15,7 @@ import {
 } from './slice';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { addTransaction, removeTransaction } from '@/store/transactions/slice';
+import { setCategories } from '@/store/categories';
 import { dollarsToCents } from '@/utils';
 
 export const createNewAccount = () => (dispatch) => {
@@ -28,79 +29,117 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount = (data) => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-    dispatch(clearLoadingAccountIds());
+export const loadAccount =
+  (data, shouldOverwriteCategories = null) =>
+  async (dispatch, getState) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      dispatch(clearLoadingAccountIds());
 
-    // Add a small delay to ensure UI updates before processing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+      // Add a small delay to ensure UI updates before processing
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Determine schema version - must be present
-    const schemaVersion = data.schemaVersion || data.version;
+      // Determine schema version - must be present
+      const schemaVersion = data.schemaVersion || data.version;
 
-    if (!schemaVersion) {
-      throw new Error(
-        'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.'
-      );
+      if (!schemaVersion) {
+        throw new Error(
+          'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.'
+        );
+      }
+
+      let accountsToLoad = [];
+      let transactionsToLoad = [];
+      let categoriesToLoad = null;
+      let shouldLoadCategories = false;
+
+      if (schemaVersion === '2.1.0') {
+        // Schema 2.1.0+: includes categories
+        accountsToLoad = data.accounts;
+        transactionsToLoad = data.transactions;
+        categoriesToLoad = data.categories;
+
+        // Check if user wants to import categories
+        if (categoriesToLoad && categoriesToLoad.length > 0) {
+          const currentState = getState();
+          const existingCategories = currentState.categories;
+
+          // If user has existing categories, use the provided decision or ask
+          if (existingCategories && existingCategories.length > 0) {
+            if (shouldOverwriteCategories !== null) {
+              // Decision was already made (from UI modal)
+              shouldLoadCategories = shouldOverwriteCategories;
+            } else {
+              // Fallback to window.confirm for backwards compatibility
+              shouldLoadCategories = window.confirm(
+                'This file contains category data. Do you want to overwrite your existing categories with the categories from this file?\n\n' +
+                  'Click "OK" to replace your current categories with the imported ones.\n' +
+                  'Click "Cancel" to keep your current categories.'
+              );
+            }
+          } else {
+            // No existing categories, load them automatically
+            shouldLoadCategories = true;
+          }
+        }
+      } else if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+        // Schema 2.0.1+: amounts in cents, no categories
+        accountsToLoad = data.accounts;
+        transactionsToLoad = data.transactions;
+      } else if (
+        schemaVersion === '2.0.0' &&
+        data.accounts &&
+        data.transactions
+      ) {
+        // Schema 2.0.0: amounts in dollars, convert to cents, no categories
+        accountsToLoad = data.accounts;
+        transactionsToLoad = data.transactions.map((transaction) => ({
+          ...transaction,
+          amount: dollarsToCents(transaction.amount),
+        }));
+      } else {
+        // Schema 1.0.0: single account with nested transactions, no categories
+        // eslint-disable-next-line no-unused-vars
+        const { transactions, version, ...accountData } = data;
+        accountsToLoad = [accountData];
+        transactionsToLoad = (transactions || []).map((transaction) => ({
+          ...transaction,
+          accountId: data.id,
+          amount: dollarsToCents(transaction.amount),
+        }));
+      }
+
+      // Load all accounts
+      accountsToLoad.forEach((accountData) => {
+        dispatch(addAccount(accountData));
+        dispatch(addLoadingAccountId(accountData.id));
+      });
+
+      // Load all transactions
+      transactionsToLoad.forEach((transaction) => {
+        dispatch(addTransaction(transaction));
+      });
+
+      // Load categories if user confirmed or no existing categories
+      if (shouldLoadCategories && categoriesToLoad) {
+        dispatch(setCategories(categoriesToLoad));
+      }
+
+      // Update schema version in localStorage to current version
+      // This prevents migrations from running on already-converted data
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+
+      dispatch(clearLoadingAccountIds());
+      dispatch(setLoading(false));
+    } catch (error) {
+      console.error('Error loading account:', error);
+      dispatch(setError(error.message || 'Failed to load account'));
+      dispatch(clearLoadingAccountIds());
+      dispatch(setLoading(false));
+      throw error;
     }
-
-    let accountsToLoad = [];
-    let transactionsToLoad = [];
-
-    if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
-      // Schema 2.0.1+: amounts in cents
-      accountsToLoad = data.accounts;
-      transactionsToLoad = data.transactions;
-    } else if (
-      schemaVersion === '2.0.0' &&
-      data.accounts &&
-      data.transactions
-    ) {
-      // Schema 2.0.0: amounts in dollars, convert to cents
-      accountsToLoad = data.accounts;
-      transactionsToLoad = data.transactions.map((transaction) => ({
-        ...transaction,
-        amount: dollarsToCents(transaction.amount),
-      }));
-    } else {
-      // Schema 1.0.0: single account with nested transactions
-      // eslint-disable-next-line no-unused-vars
-      const { transactions, version, ...accountData } = data;
-      accountsToLoad = [accountData];
-      transactionsToLoad = (transactions || []).map((transaction) => ({
-        ...transaction,
-        accountId: data.id,
-        amount: dollarsToCents(transaction.amount),
-      }));
-    }
-
-    // Load all accounts
-    accountsToLoad.forEach((accountData) => {
-      dispatch(addAccount(accountData));
-      dispatch(addLoadingAccountId(accountData.id));
-    });
-
-    // Load all transactions
-    transactionsToLoad.forEach((transaction) => {
-      dispatch(addTransaction(transaction));
-    });
-
-    // Update schema version in localStorage to current version
-    // This prevents migrations from running on already-converted data
-    localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
-
-    dispatch(clearLoadingAccountIds());
-    dispatch(setLoading(false));
-  } catch (error) {
-    console.error('Error loading account:', error);
-    dispatch(setError(error.message || 'Failed to load account'));
-    dispatch(clearLoadingAccountIds());
-    dispatch(setLoading(false));
-    throw error;
-  }
-};
+  };
 
 const loadAccountFromFile = async () => {
   const [fileHandle] = await window.showOpenFilePicker();
@@ -190,11 +229,13 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const state = getState();
   const accounts = state.accounts.data;
   const transactions = state.transactions;
+  const categories = state.categories;
 
   const data = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
+    categories,
   };
 
   const saveString = JSON.stringify(data, null, 2);
@@ -223,6 +264,7 @@ export const saveAccountWithTransactions =
     const account = state.accounts.data.find((a) => a.id === accountId);
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
+    const categories = state.categories;
 
     if (!account) return;
 
@@ -230,6 +272,7 @@ export const saveAccountWithTransactions =
       schemaVersion: CURRENT_SCHEMA_VERSION,
       accounts: [account],
       transactions,
+      categories,
     };
 
     const saveString = JSON.stringify(data, null, 2);

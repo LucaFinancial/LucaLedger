@@ -1,8 +1,10 @@
 import { Autocomplete, Box, TextField, Typography, Chip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import PropTypes from 'prop-types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as categorySelectors } from '@/store/categories';
+import CategoryDialog from '@/components/CategoryDialog';
 
 export default function CategorySelect({
   value,
@@ -17,6 +19,9 @@ export default function CategorySelect({
 }) {
   const categories = useSelector(categorySelectors.selectAllCategories);
   const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
+  const [inputValue, setInputValue] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [prePopulateName, setPrePopulateName] = useState('');
 
   // Build options list with parent categories and their subcategories
   const options = useMemo(() => {
@@ -71,112 +76,199 @@ export default function CategorySelect({
     return found;
   }, [value, options]);
 
-  // Include invalid category in options if present
-  const optionsWithInvalid = useMemo(() => {
-    if (isInvalidCategory && selectedOption) {
-      return [...options, selectedOption];
+  // Filter options and add create options
+  const filteredOptions = useMemo(() => {
+    let baseOptions =
+      isInvalidCategory && selectedOption
+        ? [...options, selectedOption]
+        : options;
+
+    const createOptions = [];
+
+    // Always show "Create New" option at the top
+    createOptions.push({
+      id: '__create_new__',
+      name: 'Create New',
+      slug: '__create_new__',
+      isParent: false,
+      group: 'Create',
+      isCreateOption: true,
+      isGenericCreate: true,
+    });
+
+    // If there's input, show specific "Create 'Search Text'" option
+    if (inputValue && inputValue.trim()) {
+      const exactMatch = baseOptions.some(
+        (opt) => opt.name.toLowerCase() === inputValue.toLowerCase()
+      );
+
+      if (!exactMatch) {
+        createOptions.push({
+          id: '__create_specific__',
+          name: `Create "${inputValue}"`,
+          slug: '__create_specific__',
+          isParent: false,
+          group: 'Create',
+          isCreateOption: true,
+          isSpecificCreate: true,
+          createText: inputValue,
+        });
+      }
     }
-    return options;
-  }, [options, isInvalidCategory, selectedOption]);
+
+    return [...createOptions, ...baseOptions];
+  }, [options, inputValue, isInvalidCategory, selectedOption]);
 
   const handleChange = (event, newValue) => {
     if (newValue) {
-      onChange(newValue.id);
+      if (newValue.id === '__create_new__') {
+        // Open dialog for generic create new category
+        setPrePopulateName('');
+        setDialogOpen(true);
+      } else if (newValue.id === '__create_specific__') {
+        // Open dialog with pre-populated name from search
+        setPrePopulateName(newValue.createText || '');
+        setDialogOpen(true);
+      } else {
+        onChange(newValue.id);
+      }
     } else {
       onChange(null);
     }
   };
 
-  return (
-    <Autocomplete
-      value={selectedOption}
-      onChange={handleChange}
-      options={optionsWithInvalid}
-      groupBy={(option) => option.group}
-      getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, value) => {
-        if (!option || !value) return false;
-        return option.id === value.id;
-      }}
-      disableClearable={false}
-      renderInput={(params) => {
-        const inputProps = {
-          ...params.InputProps,
-        };
-        if (variant === 'standard') {
-          inputProps.disableUnderline = true;
-        }
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setInputValue('');
+    setPrePopulateName('');
+  };
 
-        return (
-          <TextField
-            {...params}
-            label={label}
-            placeholder={isInvalidCategory ? 'Invalid category' : placeholder}
-            size={size}
-            variant={variant}
-            error={error || isInvalidCategory}
-            helperText={helperText}
-            sx={
-              isInvalidCategory
-                ? {
-                    '& .MuiInputBase-input': {
-                      color: 'error.main',
-                    },
-                    '& .MuiInputBase-input::placeholder': {
-                      color: 'error.main',
-                      opacity: 1,
-                    },
-                  }
-                : undefined
-            }
-            InputProps={inputProps}
-          />
-        );
-      }}
-      renderOption={(props, option) => (
-        <Box
-          component='li'
-          {...props}
-          sx={{
-            pl: option.isParent ? 2 : 4,
-            fontWeight: option.isParent ? 'bold' : 'normal',
-          }}
-        >
-          {option.name}
-        </Box>
-      )}
-      renderGroup={(params) => (
-        <li key={params.key}>
-          <Typography
-            variant='caption'
+  const handleCategoryCreated = (createdCategory) => {
+    // Automatically select the newly created category
+    if (createdCategory) {
+      onChange(createdCategory.id);
+    }
+    handleDialogClose();
+  };
+
+  const handleDialogCloseWithoutCreation = () => {
+    // Just close the dialog without selecting anything
+    handleDialogClose();
+  };
+
+  return (
+    <>
+      <Autocomplete
+        value={selectedOption}
+        onChange={handleChange}
+        inputValue={inputValue}
+        onInputChange={(event, newInputValue) => {
+          setInputValue(newInputValue);
+        }}
+        options={filteredOptions}
+        groupBy={(option) => option.group}
+        getOptionLabel={(option) => option.name}
+        isOptionEqualToValue={(option, value) => {
+          if (!option || !value) return false;
+          return option.id === value.id;
+        }}
+        disableClearable={false}
+        renderInput={(params) => {
+          const inputProps = {
+            ...params.InputProps,
+          };
+          if (variant === 'standard') {
+            inputProps.disableUnderline = true;
+          }
+
+          return (
+            <TextField
+              {...params}
+              label={label}
+              placeholder={isInvalidCategory ? 'Invalid category' : placeholder}
+              size={size}
+              variant={variant}
+              error={error || isInvalidCategory}
+              helperText={helperText}
+              sx={
+                isInvalidCategory
+                  ? {
+                      '& .MuiInputBase-input': {
+                        color: 'error.main',
+                      },
+                      '& .MuiInputBase-input::placeholder': {
+                        color: 'error.main',
+                        opacity: 1,
+                      },
+                    }
+                  : undefined
+              }
+              InputProps={inputProps}
+            />
+          );
+        }}
+        renderOption={(props, option) => (
+          <Box
+            component='li'
+            {...props}
             sx={{
-              pl: 1,
-              pt: 1,
-              pb: 0.5,
-              fontWeight: 'bold',
-              color: 'text.secondary',
-              display: 'block',
+              pl: option.isParent ? 2 : 4,
+              fontWeight: option.isParent ? 'bold' : 'normal',
+              color: option.isCreateOption ? 'primary.main' : 'inherit',
+              fontStyle: option.isCreateOption ? 'italic' : 'normal',
             }}
           >
-            {params.group}
-          </Typography>
-          <ul style={{ padding: 0 }}>{params.children}</ul>
-        </li>
-      )}
-      renderTags={(value, getTagProps) =>
-        value.map((option, index) => (
-          <Chip
-            {...getTagProps({ index })}
-            key={option.id}
-            label={option.name}
-            size={size}
-          />
-        ))
-      }
-      size={size}
-      fullWidth={fullWidth}
-      sx={{ minWidth: fullWidth ? undefined : 200 }}
-    />
+            {option.isCreateOption && (
+              <AddIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
+            )}
+            {option.name}
+          </Box>
+        )}
+        renderGroup={(params) => (
+          <li key={params.key}>
+            {params.group !== 'Create' && (
+              <Typography
+                variant='caption'
+                sx={{
+                  pl: 1,
+                  pt: 1,
+                  pb: 0.5,
+                  fontWeight: 'bold',
+                  color: 'text.secondary',
+                  display: 'block',
+                }}
+              >
+                {params.group}
+              </Typography>
+            )}
+            <ul style={{ padding: 0 }}>{params.children}</ul>
+          </li>
+        )}
+        renderTags={(value, getTagProps) =>
+          value.map((option, index) => (
+            <Chip
+              {...getTagProps({ index })}
+              key={option.id}
+              label={option.name}
+              size={size}
+            />
+          ))
+        }
+        size={size}
+        fullWidth={fullWidth}
+        sx={{ minWidth: fullWidth ? undefined : 200 }}
+      />
+
+      <CategoryDialog
+        open={dialogOpen}
+        onClose={handleDialogCloseWithoutCreation}
+        category={null}
+        subcategory={null}
+        parentId={null}
+        prePopulateName={prePopulateName}
+        onCategoryCreated={handleCategoryCreated}
+      />
+    </>
   );
 }
 

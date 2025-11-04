@@ -1,620 +1,383 @@
 {
   "categories": [
     {
-      "id": "00000001-0000-0000-0000-000000000002",
-      "slug": "none",
-      "name": "None",
-      "subcategories": []
-    },
-    {
-      "id": "00000002-0000-0000-0000-000000000003",
+      "id": "00000001-0000-0000-0000-000000000000",
       "slug": "income",
       "name": "Income",
       "subcategories": [
         {
-          "id": "00000003-0000-0000-0000-000000000004",
-          "slug": "income-salary",
-          "name": "Salary"
+          "id": "00000001-0000-0000-0000-000000000001",
+          "slug": "income-salary-wages",
+          "name": "Salary & Wages"
         },
         {
-          "id": "00000004-0000-0000-0000-000000000005",
-          "slug": "income-bonus",
-          "name": "Bonus"
-        },
-        {
-          "id": "00000005-0000-0000-0000-000000000006",
+          "id": "00000001-0000-0000-0000-000000000002",
           "slug": "income-interest",
           "name": "Interest"
         },
         {
-          "id": "00000006-0000-0000-0000-000000000007",
-          "slug": "income-freelance",
-          "name": "Freelance"
+          "id": "00000001-0000-0000-0000-000000000003",
+          "slug": "income-gifts",
+          "name": "Gifts"
         },
         {
-          "id": "00000007-0000-0000-0000-000000000008",
-          "slug": "income-investment",
-          "name": "Investment"
-        },
-        {
-          "id": "00000008-0000-0000-0000-000000000009",
-          "slug": "income-distribution",
-          "name": "Distribution"
-        },
-        {
-          "id": "00000009-0000-0000-0000-00000000000a",
+          "id": "00000001-0000-0000-0000-000000000004",
           "slug": "income-other",
           "name": "Other"
         }
       ]
     },
     {
-      "id": "0000000a-0000-0000-0000-00000000000b",
-      "slug": "food",
-      "name": "Food",
-      "subcategories": [
-        {
-          "id": "0000000b-0000-0000-0000-00000000000c",
-          "slug": "food-groceries",
-          "name": "Groceries"
-        },
-        {
-          "id": "0000000c-0000-0000-0000-00000000000d",
-          "slug": "food-restaurants",
-          "name": "Restaurants"
-        }
-      ]
-    },
-    {
-      "id": "0000000d-0000-0000-0000-00000000000e",
-      "slug": "transportation",
-      "name": "Transportation",
-      "subcategories": [
-        {
-          "id": "0000000e-0000-0000-0000-00000000000f",
-          "slug": "transportation-gas",
-          "name": "Gas & Fuel"
-        },
-        {
-          "id": "0000000f-0000-0000-0000-000000000010",
-          "slug": "transportation-public-transit",
-          "name": "Public Transit"
-        },
-        {
-          "id": "00000010-0000-0000-0000-000000000011",
-          "slug": "transportation-auto-loan",
-          "name": "Auto Loan"
-        },
-        {
-          "id": "00000011-0000-0000-0000-000000000012",
-          "slug": "transportation-parking",
-          "name": "Parking"
-        },
-        {
-          "id": "00000012-0000-0000-0000-000000000013",
-          "slug": "transportation-maintenance",
-          "name": "Maintenance & Repairs"
-        },
-        {
-          "id": "00000013-0000-0000-0000-000000000014",
-          "slug": "transportation-insurance",
-          "name": "Auto Insurance"
-        },
-        {
-          "id": "00000014-0000-0000-0000-000000000015",
-          "slug": "transportation-rideshare",
-          "name": "Rideshare & Taxi"
-        }
-      ]
-    },
-    {
-      "id": "00000015-0000-0000-0000-000000000016",
-      "slug": "utilities",
-      "name": "Utilities",
-      "subcategories": [
-        {
-          "id": "00000016-0000-0000-0000-000000000017",
-          "slug": "utilities-gas-electric",
-          "name": "Gas & Electric"
-        },
-        {
-          "id": "00000017-0000-0000-0000-000000000018",
-          "slug": "utilities-water",
-          "name": "Water & Sewer"
-        },
-        {
-          "id": "00000018-0000-0000-0000-000000000019",
-          "slug": "utilities-internet",
-          "name": "Internet"
-        },
-        {
-          "id": "00000019-0000-0000-0000-00000000001a",
-          "slug": "utilities-phone",
-          "name": "Phone"
-        },
-        {
-          "id": "0000001a-0000-0000-0000-00000000001b",
-          "slug": "utilities-trash",
-          "name": "Trash & Recycling"
-        }
-      ]
-    },
-    {
-      "id": "0000001b-0000-0000-0000-00000000001c",
+      "id": "00000002-0000-0000-0000-000000000000",
       "slug": "housing",
       "name": "Housing",
       "subcategories": [
         {
-          "id": "0000001c-0000-0000-0000-00000000001d",
-          "slug": "housing-rent",
-          "name": "Rent"
+          "id": "00000002-0000-0000-0000-000000000001",
+          "slug": "housing-rent-mortgage",
+          "name": "Rent & Mortgage"
         },
         {
-          "id": "0000001d-0000-0000-0000-00000000001e",
-          "slug": "housing-mortgage",
-          "name": "Mortgage"
+          "id": "00000002-0000-0000-0000-000000000002",
+          "slug": "housing-property-taxes",
+          "name": "Property Taxes"
         },
         {
-          "id": "0000001e-0000-0000-0000-00000000001f",
-          "slug": "housing-insurance",
+          "id": "00000002-0000-0000-0000-000000000003",
+          "slug": "housing-home-insurance",
           "name": "Home Insurance"
         },
         {
-          "id": "0000001f-0000-0000-0000-000000000020",
-          "slug": "housing-property-tax",
-          "name": "Property Tax"
+          "id": "00000002-0000-0000-0000-000000000004",
+          "slug": "housing-repairs-maintenance",
+          "name": "Repairs & Maintenance"
         },
         {
-          "id": "00000020-0000-0000-0000-000000000021",
-          "slug": "housing-maintenance",
-          "name": "Maintenance & Repairs"
-        },
-        {
-          "id": "00000021-0000-0000-0000-000000000022",
-          "slug": "housing-hoa",
-          "name": "HOA Fees"
+          "id": "00000002-0000-0000-0000-000000000005",
+          "slug": "housing-hoa-community-fees",
+          "name": "HOA & Community Fees"
         }
       ]
     },
     {
-      "id": "00000022-0000-0000-0000-000000000023",
-      "slug": "healthcare",
-      "name": "Healthcare",
-      "subcategories": [
-        {
-          "id": "00000023-0000-0000-0000-000000000024",
-          "slug": "healthcare-doctor",
-          "name": "Doctor"
-        },
-        {
-          "id": "00000024-0000-0000-0000-000000000025",
-          "slug": "healthcare-dentist",
-          "name": "Dentist"
-        },
-        {
-          "id": "00000025-0000-0000-0000-000000000026",
-          "slug": "healthcare-pharmacy",
-          "name": "Pharmacy & Prescriptions"
-        },
-        {
-          "id": "00000026-0000-0000-0000-000000000027",
-          "slug": "healthcare-insurance",
-          "name": "Health Insurance"
-        },
-        {
-          "id": "00000027-0000-0000-0000-000000000028",
-          "slug": "healthcare-vision",
-          "name": "Vision & Eye Care"
-        }
-      ]
-    },
-    {
-      "id": "00000028-0000-0000-0000-000000000029",
-      "slug": "entertainment",
-      "name": "Entertainment",
-      "subcategories": [
-        {
-          "id": "00000029-0000-0000-0000-00000000002a",
-          "slug": "entertainment-streaming",
-          "name": "Streaming Services"
-        },
-        {
-          "id": "0000002a-0000-0000-0000-00000000002b",
-          "slug": "entertainment-movies",
-          "name": "Movies & Theater"
-        },
-        {
-          "id": "0000002b-0000-0000-0000-00000000002c",
-          "slug": "entertainment-concerts",
-          "name": "Concerts & Events"
-        },
-        {
-          "id": "0000002c-0000-0000-0000-00000000002d",
-          "slug": "entertainment-hobbies",
-          "name": "Hobbies"
-        },
-        {
-          "id": "0000002d-0000-0000-0000-00000000002e",
-          "slug": "entertainment-sports",
-          "name": "Sports & Recreation"
-        },
-        {
-          "id": "0000002e-0000-0000-0000-00000000002f",
-          "slug": "entertainment-books",
-          "name": "Books & Magazines"
-        }
-      ]
-    },
-    {
-      "id": "0000002f-0000-0000-0000-000000000030",
-      "slug": "education",
-      "name": "Education",
-      "subcategories": [
-        {
-          "id": "00000030-0000-0000-0000-000000000031",
-          "slug": "education-tuition",
-          "name": "Tuition"
-        },
-        {
-          "id": "00000031-0000-0000-0000-000000000032",
-          "slug": "education-books",
-          "name": "Books & Supplies"
-        },
-        {
-          "id": "00000032-0000-0000-0000-000000000033",
-          "slug": "education-courses",
-          "name": "Online Courses"
-        },
-        {
-          "id": "00000033-0000-0000-0000-000000000034",
-          "slug": "education-student-loans",
-          "name": "Student Loans"
-        },
-        {
-          "id": "00000034-0000-0000-0000-000000000035",
-          "slug": "education-fees",
-          "name": "Fees"
-        }
-      ]
-    },
-    {
-      "id": "00000035-0000-0000-0000-000000000036",
-      "slug": "personal",
-      "name": "Personal",
-      "subcategories": [
-        {
-          "id": "00000036-0000-0000-0000-000000000037",
-          "slug": "personal-gym",
-          "name": "Gym & Fitness"
-        },
-        {
-          "id": "00000037-0000-0000-0000-000000000038",
-          "slug": "personal-hair-beauty",
-          "name": "Hair & Beauty"
-        },
-        {
-          "id": "00000038-0000-0000-0000-000000000039",
-          "slug": "personal-laundry",
-          "name": "Laundry & Dry Cleaning"
-        },
-        {
-          "id": "00000039-0000-0000-0000-00000000003a",
-          "slug": "personal-clothing",
-          "name": "Clothing & Accessories"
-        },
-        {
-          "id": "0000003a-0000-0000-0000-00000000003b",
-          "slug": "personal-care-products",
-          "name": "Personal Care Products"
-        },
-        {
-          "id": "0000003b-0000-0000-0000-00000000003c",
-          "slug": "personal-electronics",
-          "name": "Electronics"
-        }
-      ]
-    },
-    {
-      "id": "0000003c-0000-0000-0000-00000000003d",
+      "id": "00000003-0000-0000-0000-000000000000",
       "slug": "household",
       "name": "Household",
       "subcategories": [
         {
-          "id": "0000003d-0000-0000-0000-00000000003e",
-          "slug": "household-furnishings",
-          "name": "Furnishings & Decor"
+          "id": "00000003-0000-0000-0000-000000000001",
+          "slug": "household-supplies",
+          "name": "Supplies"
         },
         {
-          "id": "0000003e-0000-0000-0000-00000000003f",
-          "slug": "household-kitchen",
-          "name": "Kitchen & Dining"
+          "id": "00000003-0000-0000-0000-000000000002",
+          "slug": "household-furniture-decor",
+          "name": "Furniture & Décor"
         },
         {
-          "id": "0000003f-0000-0000-0000-000000000040",
-          "slug": "household-cleaning",
-          "name": "Cleaning Supplies"
+          "id": "00000003-0000-0000-0000-000000000003",
+          "slug": "household-equipment-tools",
+          "name": "Equipment & Tools"
         },
         {
-          "id": "00000040-0000-0000-0000-000000000041",
-          "slug": "household-organization",
-          "name": "Organization & Storage"
-        },
-        {
-          "id": "00000041-0000-0000-0000-000000000042",
-          "slug": "household-garden",
-          "name": "Garden & Outdoor"
-        },
-        {
-          "id": "00000042-0000-0000-0000-000000000043",
-          "slug": "household-smart-home",
-          "name": "Smart Home & Electronics"
+          "id": "00000003-0000-0000-0000-000000000004",
+          "slug": "household-services-maintenance",
+          "name": "Services & Maintenance"
         }
       ]
     },
     {
-      "id": "0000007a-0000-0000-0000-00000000007b",
-      "slug": "children",
-      "name": "Children",
+      "id": "00000004-0000-0000-0000-000000000000",
+      "slug": "food",
+      "name": "Food",
       "subcategories": [
         {
-          "id": "00000044-0000-0000-0000-000000000045",
-          "slug": "children-childcare",
-          "name": "Childcare & Daycare"
+          "id": "00000004-0000-0000-0000-000000000001",
+          "slug": "food-groceries",
+          "name": "Groceries"
         },
         {
-          "id": "00000045-0000-0000-0000-000000000046",
-          "slug": "children-school-supplies",
-          "name": "School Supplies"
+          "id": "00000004-0000-0000-0000-000000000002",
+          "slug": "food-restaurants",
+          "name": "Restaurants"
         },
         {
-          "id": "00000046-0000-0000-0000-000000000047",
-          "slug": "children-school-fees",
-          "name": "School Fees"
+          "id": "00000004-0000-0000-0000-000000000003",
+          "slug": "food-specialty",
+          "name": "Specialty"
+        }
+      ]
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000000",
+      "slug": "transportation",
+      "name": "Transportation",
+      "subcategories": [
+        {
+          "id": "00000005-0000-0000-0000-000000000001",
+          "slug": "transportation-gas-fuel",
+          "name": "Gas & Fuel"
         },
         {
-          "id": "00000048-0000-0000-0000-000000000049",
-          "slug": "children-clothing",
-          "name": "Clothing"
+          "id": "00000005-0000-0000-0000-000000000002",
+          "slug": "transportation-public-transit",
+          "name": "Public Transit"
         },
         {
-          "id": "00000049-0000-0000-0000-00000000004a",
-          "slug": "children-toys",
-          "name": "Toys & Games"
+          "id": "00000005-0000-0000-0000-000000000003",
+          "slug": "transportation-rideshare-taxi",
+          "name": "Rideshare & Taxi"
         },
         {
-          "id": "0000004a-0000-0000-0000-00000000004b",
-          "slug": "children-electronics",
-          "name": "Electronics & Video Games"
+          "id": "00000005-0000-0000-0000-000000000004",
+          "slug": "transportation-parking-tolls",
+          "name": "Parking & Tolls"
         },
         {
-          "id": "0000004b-0000-0000-0000-00000000004c",
-          "slug": "children-allowance",
-          "name": "Allowance"
+          "id": "00000005-0000-0000-0000-000000000005",
+          "slug": "transportation-repairs-maintenance",
+          "name": "Repairs & Maintenance"
         },
         {
-          "id": "0000007b-0000-0000-0000-00000000007c",
-          "slug": "children-books",
-          "name": "Books & Educational Materials"
+          "id": "00000005-0000-0000-0000-000000000006",
+          "slug": "transportation-insurance-registration",
+          "name": "Insurance & Registration"
+        }
+      ]
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000000",
+      "slug": "healthcare",
+      "name": "Healthcare",
+      "subcategories": [
+        {
+          "id": "00000006-0000-0000-0000-000000000001",
+          "slug": "healthcare-insurance",
+          "name": "Insurance"
         },
         {
-          "id": "00000070-0000-0000-0000-000000000071",
-          "slug": "children-sports",
-          "name": "Sports & Athletics"
+          "id": "00000006-0000-0000-0000-000000000002",
+          "slug": "healthcare-doctor",
+          "name": "Doctor"
         },
         {
-          "id": "00000071-0000-0000-0000-000000000072",
-          "slug": "children-dance",
-          "name": "Dance & Gymnastics"
+          "id": "00000006-0000-0000-0000-000000000003",
+          "slug": "healthcare-dental",
+          "name": "Dental"
         },
         {
-          "id": "00000072-0000-0000-0000-000000000073",
-          "slug": "children-music",
-          "name": "Music Lessons"
+          "id": "00000006-0000-0000-0000-000000000004",
+          "slug": "healthcare-vision",
+          "name": "Vision"
         },
         {
-          "id": "00000073-0000-0000-0000-000000000074",
-          "slug": "children-art",
-          "name": "Art & Crafts Classes"
+          "id": "00000006-0000-0000-0000-000000000005",
+          "slug": "healthcare-prescriptions",
+          "name": "Prescriptions"
         },
         {
-          "id": "00000074-0000-0000-0000-000000000075",
-          "slug": "children-tutoring",
-          "name": "Tutoring & Academic Programs"
+          "id": "00000006-0000-0000-0000-000000000006",
+          "slug": "healthcare-supplies-equipment",
+          "name": "Supplies & Equipment"
+        }
+      ]
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000000",
+      "slug": "personal",
+      "name": "Personal",
+      "subcategories": [
+        {
+          "id": "00000007-0000-0000-0000-000000000001",
+          "slug": "personal-clothing-accessories",
+          "name": "Clothing & Accessories"
         },
         {
-          "id": "00000075-0000-0000-0000-000000000076",
-          "slug": "children-camps",
-          "name": "Summer Camps & Programs"
+          "id": "00000007-0000-0000-0000-000000000002",
+          "slug": "personal-hair-grooming",
+          "name": "Hair & Grooming"
         },
         {
-          "id": "00000076-0000-0000-0000-000000000077",
-          "slug": "children-clubs",
-          "name": "Clubs & Organizations"
+          "id": "00000007-0000-0000-0000-000000000003",
+          "slug": "personal-toiletries-cosmetics",
+          "name": "Toiletries & Cosmetics"
         },
         {
-          "id": "00000077-0000-0000-0000-000000000078",
-          "slug": "children-equipment",
+          "id": "00000007-0000-0000-0000-000000000004",
+          "slug": "personal-laundry-dry-cleaning",
+          "name": "Laundry & Dry Cleaning"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000005",
+          "slug": "personal-electronics-tech",
+          "name": "Electronics & Tech"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000006",
+          "slug": "personal-services-care",
+          "name": "Services & Care"
+        }
+      ]
+    },
+    {
+      "id": "00000008-0000-0000-0000-000000000000",
+      "slug": "recreation",
+      "name": "Recreation",
+      "subcategories": [
+        {
+          "id": "00000008-0000-0000-0000-000000000001",
+          "slug": "recreation-sports-fitness",
+          "name": "Sports & Fitness"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000002",
+          "slug": "recreation-hobbies-crafts",
+          "name": "Hobbies & Crafts"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000003",
+          "slug": "recreation-events-activities",
+          "name": "Events & Activities"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000004",
+          "slug": "recreation-equipment-gear",
           "name": "Equipment & Gear"
         }
       ]
     },
     {
-      "id": "0000004d-0000-0000-0000-00000000004e",
-      "slug": "pets",
-      "name": "Pets",
+      "id": "00000009-0000-0000-0000-000000000000",
+      "slug": "entertainment",
+      "name": "Entertainment",
       "subcategories": [
         {
-          "id": "0000004e-0000-0000-0000-00000000004f",
-          "slug": "pets-veterinary",
-          "name": "Veterinary Care"
+          "id": "00000009-0000-0000-0000-000000000001",
+          "slug": "entertainment-streaming-media",
+          "name": "Streaming & Media"
         },
         {
-          "id": "0000004f-0000-0000-0000-000000000050",
-          "slug": "pets-food",
-          "name": "Pet Food & Treats"
+          "id": "00000009-0000-0000-0000-000000000002",
+          "slug": "entertainment-shows-events",
+          "name": "Shows & Events"
         },
         {
-          "id": "00000050-0000-0000-0000-000000000051",
-          "slug": "pets-supplies",
-          "name": "Pet Supplies"
-        },
-        {
-          "id": "00000051-0000-0000-0000-000000000052",
-          "slug": "pets-grooming",
-          "name": "Grooming"
-        },
-        {
-          "id": "00000052-0000-0000-0000-000000000053",
-          "slug": "pets-boarding",
-          "name": "Boarding & Pet Sitting"
-        },
-        {
-          "id": "00000053-0000-0000-0000-000000000054",
-          "slug": "pets-insurance",
-          "name": "Pet Insurance"
+          "id": "00000009-0000-0000-0000-000000000003",
+          "slug": "entertainment-games",
+          "name": "Games"
         }
       ]
     },
     {
-      "id": "00000054-0000-0000-0000-000000000055",
-      "slug": "travel",
-      "name": "Travel & Vacation",
-      "subcategories": [
-        {
-          "id": "00000055-0000-0000-0000-000000000056",
-          "slug": "travel-flights",
-          "name": "Flights"
-        },
-        {
-          "id": "00000056-0000-0000-0000-000000000057",
-          "slug": "travel-hotels",
-          "name": "Hotels & Lodging"
-        },
-        {
-          "id": "00000057-0000-0000-0000-000000000058",
-          "slug": "travel-rental-car",
-          "name": "Rental Car"
-        },
-        {
-          "id": "00000058-0000-0000-0000-000000000059",
-          "slug": "travel-activities",
-          "name": "Activities & Tours"
-        }
-      ]
-    },
-    {
-      "id": "00000059-0000-0000-0000-00000000005a",
+      "id": "0000000a-0000-0000-0000-000000000000",
       "slug": "financial",
       "name": "Financial",
       "subcategories": [
         {
-          "id": "0000005a-0000-0000-0000-00000000005b",
-          "slug": "financial-credit-card-payment",
-          "name": "Credit Card Payment"
-        },
-        {
-          "id": "0000005b-0000-0000-0000-00000000005c",
-          "slug": "financial-bank-fees",
-          "name": "Bank Fees"
-        },
-        {
-          "id": "0000005c-0000-0000-0000-00000000005d",
+          "id": "0000000a-0000-0000-0000-000000000001",
           "slug": "financial-interest-fees",
-          "name": "Interest Fees"
+          "name": "Interest & Fees"
         },
         {
-          "id": "0000005d-0000-0000-0000-00000000005e",
-          "slug": "financial-investment-fees",
-          "name": "Investment Fees"
+          "id": "0000000a-0000-0000-0000-000000000002",
+          "slug": "financial-credit-card-payments",
+          "name": "Credit Card Payments"
         },
         {
-          "id": "0000005e-0000-0000-0000-00000000005f",
-          "slug": "financial-transfer",
-          "name": "Transfer"
+          "id": "0000000a-0000-0000-0000-000000000003",
+          "slug": "financial-income-taxes",
+          "name": "Income Taxes"
         },
         {
-          "id": "0000005f-0000-0000-0000-000000000060",
-          "slug": "financial-taxes",
-          "name": "Taxes"
-        },
-        {
-          "id": "00000060-0000-0000-0000-000000000061",
-          "slug": "financial-life-insurance",
-          "name": "Life Insurance"
+          "id": "0000000a-0000-0000-0000-000000000004",
+          "slug": "financial-transfers",
+          "name": "Transfers"
         }
       ]
     },
     {
-      "id": "00000061-0000-0000-0000-000000000062",
-      "slug": "business",
-      "name": "Business Expenses",
+      "id": "0000000b-0000-0000-0000-000000000000",
+      "slug": "children",
+      "name": "Children",
       "subcategories": [
         {
-          "id": "00000062-0000-0000-0000-000000000063",
-          "slug": "business-office-supplies",
-          "name": "Office Supplies"
+          "id": "0000000b-0000-0000-0000-000000000001",
+          "slug": "children-childcare-babysitting",
+          "name": "Childcare & Babysitting"
         },
         {
-          "id": "00000063-0000-0000-0000-000000000064",
-          "slug": "business-software",
-          "name": "Software & Subscriptions"
+          "id": "0000000b-0000-0000-0000-000000000002",
+          "slug": "children-school-education",
+          "name": "School & Education"
         },
         {
-          "id": "00000064-0000-0000-0000-000000000065",
-          "slug": "business-hosting",
-          "name": "Hosting & Cloud Services"
+          "id": "0000000b-0000-0000-0000-000000000003",
+          "slug": "children-sports-activities",
+          "name": "Sports & Activities"
         },
         {
-          "id": "00000065-0000-0000-0000-000000000066",
-          "slug": "business-ai-automation",
-          "name": "AI & Automation Services"
+          "id": "0000000b-0000-0000-0000-000000000004",
+          "slug": "children-clothing-supplies",
+          "name": "Clothing & Supplies"
         },
         {
-          "id": "00000066-0000-0000-0000-000000000067",
-          "slug": "business-advertising",
-          "name": "Advertising & Marketing"
+          "id": "0000000b-0000-0000-0000-000000000005",
+          "slug": "children-toys-games",
+          "name": "Toys & Games"
         },
         {
-          "id": "00000067-0000-0000-0000-000000000068",
-          "slug": "business-meals",
-          "name": "Business Meals"
-        },
-        {
-          "id": "00000068-0000-0000-0000-000000000069",
-          "slug": "business-travel",
-          "name": "Business Travel"
-        },
-        {
-          "id": "00000069-0000-0000-0000-00000000006a",
-          "slug": "business-equipment",
-          "name": "Equipment & Tools"
-        },
-        {
-          "id": "0000006a-0000-0000-0000-00000000006b",
-          "slug": "business-electronics",
-          "name": "Electronics & Technology"
+          "id": "0000000b-0000-0000-0000-000000000006",
+          "slug": "children-healthcare",
+          "name": "Healthcare"
         }
       ]
     },
     {
-      "id": "0000006b-0000-0000-0000-00000000006c",
-      "slug": "charity",
-      "name": "Charity & Donations",
+      "id": "0000000c-0000-0000-0000-000000000000",
+      "slug": "pets",
+      "name": "Pets",
       "subcategories": [
         {
-          "id": "0000006c-0000-0000-0000-00000000006d",
-          "slug": "charity-donations",
-          "name": "Donations"
+          "id": "0000000c-0000-0000-0000-000000000001",
+          "slug": "pets-food",
+          "name": "Food"
         },
         {
-          "id": "0000006d-0000-0000-0000-00000000006e",
-          "slug": "charity-religious",
-          "name": "Religious Organizations"
+          "id": "0000000c-0000-0000-0000-000000000002",
+          "slug": "pets-toys-supplies",
+          "name": "Toys & Supplies"
         },
         {
-          "id": "0000006e-0000-0000-0000-00000000006f",
-          "slug": "charity-other",
-          "name": "Other"
+          "id": "0000000c-0000-0000-0000-000000000003",
+          "slug": "pets-vet-services",
+          "name": "Vet Services"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000004",
+          "slug": "pets-grooming-care",
+          "name": "Grooming & Care"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000005",
+          "slug": "pets-boarding-daycare",
+          "name": "Boarding & Daycare"
+        }
+      ]
+    },
+    {
+      "id": "0000000d-0000-0000-0000-000000000000",
+      "slug": "miscellaneous",
+      "name": "Miscellaneous",
+      "subcategories": [
+        {
+          "id": "0000000d-0000-0000-0000-000000000001",
+          "slug": "miscellaneous-gifts-donations",
+          "name": "Gifts & Donations"
+        },
+        {
+          "id": "0000000d-0000-0000-0000-000000000002",
+          "slug": "miscellaneous-unknown",
+          "name": "Unknown"
         }
       ]
     }

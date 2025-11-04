@@ -33,10 +33,12 @@ import {
 } from '@/crypto/database';
 import { setAccounts } from '@/store/accounts/slice';
 import { setTransactions } from '@/store/transactions/slice';
+import { setCategories } from '@/store/categories/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
+import categoriesData from '@/config/categories.json';
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -193,10 +195,12 @@ export default function EncryptionProvider() {
     let schemaVersion = localStorage.getItem('dataSchemaVersion');
 
     // Load encrypted data into Redux
-    let [encryptedAccounts, encryptedTransactions] = await Promise.all([
-      getAllEncryptedRecords('accounts', dek),
-      getAllEncryptedRecords('transactions', dek),
-    ]);
+    let [encryptedAccounts, encryptedTransactions, encryptedCategories] =
+      await Promise.all([
+        getAllEncryptedRecords('accounts', dek),
+        getAllEncryptedRecords('transactions', dek),
+        getAllEncryptedRecords('categories', dek),
+      ]);
 
     // Check if we need to migrate from schema 2.0.0 to 2.0.1
     const needsMigration =
@@ -276,12 +280,28 @@ export default function EncryptionProvider() {
         loadingAccountIds: [],
       },
       transactions: [],
+      categories: [],
     };
     localStorage.setItem('reduxState', JSON.stringify(emptyState));
+
+    // Initialize categories with defaults if none exist (treat as user data)
+    let categoriesToLoad = encryptedCategories || [];
+    if (categoriesToLoad.length === 0) {
+      categoriesToLoad = categoriesData.categories;
+      console.log('Initialized default categories for encrypted storage');
+
+      // Save default categories to encrypted storage
+      const categoryRecords = categoriesToLoad.map((category) => ({
+        id: category.id,
+        data: category,
+      }));
+      await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+    }
 
     // Replace entire state (not add) to avoid duplicates from preloadedState
     dispatch(setAccounts(encryptedAccounts));
     dispatch(setTransactions(encryptedTransactions));
+    dispatch(setCategories(categoriesToLoad));
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {
