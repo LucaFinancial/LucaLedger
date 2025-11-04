@@ -258,18 +258,13 @@
         },
         {
           "id": "00000009-0000-0000-0000-000000000002",
-          "slug": "entertainment-games-video-games",
-          "name": "Games & Video Games"
+          "slug": "entertainment-shows-events",
+          "name": "Shows & Events"
         },
         {
           "id": "00000009-0000-0000-0000-000000000003",
-          "slug": "entertainment-shows-performances",
-          "name": "Shows & Performances"
-        },
-        {
-          "id": "00000009-0000-0000-0000-000000000004",
-          "slug": "entertainment-events-tickets",
-          "name": "Events & Tickets"
+          "slug": "entertainment-games",
+          "name": "Games"
         }
       ]
     },
