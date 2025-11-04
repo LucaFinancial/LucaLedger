@@ -31,6 +31,7 @@ import {
 } from '@/store/categories';
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryResetConfirmModal from '@/components/CategoryResetConfirmModal';
+import CategoryDeleteConfirmModal from '@/components/CategoryDeleteConfirmModal';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
 import categoriesData from '@/config/categories.json';
@@ -47,6 +48,10 @@ export default function Categories() {
   const [editingParentId, setEditingParentId] = useState(null);
   const [searchHovered, setSearchHovered] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState(null);
+  const [deletingSubcategory, setDeletingSubcategory] = useState(null);
+  const [deletingParentId, setDeletingParentId] = useState(null);
 
   // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
@@ -107,13 +112,11 @@ export default function Categories() {
   };
 
   const handleDeleteCategory = (categoryId) => {
-    if (
-      window.confirm(
-        'Are you sure you want to delete this category? This action cannot be undone.'
-      )
-    ) {
-      dispatch(categoryActions.deleteCategory(categoryId));
-    }
+    const category = categories.find((cat) => cat.id === categoryId);
+    setDeletingCategory(category);
+    setDeletingSubcategory(null);
+    setDeletingParentId(null);
+    setDeleteModalOpen(true);
   };
 
   const handleCreateSubcategory = (parentId) => {
@@ -131,13 +134,14 @@ export default function Categories() {
   };
 
   const handleDeleteSubcategory = (parentId, subcategoryId) => {
-    if (
-      window.confirm(
-        'Are you sure you want to delete this subcategory? This action cannot be undone.'
-      )
-    ) {
-      dispatch(categoryActions.deleteSubcategory(parentId, subcategoryId));
-    }
+    const parentCategory = categories.find((cat) => cat.id === parentId);
+    const subcategory = parentCategory?.subcategories?.find(
+      (sub) => sub.id === subcategoryId
+    );
+    setDeletingCategory(parentCategory);
+    setDeletingSubcategory(subcategory);
+    setDeletingParentId(parentId);
+    setDeleteModalOpen(true);
   };
 
   const handleDialogClose = () => {
@@ -158,6 +162,29 @@ export default function Categories() {
 
   const handleCancelReset = () => {
     setResetModalOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingSubcategory && deletingParentId) {
+      // Deleting a subcategory
+      dispatch(
+        categoryActions.deleteSubcategory(
+          deletingParentId,
+          deletingSubcategory.id
+        )
+      );
+    } else if (deletingCategory) {
+      // Deleting a category
+      dispatch(categoryActions.deleteCategory(deletingCategory.id));
+    }
+    handleCancelDelete();
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setDeletingCategory(null);
+    setDeletingSubcategory(null);
+    setDeletingParentId(null);
   };
 
   return (
@@ -455,6 +482,18 @@ export default function Categories() {
         open={resetModalOpen}
         onConfirm={handleConfirmReset}
         onCancel={handleCancelReset}
+      />
+
+      <CategoryDeleteConfirmModal
+        open={deleteModalOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        categoryName={
+          deletingSubcategory
+            ? deletingSubcategory.name
+            : deletingCategory?.name
+        }
+        isSubcategory={!!deletingSubcategory}
       />
     </Box>
   );
