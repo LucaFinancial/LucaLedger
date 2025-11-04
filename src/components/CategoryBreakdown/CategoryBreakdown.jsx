@@ -173,35 +173,67 @@ export default function CategoryBreakdown() {
         projectedExpenses += expenseAmount;
       }
 
-      // Find category using lookup map
-      const categoryId = tx.categoryId;
-      if (!categoryId) return;
+      // If transaction has splits, process each split separately
+      if (tx.splits && tx.splits.length > 0) {
+        tx.splits.forEach((split) => {
+          const categoryInfo = categoryMap.get(split.categoryId);
+          if (!categoryInfo) return;
 
-      const categoryInfo = categoryMap.get(categoryId);
-      if (!categoryInfo) return;
+          if (!categoryTotals.has(categoryInfo.id)) {
+            categoryTotals.set(categoryInfo.id, {
+              id: categoryInfo.id,
+              name: categoryInfo.name,
+              total: 0,
+              actual: 0,
+              projected: 0,
+              count: 0,
+            });
+          }
 
-      if (!categoryTotals.has(categoryInfo.id)) {
-        categoryTotals.set(categoryInfo.id, {
-          id: categoryInfo.id,
-          name: categoryInfo.name,
-          total: 0,
-          actual: 0,
-          projected: 0,
-          count: 0,
+          const catData = categoryTotals.get(categoryInfo.id);
+          catData.total += split.amount;
+          catData.count += 1;
+
+          if (
+            isActual &&
+            tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+          ) {
+            catData.actual += split.amount;
+          } else {
+            catData.projected += split.amount;
+          }
         });
-      }
-
-      const catData = categoryTotals.get(categoryInfo.id);
-      catData.total += expenseAmount;
-      catData.count += 1;
-
-      if (
-        isActual &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-      ) {
-        catData.actual += expenseAmount;
       } else {
-        catData.projected += expenseAmount;
+        // No splits - use transaction categoryId (legacy behavior)
+        const categoryId = tx.categoryId;
+        if (!categoryId) return;
+
+        const categoryInfo = categoryMap.get(categoryId);
+        if (!categoryInfo) return;
+
+        if (!categoryTotals.has(categoryInfo.id)) {
+          categoryTotals.set(categoryInfo.id, {
+            id: categoryInfo.id,
+            name: categoryInfo.name,
+            total: 0,
+            actual: 0,
+            projected: 0,
+            count: 0,
+          });
+        }
+
+        const catData = categoryTotals.get(categoryInfo.id);
+        catData.total += expenseAmount;
+        catData.count += 1;
+
+        if (
+          isActual &&
+          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        ) {
+          catData.actual += expenseAmount;
+        } else {
+          catData.projected += expenseAmount;
+        }
       }
     });
 
