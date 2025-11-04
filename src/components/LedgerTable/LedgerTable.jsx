@@ -48,10 +48,7 @@ export default function LedgerTable({
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
-      filtered = filtered.filter(
-        (transaction) =>
-          !transaction.categoryId || selectedTransactions.has(transaction.id)
-      );
+      filtered = filtered.filter((transaction) => !transaction.categoryId);
     }
 
     // Apply text filter
