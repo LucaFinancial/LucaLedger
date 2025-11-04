@@ -1,178 +1,390 @@
 {
   "categories": [
     {
-      "id": "00000002-0000-0000-0000-000000000003",
+      "id": "00000001-0000-0000-0000-000000000000",
       "slug": "income",
       "name": "Income",
       "subcategories": [
         {
-          "id": "00000003-0000-0000-0000-000000000004",
-          "slug": "income-salary",
-          "name": "Salary"
+          "id": "00000001-0000-0000-0000-000000000001",
+          "slug": "income-salary-wages",
+          "name": "Salary & Wages"
         },
         {
-          "id": "00000007-0000-0000-0000-000000000008",
-          "slug": "income-investment",
-          "name": "Investment"
+          "id": "00000001-0000-0000-0000-000000000002",
+          "slug": "income-interest",
+          "name": "Interest"
         },
         {
-          "id": "00000009-0000-0000-0000-00000000000a",
+          "id": "00000001-0000-0000-0000-000000000003",
+          "slug": "income-gifts",
+          "name": "Gifts"
+        },
+        {
+          "id": "00000001-0000-0000-0000-000000000004",
           "slug": "income-other",
           "name": "Other"
         }
       ]
     },
     {
-      "id": "0000000a-0000-0000-0000-00000000000b",
-      "slug": "food",
-      "name": "Food & Dining",
-      "subcategories": [
-        {
-          "id": "0000000b-0000-0000-0000-00000000000c",
-          "slug": "food-groceries",
-          "name": "Groceries"
-        },
-        {
-          "id": "0000000c-0000-0000-0000-00000000000d",
-          "slug": "food-restaurants",
-          "name": "Restaurants"
-        }
-      ]
-    },
-    {
-      "id": "0000000d-0000-0000-0000-00000000000e",
-      "slug": "transportation",
-      "name": "Transportation",
-      "subcategories": [
-        {
-          "id": "0000000e-0000-0000-0000-00000000000f",
-          "slug": "transportation-gas",
-          "name": "Gas & Fuel"
-        },
-        {
-          "id": "0000000f-0000-0000-0000-000000000010",
-          "slug": "transportation-public-transit",
-          "name": "Public Transit"
-        },
-        {
-          "id": "00000013-0000-0000-0000-000000000014",
-          "slug": "transportation-insurance",
-          "name": "Auto Insurance"
-        }
-      ]
-    },
-    {
-      "id": "0000001b-0000-0000-0000-00000000001c",
+      "id": "00000002-0000-0000-0000-000000000000",
       "slug": "housing",
       "name": "Housing",
       "subcategories": [
         {
-          "id": "0000001c-0000-0000-0000-00000000001d",
-          "slug": "housing-rent",
-          "name": "Rent"
+          "id": "00000002-0000-0000-0000-000000000001",
+          "slug": "housing-rent-mortgage",
+          "name": "Rent & Mortgage"
         },
         {
-          "id": "0000001d-0000-0000-0000-00000000001e",
-          "slug": "housing-mortgage",
-          "name": "Mortgage"
+          "id": "00000002-0000-0000-0000-000000000002",
+          "slug": "housing-property-taxes",
+          "name": "Property Taxes"
         },
         {
-          "id": "00000016-0000-0000-0000-000000000017",
-          "slug": "utilities-gas-electric",
-          "name": "Utilities"
+          "id": "00000002-0000-0000-0000-000000000003",
+          "slug": "housing-home-insurance",
+          "name": "Home Insurance"
+        },
+        {
+          "id": "00000002-0000-0000-0000-000000000004",
+          "slug": "housing-repairs-maintenance",
+          "name": "Repairs & Maintenance"
+        },
+        {
+          "id": "00000002-0000-0000-0000-000000000005",
+          "slug": "housing-hoa-community-fees",
+          "name": "HOA & Community Fees"
         }
       ]
     },
     {
-      "id": "00000022-0000-0000-0000-000000000023",
+      "id": "00000003-0000-0000-0000-000000000000",
+      "slug": "household",
+      "name": "Household",
+      "subcategories": [
+        {
+          "id": "00000003-0000-0000-0000-000000000001",
+          "slug": "household-supplies",
+          "name": "Supplies"
+        },
+        {
+          "id": "00000003-0000-0000-0000-000000000002",
+          "slug": "household-furniture-decor",
+          "name": "Furniture & Décor"
+        },
+        {
+          "id": "00000003-0000-0000-0000-000000000003",
+          "slug": "household-equipment-tools",
+          "name": "Equipment & Tools"
+        },
+        {
+          "id": "00000003-0000-0000-0000-000000000004",
+          "slug": "household-services-maintenance",
+          "name": "Services & Maintenance"
+        }
+      ]
+    },
+    {
+      "id": "00000004-0000-0000-0000-000000000000",
+      "slug": "food",
+      "name": "Food",
+      "subcategories": [
+        {
+          "id": "00000004-0000-0000-0000-000000000001",
+          "slug": "food-groceries",
+          "name": "Groceries"
+        },
+        {
+          "id": "00000004-0000-0000-0000-000000000002",
+          "slug": "food-restaurants",
+          "name": "Restaurants"
+        },
+        {
+          "id": "00000004-0000-0000-0000-000000000003",
+          "slug": "food-specialty",
+          "name": "Specialty"
+        }
+      ]
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000000",
+      "slug": "transportation",
+      "name": "Transportation",
+      "subcategories": [
+        {
+          "id": "00000005-0000-0000-0000-000000000001",
+          "slug": "transportation-gas-fuel",
+          "name": "Gas & Fuel"
+        },
+        {
+          "id": "00000005-0000-0000-0000-000000000002",
+          "slug": "transportation-public-transit",
+          "name": "Public Transit"
+        },
+        {
+          "id": "00000005-0000-0000-0000-000000000003",
+          "slug": "transportation-rideshare-taxi",
+          "name": "Rideshare & Taxi"
+        },
+        {
+          "id": "00000005-0000-0000-0000-000000000004",
+          "slug": "transportation-parking-tolls",
+          "name": "Parking & Tolls"
+        },
+        {
+          "id": "00000005-0000-0000-0000-000000000005",
+          "slug": "transportation-repairs-maintenance",
+          "name": "Repairs & Maintenance"
+        },
+        {
+          "id": "00000005-0000-0000-0000-000000000006",
+          "slug": "transportation-insurance-registration",
+          "name": "Insurance & Registration"
+        }
+      ]
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000000",
       "slug": "healthcare",
       "name": "Healthcare",
       "subcategories": [
         {
-          "id": "00000023-0000-0000-0000-000000000024",
+          "id": "00000006-0000-0000-0000-000000000001",
+          "slug": "healthcare-insurance",
+          "name": "Insurance"
+        },
+        {
+          "id": "00000006-0000-0000-0000-000000000002",
           "slug": "healthcare-doctor",
           "name": "Doctor"
         },
         {
-          "id": "00000024-0000-0000-0000-000000000025",
-          "slug": "healthcare-dentist",
-          "name": "Dentist"
+          "id": "00000006-0000-0000-0000-000000000003",
+          "slug": "healthcare-dental",
+          "name": "Dental"
         },
         {
-          "id": "00000026-0000-0000-0000-000000000027",
-          "slug": "healthcare-insurance",
-          "name": "Health Insurance"
+          "id": "00000006-0000-0000-0000-000000000004",
+          "slug": "healthcare-vision",
+          "name": "Vision"
+        },
+        {
+          "id": "00000006-0000-0000-0000-000000000005",
+          "slug": "healthcare-prescriptions",
+          "name": "Prescriptions"
+        },
+        {
+          "id": "00000006-0000-0000-0000-000000000006",
+          "slug": "healthcare-supplies-equipment",
+          "name": "Supplies & Equipment"
         }
       ]
     },
     {
-      "id": "00000035-0000-0000-0000-000000000036",
+      "id": "00000007-0000-0000-0000-000000000000",
       "slug": "personal",
-      "name": "Personal Care",
+      "name": "Personal",
       "subcategories": [
         {
-          "id": "00000039-0000-0000-0000-00000000003a",
-          "slug": "personal-clothing",
-          "name": "Clothing"
+          "id": "00000007-0000-0000-0000-000000000001",
+          "slug": "personal-clothing-accessories",
+          "name": "Clothing & Accessories"
         },
         {
-          "id": "00000037-0000-0000-0000-000000000038",
-          "slug": "personal-hair-beauty",
-          "name": "Hair & Beauty"
+          "id": "00000007-0000-0000-0000-000000000002",
+          "slug": "personal-hair-grooming",
+          "name": "Hair & Grooming"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000003",
+          "slug": "personal-toiletries-cosmetics",
+          "name": "Toiletries & Cosmetics"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000004",
+          "slug": "personal-laundry-dry-cleaning",
+          "name": "Laundry & Dry Cleaning"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000005",
+          "slug": "personal-electronics-tech",
+          "name": "Electronics & Tech"
+        },
+        {
+          "id": "00000007-0000-0000-0000-000000000006",
+          "slug": "personal-services-care",
+          "name": "Services & Care"
         }
       ]
     },
     {
-      "id": "00000028-0000-0000-0000-000000000029",
+      "id": "00000008-0000-0000-0000-000000000000",
+      "slug": "recreation",
+      "name": "Recreation",
+      "subcategories": [
+        {
+          "id": "00000008-0000-0000-0000-000000000001",
+          "slug": "recreation-sports-fitness",
+          "name": "Sports & Fitness"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000002",
+          "slug": "recreation-hobbies-crafts",
+          "name": "Hobbies & Crafts"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000003",
+          "slug": "recreation-events-activities",
+          "name": "Events & Activities"
+        },
+        {
+          "id": "00000008-0000-0000-0000-000000000004",
+          "slug": "recreation-equipment-gear",
+          "name": "Equipment & Gear"
+        }
+      ]
+    },
+    {
+      "id": "00000009-0000-0000-0000-000000000000",
       "slug": "entertainment",
       "name": "Entertainment",
       "subcategories": [
         {
-          "id": "00000029-0000-0000-0000-00000000002a",
-          "slug": "entertainment-streaming",
-          "name": "Streaming Services"
+          "id": "00000009-0000-0000-0000-000000000001",
+          "slug": "entertainment-streaming-media",
+          "name": "Streaming & Media"
         },
         {
-          "id": "0000002c-0000-0000-0000-00000000002d",
-          "slug": "entertainment-hobbies",
-          "name": "Hobbies"
+          "id": "00000009-0000-0000-0000-000000000002",
+          "slug": "entertainment-games-video-games",
+          "name": "Games & Video Games"
+        },
+        {
+          "id": "00000009-0000-0000-0000-000000000003",
+          "slug": "entertainment-shows-performances",
+          "name": "Shows & Performances"
+        },
+        {
+          "id": "00000009-0000-0000-0000-000000000004",
+          "slug": "entertainment-events-tickets",
+          "name": "Events & Tickets"
         }
       ]
     },
     {
-      "id": "00000054-0000-0000-0000-000000000055",
-      "slug": "travel",
-      "name": "Travel",
-      "subcategories": []
-    },
-    {
-      "id": "0000003c-0000-0000-0000-00000000003d",
-      "slug": "shopping",
-      "name": "Shopping",
-      "subcategories": []
-    },
-    {
-      "id": "00000059-0000-0000-0000-00000000005a",
+      "id": "0000000a-0000-0000-0000-000000000000",
       "slug": "financial",
       "name": "Financial",
       "subcategories": [
         {
-          "id": "0000005a-0000-0000-0000-00000000005b",
-          "slug": "financial-credit-card-payment",
-          "name": "Credit Card Payment"
+          "id": "0000000a-0000-0000-0000-000000000001",
+          "slug": "financial-interest-fees",
+          "name": "Interest & Fees"
         },
         {
-          "id": "0000005e-0000-0000-0000-00000000005f",
-          "slug": "financial-transfer",
-          "name": "Transfer"
+          "id": "0000000a-0000-0000-0000-000000000002",
+          "slug": "financial-credit-card-payments",
+          "name": "Credit Card Payments"
+        },
+        {
+          "id": "0000000a-0000-0000-0000-000000000003",
+          "slug": "financial-income-taxes",
+          "name": "Income Taxes"
+        },
+        {
+          "id": "0000000a-0000-0000-0000-000000000004",
+          "slug": "financial-transfers",
+          "name": "Transfers"
         }
       ]
     },
     {
-      "id": "0000006f-0000-0000-0000-000000000070",
-      "slug": "other",
-      "name": "Other",
-      "subcategories": []
+      "id": "0000000b-0000-0000-0000-000000000000",
+      "slug": "children",
+      "name": "Children",
+      "subcategories": [
+        {
+          "id": "0000000b-0000-0000-0000-000000000001",
+          "slug": "children-childcare-babysitting",
+          "name": "Childcare & Babysitting"
+        },
+        {
+          "id": "0000000b-0000-0000-0000-000000000002",
+          "slug": "children-school-education",
+          "name": "School & Education"
+        },
+        {
+          "id": "0000000b-0000-0000-0000-000000000003",
+          "slug": "children-sports-activities",
+          "name": "Sports & Activities"
+        },
+        {
+          "id": "0000000b-0000-0000-0000-000000000004",
+          "slug": "children-clothing-supplies",
+          "name": "Clothing & Supplies"
+        },
+        {
+          "id": "0000000b-0000-0000-0000-000000000005",
+          "slug": "children-toys-games",
+          "name": "Toys & Games"
+        },
+        {
+          "id": "0000000b-0000-0000-0000-000000000006",
+          "slug": "children-healthcare",
+          "name": "Healthcare"
+        }
+      ]
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000000",
+      "slug": "pets",
+      "name": "Pets",
+      "subcategories": [
+        {
+          "id": "0000000c-0000-0000-0000-000000000001",
+          "slug": "pets-food",
+          "name": "Food"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000002",
+          "slug": "pets-toys-supplies",
+          "name": "Toys & Supplies"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000003",
+          "slug": "pets-vet-services",
+          "name": "Vet Services"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000004",
+          "slug": "pets-grooming-care",
+          "name": "Grooming & Care"
+        },
+        {
+          "id": "0000000c-0000-0000-0000-000000000005",
+          "slug": "pets-boarding-daycare",
+          "name": "Boarding & Daycare"
+        }
+      ]
+    },
+    {
+      "id": "0000000d-0000-0000-0000-000000000000",
+      "slug": "miscellaneous",
+      "name": "Miscellaneous",
+      "subcategories": [
+        {
+          "id": "0000000d-0000-0000-0000-000000000001",
+          "slug": "miscellaneous-gifts-donations",
+          "name": "Gifts & Donations"
+        },
+        {
+          "id": "0000000d-0000-0000-0000-000000000002",
+          "slug": "miscellaneous-unknown",
+          "name": "Unknown"
+        }
+      ]
     }
   ]
 }
