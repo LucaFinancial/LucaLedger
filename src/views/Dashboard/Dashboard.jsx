@@ -35,7 +35,7 @@ import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import BetaBanner from '@/components/BetaBanner';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -66,20 +66,39 @@ export default function Dashboard() {
   // Helper function to determine if a transaction represents an expense
   // For checking/savings: negative amount = expense
   // For credit cards: positive amount = expense (charge), negative = payment
-  const isExpenseTransaction = (tx) => {
-    const account = accountMap[tx.accountId];
-    if (!account) return tx.amount < 0;
+  const isExpenseTransaction = useCallback(
+    (tx) => {
+      const account = accountMap[tx.accountId];
+      if (!account) return tx.amount < 0;
 
-    if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-      return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
-    }
-    return tx.amount < 0; // For checking/savings, negative is expense
-  };
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+        return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
+      }
+      return tx.amount < 0; // For checking/savings, negative is expense
+    },
+    [accountMap]
+  );
 
   // Helper function to get the display color for a transaction
-  const getTransactionColor = (tx) => {
-    return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
-  };
+  const getTransactionColor = useCallback(
+    (tx) => {
+      return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
+    },
+    [isExpenseTransaction]
+  );
+
+  // Helper function to categorize transaction as income or expense amount
+  // Returns { income: number, expense: number } with absolute values
+  const categorizeTransaction = useCallback(
+    (tx) => {
+      const absAmount = Math.abs(tx.amount);
+      if (isExpenseTransaction(tx)) {
+        return { income: 0, expense: absAmount };
+      }
+      return { income: absAmount, expense: 0 };
+    },
+    [isExpenseTransaction]
+  );
 
   // Filter transactions by time period
   const recentTransactions = useMemo(() => {
@@ -121,29 +140,15 @@ export default function Dashboard() {
     let expenses = 0;
 
     currentMonthTransactions.forEach((tx) => {
-      const account = accountMap[tx.accountId];
-      if (!account) return;
-
-      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-        // For credit cards: positive = charge (expense), negative = payment (income)
-        if (tx.amount > 0) {
-          expenses += tx.amount;
-        } else {
-          income += Math.abs(tx.amount);
-        }
-      } else {
-        // For checking/savings: positive = deposit (income), negative = withdrawal (expense)
-        if (tx.amount > 0) {
-          income += tx.amount;
-        } else {
-          expenses += Math.abs(tx.amount);
-        }
-      }
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
+      income += txIncome;
+      expenses += txExpense;
     });
 
     const netFlow = income - expenses;
     return { income, expenses, netFlow };
-  }, [currentMonthTransactions, accountMap]);
+  }, [currentMonthTransactions, categorizeTransaction]);
 
   // Future transactions
   const futureTransactions = useMemo(() => {
@@ -167,24 +172,19 @@ export default function Dashboard() {
 
   // Calculate future totals
   const futureTotals = useMemo(() => {
-    let scheduled = 0;
+    let income = 0;
+    let expenses = 0;
 
     futureTransactions.forEach((tx) => {
-      const account = accountMap[tx.accountId];
-      if (!account) return;
-
-      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-        // For credit cards: positive = charge (expense), negative = payment (income)
-        // Net impact: charges increase debt (negative impact), payments decrease debt (positive impact)
-        scheduled -= tx.amount;
-      } else {
-        // For checking/savings: positive = income, negative = expense
-        scheduled += tx.amount;
-      }
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
+      income += txIncome;
+      expenses += txExpense;
     });
 
+    const scheduled = income - expenses;
     return { scheduled };
-  }, [futureTransactions, accountMap]);
+  }, [futureTransactions, categorizeTransaction]);
 
   const formatCurrency = (amount) => {
     return `$${doublePrecisionFormatString(centsToDollars(amount))}`;
