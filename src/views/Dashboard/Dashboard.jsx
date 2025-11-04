@@ -190,6 +190,12 @@ export default function Dashboard() {
     return `$${doublePrecisionFormatString(centsToDollars(amount))}`;
   };
 
+  // Format transaction amount as absolute value (no negative sign)
+  // The color already indicates if it's income (green) or expense (red)
+  const formatTransactionAmount = (amount) => {
+    return formatCurrency(Math.abs(amount));
+  };
+
   const getAccountName = (accountId) => {
     return accountMap[accountId]?.name || 'Unknown Account';
   };
@@ -283,7 +289,7 @@ export default function Dashboard() {
                           fontWeight: 'bold',
                         }}
                       >
-                        {formatCurrency(tx.amount)}
+                        {formatTransactionAmount(tx.amount)}
                       </TableCell>
                     </TableRow>
                   ))
@@ -598,7 +604,7 @@ export default function Dashboard() {
                           fontWeight: 'bold',
                         }}
                       >
-                        {formatCurrency(tx.amount)}
+                        {formatTransactionAmount(tx.amount)}
                       </TableCell>
                     </TableRow>
                   ))
