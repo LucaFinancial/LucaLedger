@@ -46,10 +46,8 @@ export default function CategoryTree({ categories }) {
     // Apply zoom to svg
     svg.call(zoom);
 
-    // Create a container group for the tree - positioned at left side
-    const g = svg
-      .append('g')
-      .attr('transform', `translate(${margin.left},${height / 2})`);
+    // Create a container group for the tree - at the top
+    const g = svg.append('g').attr('transform', `translate(${margin.left},0)`); // No vertical offset at all
 
     // Transform categories data into hierarchical structure
     const hierarchyData = {

@@ -404,7 +404,7 @@ export default function Categories() {
               Use keyboard navigation (Enter or Space) to toggle nodes when
               focused. Scroll to zoom, or click and drag to pan the tree.
             </Typography>
-            <Box sx={{ height: 'calc(100vh - 300px)', minHeight: 600 }}>
+            <Box sx={{ height: 'calc(100vh - 330px)', minHeight: 450 }}>
               <CategoryTree categories={categories} />
             </Box>
           </Paper>
