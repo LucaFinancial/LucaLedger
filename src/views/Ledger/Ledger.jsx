@@ -19,7 +19,7 @@ import {
   Tooltip,
   Badge,
 } from '@mui/material';
-import { Clear, MoreVert, Edit } from '@mui/icons-material';
+import { Clear, MoreVert, Edit, FilterList } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,6 +32,7 @@ export default function Ledger() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [filterValue, setFilterValue] = useState('');
+  const [showUncategorizedOnly, setShowUncategorizedOnly] = useState(false);
   const [selectedTransactions, setSelectedTransactions] = useState(new Set());
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
@@ -51,15 +52,32 @@ export default function Ledger() {
     }).length;
   }, [transactions, flatCategories]);
 
+  // Count uncategorized transactions
+  const uncategorizedCount = useMemo(() => {
+    return transactions.filter((transaction) => !transaction.categoryId).length;
+  }, [transactions]);
+
   // Calculate filtered transactions for "Select All (Filtered)" button
   // Only include transactions that match the filter (not already-selected ones)
-  const filteredTransactions = filterValue
-    ? transactions.filter((transaction) =>
+  const filteredTransactions = useMemo(() => {
+    let filtered = transactions;
+
+    // Apply uncategorized filter
+    if (showUncategorizedOnly) {
+      filtered = filtered.filter((transaction) => !transaction.categoryId);
+    }
+
+    // Apply text filter
+    if (filterValue) {
+      filtered = filtered.filter((transaction) =>
         transaction.description
           .toLowerCase()
           .includes(filterValue.toLowerCase())
-      )
-    : [];
+      );
+    }
+
+    return filterValue || showUncategorizedOnly ? filtered : [];
+  }, [filterValue, showUncategorizedOnly, transactions]);
 
   const allMonths = transactions?.length
     ? [
@@ -294,18 +312,37 @@ export default function Ledger() {
               ),
             }}
           />
-          {filterValue && filteredTransactions.length > 0 && (
+          <Tooltip
+            title={
+              showUncategorizedOnly
+                ? 'Show all transactions'
+                : 'Show uncategorized only'
+            }
+          >
             <Button
-              variant='outlined'
-              onClick={handleSelectAllFiltered}
-              aria-label='Select all filtered transactions'
+              variant={showUncategorizedOnly ? 'contained' : 'outlined'}
+              onClick={() => setShowUncategorizedOnly(!showUncategorizedOnly)}
+              aria-label='Toggle uncategorized filter'
+              startIcon={<FilterList />}
             >
-              Select All ({filteredTransactions.length})
+              Uncategorized{' '}
+              {uncategorizedCount > 0 && `(${uncategorizedCount})`}
             </Button>
-          )}
+          </Tooltip>
+          {(filterValue || showUncategorizedOnly) &&
+            filteredTransactions.length > 0 && (
+              <Button
+                variant='outlined'
+                onClick={handleSelectAllFiltered}
+                aria-label='Select all filtered transactions'
+              >
+                Select All ({filteredTransactions.length})
+              </Button>
+            )}
         </Box>
         <LedgerTable
           filterValue={filterValue}
+          showUncategorizedOnly={showUncategorizedOnly}
           collapsedGroups={collapsedGroups}
           setCollapsedGroups={setCollapsedGroups}
           selectedTransactions={selectedTransactions}

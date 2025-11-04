@@ -17,6 +17,7 @@ import { computeStatementMonth, dateCompareFn } from './utils';
 
 export default function LedgerTable({
   filterValue,
+  showUncategorizedOnly,
   collapsedGroups,
   setCollapsedGroups,
   selectedTransactions,
@@ -42,17 +43,32 @@ export default function LedgerTable({
   }, [sortedTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    if (!filterValue) {
-      return transactionsWithBalance;
+    // Start with all transactions
+    let filtered = transactionsWithBalance;
+
+    // Apply uncategorized filter
+    if (showUncategorizedOnly) {
+      filtered = filtered.filter((transaction) => !transaction.categoryId);
     }
-    return transactionsWithBalance.filter(
-      (transaction) =>
-        transaction.description
-          .toLowerCase()
-          .includes(filterValue.toLowerCase()) ||
-        selectedTransactions.has(transaction.id)
-    );
-  }, [filterValue, transactionsWithBalance, selectedTransactions]);
+
+    // Apply text filter
+    if (filterValue) {
+      filtered = filtered.filter(
+        (transaction) =>
+          transaction.description
+            .toLowerCase()
+            .includes(filterValue.toLowerCase()) ||
+          selectedTransactions.has(transaction.id)
+      );
+    }
+
+    return filtered;
+  }, [
+    filterValue,
+    showUncategorizedOnly,
+    transactionsWithBalance,
+    selectedTransactions,
+  ]);
 
   const toggleGroupCollapse = (groupId) => {
     setCollapsedGroups((prevCollapsedGroups) =>
@@ -242,6 +258,7 @@ export default function LedgerTable({
 
 LedgerTable.propTypes = {
   filterValue: PropTypes.string,
+  showUncategorizedOnly: PropTypes.bool,
   collapsedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
   setCollapsedGroups: PropTypes.func.isRequired,
   selectedTransactions: PropTypes.instanceOf(Set),
