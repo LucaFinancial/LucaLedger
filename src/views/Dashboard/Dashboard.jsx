@@ -1,5 +1,8 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  constants as accountConstants,
+  selectors as accountSelectors,
+} from '@/store/accounts';
 import {
   constants as transactionConstants,
   selectors as transactionSelectors,
@@ -55,10 +58,28 @@ export default function Dashboard() {
   // Create account lookup map for performance
   const accountMap = useMemo(() => {
     return accounts.reduce((map, account) => {
-      map[account.id] = account.name;
+      map[account.id] = { name: account.name, type: account.type };
       return map;
     }, {});
   }, [accounts]);
+
+  // Helper function to determine if a transaction represents an expense
+  // For checking/savings: negative amount = expense
+  // For credit cards: positive amount = expense (charge), negative = payment
+  const isExpenseTransaction = (tx) => {
+    const account = accountMap[tx.accountId];
+    if (!account) return tx.amount < 0;
+
+    if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+      return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
+    }
+    return tx.amount < 0; // For checking/savings, negative is expense
+  };
+
+  // Helper function to get the display color for a transaction
+  const getTransactionColor = (tx) => {
+    return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
+  };
 
   // Filter transactions by time period
   const recentTransactions = useMemo(() => {
@@ -96,17 +117,33 @@ export default function Dashboard() {
 
   // Calculate current month totals
   const currentMonthTotals = useMemo(() => {
-    const income = currentMonthTransactions
-      .filter((tx) => tx.amount > 0)
-      .reduce((sum, tx) => sum + tx.amount, 0);
-    const expenses = Math.abs(
-      currentMonthTransactions
-        .filter((tx) => tx.amount < 0)
-        .reduce((sum, tx) => sum + tx.amount, 0)
-    );
+    let income = 0;
+    let expenses = 0;
+
+    currentMonthTransactions.forEach((tx) => {
+      const account = accountMap[tx.accountId];
+      if (!account) return;
+
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+        // For credit cards: positive = charge (expense), negative = payment (income)
+        if (tx.amount > 0) {
+          expenses += tx.amount;
+        } else {
+          income += Math.abs(tx.amount);
+        }
+      } else {
+        // For checking/savings: positive = deposit (income), negative = withdrawal (expense)
+        if (tx.amount > 0) {
+          income += tx.amount;
+        } else {
+          expenses += Math.abs(tx.amount);
+        }
+      }
+    });
+
     const netFlow = income - expenses;
     return { income, expenses, netFlow };
-  }, [currentMonthTransactions]);
+  }, [currentMonthTransactions, accountMap]);
 
   // Future transactions
   const futureTransactions = useMemo(() => {
@@ -130,19 +167,31 @@ export default function Dashboard() {
 
   // Calculate future totals
   const futureTotals = useMemo(() => {
-    const scheduled = futureTransactions.reduce(
-      (sum, tx) => sum + tx.amount,
-      0
-    );
+    let scheduled = 0;
+
+    futureTransactions.forEach((tx) => {
+      const account = accountMap[tx.accountId];
+      if (!account) return;
+
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+        // For credit cards: positive = charge (expense), negative = payment (income)
+        // Net impact: charges increase debt (negative impact), payments decrease debt (positive impact)
+        scheduled -= tx.amount;
+      } else {
+        // For checking/savings: positive = income, negative = expense
+        scheduled += tx.amount;
+      }
+    });
+
     return { scheduled };
-  }, [futureTransactions]);
+  }, [futureTransactions, accountMap]);
 
   const formatCurrency = (amount) => {
     return `$${doublePrecisionFormatString(centsToDollars(amount))}`;
   };
 
   const getAccountName = (accountId) => {
-    return accountMap[accountId] || 'Unknown Account';
+    return accountMap[accountId]?.name || 'Unknown Account';
   };
 
   return (
@@ -230,7 +279,7 @@ export default function Dashboard() {
                       <TableCell
                         align='right'
                         sx={{
-                          color: tx.amount >= 0 ? 'success.main' : 'error.main',
+                          color: getTransactionColor(tx),
                           fontWeight: 'bold',
                         }}
                       >
@@ -545,7 +594,7 @@ export default function Dashboard() {
                       <TableCell
                         align='right'
                         sx={{
-                          color: tx.amount >= 0 ? 'success.main' : 'error.main',
+                          color: getTransactionColor(tx),
                           fontWeight: 'bold',
                         }}
                       >
