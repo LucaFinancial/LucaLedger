@@ -1,5 +1,8 @@
 import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  constants as accountConstants,
+  selectors as accountSelectors,
+} from '@/store/accounts';
 import {
   constants as transactionConstants,
   selectors as transactionSelectors,
@@ -32,7 +35,7 @@ import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import BetaBanner from '@/components/BetaBanner';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -55,10 +58,47 @@ export default function Dashboard() {
   // Create account lookup map for performance
   const accountMap = useMemo(() => {
     return accounts.reduce((map, account) => {
-      map[account.id] = account.name;
+      map[account.id] = { name: account.name, type: account.type };
       return map;
     }, {});
   }, [accounts]);
+
+  // Helper function to determine if a transaction represents an expense
+  // For checking/savings: negative amount = expense
+  // For credit cards: positive amount = expense (charge), negative = payment
+  const isExpenseTransaction = useCallback(
+    (tx) => {
+      const account = accountMap[tx.accountId];
+      if (!account) return tx.amount < 0;
+
+      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+        return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
+      }
+      return tx.amount < 0; // For checking/savings, negative is expense
+    },
+    [accountMap]
+  );
+
+  // Helper function to get the display color for a transaction
+  const getTransactionColor = useCallback(
+    (tx) => {
+      return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
+    },
+    [isExpenseTransaction]
+  );
+
+  // Helper function to categorize transaction as income or expense amount
+  // Returns { income: number, expense: number } with absolute values
+  const categorizeTransaction = useCallback(
+    (tx) => {
+      const absAmount = Math.abs(tx.amount);
+      if (isExpenseTransaction(tx)) {
+        return { income: 0, expense: absAmount };
+      }
+      return { income: absAmount, expense: 0 };
+    },
+    [isExpenseTransaction]
+  );
 
   // Filter transactions by time period
   const recentTransactions = useMemo(() => {
@@ -96,17 +136,19 @@ export default function Dashboard() {
 
   // Calculate current month totals
   const currentMonthTotals = useMemo(() => {
-    const income = currentMonthTransactions
-      .filter((tx) => tx.amount > 0)
-      .reduce((sum, tx) => sum + tx.amount, 0);
-    const expenses = Math.abs(
-      currentMonthTransactions
-        .filter((tx) => tx.amount < 0)
-        .reduce((sum, tx) => sum + tx.amount, 0)
-    );
+    let income = 0;
+    let expenses = 0;
+
+    currentMonthTransactions.forEach((tx) => {
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
+      income += txIncome;
+      expenses += txExpense;
+    });
+
     const netFlow = income - expenses;
     return { income, expenses, netFlow };
-  }, [currentMonthTransactions]);
+  }, [currentMonthTransactions, categorizeTransaction]);
 
   // Future transactions
   const futureTransactions = useMemo(() => {
@@ -130,19 +172,32 @@ export default function Dashboard() {
 
   // Calculate future totals
   const futureTotals = useMemo(() => {
-    const scheduled = futureTransactions.reduce(
-      (sum, tx) => sum + tx.amount,
-      0
-    );
+    let income = 0;
+    let expenses = 0;
+
+    futureTransactions.forEach((tx) => {
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
+      income += txIncome;
+      expenses += txExpense;
+    });
+
+    const scheduled = income - expenses;
     return { scheduled };
-  }, [futureTransactions]);
+  }, [futureTransactions, categorizeTransaction]);
 
   const formatCurrency = (amount) => {
     return `$${doublePrecisionFormatString(centsToDollars(amount))}`;
   };
 
+  // Format transaction amount as absolute value (no negative sign)
+  // The color already indicates if it's income (green) or expense (red)
+  const formatTransactionAmount = (amount) => {
+    return formatCurrency(Math.abs(amount));
+  };
+
   const getAccountName = (accountId) => {
-    return accountMap[accountId] || 'Unknown Account';
+    return accountMap[accountId]?.name || 'Unknown Account';
   };
 
   return (
@@ -230,11 +285,11 @@ export default function Dashboard() {
                       <TableCell
                         align='right'
                         sx={{
-                          color: tx.amount >= 0 ? 'success.main' : 'error.main',
+                          color: getTransactionColor(tx),
                           fontWeight: 'bold',
                         }}
                       >
-                        {formatCurrency(tx.amount)}
+                        {formatTransactionAmount(tx.amount)}
                       </TableCell>
                     </TableRow>
                   ))
@@ -545,11 +600,11 @@ export default function Dashboard() {
                       <TableCell
                         align='right'
                         sx={{
-                          color: tx.amount >= 0 ? 'success.main' : 'error.main',
+                          color: getTransactionColor(tx),
                           fontWeight: 'bold',
                         }}
                       >
-                        {formatCurrency(tx.amount)}
+                        {formatTransactionAmount(tx.amount)}
                       </TableCell>
                     </TableRow>
                   ))
