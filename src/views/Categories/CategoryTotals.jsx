@@ -159,6 +159,14 @@ export default function CategoryTotals({ category }) {
 
     // Calculate subcategory breakdown
     const subTotals = category.subcategories.map((subcategory) => {
+      // Get unique transactions that have this subcategory in splits or categoryId
+      const subTransactionsSet = new Set();
+      categoryTransactions.forEach((t) => {
+        if (getAmountForCategory(t, subcategory.id) !== 0) {
+          subTransactionsSet.add(t.id);
+        }
+      });
+
       const subPastTransactions = pastTransactions.filter(
         (t) => getAmountForCategory(t, subcategory.id) !== 0
       );
@@ -185,7 +193,7 @@ export default function CategoryTotals({ category }) {
         pastTotal,
         futureTotal,
         total: pastTotal + futureTotal,
-        count: subPastTransactions.length + subFutureTransactions.length,
+        count: subTransactionsSet.size, // Use unique count
       };
     });
 

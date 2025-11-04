@@ -24,8 +24,8 @@ const splitSchema = {
     },
     amount: {
       type: 'number',
-      minimum: 0,
-      description: 'Split amount in integer minor units (cents)',
+      exclusiveMinimum: 0,
+      description: 'Split amount in integer minor units (cents), must be > 0',
     },
   },
   required: ['id', 'categoryId', 'amount'],

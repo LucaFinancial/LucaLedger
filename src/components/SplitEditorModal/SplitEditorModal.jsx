@@ -136,8 +136,8 @@ export default function SplitEditorModal({
         newErrors[split.id] = 'Category required';
         isValid = false;
       }
-      if (split.amount < 0) {
-        newErrors[split.id] = 'Amount must be >= 0';
+      if (split.amount <= 0) {
+        newErrors[split.id] = 'Amount must be > 0';
         isValid = false;
       }
     });
