@@ -7,6 +7,7 @@ import { getActiveDEK } from '@/crypto/keyManager';
 import {
   storeEncryptedRecord,
   getAllEncryptedRecords,
+  db,
 } from '@/crypto/database';
 import { EncryptionStatus } from './encryption';
 
@@ -78,20 +79,20 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
     handleEncryptedPersistence(action, state);
   } else if (!isEncrypted) {
     // Fall back to localStorage persistence
-    // Exclude categories from persistence (they are loaded from config)
+    // Exclude encryption from persistence
     // Ensure accounts is in the correct object format before saving
     // eslint-disable-next-line no-unused-vars
-    const { categories, ...stateWithoutCategories } = state;
+    const { encryption, ...stateWithoutEncryption } = state;
     const stateToSave = {
-      ...stateWithoutCategories,
-      accounts: Array.isArray(stateWithoutCategories.accounts)
+      ...stateWithoutEncryption,
+      accounts: Array.isArray(stateWithoutEncryption.accounts)
         ? {
-            data: stateWithoutCategories.accounts,
+            data: stateWithoutEncryption.accounts,
             loading: false,
             error: null,
             loadingAccountIds: [],
           }
-        : stateWithoutCategories.accounts,
+        : stateWithoutEncryption.accounts,
     };
     localStorage.setItem('reduxState', JSON.stringify(stateToSave));
   }
@@ -133,6 +134,46 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'transactions/removeTransaction') {
     // Note: Deletes are handled immediately in the actions
   }
+
+  // Handle category actions
+  if (action.type === 'categories/addCategory') {
+    queueWrite('categories', action.payload.id, action.payload);
+  } else if (action.type === 'categories/updateCategory') {
+    queueWrite('categories', action.payload.id, action.payload);
+  } else if (action.type === 'categories/removeCategory') {
+    // Note: Deletes are handled immediately in the actions
+  } else if (action.type === 'categories/setCategories') {
+    // When setting all categories, clear existing and add new ones
+    const dek = getActiveDEK();
+    if (dek) {
+      // Clear existing categories and add new ones
+      db.categories
+        .clear()
+        .then(() => {
+          // Store each category directly instead of queuing
+          const promises = action.payload.map((category) =>
+            storeEncryptedRecord('categories', category.id, category)
+          );
+          return Promise.all(promises);
+        })
+        .catch((error) => {
+          console.error('Failed to reset categories in IndexedDB:', error);
+        });
+    }
+    // For unencrypted mode, let the regular persistence handle it via the state update
+    // No special localStorage handling needed here - it will be handled by the main middleware logic
+  } else if (
+    action.type === 'categories/addSubcategory' ||
+    action.type === 'categories/updateSubcategory' ||
+    action.type === 'categories/removeSubcategory'
+  ) {
+    // For subcategory changes, save the parent category
+    const { categoryId } = action.payload;
+    const category = state.categories.find((cat) => cat.id === categoryId);
+    if (category) {
+      queueWrite('categories', categoryId, category);
+    }
+  }
 }
 
 /**
@@ -142,10 +183,12 @@ export async function loadEncryptedState(dek) {
   try {
     const accounts = await getAllEncryptedRecords('accounts', dek);
     const transactions = await getAllEncryptedRecords('transactions', dek);
+    const categories = await getAllEncryptedRecords('categories', dek);
 
     return {
       accounts: accounts || [],
       transactions: transactions || [],
+      categories: categories || [],
     };
   } catch (error) {
     console.error('Failed to load encrypted state:', error);

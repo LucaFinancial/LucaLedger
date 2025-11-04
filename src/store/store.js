@@ -127,12 +127,16 @@ const migrateState = (persistedState) => {
     }
   }
 
+  // Initialize categories with defaults if none exist (treat as user data like accounts)
+  if (!state.categories || state.categories.length === 0) {
+    state.categories = categoriesData.categories;
+    console.log('Initialized default categories as user data');
+    needsPersist = true;
+  }
+
   if (needsPersist) {
     localStorage.setItem('reduxState', JSON.stringify(state));
   }
-
-  // Always include categories from config (they are not persisted)
-  state.categories = categoriesData.categories;
 
   return state;
 };
