@@ -290,7 +290,7 @@ export default function Categories() {
                   <AccordionDetails>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       {/* Subcategories List */}
-                      <Box sx={{ flexShrink: 0, width: 220 }}>
+                      <Box sx={{ flexShrink: 0, width: 300 }}>
                         <Box
                           sx={{
                             mb: 1,
@@ -311,12 +311,14 @@ export default function Categories() {
                           </IconButton>
                         </Box>
                         {category.subcategories.length > 0 ? (
-                          <List sx={{ pl: 2 }}>
+                          <List sx={{ py: 0, pl: 0 }}>
                             {category.subcategories.map((subcategory) => (
                               <ListItem
                                 key={subcategory.id}
                                 sx={{
-                                  py: 1,
+                                  py: 0.5,
+                                  pl: 2,
+                                  pr: 10, // Add right padding to prevent overlap with buttons
                                   borderLeft: '3px solid',
                                   borderColor: 'primary.main',
                                   mb: 0.5,
