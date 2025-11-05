@@ -73,27 +73,7 @@ export default function Landing() {
           >
             Welcome to Luca Ledger
           </Typography>
-          <Typography
-            variant='h5'
-            color='text.secondary'
-            paragraph
-            sx={{ maxWidth: '800px', mx: 'auto', fontWeight: 400 }}
-          >
-            A simple, powerful personal finance management application for
-            tracking your expenses across multiple accounts.
-          </Typography>
         </Box>
-
-        {/* Overview Section */}
-        <Section title='Overview'>
-          <Typography paragraph>
-            Luca Ledger is a React-based personal finance management application
-            designed to help you track expenses, manage multiple accounts, and
-            maintain a clear picture of your financial health. The application
-            supports multiple account types including Checking, Savings, and
-            Credit Card accounts.
-          </Typography>
-        </Section>
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
