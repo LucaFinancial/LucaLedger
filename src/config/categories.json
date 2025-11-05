@@ -380,6 +380,38 @@
           "name": "Unknown"
         }
       ]
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000000",
+      "slug": "utilities",
+      "name": "Utilities",
+      "subcategories": [
+        {
+          "id": "0000000e-0000-0000-0000-000000000001",
+          "slug": "utilities-gas-electric",
+          "name": "Gas & Electric"
+        },
+        {
+          "id": "0000000e-0000-0000-0000-000000000002",
+          "slug": "utilities-water-sewer",
+          "name": "Water & Sewer"
+        },
+        {
+          "id": "0000000e-0000-0000-0000-000000000003",
+          "slug": "utilities-trash-recycling",
+          "name": "Trash & Recycling"
+        },
+        {
+          "id": "0000000e-0000-0000-0000-000000000004",
+          "slug": "utilities-internet",
+          "name": "Internet"
+        },
+        {
+          "id": "0000000e-0000-0000-0000-000000000005",
+          "slug": "utilities-phone-mobile",
+          "name": "Phone & Mobile"
+        }
+      ]
     }
   ]
 }
