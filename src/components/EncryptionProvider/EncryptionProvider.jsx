@@ -36,6 +36,7 @@ import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
 import categoriesData from '@/config/categories.json';
@@ -59,6 +60,7 @@ export default function EncryptionProvider() {
   // Get Redux state for migration using proper selectors
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -296,6 +298,10 @@ export default function EncryptionProvider() {
         data: category,
       }));
       await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+    } else {
+      console.log(
+        `Loaded ${categoriesToLoad.length} custom categories from encrypted storage`
+      );
     }
 
     // Replace entire state (not add) to avoid duplicates from preloadedState
@@ -335,11 +341,12 @@ export default function EncryptionProvider() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
-    // Ensure accounts and transactions are arrays (defensive check)
+    // Ensure accounts, transactions, and categories are arrays (defensive check)
     const accountsArray = Array.isArray(accounts) ? accounts : [];
     const transactionsArray = Array.isArray(transactions) ? transactions : [];
+    const categoriesArray = Array.isArray(categories) ? categories : [];
 
-    // Prepare accounts and transactions for batch encryption
+    // Prepare accounts, transactions, and categories for batch encryption
     const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
@@ -350,9 +357,19 @@ export default function EncryptionProvider() {
       data: transaction,
     }));
 
+    const categoryRecords = categoriesArray.map((category) => ({
+      id: category.id,
+      data: category,
+    }));
+
     // Batch encrypt and store
     await batchStoreEncryptedRecords('accounts', accountRecords, dek);
     await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
+    await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+
+    console.log(
+      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesArray.length} categories to encrypted storage`
+    );
   };
 
   // Show migration or loading progress

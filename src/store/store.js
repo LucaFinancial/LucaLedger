@@ -127,8 +127,15 @@ const migrateState = (persistedState) => {
     }
   }
 
-  // Initialize categories with defaults if none exist (treat as user data like accounts)
-  if (!state.categories || state.categories.length === 0) {
+  // Initialize categories with defaults if none exist
+  // BUT only if we're not using encrypted storage (which manages its own categories)
+  // Check if IndexedDB exists and has the encrypted flag set
+  const hasEncryptionStatus = state.encryption?.status === 'encrypted';
+
+  if (
+    !hasEncryptionStatus &&
+    (!state.categories || state.categories.length === 0)
+  ) {
     state.categories = categoriesData.categories;
     console.log('Initialized default categories as user data');
     needsPersist = true;
