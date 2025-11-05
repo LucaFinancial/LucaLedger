@@ -5,47 +5,67 @@ import {
   Paper,
   Container,
   Link as MuiLink,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BetaBanner from '@/components/BetaBanner';
 
-// Reusable Section Component
-function Section({ title, children }) {
+// Reusable Section Component (now an Accordion)
+function Section({ title, children, defaultExpanded = true }) {
   return (
-    <Paper
-      elevation={3}
+    <Accordion
+      defaultExpanded={defaultExpanded}
       sx={{
-        p: 4,
-        mb: 3,
+        mb: 2,
         borderRadius: 2,
-        background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
-        '&:hover': {
+        '&:before': { display: 'none' },
+        boxShadow: 3,
+        '&.Mui-expanded': {
           boxShadow: 6,
         },
-        transition: 'box-shadow 0.3s ease-in-out',
       }}
     >
-      <Typography
-        variant='h4'
-        gutterBottom
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
         sx={{
-          fontWeight: 600,
-          color: 'primary.main',
-          borderBottom: '2px solid',
-          borderColor: 'primary.light',
-          pb: 1,
-          mb: 3,
+          backgroundColor: 'white',
+          borderRadius: '8px 8px 0 0',
+          '&:hover': {
+            backgroundColor: '#fafafa',
+          },
+          '& .MuiAccordionSummary-content': {
+            my: 2,
+          },
         }}
       >
-        {title}
-      </Typography>
-      {children}
-    </Paper>
+        <Typography
+          variant='h5'
+          sx={{
+            fontWeight: 600,
+            color: 'primary.main',
+          }}
+        >
+          {title}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        sx={{
+          p: 4,
+          background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+        }}
+      >
+        {children}
+      </AccordionDetails>
+    </Accordion>
   );
 }
 
 Section.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
+  defaultExpanded: PropTypes.bool,
 };
 
 export default function Landing() {
@@ -73,27 +93,7 @@ export default function Landing() {
           >
             Welcome to Luca Ledger
           </Typography>
-          <Typography
-            variant='h5'
-            color='text.secondary'
-            paragraph
-            sx={{ maxWidth: '800px', mx: 'auto', fontWeight: 400 }}
-          >
-            A simple, powerful personal finance management application for
-            tracking your expenses across multiple accounts.
-          </Typography>
         </Box>
-
-        {/* Overview Section */}
-        <Section title='Overview'>
-          <Typography paragraph>
-            Luca Ledger is a React-based personal finance management application
-            designed to help you track expenses, manage multiple accounts, and
-            maintain a clear picture of your financial health. The application
-            supports multiple account types including Checking, Savings, and
-            Credit Card accounts.
-          </Typography>
-        </Section>
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
@@ -313,107 +313,689 @@ export default function Landing() {
 
         {/* Coming Next Section */}
         <Section title='Coming Next'>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
-              <li>
-                <strong>Double-entry Accounting:</strong> Implement double-entry
-                bookkeeping for accurate financial tracking
-              </li>
-              <li>
-                <strong>Recurring Transactions:</strong> Set up automatic
-                recurring expenses and income to streamline your budgeting
-                process
-              </li>
-              <li>
-                <strong>Enhanced Reporting:</strong> More detailed financial
-                reports and visualizations to help you understand your spending
-                patterns
-              </li>
-              <li>
-                <strong>Budget Management:</strong> Set and track budgets for
-                different categories to stay on top of your spending goals
-              </li>
-            </ul>
+          <Typography
+            variant='body1'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            We&apos;re actively developing exciting new features to make Luca
+            Ledger even more powerful for managing your finances:
           </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Double-entry Accounting */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
+                '&:hover': {
+                  backgroundColor: '#e1bee7',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+              >
+                📚 Double-Entry Accounting
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Professional-grade double-entry bookkeeping system for accurate
+                financial tracking with debits, credits, and automatic balance
+                reconciliation.
+              </Typography>
+            </Paper>
+
+            {/* Recurring Transactions */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
+                '&:hover': {
+                  backgroundColor: '#b2ebf2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+              >
+                🔄 Recurring Transactions
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Automate your regular expenses and income with flexible
+                recurring transaction patterns. Set it once and let the system
+                handle monthly bills, subscriptions, and paychecks.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Reporting */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff5722',
+                backgroundColor: '#fbe9e7',
+                '&:hover': {
+                  backgroundColor: '#ffccbc',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#d84315', mb: 1 }}
+              >
+                📈 Advanced Reporting & Analytics
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Interactive charts, spending trends, and customizable reports to
+                visualize your financial health. Export reports as PDF or CSV
+                for tax preparation and record-keeping.
+              </Typography>
+            </Paper>
+
+            {/* Budget Management */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
+                '&:hover': {
+                  backgroundColor: '#c8e6c9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+              >
+                🎯 Smart Budget Management
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Create and monitor budgets by category with real-time alerts
+                when approaching limits. Track your progress and adjust spending
+                to meet your financial goals.
+              </Typography>
+            </Paper>
+
+            {/* Investment Account Tracking */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#673ab7',
+                backgroundColor: '#ede7f6',
+                '&:hover': {
+                  backgroundColor: '#d1c4e9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#512da8', mb: 1 }}
+              >
+                📊 Investment Account Tracking
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Monitor your investment portfolios alongside traditional
+                accounts. Track stocks, bonds, mutual funds, and other assets
+                with performance metrics and portfolio allocation insights.
+              </Typography>
+            </Paper>
+          </Box>
         </Section>
 
         {/* Data Storage Section */}
         <Section title='Data Storage & Privacy'>
-          <Typography paragraph>
-            Your data privacy is our top priority. Luca Ledger stores all your
-            financial data locally in your browser&apos;s IndexedDB. This means:
+          <Typography
+            variant='body1'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            Your data privacy is our top priority. Luca Ledger is built with a
+            privacy-first approach, ensuring your financial information stays
+            completely under your control.
           </Typography>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
-              <li>
-                <strong>Complete Privacy:</strong> Your financial data never
-                leaves your device and is not sent to any servers
-              </li>
-              <li>
-                <strong>Offline Capability:</strong> The application works
-                completely offline once loaded
-              </li>
-              <li>
-                <strong>Enhanced Security:</strong> Optional data encryption at
-                rest with industry standard AES-256 encryption to protect your
-                financial information
-              </li>
-              <li>
-                <strong>Improved Data Format:</strong> Version 2 introduces an
-                improved data structure with IndexedDB storage that provides
-                better performance, enhanced security, and more flexibility for
-                future features. If you&apos;re upgrading from an earlier
-                version, your data will be automatically migrated to the new
-                format on first load
-              </li>
-            </ul>
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Complete Privacy */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
+                '&:hover': {
+                  backgroundColor: '#c8e6c9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+              >
+                🔐 Complete Privacy
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Your financial data never leaves your device. Everything is
+                stored locally in your browser&apos;s IndexedDB with no servers,
+                no cloud sync, and no third-party access. Your data is yours
+                alone.
+              </Typography>
+            </Paper>
+
+            {/* Offline Capability */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
+                '&:hover': {
+                  backgroundColor: '#bbdefb',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+              >
+                ✈️ Works Completely Offline
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Once loaded, the application works entirely offline. Manage your
+                finances anywhere, anytime—no internet connection required. Your
+                data stays on your device and accessible only to you.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Security */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
+                '&:hover': {
+                  backgroundColor: '#ffe0b2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+              >
+                🛡️ Industry-Standard Encryption
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Optional AES-256 encryption at rest protects your financial data
+                with the same encryption standard used by banks and government
+                agencies. Enable encryption in settings for an additional layer
+                of security.
+              </Typography>
+            </Paper>
+
+            {/* Modern Data Format */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
+                '&:hover': {
+                  backgroundColor: '#e1bee7',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+              >
+                🚀 Modern Storage Architecture
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Version 2 uses IndexedDB for superior performance and
+                reliability compared to localStorage. Enjoy faster data access,
+                better organization, and seamless automatic migration from
+                earlier versions.
+              </Typography>
+            </Paper>
+
+            {/* Export & Backup */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
+                '&:hover': {
+                  backgroundColor: '#b2ebf2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+              >
+                💾 Easy Export & Backup
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Full control over your data with simple export and import
+                functionality. Create backups anytime, transfer between devices,
+                or keep archives for your records—all in a standard,
+                human-readable JSON format.
+              </Typography>
+            </Paper>
+          </Box>
         </Section>
 
         {/* How to Use Section */}
         <Section title='How to Use the App'>
-          <Typography paragraph>
-            Luca Ledger is designed to be intuitive and easy to use. This
-            section will guide you through the essential features to help you
-            manage your finances effectively.
+          <Typography
+            variant='body1'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            Luca Ledger is designed to be intuitive and easy to use. Follow
+            these steps to get started managing your finances effectively.
           </Typography>
-          <Typography component='div'>
-            <ol style={{ lineHeight: '2' }}>
-              <li>
-                <strong>Create Your First Account:</strong> Navigate to the{' '}
-                <MuiLink
-                  href='/accounts'
-                  underline='hover'
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Step 1 */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'flex-start',
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#eeeeee',
+                },
+                transition: 'background-color 0.2s ease-in-out',
+              }}
+            >
+              <Box
+                sx={{
+                  minWidth: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.25rem',
+                }}
+              >
+                1
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h6'
+                  sx={{ fontWeight: 600, mb: 1 }}
                 >
-                  Accounts
-                </MuiLink>{' '}
-                page and click &quot;Create New Account&quot; to set up a
-                checking, savings, or credit card account.
-              </li>
-              <li>
-                <strong>Add Transactions:</strong> Click on any account to view
-                its ledger and add, edit, or categorize transactions.
-              </li>
-              <li>
-                <strong>View Your Dashboard:</strong> Visit the{' '}
-                <MuiLink
-                  href='/dashboard'
-                  underline='hover'
+                  Create Your First Account
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
                 >
-                  Dashboard
-                </MuiLink>{' '}
-                to see an overview of all your accounts and current balances.
-              </li>
-              <li>
-                <strong>Track Your Spending:</strong> Use the balance cards to
-                monitor checking, savings, and credit card totals at a glance.
-              </li>
-              <li>
-                <strong>Manage Your Data:</strong> Use the save/load
-                functionality in the header to backup or restore your data.
-              </li>
-            </ol>
-          </Typography>
+                  Navigate to the{' '}
+                  <MuiLink
+                    href='/accounts'
+                    underline='hover'
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Accounts
+                  </MuiLink>{' '}
+                  page and click &quot;Create New Account&quot; to set up a
+                  checking, savings, or credit card account. Give it a
+                  meaningful name and set the initial balance to get started.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Step 2 */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'flex-start',
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#eeeeee',
+                },
+                transition: 'background-color 0.2s ease-in-out',
+              }}
+            >
+              <Box
+                sx={{
+                  minWidth: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.25rem',
+                }}
+              >
+                2
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h6'
+                  sx={{ fontWeight: 600, mb: 1 }}
+                >
+                  Add and Manage Transactions
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                >
+                  Click on any account card to open its ledger. Add new
+                  transactions with descriptions, amounts, dates, and
+                  categories. Edit or delete existing transactions as needed.
+                  Use transaction statuses (Complete, Scheduled, Planned) to
+                  track future expenses.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Step 3 */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'flex-start',
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#eeeeee',
+                },
+                transition: 'background-color 0.2s ease-in-out',
+              }}
+            >
+              <Box
+                sx={{
+                  minWidth: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.25rem',
+                }}
+              >
+                3
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h6'
+                  sx={{ fontWeight: 600, mb: 1 }}
+                >
+                  Organize with Categories
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                >
+                  Visit the{' '}
+                  <MuiLink
+                    href='/categories'
+                    underline='hover'
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Categories
+                  </MuiLink>{' '}
+                  page to create custom categories and subcategories for your
+                  transactions. Organize expenses by type (groceries, utilities,
+                  entertainment) to gain insights into your spending patterns.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Step 4 */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'flex-start',
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#eeeeee',
+                },
+                transition: 'background-color 0.2s ease-in-out',
+              }}
+            >
+              <Box
+                sx={{
+                  minWidth: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.25rem',
+                }}
+              >
+                4
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h6'
+                  sx={{ fontWeight: 600, mb: 1 }}
+                >
+                  Monitor Your Financial Dashboard
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                >
+                  Check the{' '}
+                  <MuiLink
+                    href='/dashboard'
+                    underline='hover'
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Dashboard
+                  </MuiLink>{' '}
+                  regularly to see an overview of all your accounts, current
+                  balances, recent activity, and spending breakdowns by
+                  category. Track your financial health at a glance.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Step 5 */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'flex-start',
+                p: 2.5,
+                borderRadius: 2,
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#eeeeee',
+                },
+                transition: 'background-color 0.2s ease-in-out',
+              }}
+            >
+              <Box
+                sx={{
+                  minWidth: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '1.25rem',
+                }}
+              >
+                5
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant='h6'
+                  sx={{ fontWeight: 600, mb: 1 }}
+                >
+                  Backup and Restore Your Data
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                >
+                  Use the save/load functionality in the navigation menu to
+                  export your data as a backup file. Keep regular backups to
+                  protect your financial records and enable easy transfer
+                  between devices or browsers.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Pro Tips */}
+            <Paper
+              elevation={2}
+              sx={{
+                p: 3,
+                mt: 2,
+                backgroundColor: '#e3f2fd',
+                borderLeft: '4px solid #2196f3',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 2 }}
+              >
+                💡 Pro Tips
+              </Typography>
+              <Box
+                component='ul'
+                sx={{
+                  m: 0,
+                  pl: 3,
+                  '& li': { mb: 1.5, color: 'text.secondary' },
+                }}
+              >
+                <li>
+                  <Typography variant='body2'>
+                    Use the bulk edit feature to quickly categorize multiple
+                    transactions at once
+                  </Typography>
+                </li>
+                <li>
+                  <Typography variant='body2'>
+                    Set transaction statuses to &quot;Scheduled&quot; for
+                    upcoming bills to plan ahead
+                  </Typography>
+                </li>
+                <li>
+                  <Typography variant='body2'>
+                    Enable encryption in{' '}
+                    <MuiLink
+                      href='/settings'
+                      underline='hover'
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Settings
+                    </MuiLink>{' '}
+                    for an extra layer of security
+                  </Typography>
+                </li>
+                <li>
+                  <Typography variant='body2'>
+                    Create subcategories to track specific spending areas within
+                    broader categories
+                  </Typography>
+                </li>
+                <li>
+                  <Typography variant='body2'>
+                    Review your dashboard weekly to stay on top of your
+                    financial health
+                  </Typography>
+                </li>
+              </Box>
+            </Paper>
+          </Box>
         </Section>
       </Container>
     </Box>
