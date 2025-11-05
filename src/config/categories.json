@@ -292,6 +292,11 @@
           "id": "0000000a-0000-0000-0000-000000000004",
           "slug": "financial-transfers",
           "name": "Transfers"
+        },
+        {
+          "id": "0000000a-0000-0000-0000-000000000005",
+          "slug": "financial-rewards-rebates",
+          "name": "Rewards & Rebates"
         }
       ]
     },
