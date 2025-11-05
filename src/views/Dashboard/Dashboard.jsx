@@ -117,7 +117,8 @@ export default function Dashboard() {
             txDate.isSame(dateRanges.recentStart, 'day')) &&
           (txDate.isBefore(dateRanges.todayEnd) ||
             txDate.isSame(dateRanges.todayEnd, 'day')) &&
-          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+          (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
+            tx.status === transactionConstants.TransactionStatusEnum.PENDING)
         );
       })
       .sort((a, b) => {
@@ -215,19 +216,47 @@ export default function Dashboard() {
 
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
-    let income = 0;
-    let expenses = 0;
+    let scheduledTotal = 0;
+    let plannedTotal = 0;
 
     futureTransactions.forEach((tx) => {
       const { income: txIncome, expense: txExpense } =
         categorizeTransaction(tx);
-      income += txIncome;
-      expenses += txExpense;
+      const netFlow = txIncome - txExpense;
+
+      if (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED) {
+        scheduledTotal += netFlow;
+      } else if (
+        tx.status === transactionConstants.TransactionStatusEnum.PLANNED
+      ) {
+        plannedTotal += netFlow;
+      }
     });
 
-    const scheduled = income - expenses;
-    return { scheduled };
+    return { scheduled: scheduledTotal, planned: plannedTotal };
   }, [futureTransactions, categorizeTransaction]);
+
+  // Calculate recent totals (for last 14 days section)
+  const recentTotals = useMemo(() => {
+    let completedTotal = 0;
+    let pendingTotal = 0;
+
+    recentTransactions.forEach((tx) => {
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
+      const netFlow = txIncome - txExpense;
+
+      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
+        completedTotal += netFlow;
+      } else if (
+        tx.status === transactionConstants.TransactionStatusEnum.PENDING
+      ) {
+        pendingTotal += netFlow;
+      }
+    });
+
+    return { completed: completedTotal, pending: pendingTotal };
+  }, [recentTransactions, categorizeTransaction]);
 
   // Calculate remaining current month pending/scheduled/planned transactions
   const remainingMonthTotals = useMemo(() => {
@@ -319,19 +348,75 @@ export default function Dashboard() {
             '&:hover': { backgroundColor: '#ffe0b2' },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <HistoryIcon sx={{ color: '#ff9800' }} />
-            <Typography
-              variant='h6'
-              sx={{ fontWeight: 'bold' }}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              width: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <HistoryIcon sx={{ color: '#ff9800' }} />
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 'bold' }}
+              >
+                Recent Activity
+              </Typography>
+              <Chip
+                label={`Last 14 Days`}
+                size='small'
+                sx={{ backgroundColor: '#ff9800', color: 'white' }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                ml: 'auto',
+                mr: 2,
+              }}
             >
-              Recent Activity
-            </Typography>
-            <Chip
-              label={`Last 14 Days`}
-              size='small'
-              sx={{ backgroundColor: '#ff9800', color: 'white' }}
-            />
+              <Box>
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ mr: 0.5 }}
+                >
+                  Completed:
+                </Typography>
+                <Typography
+                  variant='body2'
+                  sx={{
+                    color: '#9e9e9e',
+                    fontWeight: 'bold',
+                    display: 'inline',
+                  }}
+                >
+                  {formatCurrency(recentTotals.completed)}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ mr: 0.5 }}
+                >
+                  Pending:
+                </Typography>
+                <Typography
+                  variant='body2'
+                  sx={{
+                    color: '#ff9800',
+                    fontWeight: 'bold',
+                    display: 'inline',
+                  }}
+                >
+                  {formatCurrency(recentTotals.pending)}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </AccordionSummary>
         <AccordionDetails>
@@ -348,6 +433,9 @@ export default function Dashboard() {
                   <TableCell>
                     <strong>Description</strong>
                   </TableCell>
+                  <TableCell>
+                    <strong>Status</strong>
+                  </TableCell>
                   <TableCell align='right'>
                     <strong>Amount</strong>
                   </TableCell>
@@ -357,7 +445,7 @@ export default function Dashboard() {
                 {recentTransactions.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={4}
+                      colSpan={5}
                       align='center'
                       sx={{ py: 3, color: 'text.secondary' }}
                     >
@@ -375,6 +463,23 @@ export default function Dashboard() {
                       </TableCell>
                       <TableCell>{getAccountName(tx.accountId)}</TableCell>
                       <TableCell>{tx.description}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={tx.status}
+                          size='small'
+                          sx={{
+                            backgroundColor:
+                              tx.status ===
+                              transactionConstants.TransactionStatusEnum
+                                .COMPLETE
+                                ? '#9e9e9e'
+                                : '#ff9800',
+                            color: 'white',
+                            textTransform: 'capitalize',
+                            minWidth: '90px',
+                          }}
+                        />
+                      </TableCell>
                       <TableCell
                         align='right'
                         sx={{
@@ -409,44 +514,78 @@ export default function Dashboard() {
             '&:hover': { backgroundColor: '#c8e6c9' },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <EventIcon sx={{ color: '#4caf50' }} />
-            <Typography
-              variant='h6'
-              sx={{ fontWeight: 'bold' }}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              width: '100%',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <EventIcon sx={{ color: '#4caf50' }} />
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 'bold' }}
+              >
+                Upcoming Activity
+              </Typography>
+              <Chip
+                label={`Next 30 Days`}
+                size='small'
+                sx={{ backgroundColor: '#4caf50', color: 'white' }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                ml: 'auto',
+                mr: 2,
+              }}
             >
-              Upcoming Activity
-            </Typography>
-            <Chip
-              label={`Next 30 Days`}
-              size='small'
-              sx={{ backgroundColor: '#4caf50', color: 'white' }}
-            />
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box sx={{ mb: 2 }}>
-            <Card sx={{ backgroundColor: '#f1f8f4', mb: 2 }}>
-              <CardContent>
+              <Box>
                 <Typography
-                  variant='body2'
-                  color='textSecondary'
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ mr: 0.5 }}
                 >
-                  Total Scheduled
+                  Scheduled:
                 </Typography>
                 <Typography
-                  variant='h5'
+                  variant='body2'
                   sx={{
-                    color: futureTotals.scheduled >= 0 ? '#4caf50' : '#f44336',
+                    color: '#2196f3',
                     fontWeight: 'bold',
+                    display: 'inline',
                   }}
                 >
                   {formatCurrency(futureTotals.scheduled)}
                 </Typography>
-              </CardContent>
-            </Card>
+              </Box>
+              <Box>
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ mr: 0.5 }}
+                >
+                  Planned:
+                </Typography>
+                <Typography
+                  variant='body2'
+                  sx={{
+                    color: '#4caf50',
+                    fontWeight: 'bold',
+                    display: 'inline',
+                  }}
+                >
+                  {formatCurrency(futureTotals.planned)}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
-
+        </AccordionSummary>
+        <AccordionDetails>
           <TableContainer>
             <Table size='small'>
               <TableHead>
@@ -499,10 +638,11 @@ export default function Dashboard() {
                               tx.status ===
                               transactionConstants.TransactionStatusEnum
                                 .SCHEDULED
-                                ? '#4caf50'
-                                : '#2196f3',
+                                ? '#2196f3'
+                                : '#4caf50',
                             color: 'white',
                             textTransform: 'capitalize',
+                            minWidth: '90px',
                           }}
                         />
                       </TableCell>
@@ -1113,6 +1253,12 @@ export default function Dashboard() {
                       borderTop: '1px solid #90caf9',
                     }}
                   >
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                    >
+                      Balance {totals.pending !== totals.current && '(Pending)'}
+                    </Typography>
                     <Box
                       sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}
                     >
