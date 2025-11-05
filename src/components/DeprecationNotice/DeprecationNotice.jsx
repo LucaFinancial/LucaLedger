@@ -30,7 +30,7 @@ export default function DeprecationNotice() {
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
         >
-          ⚠️ Version 1 is No Longer Maintained
+          Version 1 is No Longer Maintained
         </Typography>
         <Typography
           variant='body2'
