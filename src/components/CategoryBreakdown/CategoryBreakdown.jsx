@@ -7,9 +7,12 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  IconButton,
 } from '@mui/material';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import {
   constants as transactionConstants,
   selectors as transactionSelectors,
@@ -52,6 +55,7 @@ const COLORS = [
 export default function CategoryBreakdown() {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const allCategories = useSelector(categorySelectors.selectAllCategories);
+  const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
   // Calculate category breakdown for current month
   const categoryData = useMemo(() => {
@@ -86,10 +90,9 @@ export default function CategoryBreakdown() {
       return true;
     });
 
-    // Calculate totals by category (only expenses, amount < 0)
+    // Calculate totals by category and subcategory (only expenses, amount < 0)
     const categoryTotals = new Map();
-    let totalExpenses = 0;
-    let actualExpenses = 0;
+    let currentExpenses = 0;
     let projectedExpenses = 0;
 
     periodTransactions.forEach((tx) => {
@@ -97,61 +100,105 @@ export default function CategoryBreakdown() {
       if (tx.amount >= 0) return;
 
       const expenseAmount = Math.abs(tx.amount);
-      totalExpenses += expenseAmount;
 
       const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
-      const isActual = txDate.isBefore(today) || txDate.isSame(today, 'day');
+      const isCurrent =
+        (txDate.isBefore(today) || txDate.isSame(today, 'day')) &&
+        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE;
 
-      if (
-        isActual &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-      ) {
-        actualExpenses += expenseAmount;
-      } else {
-        projectedExpenses += expenseAmount;
+      if (isCurrent) {
+        currentExpenses += expenseAmount;
       }
 
-      // Find category using lookup map
+      // All transactions in current month contribute to projected total
+      projectedExpenses += expenseAmount;
+
+      // Find category and subcategory
       const categoryId = tx.categoryId;
       if (!categoryId) return;
 
-      const categoryInfo = categoryMap.get(categoryId);
-      if (!categoryInfo) return;
+      // Find which parent category this transaction belongs to
+      let parentCategory = null;
+      let isSubcategory = false;
+      let subcategoryInfo = null;
 
-      if (!categoryTotals.has(categoryInfo.id)) {
-        categoryTotals.set(categoryInfo.id, {
-          id: categoryInfo.id,
-          name: categoryInfo.name,
+      for (const cat of allCategories) {
+        if (cat.id === categoryId) {
+          // This is a parent category
+          parentCategory = cat;
+          break;
+        }
+        // Check if it's a subcategory
+        const subcat = cat.subcategories.find((s) => s.id === categoryId);
+        if (subcat) {
+          parentCategory = cat;
+          subcategoryInfo = subcat;
+          isSubcategory = true;
+          break;
+        }
+      }
+
+      if (!parentCategory) return;
+
+      // Update parent category totals
+      if (!categoryTotals.has(parentCategory.id)) {
+        categoryTotals.set(parentCategory.id, {
+          id: parentCategory.id,
+          name: parentCategory.name,
           total: 0,
-          actual: 0,
+          current: 0,
           projected: 0,
           count: 0,
+          subcategories: new Map(),
         });
       }
 
-      const catData = categoryTotals.get(categoryInfo.id);
-      catData.total += expenseAmount;
+      const catData = categoryTotals.get(parentCategory.id);
+      catData.projected += expenseAmount;
       catData.count += 1;
 
-      if (
-        isActual &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-      ) {
-        catData.actual += expenseAmount;
-      } else {
-        catData.projected += expenseAmount;
+      if (isCurrent) {
+        catData.current += expenseAmount;
+      }
+
+      // If this is a subcategory, also track subcategory totals
+      if (isSubcategory && subcategoryInfo) {
+        if (!catData.subcategories.has(subcategoryInfo.id)) {
+          catData.subcategories.set(subcategoryInfo.id, {
+            id: subcategoryInfo.id,
+            name: subcategoryInfo.name,
+            total: 0,
+            current: 0,
+            projected: 0,
+            count: 0,
+          });
+        }
+
+        const subcatData = catData.subcategories.get(subcategoryInfo.id);
+        subcatData.projected += expenseAmount;
+        subcatData.count += 1;
+
+        if (isCurrent) {
+          subcatData.current += expenseAmount;
+        }
       }
     });
 
-    // Convert to array and sort by total (highest first)
+    // Convert to array and sort by projected (highest first)
     const categoryArray = Array.from(categoryTotals.values())
-      .filter((cat) => cat.total > 0)
-      .sort((a, b) => b.total - a.total);
+      .map((cat) => ({
+        ...cat,
+        subcategories: Array.from(cat.subcategories.values()).sort(
+          (a, b) => b.projected - a.projected
+        ),
+      }))
+      .filter((cat) => cat.projected > 0)
+      .sort((a, b) => b.projected - a.projected);
 
     return {
       categories: categoryArray,
-      totalExpenses: centsToDollars(totalExpenses),
-      actualExpenses: centsToDollars(actualExpenses),
+      totalExpenses: centsToDollars(projectedExpenses),
+      currentExpenses: centsToDollars(currentExpenses),
       projectedExpenses: centsToDollars(projectedExpenses),
       periodLabel,
     };
@@ -195,7 +242,7 @@ export default function CategoryBreakdown() {
   // Prepare data for pie chart
   const pieChartData = categoryData.categories.map((cat) => ({
     name: cat.name,
-    value: centsToDollars(cat.total),
+    value: centsToDollars(cat.projected),
   }));
 
   return (
@@ -229,21 +276,21 @@ export default function CategoryBreakdown() {
             flex: 1,
             minWidth: 150,
             p: 2,
-            backgroundColor: '#fef1f0',
-            border: '1px solid #f44336',
+            backgroundColor: '#e3f2fd',
+            border: '1px solid #2196f3',
           }}
         >
           <Typography
             variant='caption'
             color='text.secondary'
           >
-            Total Expenses
+            Current
           </Typography>
           <Typography
             variant='h5'
-            sx={{ color: '#f44336', fontWeight: 'bold' }}
+            sx={{ color: '#2196f3', fontWeight: 'bold' }}
           >
-            {formatCurrency(categoryData.totalExpenses)}
+            {formatCurrency(categoryData.currentExpenses)}
           </Typography>
         </Paper>
         <Paper
@@ -251,30 +298,8 @@ export default function CategoryBreakdown() {
             flex: 1,
             minWidth: 150,
             p: 2,
-            backgroundColor: '#fff3e0',
-            border: '1px solid #ff9800',
-          }}
-        >
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
-            Actual
-          </Typography>
-          <Typography
-            variant='h5'
-            sx={{ color: '#ff9800', fontWeight: 'bold' }}
-          >
-            {formatCurrency(categoryData.actualExpenses)}
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{
-            flex: 1,
-            minWidth: 150,
-            p: 2,
-            backgroundColor: '#e8f5e9',
-            border: '1px solid #4caf50',
+            backgroundColor: '#f3e5f5',
+            border: '1px solid #9c27b0',
           }}
         >
           <Typography
@@ -285,7 +310,7 @@ export default function CategoryBreakdown() {
           </Typography>
           <Typography
             variant='h5'
-            sx={{ color: '#4caf50', fontWeight: 'bold' }}
+            sx={{ color: '#9c27b0', fontWeight: 'bold' }}
           >
             {formatCurrency(categoryData.projectedExpenses)}
           </Typography>
@@ -352,19 +377,13 @@ export default function CategoryBreakdown() {
                   align='right'
                   sx={{ fontWeight: 700 }}
                 >
-                  Actual
+                  Current
                 </TableCell>
                 <TableCell
                   align='right'
                   sx={{ fontWeight: 700 }}
                 >
                   Projected
-                </TableCell>
-                <TableCell
-                  align='right'
-                  sx={{ fontWeight: 700 }}
-                >
-                  Total
                 </TableCell>
                 <TableCell
                   align='right'
@@ -377,52 +396,156 @@ export default function CategoryBreakdown() {
             <TableBody>
               {categoryData.categories.map((cat, index) => {
                 const percentage =
-                  categoryData.totalExpenses > 0
-                    ? (centsToDollars(cat.total) / categoryData.totalExpenses) *
+                  categoryData.projectedExpenses > 0
+                    ? (centsToDollars(cat.projected) /
+                        categoryData.projectedExpenses) *
                       100
                     : 0;
+                const isExpanded = expandedCategoryId === cat.id;
+                const hasSubcategories =
+                  cat.subcategories && cat.subcategories.length > 0;
+
                 return (
-                  <TableRow key={cat.id}>
-                    <TableCell>
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
+                  <>
+                    <TableRow
+                      key={cat.id}
+                      onClick={() =>
+                        hasSubcategories &&
+                        setExpandedCategoryId(isExpanded ? null : cat.id)
+                      }
+                      sx={{
+                        cursor: hasSubcategories ? 'pointer' : 'default',
+                        '&:hover': hasSubcategories
+                          ? { backgroundColor: '#f5f5f5' }
+                          : undefined,
+                      }}
+                    >
+                      <TableCell>
                         <Box
                           sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            backgroundColor: COLORS[index % COLORS.length],
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
                           }}
-                        />
-                        {cat.name}
-                      </Box>
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ color: '#ff9800', fontWeight: 500 }}
-                    >
-                      {formatCurrency(centsToDollars(cat.actual))}
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ color: '#4caf50', fontWeight: 500 }}
-                    >
-                      {formatCurrency(centsToDollars(cat.projected))}
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ color: '#f44336', fontWeight: 600 }}
-                    >
-                      {formatCurrency(centsToDollars(cat.total))}
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ color: 'text.secondary' }}
-                    >
-                      {percentage.toFixed(1)}%
-                    </TableCell>
-                  </TableRow>
+                        >
+                          {hasSubcategories && (
+                            <IconButton
+                              size='small'
+                              sx={{ p: 0 }}
+                            >
+                              {isExpanded ? (
+                                <KeyboardArrowDownIcon fontSize='small' />
+                              ) : (
+                                <KeyboardArrowRightIcon fontSize='small' />
+                              )}
+                            </IconButton>
+                          )}
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: COLORS[index % COLORS.length],
+                              ml: hasSubcategories ? 0 : 3,
+                            }}
+                          />
+                          {cat.name}
+                        </Box>
+                      </TableCell>
+                      <TableCell
+                        align='right'
+                        sx={{ color: '#2196f3', fontWeight: 500 }}
+                      >
+                        {formatCurrency(centsToDollars(cat.current))}
+                      </TableCell>
+                      <TableCell
+                        align='right'
+                        sx={{ color: '#9c27b0', fontWeight: 500 }}
+                      >
+                        {formatCurrency(centsToDollars(cat.projected))}
+                      </TableCell>
+                      <TableCell
+                        align='right'
+                        sx={{ color: 'text.secondary' }}
+                      >
+                        {percentage.toFixed(1)}%
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Subcategories */}
+                    {hasSubcategories &&
+                      isExpanded &&
+                      cat.subcategories.map((subcat) => {
+                        const subcatPercentage =
+                          cat.projected > 0
+                            ? (centsToDollars(subcat.projected) /
+                                centsToDollars(cat.projected)) *
+                              100
+                            : 0;
+                        return (
+                          <TableRow
+                            key={subcat.id}
+                            sx={{ backgroundColor: '#fafafa' }}
+                          >
+                            <TableCell sx={{ pl: 8 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: '50%',
+                                    backgroundColor:
+                                      COLORS[index % COLORS.length],
+                                    opacity: 0.6,
+                                  }}
+                                />
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
+                                  {subcat.name}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: '#2196f3',
+                                fontWeight: 400,
+                                fontSize: '0.875rem',
+                              }}
+                            >
+                              {formatCurrency(centsToDollars(subcat.current))}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: '#9c27b0',
+                                fontWeight: 400,
+                                fontSize: '0.875rem',
+                              }}
+                            >
+                              {formatCurrency(centsToDollars(subcat.projected))}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: 'text.secondary',
+                                fontSize: '0.875rem',
+                              }}
+                            >
+                              {subcatPercentage.toFixed(1)}%
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </>
                 );
               })}
             </TableBody>
