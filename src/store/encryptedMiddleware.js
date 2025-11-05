@@ -148,10 +148,20 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'categories/updateCategory') {
     queueWrite('categories', action.payload.id, action.payload);
   } else if (action.type === 'categories/removeCategory') {
-    // Delete from IndexedDB immediately
+    // Delete from IndexedDB immediately (category and all its children)
     const categoryId = action.payload;
+    // Delete the category itself
     db.categories.delete(categoryId).catch((error) => {
       console.error('Failed to delete category from IndexedDB:', error);
+    });
+    // Delete all subcategories (children) of this category
+    const children = state.categories.filter(
+      (cat) => cat.parentId === categoryId
+    );
+    children.forEach((child) => {
+      db.categories.delete(child.id).catch((error) => {
+        console.error('Failed to delete subcategory from IndexedDB:', error);
+      });
     });
   } else if (action.type === 'categories/setCategories') {
     // When setting all categories, clear existing and add new ones
@@ -173,17 +183,6 @@ function handleEncryptedPersistence(action, state) {
     }
     // For unencrypted mode, let the regular persistence handle it via the state update
     // No special localStorage handling needed here - it will be handled by the main middleware logic
-  } else if (
-    action.type === 'categories/addSubcategory' ||
-    action.type === 'categories/updateSubcategory' ||
-    action.type === 'categories/removeSubcategory'
-  ) {
-    // For subcategory changes, save the parent category
-    const { categoryId } = action.payload;
-    const category = state.categories.find((cat) => cat.id === categoryId);
-    if (category) {
-      queueWrite('categories', categoryId, category);
-    }
   }
 }
 

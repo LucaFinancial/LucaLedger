@@ -42,7 +42,7 @@ export default function Ledger() {
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
-  const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
+  const flatCategories = useSelector(categorySelectors.selectAllCategories);
 
   // Find transactions with invalid categories
   const invalidCategoryCount = useMemo(() => {

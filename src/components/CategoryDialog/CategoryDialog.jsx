@@ -24,7 +24,7 @@ export default function CategoryDialog({
   onCategoryCreated,
 }) {
   const dispatch = useDispatch();
-  const categories = useSelector(selectors.selectAllCategories);
+  const categories = useSelector(selectors.selectCategoriesHierarchical);
   const nameInputRef = useRef(null);
 
   const [name, setName] = useState('');

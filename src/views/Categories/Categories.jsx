@@ -38,7 +38,7 @@ import categoriesData from '@/config/categories.json';
 
 export default function Categories() {
   const dispatch = useDispatch();
-  const categories = useSelector(selectors.selectAllCategories);
+  const categories = useSelector(selectors.selectCategoriesHierarchical);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState(0); // 0 = List View, 1 = Tree View

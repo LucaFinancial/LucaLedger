@@ -4,9 +4,6 @@ export {
   addCategory,
   updateCategory,
   removeCategory,
-  addSubcategory,
-  updateSubcategory,
-  removeSubcategory,
 } from './slice';
 export * as actions from './actions';
 export * as selectors from './selectors';
