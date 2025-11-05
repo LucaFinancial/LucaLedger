@@ -21,6 +21,13 @@ export const useAccountBalances = (accounts) => {
       future: 0,
     };
 
+    const creditCardTotals = {
+      current: 0,
+      pending: 0,
+      scheduled: 0,
+      future: 0,
+    };
+
     const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
       transactionConstants.TransactionStatusEnum;
 
@@ -47,10 +54,16 @@ export const useAccountBalances = (accounts) => {
       };
 
       if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+        // For credit cards, track the balance separately
+        // Positive balance means money owed
         Object.keys(balances).forEach((key) => {
-          totals[key] -= Math.max(balances[key], 0);
+          creditCardTotals[key] += Math.abs(balances[key]);
         });
-      } else {
+      } else if (
+        account.type === accountConstants.AccountType.CHECKING ||
+        account.type === accountConstants.AccountType.SAVINGS
+      ) {
+        // Only include checking and savings in main totals
         Object.keys(balances).forEach((key) => {
           totals[key] += balances[key];
         });
@@ -59,7 +72,7 @@ export const useAccountBalances = (accounts) => {
       return { ...account, ...balances };
     });
 
-    return { accounts: processedAccounts, totals };
+    return { accounts: processedAccounts, totals, creditCardTotals };
   }, [accounts, allRelevantTransactions]);
 };
 

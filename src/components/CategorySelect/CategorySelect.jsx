@@ -27,7 +27,12 @@ export default function CategorySelect({
   const options = useMemo(() => {
     const opts = [];
 
-    categories.forEach((category) => {
+    // Sort categories alphabetically by name
+    const sortedCategories = [...categories].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    sortedCategories.forEach((category) => {
       // Add parent category
       opts.push({
         id: category.id,
@@ -37,8 +42,13 @@ export default function CategorySelect({
         group: category.name,
       });
 
+      // Sort subcategories alphabetically by name
+      const sortedSubcategories = [...category.subcategories].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
       // Add subcategories
-      category.subcategories.forEach((subcategory) => {
+      sortedSubcategories.forEach((subcategory) => {
         opts.push({
           id: subcategory.id,
           name: subcategory.name,
@@ -171,6 +181,35 @@ export default function CategorySelect({
         isOptionEqualToValue={(option, value) => {
           if (!option || !value) return false;
           return option.id === value.id;
+        }}
+        filterOptions={(options, state) => {
+          const inputValue = state.inputValue.toLowerCase();
+
+          // If no input, return all options
+          if (!inputValue) {
+            return options;
+          }
+
+          // Filter options based on search
+          return options.filter((option) => {
+            // Always show create options
+            if (option.isCreateOption) {
+              return true;
+            }
+
+            // Check if the option name matches
+            const nameMatches = option.name.toLowerCase().includes(inputValue);
+
+            // If this is a subcategory, also check if parent name matches
+            if (!option.isParent && option.parentName) {
+              const parentMatches = option.parentName
+                .toLowerCase()
+                .includes(inputValue);
+              return nameMatches || parentMatches;
+            }
+
+            return nameMatches;
+          });
         }}
         disableClearable={false}
         renderInput={(params) => {
