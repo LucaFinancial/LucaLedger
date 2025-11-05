@@ -412,6 +412,28 @@
           "name": "Phone & Mobile"
         }
       ]
+    },
+    {
+      "id": "0000000f-0000-0000-0000-000000000000",
+      "slug": "travel",
+      "name": "Travel",
+      "subcategories": [
+        {
+          "id": "0000000f-0000-0000-0000-000000000001",
+          "slug": "travel-flights-rental-cars",
+          "name": "Flights & Rental Cars"
+        },
+        {
+          "id": "0000000f-0000-0000-0000-000000000002",
+          "slug": "travel-hotels-lodging",
+          "name": "Hotels & Lodging"
+        },
+        {
+          "id": "0000000f-0000-0000-0000-000000000003",
+          "slug": "travel-supplies-equipment",
+          "name": "Supplies & Equipment"
+        }
+      ]
     }
   ]
 }
