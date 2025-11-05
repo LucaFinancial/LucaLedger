@@ -5,47 +5,67 @@ import {
   Paper,
   Container,
   Link as MuiLink,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BetaBanner from '@/components/BetaBanner';
 
-// Reusable Section Component
-function Section({ title, children }) {
+// Reusable Section Component (now an Accordion)
+function Section({ title, children, defaultExpanded = true }) {
   return (
-    <Paper
-      elevation={3}
+    <Accordion
+      defaultExpanded={defaultExpanded}
       sx={{
-        p: 4,
-        mb: 3,
+        mb: 2,
         borderRadius: 2,
-        background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
-        '&:hover': {
+        '&:before': { display: 'none' },
+        boxShadow: 3,
+        '&.Mui-expanded': {
           boxShadow: 6,
         },
-        transition: 'box-shadow 0.3s ease-in-out',
       }}
     >
-      <Typography
-        variant='h4'
-        gutterBottom
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
         sx={{
-          fontWeight: 600,
-          color: 'primary.main',
-          borderBottom: '2px solid',
-          borderColor: 'primary.light',
-          pb: 1,
-          mb: 3,
+          backgroundColor: 'white',
+          borderRadius: '8px 8px 0 0',
+          '&:hover': {
+            backgroundColor: '#fafafa',
+          },
+          '& .MuiAccordionSummary-content': {
+            my: 2,
+          },
         }}
       >
-        {title}
-      </Typography>
-      {children}
-    </Paper>
+        <Typography
+          variant='h5'
+          sx={{
+            fontWeight: 600,
+            color: 'primary.main',
+          }}
+        >
+          {title}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        sx={{
+          p: 4,
+          background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+        }}
+      >
+        {children}
+      </AccordionDetails>
+    </Accordion>
   );
 }
 
 Section.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
+  defaultExpanded: PropTypes.bool,
 };
 
 export default function Landing() {
