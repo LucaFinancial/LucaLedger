@@ -3,14 +3,22 @@ import {
   Warning as WarningIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { actions, selectors } from '@/store/accountsLegacy';
 
 export default function DeprecationNotice() {
   const [expanded, setExpanded] = useState(false);
+  const accounts = useSelector(selectors.selectAccounts);
 
   const handleToggleExpand = () => {
     setExpanded(!expanded);
+  };
+
+  const handleSaveData = () => {
+    actions.saveAllAccounts(accounts);
   };
 
   return (
@@ -73,8 +81,19 @@ export default function DeprecationNotice() {
             >
               <ol style={{ marginTop: 0, paddingLeft: '20px' }}>
                 <li>
-                  <strong>Export your data:</strong> In Version 1, use the save
-                  function to download your ledger data as a file.
+                  <strong>Export your data:</strong> Click the button below to
+                  download your ledger data as a file.
+                  <Box sx={{ mt: 1, mb: 2 }}>
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      size='small'
+                      startIcon={<DownloadIcon />}
+                      onClick={handleSaveData}
+                    >
+                      Save All Accounts
+                    </Button>
+                  </Box>
                 </li>
                 <li>
                   <strong>Visit Version 2:</strong> Go to{' '}
