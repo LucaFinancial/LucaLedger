@@ -194,26 +194,21 @@
         },
         {
           "id": "00000007-0000-0000-0000-000000000002",
-          "slug": "personal-hair-grooming",
-          "name": "Hair & Grooming"
-        },
-        {
-          "id": "00000007-0000-0000-0000-000000000003",
           "slug": "personal-toiletries-cosmetics",
           "name": "Toiletries & Cosmetics"
         },
         {
-          "id": "00000007-0000-0000-0000-000000000004",
+          "id": "00000007-0000-0000-0000-000000000003",
           "slug": "personal-laundry-dry-cleaning",
           "name": "Laundry & Dry Cleaning"
         },
         {
-          "id": "00000007-0000-0000-0000-000000000005",
+          "id": "00000007-0000-0000-0000-000000000004",
           "slug": "personal-electronics-tech",
           "name": "Electronics & Tech"
         },
         {
-          "id": "00000007-0000-0000-0000-000000000006",
+          "id": "00000007-0000-0000-0000-000000000005",
           "slug": "personal-services-care",
           "name": "Services & Care"
         }
