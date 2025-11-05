@@ -293,28 +293,169 @@ export default function Landing() {
 
         {/* Coming Next Section */}
         <Section title='Coming Next'>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
-              <li>
-                <strong>Double-entry Accounting:</strong> Implement double-entry
-                bookkeeping for accurate financial tracking
-              </li>
-              <li>
-                <strong>Recurring Transactions:</strong> Set up automatic
-                recurring expenses and income to streamline your budgeting
-                process
-              </li>
-              <li>
-                <strong>Enhanced Reporting:</strong> More detailed financial
-                reports and visualizations to help you understand your spending
-                patterns
-              </li>
-              <li>
-                <strong>Budget Management:</strong> Set and track budgets for
-                different categories to stay on top of your spending goals
-              </li>
-            </ul>
+          <Typography
+            variant='body1'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            We&apos;re actively developing exciting new features to make Luca
+            Ledger even more powerful for managing your finances:
           </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Double-entry Accounting */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
+                '&:hover': {
+                  backgroundColor: '#e1bee7',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+              >
+                📚 Double-Entry Accounting
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Professional-grade double-entry bookkeeping system for accurate
+                financial tracking with debits, credits, and automatic balance
+                reconciliation.
+              </Typography>
+            </Paper>
+
+            {/* Recurring Transactions */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
+                '&:hover': {
+                  backgroundColor: '#b2ebf2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+              >
+                🔄 Recurring Transactions
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Automate your regular expenses and income with flexible
+                recurring transaction patterns. Set it once and let the system
+                handle monthly bills, subscriptions, and paychecks.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Reporting */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff5722',
+                backgroundColor: '#fbe9e7',
+                '&:hover': {
+                  backgroundColor: '#ffccbc',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#d84315', mb: 1 }}
+              >
+                📈 Advanced Reporting & Analytics
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Interactive charts, spending trends, and customizable reports to
+                visualize your financial health. Export reports as PDF or CSV
+                for tax preparation and record-keeping.
+              </Typography>
+            </Paper>
+
+            {/* Budget Management */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
+                '&:hover': {
+                  backgroundColor: '#c8e6c9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+              >
+                🎯 Smart Budget Management
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Create and monitor budgets by category with real-time alerts
+                when approaching limits. Track your progress and adjust spending
+                to meet your financial goals.
+              </Typography>
+            </Paper>
+
+            {/* Investment Account Tracking */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#673ab7',
+                backgroundColor: '#ede7f6',
+                '&:hover': {
+                  backgroundColor: '#d1c4e9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#512da8', mb: 1 }}
+              >
+                📊 Investment Account Tracking
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Monitor your investment portfolios alongside traditional
+                accounts. Track stocks, bonds, mutual funds, and other assets
+                with performance metrics and portfolio allocation insights.
+              </Typography>
+            </Paper>
+          </Box>
         </Section>
 
         {/* Data Storage Section */}
