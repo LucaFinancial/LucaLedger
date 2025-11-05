@@ -105,6 +105,13 @@ export default function Dashboard() {
     return allTransactions
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+        const account = accountMap[tx.accountId];
+
+        // Exclude credit card accounts
+        if (account?.type === accountConstants.AccountType.CREDIT_CARD) {
+          return false;
+        }
+
         return (
           (txDate.isAfter(dateRanges.recentStart) ||
             txDate.isSame(dateRanges.recentStart, 'day')) &&
@@ -118,7 +125,7 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateB.diff(dateA);
       });
-  }, [allTransactions, dateRanges]);
+  }, [allTransactions, dateRanges, accountMap]);
 
   // Current month transactions
   const currentMonthTransactions = useMemo(() => {
