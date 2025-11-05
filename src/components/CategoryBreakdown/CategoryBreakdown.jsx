@@ -1,8 +1,6 @@
 import {
   Box,
   Paper,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
   Table,
   TableBody,
@@ -10,7 +8,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import {
   constants as transactionConstants,
@@ -49,14 +47,13 @@ const COLORS = [
 
 /**
  * CategoryBreakdown component displays expense breakdown by category
- * with multiple time period options: past month, current month, next month, YTD, projected year
+ * for the current month only
  */
 export default function CategoryBreakdown() {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const allCategories = useSelector(categorySelectors.selectAllCategories);
-  const [timePeriod, setTimePeriod] = useState('current-month');
 
-  // Calculate category breakdown for selected time period
+  // Calculate category breakdown for current month
   const categoryData = useMemo(() => {
     const now = dayjs();
     const today = now.startOf('day');
@@ -71,50 +68,12 @@ export default function CategoryBreakdown() {
       });
     });
 
-    let startDate;
-    let endDate;
-    let includeFuture = false;
-    let periodLabel = '';
+    // Current month date range
+    const startDate = now.startOf('month');
+    const endDate = now.endOf('month');
+    const periodLabel = now.format('MMMM YYYY');
 
-    switch (timePeriod) {
-      case 'past-month':
-        startDate = now.subtract(1, 'month').startOf('month');
-        endDate = now.subtract(1, 'month').endOf('month');
-        periodLabel = startDate.format('MMMM YYYY');
-        includeFuture = false;
-        break;
-      case 'current-month':
-        startDate = now.startOf('month');
-        endDate = now.endOf('month');
-        periodLabel = now.format('MMMM YYYY');
-        includeFuture = true; // Mix of actual and projected
-        break;
-      case 'next-month':
-        startDate = now.add(1, 'month').startOf('month');
-        endDate = now.add(1, 'month').endOf('month');
-        periodLabel = startDate.format('MMMM YYYY');
-        includeFuture = true; // All projected
-        break;
-      case 'ytd':
-        startDate = now.startOf('year');
-        endDate = today;
-        periodLabel = `YTD ${now.format('YYYY')}`;
-        includeFuture = false;
-        break;
-      case 'year-projected':
-        startDate = now.startOf('year');
-        endDate = now.endOf('year');
-        periodLabel = `Projected ${now.format('YYYY')}`;
-        includeFuture = true;
-        break;
-      default:
-        startDate = now.startOf('month');
-        endDate = now.endOf('month');
-        periodLabel = now.format('MMMM YYYY');
-        includeFuture = true;
-    }
-
-    // Filter transactions for the selected time period
+    // Filter transactions for the current month
     const periodTransactions = allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
 
@@ -123,29 +82,8 @@ export default function CategoryBreakdown() {
         return false;
       }
 
-      // For YTD, only include completed transactions
-      if (timePeriod === 'ytd') {
-        return (
-          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-        );
-      }
-
-      // For future-only periods, include scheduled/planned
-      if (timePeriod === 'next-month') {
-        return (
-          tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
-          tx.status === transactionConstants.TransactionStatusEnum.PLANNED ||
-          tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
-        );
-      }
-
-      // For mixed periods (current month, year projected), include all
-      if (includeFuture) {
-        return true;
-      }
-
-      // For past month, only completed
-      return tx.status === transactionConstants.TransactionStatusEnum.COMPLETE;
+      // Include all transaction types for current month
+      return true;
     });
 
     // Calculate totals by category (only expenses, amount < 0)
@@ -216,15 +154,8 @@ export default function CategoryBreakdown() {
       actualExpenses: centsToDollars(actualExpenses),
       projectedExpenses: centsToDollars(projectedExpenses),
       periodLabel,
-      includeFuture,
     };
-  }, [allTransactions, allCategories, timePeriod]);
-
-  const handleTimePeriodChange = (event, newPeriod) => {
-    if (newPeriod !== null) {
-      setTimePeriod(newPeriod);
-    }
-  };
+  }, [allTransactions, allCategories]);
 
   const formatCurrency = (amount) => {
     // Handle NaN, null, undefined by defaulting to 0
@@ -244,34 +175,12 @@ export default function CategoryBreakdown() {
           border: '1px solid #e0e0e0',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            mb: 2,
-            flexWrap: 'wrap',
-            gap: 2,
-          }}
+        <Typography
+          variant='h6'
+          sx={{ fontWeight: 'bold', mb: 2 }}
         >
-          <Typography
-            variant='h6'
-            sx={{ fontWeight: 'bold' }}
-          >
-            Spending by Category
-          </Typography>
-          <ToggleButtonGroup
-            value={timePeriod}
-            exclusive
-            onChange={handleTimePeriodChange}
-            size='small'
-          >
-            <ToggleButton value='past-month'>Past Month</ToggleButton>
-            <ToggleButton value='current-month'>Current Month</ToggleButton>
-            <ToggleButton value='next-month'>Next Month</ToggleButton>
-            <ToggleButton value='ytd'>YTD</ToggleButton>
-            <ToggleButton value='year-projected'>Year Proj.</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+          Spending by Category
+        </Typography>
         <Typography
           variant='body1'
           color='text.secondary'
@@ -298,44 +207,21 @@ export default function CategoryBreakdown() {
         border: '1px solid #e0e0e0',
       }}
     >
-      {/* Header with title and time period toggle */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography
-            variant='h6'
-            sx={{ fontWeight: 'bold', mb: 0.5 }}
-          >
-            Spending by Category
-          </Typography>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
-            {categoryData.periodLabel}
-          </Typography>
-        </Box>
-        <ToggleButtonGroup
-          value={timePeriod}
-          exclusive
-          onChange={handleTimePeriodChange}
-          size='small'
+      {/* Header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant='h6'
+          sx={{ fontWeight: 'bold', mb: 0.5 }}
         >
-          <ToggleButton value='past-month'>Past Month</ToggleButton>
-          <ToggleButton value='current-month'>Current Month</ToggleButton>
-          <ToggleButton value='next-month'>Next Month</ToggleButton>
-          <ToggleButton value='ytd'>YTD</ToggleButton>
-          <ToggleButton value='year-projected'>Year Proj.</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
+          Spending by Category
+        </Typography>
+        <Typography
+          variant='body2'
+          color='text.secondary'
+        >
+          {categoryData.periodLabel}
+        </Typography>
+      </Box>{' '}
       {/* Summary Cards */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Paper
@@ -360,56 +246,51 @@ export default function CategoryBreakdown() {
             {formatCurrency(categoryData.totalExpenses)}
           </Typography>
         </Paper>
-        {categoryData.includeFuture && (
-          <>
-            <Paper
-              sx={{
-                flex: 1,
-                minWidth: 150,
-                p: 2,
-                backgroundColor: '#fff3e0',
-                border: '1px solid #ff9800',
-              }}
-            >
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
-                Actual
-              </Typography>
-              <Typography
-                variant='h5'
-                sx={{ color: '#ff9800', fontWeight: 'bold' }}
-              >
-                {formatCurrency(categoryData.actualExpenses)}
-              </Typography>
-            </Paper>
-            <Paper
-              sx={{
-                flex: 1,
-                minWidth: 150,
-                p: 2,
-                backgroundColor: '#e8f5e9',
-                border: '1px solid #4caf50',
-              }}
-            >
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
-                Projected
-              </Typography>
-              <Typography
-                variant='h5'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(categoryData.projectedExpenses)}
-              </Typography>
-            </Paper>
-          </>
-        )}
+        <Paper
+          sx={{
+            flex: 1,
+            minWidth: 150,
+            p: 2,
+            backgroundColor: '#fff3e0',
+            border: '1px solid #ff9800',
+          }}
+        >
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            Actual
+          </Typography>
+          <Typography
+            variant='h5'
+            sx={{ color: '#ff9800', fontWeight: 'bold' }}
+          >
+            {formatCurrency(categoryData.actualExpenses)}
+          </Typography>
+        </Paper>
+        <Paper
+          sx={{
+            flex: 1,
+            minWidth: 150,
+            p: 2,
+            backgroundColor: '#e8f5e9',
+            border: '1px solid #4caf50',
+          }}
+        >
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            Projected
+          </Typography>
+          <Typography
+            variant='h5'
+            sx={{ color: '#4caf50', fontWeight: 'bold' }}
+          >
+            {formatCurrency(categoryData.projectedExpenses)}
+          </Typography>
+        </Paper>
       </Box>
-
       {/* Chart and Table */}
       <Box
         sx={{
@@ -467,22 +348,18 @@ export default function CategoryBreakdown() {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-                {categoryData.includeFuture && (
-                  <>
-                    <TableCell
-                      align='right'
-                      sx={{ fontWeight: 700 }}
-                    >
-                      Actual
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ fontWeight: 700 }}
-                    >
-                      Projected
-                    </TableCell>
-                  </>
-                )}
+                <TableCell
+                  align='right'
+                  sx={{ fontWeight: 700 }}
+                >
+                  Actual
+                </TableCell>
+                <TableCell
+                  align='right'
+                  sx={{ fontWeight: 700 }}
+                >
+                  Projected
+                </TableCell>
                 <TableCell
                   align='right'
                   sx={{ fontWeight: 700 }}
@@ -521,22 +398,18 @@ export default function CategoryBreakdown() {
                         {cat.name}
                       </Box>
                     </TableCell>
-                    {categoryData.includeFuture && (
-                      <>
-                        <TableCell
-                          align='right'
-                          sx={{ color: '#ff9800', fontWeight: 500 }}
-                        >
-                          {formatCurrency(centsToDollars(cat.actual))}
-                        </TableCell>
-                        <TableCell
-                          align='right'
-                          sx={{ color: '#4caf50', fontWeight: 500 }}
-                        >
-                          {formatCurrency(centsToDollars(cat.projected))}
-                        </TableCell>
-                      </>
-                    )}
+                    <TableCell
+                      align='right'
+                      sx={{ color: '#ff9800', fontWeight: 500 }}
+                    >
+                      {formatCurrency(centsToDollars(cat.actual))}
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{ color: '#4caf50', fontWeight: 500 }}
+                    >
+                      {formatCurrency(centsToDollars(cat.projected))}
+                    </TableCell>
                     <TableCell
                       align='right'
                       sx={{ color: '#f44336', fontWeight: 600 }}
