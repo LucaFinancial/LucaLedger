@@ -70,6 +70,7 @@ export async function initializeEncryption(password, stayLoggedIn = false) {
   await storeMetadata('salt', uint8ArrayToBase64(salt));
   await storeMetadata('wrappedDEK', arrayBufferToBase64(wrappedKey));
   await storeMetadata('wrappedDEKIV', uint8ArrayToBase64(iv));
+  await storeMetadata('encryptionEnabled', true);
 
   // Set active DEK in memory
   setActiveDEK(dek);

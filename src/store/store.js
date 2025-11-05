@@ -3,10 +3,43 @@ import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
 import categoriesData from '@/config/categories.json';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+
+// Check if encryption is enabled by looking at IndexedDB
+// This is an async check, so we'll use a synchronous approach via localStorage flag
+const isEncryptionEnabled = () => {
+  // Check for a localStorage flag that indicates encryption is being used
+  // This is set by the EncryptionProvider when encryption is detected
+  return localStorage.getItem('encryptionActive') === 'true';
+};
 
 // Migration: One-time conversion of any remaining legacy data to normalized format
 const migrateState = (persistedState) => {
-  if (!persistedState) return {};
+  // For brand new users, initialize with proper structure
+  if (!persistedState) {
+    const isEncryptionActive = isEncryptionEnabled();
+
+    const initialState = {
+      accounts: {
+        data: [],
+        loading: false,
+        error: null,
+        loadingAccountIds: [],
+      },
+      transactions: [],
+      categories: isEncryptionActive ? [] : categoriesData.categories,
+    };
+
+    // Set schema version for new users
+    if (!isEncryptionActive) {
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+      console.log(
+        `Initialized new user with schema version ${CURRENT_SCHEMA_VERSION}`
+      );
+    }
+
+    return initialState;
+  }
 
   let state = { ...persistedState };
   let needsPersist = false;
@@ -129,11 +162,11 @@ const migrateState = (persistedState) => {
 
   // Initialize categories with defaults if none exist
   // BUT only if we're not using encrypted storage (which manages its own categories)
-  // Check if IndexedDB exists and has the encrypted flag set
-  const hasEncryptionStatus = state.encryption?.status === 'encrypted';
+  // Check if encryption is active via localStorage flag (set by EncryptionProvider)
+  const hasEncryptionActive = isEncryptionEnabled();
 
   if (
-    !hasEncryptionStatus &&
+    !hasEncryptionActive &&
     (!state.categories || state.categories.length === 0)
   ) {
     state.categories = categoriesData.categories;

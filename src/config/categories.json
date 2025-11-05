@@ -287,6 +287,11 @@
           "id": "0000000a-0000-0000-0000-000000000005",
           "slug": "financial-rewards-rebates",
           "name": "Rewards & Rebates"
+        },
+        {
+          "id": "0000000a-0000-0000-0000-000000000006",
+          "slug": "financial-student-loans",
+          "name": "Student Loans"
         }
       ]
     },

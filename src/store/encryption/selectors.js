@@ -5,8 +5,7 @@
 export const selectEncryptionStatus = (state) => state.encryption.status;
 export const selectAuthStatus = (state) => state.encryption.authStatus;
 export const selectShowPrompt = (state) => state.encryption.showPrompt;
-export const selectPromptDismissedAt = (state) =>
-  state.encryption.promptDismissedAt;
+export const selectDismissUntil = (state) => state.encryption.dismissUntil;
 export const selectSessionExpiresAt = (state) =>
   state.encryption.sessionExpiresAt;
 export const selectEncryptionError = (state) => state.encryption.error;
