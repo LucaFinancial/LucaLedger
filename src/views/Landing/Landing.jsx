@@ -460,35 +460,174 @@ export default function Landing() {
 
         {/* Data Storage Section */}
         <Section title='Data Storage & Privacy'>
-          <Typography paragraph>
-            Your data privacy is our top priority. Luca Ledger stores all your
-            financial data locally in your browser&apos;s IndexedDB. This means:
+          <Typography
+            variant='body1'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            Your data privacy is our top priority. Luca Ledger is built with a
+            privacy-first approach, ensuring your financial information stays
+            completely under your control.
           </Typography>
-          <Typography component='div'>
-            <ul style={{ lineHeight: '1.8' }}>
-              <li>
-                <strong>Complete Privacy:</strong> Your financial data never
-                leaves your device and is not sent to any servers
-              </li>
-              <li>
-                <strong>Offline Capability:</strong> The application works
-                completely offline once loaded
-              </li>
-              <li>
-                <strong>Enhanced Security:</strong> Optional data encryption at
-                rest with industry standard AES-256 encryption to protect your
-                financial information
-              </li>
-              <li>
-                <strong>Improved Data Format:</strong> Version 2 introduces an
-                improved data structure with IndexedDB storage that provides
-                better performance, enhanced security, and more flexibility for
-                future features. If you&apos;re upgrading from an earlier
-                version, your data will be automatically migrated to the new
-                format on first load
-              </li>
-            </ul>
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Complete Privacy */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
+                '&:hover': {
+                  backgroundColor: '#c8e6c9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+              >
+                🔐 Complete Privacy
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Your financial data never leaves your device. Everything is
+                stored locally in your browser&apos;s IndexedDB with no servers,
+                no cloud sync, and no third-party access. Your data is yours
+                alone.
+              </Typography>
+            </Paper>
+
+            {/* Offline Capability */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
+                '&:hover': {
+                  backgroundColor: '#bbdefb',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+              >
+                ✈️ Works Completely Offline
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Once loaded, the application works entirely offline. Manage your
+                finances anywhere, anytime—no internet connection required. Your
+                data stays on your device and accessible only to you.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Security */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
+                '&:hover': {
+                  backgroundColor: '#ffe0b2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+              >
+                🛡️ Industry-Standard Encryption
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Optional AES-256 encryption at rest protects your financial data
+                with the same encryption standard used by banks and government
+                agencies. Enable encryption in settings for an additional layer
+                of security.
+              </Typography>
+            </Paper>
+
+            {/* Modern Data Format */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
+                '&:hover': {
+                  backgroundColor: '#e1bee7',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+              >
+                🚀 Modern Storage Architecture
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Version 2 uses IndexedDB for superior performance and
+                reliability compared to localStorage. Enjoy faster data access,
+                better organization, and seamless automatic migration from
+                earlier versions.
+              </Typography>
+            </Paper>
+
+            {/* Export & Backup */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
+                '&:hover': {
+                  backgroundColor: '#b2ebf2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+              >
+                💾 Easy Export & Backup
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Full control over your data with simple export and import
+                functionality. Create backups anytime, transfer between devices,
+                or keep archives for your records—all in a standard,
+                human-readable JSON format.
+              </Typography>
+            </Paper>
+          </Box>
         </Section>
 
         {/* How to Use Section */}
