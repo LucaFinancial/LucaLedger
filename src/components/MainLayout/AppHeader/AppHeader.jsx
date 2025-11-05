@@ -1,7 +1,6 @@
 import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import VersionDisplay from '@/components/VersionDisplay';
 import NavItem from './NavItem';
 
 import { Home as HomeIcon } from '@mui/icons-material';
@@ -32,7 +31,6 @@ export default function AppHeader() {
         >
           Luca Ledger
         </Typography>
-        <VersionDisplay />
       </Toolbar>
     </AppBar>
   );
