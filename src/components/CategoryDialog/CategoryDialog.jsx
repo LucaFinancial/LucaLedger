@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { actions as categoryActions, selectors } from '@/store/categories';
 
@@ -25,6 +25,7 @@ export default function CategoryDialog({
 }) {
   const dispatch = useDispatch();
   const categories = useSelector(selectors.selectAllCategories);
+  const nameInputRef = useRef(null);
 
   const [name, setName] = useState('');
   const [selectedParent, setSelectedParent] = useState(null);
@@ -56,6 +57,19 @@ export default function CategoryDialog({
     }
     setErrors({});
   }, [open, category, subcategory, parentId, categories, prePopulateName]);
+
+  // Focus the name input when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Use a longer timeout to ensure the dialog animation is complete
+      const timer = setTimeout(() => {
+        if (nameInputRef.current) {
+          nameInputRef.current.focus();
+        }
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const validate = () => {
     const newErrors = {};
@@ -146,6 +160,13 @@ export default function CategoryDialog({
     onClose();
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSave();
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -162,12 +183,14 @@ export default function CategoryDialog({
       </DialogTitle>
       <DialogContent>
         <TextField
+          inputRef={nameInputRef}
           margin='dense'
           label='Name'
           type='text'
           fullWidth
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyDown={handleKeyDown}
           error={!!errors.name}
           helperText={errors.name}
           sx={{ mb: 2 }}
