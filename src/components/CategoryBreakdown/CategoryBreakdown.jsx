@@ -54,7 +54,9 @@ const COLORS = [
  */
 export default function CategoryBreakdown() {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
-  const allCategories = useSelector(categorySelectors.selectAllCategories);
+  const allCategories = useSelector(
+    categorySelectors.selectCategoriesHierarchical
+  );
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
   // Calculate category breakdown for current month

@@ -118,13 +118,21 @@ export async function getMetadata(key) {
 }
 
 /**
- * Check if database has any encrypted data
+ * Check if database has any encrypted data or if encryption is enabled
  * @returns {Promise<boolean>}
  */
 export async function hasEncryptedData() {
+  // First check if encryption is explicitly enabled via metadata flag
+  const encryptionEnabled = await getMetadata('encryptionEnabled');
+  if (encryptionEnabled) {
+    return true;
+  }
+
+  // Fall back to checking if there's actual encrypted data
   const accountCount = await db.accounts.count();
   const transactionCount = await db.transactions.count();
-  return accountCount > 0 || transactionCount > 0;
+  const categoryCount = await db.categories.count();
+  return accountCount > 0 || transactionCount > 0 || categoryCount > 0;
 }
 
 /**
@@ -134,6 +142,7 @@ export async function hasEncryptedData() {
 export async function clearAllData() {
   await db.accounts.clear();
   await db.transactions.clear();
+  await db.categories.clear();
   await db.metadata.clear();
 }
 

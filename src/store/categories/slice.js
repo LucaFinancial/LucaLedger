@@ -1,5 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * Categories are stored as a flat array where each item can be:
+ * - A parent category (parentId = null)
+ * - A subcategory (parentId = parent category's id)
+ */
 const categories = createSlice({
   name: 'categories',
   initialState: [], // Start empty, let store migration handle defaults
@@ -17,47 +22,16 @@ const categories = createSlice({
       }
     },
     removeCategory: (state, action) => {
-      return state.filter((cat) => cat.id !== action.payload);
-    },
-    addSubcategory: (state, action) => {
-      const { categoryId, subcategory } = action.payload;
-      const category = state.find((cat) => cat.id === categoryId);
-      if (category) {
-        category.subcategories.push(subcategory);
-      }
-    },
-    updateSubcategory: (state, action) => {
-      const { categoryId, subcategory } = action.payload;
-      const category = state.find((cat) => cat.id === categoryId);
-      if (category) {
-        const subIndex = category.subcategories.findIndex(
-          (sub) => sub.id === subcategory.id
-        );
-        if (subIndex !== -1) {
-          category.subcategories[subIndex] = subcategory;
-        }
-      }
-    },
-    removeSubcategory: (state, action) => {
-      const { categoryId, subcategoryId } = action.payload;
-      const category = state.find((cat) => cat.id === categoryId);
-      if (category) {
-        category.subcategories = category.subcategories.filter(
-          (sub) => sub.id !== subcategoryId
-        );
-      }
+      const categoryId = action.payload;
+      // Remove the category and all its children
+      return state.filter(
+        (cat) => cat.id !== categoryId && cat.parentId !== categoryId
+      );
     },
   },
 });
 
 export default categories.reducer;
 
-export const {
-  setCategories,
-  addCategory,
-  updateCategory,
-  removeCategory,
-  addSubcategory,
-  updateSubcategory,
-  removeSubcategory,
-} = categories.actions;
+export const { setCategories, addCategory, updateCategory, removeCategory } =
+  categories.actions;

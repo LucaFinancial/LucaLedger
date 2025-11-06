@@ -17,8 +17,10 @@ export default function CategorySelect({
   helperText = '',
   fullWidth = false,
 }) {
-  const categories = useSelector(categorySelectors.selectAllCategories);
-  const flatCategories = useSelector(categorySelectors.selectAllCategoriesFlat);
+  const categories = useSelector(
+    categorySelectors.selectCategoriesHierarchical
+  );
+  const flatCategories = useSelector(categorySelectors.selectAllCategories);
   const [inputValue, setInputValue] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [prePopulateName, setPrePopulateName] = useState('');

@@ -10,7 +10,7 @@ import {
   setEncryptionStatus,
   setAuthStatus,
   setShowPrompt,
-  setPromptDismissedAt,
+  setDismissUntil,
   setSessionExpiresAt,
   setError,
   EncryptionStatus,
@@ -36,18 +36,18 @@ import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
 import categoriesData from '@/config/categories.json';
 
-const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+const REMIND_LATER_MS = 36 * 60 * 60 * 1000; // 36 hours
+const DISMISS_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
 
 export default function EncryptionProvider() {
   const dispatch = useDispatch();
   const showPrompt = useSelector(encryptionSelectors.selectShowPrompt);
-  const promptDismissedAt = useSelector(
-    encryptionSelectors.selectPromptDismissedAt
-  );
+  const dismissUntil = useSelector(encryptionSelectors.selectDismissUntil);
 
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
@@ -59,6 +59,7 @@ export default function EncryptionProvider() {
   // Get Redux state for migration using proper selectors
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -68,6 +69,8 @@ export default function EncryptionProvider() {
       if (hasEncrypted) {
         // Data is encrypted, need to unlock
         dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
+        // Set flag for store initialization to avoid loading default categories
+        localStorage.setItem('encryptionActive', 'true');
 
         // Check if we have a valid session token - if so, try to auto-restore
         if (hasValidSessionToken()) {
@@ -104,9 +107,9 @@ export default function EncryptionProvider() {
         // Has unencrypted data, show prompt
         dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
 
-        // Check if we should show the prompt
-        const shouldShow =
-          !promptDismissedAt || Date.now() - promptDismissedAt >= TWO_DAYS_MS;
+        // Check if we should show the prompt (only if dismiss period has passed)
+        const now = Date.now();
+        const shouldShow = !dismissUntil || now >= dismissUntil;
         if (shouldShow) {
           dispatch(setShowPrompt(true));
         }
@@ -127,12 +130,17 @@ export default function EncryptionProvider() {
 
   const handleRemindLater = () => {
     dispatch(setShowPrompt(false));
+    // Set dismiss until 36 hours from now
+    const remindAt = Date.now() + REMIND_LATER_MS;
+    dispatch(setDismissUntil(remindAt));
     dispatch(setAuthStatus(AuthStatus.AUTHENTICATED)); // Allow access without encryption
   };
 
   const handleDismiss = () => {
     dispatch(setShowPrompt(false));
-    dispatch(setPromptDismissedAt(Date.now()));
+    // Set dismiss until 5 days from now
+    const dismissAt = Date.now() + DISMISS_MS;
+    dispatch(setDismissUntil(dismissAt));
     dispatch(setAuthStatus(AuthStatus.AUTHENTICATED)); // Allow access without encryption
   };
 
@@ -152,6 +160,9 @@ export default function EncryptionProvider() {
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
 
+      // Set schema version for encrypted storage
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+
       // Clear localStorage data (schema version is in dataSchemaVersion, not reduxState)
       const emptyState = {
         accounts: {
@@ -167,6 +178,8 @@ export default function EncryptionProvider() {
       // Update encryption status
       dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
+      // Set flag for store initialization
+      localStorage.setItem('encryptionActive', 'true');
       if (expiresAt) {
         dispatch(setSessionExpiresAt(expiresAt));
       }
@@ -180,6 +193,7 @@ export default function EncryptionProvider() {
       // Rollback
       await clearAllData();
       clearActiveDEK();
+      localStorage.removeItem('encryptionActive');
       dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
     }
@@ -296,6 +310,10 @@ export default function EncryptionProvider() {
         data: category,
       }));
       await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+    } else {
+      console.log(
+        `Loaded ${categoriesToLoad.length} custom categories from encrypted storage`
+      );
     }
 
     // Replace entire state (not add) to avoid duplicates from preloadedState
@@ -335,11 +353,12 @@ export default function EncryptionProvider() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
-    // Ensure accounts and transactions are arrays (defensive check)
+    // Ensure accounts, transactions, and categories are arrays (defensive check)
     const accountsArray = Array.isArray(accounts) ? accounts : [];
     const transactionsArray = Array.isArray(transactions) ? transactions : [];
+    const categoriesArray = Array.isArray(categories) ? categories : [];
 
-    // Prepare accounts and transactions for batch encryption
+    // Prepare accounts, transactions, and categories for batch encryption
     const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
@@ -350,9 +369,19 @@ export default function EncryptionProvider() {
       data: transaction,
     }));
 
+    const categoryRecords = categoriesArray.map((category) => ({
+      id: category.id,
+      data: category,
+    }));
+
     // Batch encrypt and store
     await batchStoreEncryptedRecords('accounts', accountRecords, dek);
     await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
+    await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+
+    console.log(
+      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesArray.length} categories to encrypted storage`
+    );
   };
 
   // Show migration or loading progress

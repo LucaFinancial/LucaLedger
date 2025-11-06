@@ -113,8 +113,11 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'accounts/updateAccount') {
     queueWrite('accounts', action.payload.id, action.payload);
   } else if (action.type === 'accounts/removeAccount') {
-    // Note: We don't handle deletes in the queue, they happen immediately
-    // This is handled in the actions themselves
+    // Delete from IndexedDB immediately
+    const accountId = action.payload;
+    db.accounts.delete(accountId).catch((error) => {
+      console.error('Failed to delete account from IndexedDB:', error);
+    });
   }
 
   // Handle transaction actions
@@ -132,7 +135,11 @@ function handleEncryptedPersistence(action, state) {
       }
     });
   } else if (action.type === 'transactions/removeTransaction') {
-    // Note: Deletes are handled immediately in the actions
+    // Delete from IndexedDB immediately
+    const transactionId = action.payload;
+    db.transactions.delete(transactionId).catch((error) => {
+      console.error('Failed to delete transaction from IndexedDB:', error);
+    });
   }
 
   // Handle category actions
@@ -141,7 +148,21 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'categories/updateCategory') {
     queueWrite('categories', action.payload.id, action.payload);
   } else if (action.type === 'categories/removeCategory') {
-    // Note: Deletes are handled immediately in the actions
+    // Delete from IndexedDB immediately (category and all its children)
+    const categoryId = action.payload;
+    // Delete the category itself
+    db.categories.delete(categoryId).catch((error) => {
+      console.error('Failed to delete category from IndexedDB:', error);
+    });
+    // Delete all subcategories (children) of this category
+    const children = state.categories.filter(
+      (cat) => cat.parentId === categoryId
+    );
+    children.forEach((child) => {
+      db.categories.delete(child.id).catch((error) => {
+        console.error('Failed to delete subcategory from IndexedDB:', error);
+      });
+    });
   } else if (action.type === 'categories/setCategories') {
     // When setting all categories, clear existing and add new ones
     const dek = getActiveDEK();
@@ -152,7 +173,7 @@ function handleEncryptedPersistence(action, state) {
         .then(() => {
           // Store each category directly instead of queuing
           const promises = action.payload.map((category) =>
-            storeEncryptedRecord('categories', category.id, category)
+            storeEncryptedRecord('categories', category.id, category, dek)
           );
           return Promise.all(promises);
         })
@@ -162,17 +183,6 @@ function handleEncryptedPersistence(action, state) {
     }
     // For unencrypted mode, let the regular persistence handle it via the state update
     // No special localStorage handling needed here - it will be handled by the main middleware logic
-  } else if (
-    action.type === 'categories/addSubcategory' ||
-    action.type === 'categories/updateSubcategory' ||
-    action.type === 'categories/removeSubcategory'
-  ) {
-    // For subcategory changes, save the parent category
-    const { categoryId } = action.payload;
-    const category = state.categories.find((cat) => cat.id === categoryId);
-    if (category) {
-      queueWrite('categories', categoryId, category);
-    }
   }
 }
 

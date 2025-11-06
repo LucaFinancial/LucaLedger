@@ -1,48 +1,44 @@
 import { createSelector } from '@reduxjs/toolkit';
 
 /**
- * Returns all categories
+ * Returns all categories (flat array)
  */
 export const selectAllCategories = (state) => state.categories;
 
 /**
- * Returns a flat list of all categories and subcategories
- * Useful for lookups and validation
- * Memoized to prevent unnecessary re-renders
+ * Returns only parent categories (no parentId)
  */
-export const selectAllCategoriesFlat = createSelector(
+export const selectParentCategories = createSelector(
   [selectAllCategories],
-  (categories) => {
-    const flat = [];
-
-    categories.forEach((category) => {
-      flat.push({
-        id: category.id,
-        slug: category.slug,
-        name: category.name,
-        isParent: true,
-      });
-
-      category.subcategories.forEach((subcategory) => {
-        flat.push({
-          id: subcategory.id,
-          slug: subcategory.slug,
-          name: subcategory.name,
-          parentId: category.id,
-          parentName: category.name,
-          isParent: false,
-        });
-      });
-    });
-
-    return flat;
-  }
+  (categories) => categories.filter((cat) => !cat.parentId)
 );
 
 /**
- * Returns a category (or subcategory) by ID
+ * Returns subcategories for a specific parent category
+ */
+export const selectSubcategoriesByParent = (parentId) =>
+  createSelector([selectAllCategories], (categories) =>
+    categories.filter((cat) => cat.parentId === parentId)
+  );
+
+/**
+ * Returns a category by ID
  */
 export const selectCategoryById = (categoryId) => (state) => {
-  const flatCategories = selectAllCategoriesFlat(state);
-  return flatCategories.find((cat) => cat.id === categoryId);
+  return state.categories.find((cat) => cat.id === categoryId);
 };
+
+/**
+ * Returns categories in hierarchical structure (for backward compatibility)
+ * This creates the nested structure that UI components expect
+ */
+export const selectCategoriesHierarchical = createSelector(
+  [selectAllCategories],
+  (categories) => {
+    const parents = categories.filter((cat) => !cat.parentId);
+    return parents.map((parent) => ({
+      ...parent,
+      subcategories: categories.filter((cat) => cat.parentId === parent.id),
+    }));
+  }
+);

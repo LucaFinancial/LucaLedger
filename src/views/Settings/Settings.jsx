@@ -25,10 +25,12 @@ import {
   setError,
   AuthStatus,
 } from '@/store/encryption';
+import { selectors as categorySelectors } from '@/store/categories';
 import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
 import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import categoriesData from '@/config/categories.json';
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -45,6 +47,7 @@ export default function Settings() {
   const selectTransactions = (state) => state.transactions;
   const accounts = useSelector(selectAccounts);
   const transactions = useSelector(selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
 
   const getEncryptionStatusDisplay = () => {
     switch (status) {
@@ -97,12 +100,16 @@ export default function Settings() {
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
 
+      // Set schema version for encrypted storage
+      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+
       // Clear localStorage
       localStorage.removeItem('reduxState');
 
       // Update encryption status
       dispatch(setEncryptionStatus(EncryptionStatusEnum.ENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
+      localStorage.setItem('encryptionActive', 'true');
       if (expiresAt) {
         dispatch(setSessionExpiresAt(expiresAt));
       }
@@ -116,6 +123,7 @@ export default function Settings() {
       // Rollback
       await clearAllData();
       clearActiveDEK();
+      localStorage.removeItem('encryptionActive');
       dispatch(setEncryptionStatus(EncryptionStatusEnum.UNENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
     }
@@ -126,20 +134,38 @@ export default function Settings() {
   };
 
   const migrateDataToEncrypted = async (dek) => {
-    // Prepare accounts and transactions for batch encryption
-    const accountRecords = accounts.map((account) => ({
+    // Ensure accounts, transactions, and categories are arrays (defensive check)
+    const accountsArray = Array.isArray(accounts) ? accounts : [];
+    const transactionsArray = Array.isArray(transactions) ? transactions : [];
+    const categoriesToMigrate =
+      Array.isArray(categories) && categories.length > 0
+        ? categories
+        : categoriesData.categories;
+
+    // Prepare accounts, transactions, and categories for batch encryption
+    const accountRecords = accountsArray.map((account) => ({
       id: account.id,
       data: account,
     }));
 
-    const transactionRecords = transactions.map((transaction) => ({
+    const transactionRecords = transactionsArray.map((transaction) => ({
       id: transaction.id,
       data: transaction,
+    }));
+
+    const categoryRecords = categoriesToMigrate.map((category) => ({
+      id: category.id,
+      data: category,
     }));
 
     // Batch encrypt and store
     await batchStoreEncryptedRecords('accounts', accountRecords, dek);
     await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
+    await batchStoreEncryptedRecords('categories', categoryRecords, dek);
+
+    console.log(
+      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesToMigrate.length} categories to encrypted storage`
+    );
   };
 
   return (
