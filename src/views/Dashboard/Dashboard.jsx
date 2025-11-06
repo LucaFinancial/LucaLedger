@@ -1,57 +1,143 @@
-import { useAccountBalances } from '@/hooks/useAccountBalances';
-import { selectors } from '@/store/accountsLegacy';
-import { AccountType } from '@/store/accountsLegacy/constants';
-import { Box, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import AnnouncementBanner from '@/components/AnnouncementBanner';
-import AccountRow from './AccountRow';
-import BalanceGroup from './BalanceGroup';
+import { useEffect, useState } from 'react';
+import { Box, Container, Paper, Typography } from '@mui/material';
+
+import SaveAllButton from './SaveAllButton';
 
 export default function Dashboard() {
-  const accounts = useSelector(selectors.selectAccounts);
-  const { accounts: accountsWithBalances } = useAccountBalances(accounts);
+  const [countdown, setCountdown] = useState('');
 
-  const { SAVINGS, CHECKING, CREDIT_CARD } = AccountType;
+  // Calculate countdown to December 13, 2025
+  useEffect(() => {
+    const calculateCountdown = () => {
+      const releaseDate = new Date('2025-12-13T00:00:00');
+      const now = new Date();
+      const diff = releaseDate - now;
+
+      if (diff <= 0) {
+        setCountdown('Released!');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+
+      if (days > 0) {
+        setCountdown(`${days} day${days !== 1 ? 's' : ''} remaining`);
+      } else {
+        setCountdown(`${hours} hour${hours !== 1 ? 's' : ''} remaining`);
+      }
+    };
+
+    calculateCountdown();
+    const interval = setInterval(calculateCountdown, 1000 * 60 * 60); // Update every hour
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <AnnouncementBanner />
-
-      <Typography
-        variant='h4'
-        sx={{ mb: 4 }}
+    <Container
+      maxWidth='md'
+      sx={{ mt: 8 }}
+    >
+      <Paper
+        elevation={3}
+        sx={{ p: 4, textAlign: 'center' }}
       >
-        Financial Overview
-      </Typography>
+        <Typography
+          variant='h3'
+          component='h1'
+          gutterBottom
+          sx={{ fontWeight: 'bold', color: 'primary.main' }}
+        >
+          🎉 Version 2.0 Coming Soon!
+        </Typography>
 
-      <Box>
-        <Typography>Checking Account</Typography>
-        <BalanceGroup accountType={CHECKING} />
-      </Box>
+        {countdown && (
+          <Typography
+            variant='h5'
+            sx={{ mb: 3, fontWeight: 'bold', color: 'secondary.main' }}
+          >
+            ⏰ {countdown}
+          </Typography>
+        )}
 
-      <Box>
-        <Typography>Savings Account</Typography>
-        <BalanceGroup accountType={SAVINGS} />
-      </Box>
+        <Typography
+          variant='h6'
+          sx={{ mb: 4 }}
+        >
+          Luca Ledger Version 2 launches on <strong>December 13, 2025</strong>
+        </Typography>
 
-      <Box>
-        <Typography>Credit Card</Typography>
-        <BalanceGroup accountType={CREDIT_CARD} />
-      </Box>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 4,
+            backgroundColor: 'warning.light',
+            border: '2px solid',
+            borderColor: 'warning.main',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{ mb: 2, fontWeight: 'bold' }}
+          >
+            ⚠️ Save Your Data Now
+          </Typography>
+          <Typography
+            variant='body1'
+            sx={{ mb: 3 }}
+          >
+            <strong>Before</strong> December 13, 2025, save your account data
+            using the button below. You can import it into the older v1, but it
+            is no longer maintained. It is highly recommended to transition to
+            Version 2 for the best experience.
+          </Typography>
+          <SaveAllButton />
+        </Paper>
 
-      <Typography
-        variant='h5'
-        sx={{ mb: 3 }}
-      >
-        Accounts
-      </Typography>
-
-      {accountsWithBalances.map((account, index) => (
-        <AccountRow
-          key={account.id || index}
-          account={account}
-        />
-      ))}
-    </Box>
+        <Box sx={{ textAlign: 'left', mb: 3 }}>
+          <Typography
+            variant='h6'
+            sx={{ mb: 2, fontWeight: 'bold' }}
+          >
+            What&apos;s Happening?
+          </Typography>
+          <Typography
+            variant='body1'
+            component='div'
+          >
+            <ul style={{ paddingLeft: '20px' }}>
+              <li>
+                <strong>Version 1</strong> will move to{' '}
+                <a
+                  href='https://v1.lucaledger.app'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  v1.lucaledger.app
+                </a>
+              </li>
+              <li>
+                <strong>Version 2</strong> will be made available here on
+                December 13, 2025
+              </li>
+              <li>
+                <strong>Preview Version 2</strong> now at{' '}
+                <a
+                  href='https://beta.lucaledger.app'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  beta.lucaledger.app
+                </a>
+              </li>
+            </ul>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 }
