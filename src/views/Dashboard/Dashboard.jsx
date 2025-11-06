@@ -90,10 +90,8 @@ export default function Dashboard() {
             variant='body1'
             sx={{ mb: 3 }}
           >
-            <strong>Before</strong> December 13, 2025, save your account data
-            using the button below. You can import it into the older v1, but it
-            is no longer maintained. It is highly recommended to transition to
-            Version 2 for the best experience.
+            Save your account data before December 13, 2025. Your saved data can
+            be imported into both Version 1 and Version 2.
           </Typography>
           <SaveAllButton />
         </Paper>
