@@ -1,13 +1,17 @@
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
+import { selectors as transactionSelectors } from '@/store/transactions';
 
 export default function SettingsPanel({ account }) {
-  const { transactions } = account;
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(account.id)
+  );
 
   const completedBalance = transactions
     .filter((transaction) => transaction.status === 'complete ')
@@ -37,17 +41,21 @@ export default function SettingsPanel({ account }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        py: 2,
       }}
     >
       <Typography
         variant='h6'
         sx={{
           textAlign: 'center',
-          borderBottom: '1px solid black',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
           width: '100%',
+          pb: 1,
+          mb: 2,
         }}
       >
-        Ledger Settings
+        Account Info
       </Typography>
       <Box>
         <SettingsPanelItem>

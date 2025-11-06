@@ -1,0 +1,1 @@
+export const CURRENT_SCHEMA_VERSION = '2.1.0';

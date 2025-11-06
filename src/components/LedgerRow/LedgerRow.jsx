@@ -1,12 +1,14 @@
 import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import { constants } from '@/store/transactionsLegacy';
+import { constants } from '@/store/transactions';
 import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
+import CategoryCell from './CategoryCell';
 import DateCell from './DateCell';
 import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
+import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 
 const setBgColor = (status) => {
@@ -24,15 +26,26 @@ const setBgColor = (status) => {
   }
 };
 
-export default function LedgerRow({ row, balance }) {
-  const bgColor = setBgColor(row.status);
+export default function LedgerRow({
+  row,
+  balance,
+  isSelected,
+  onSelectionChange,
+}) {
+  const bgColor = isSelected ? '#ffe6f0' : setBgColor(row.status);
 
   return (
     <TableRow
       sx={{ background: bgColor, '& .MuiTableCell-root': { padding: '4px' } }}
     >
+      <SelectionCell
+        transaction={row}
+        isSelected={isSelected}
+        onSelectionChange={onSelectionChange}
+      />
       <StatusCell transaction={row} />
       <DateCell transaction={row} />
+      <CategoryCell transaction={row} />
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
@@ -44,4 +57,6 @@ export default function LedgerRow({ row, balance }) {
 LedgerRow.propTypes = {
   row: PropTypes.object.isRequired,
   balance: PropTypes.number.isRequired,
+  isSelected: PropTypes.bool,
+  onSelectionChange: PropTypes.func,
 };

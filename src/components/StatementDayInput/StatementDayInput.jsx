@@ -1,13 +1,18 @@
 import { Box, TextField } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accountsLegacy';
+import { actions, constants } from '@/store/accounts';
 
 export default function StatementDayInput({ account }) {
   const dispatch = useDispatch();
   const [statementDay, setStatementDay] = useState(account.statementDay || 1);
+
+  // Sync local state when account prop changes
+  useEffect(() => {
+    setStatementDay(account.statementDay || 1);
+  }, [account.statementDay]);
 
   if (account.type !== constants.AccountType.CREDIT_CARD) {
     return null;

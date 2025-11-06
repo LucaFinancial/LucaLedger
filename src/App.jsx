@@ -5,7 +5,9 @@ import { Provider } from 'react-redux';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import MainLayout from '@/components/MainLayout/MainLayout';
+import SchemaVersionProvider from '@/components/SchemaVersionProvider';
 import VersionProvider from '@/components/VersionProvider';
+import EncryptionProvider from '@/components/EncryptionProvider';
 import store from '@/store';
 
 export default function App() {
@@ -21,8 +23,10 @@ export default function App() {
             />
           </Routes>
         </Router>
+        <EncryptionProvider />
+        <SchemaVersionProvider />
+        <VersionProvider />
       </Provider>
-      <VersionProvider />
     </LocalizationProvider>
   );
 }

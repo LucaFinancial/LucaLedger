@@ -1,23 +1,37 @@
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { selectors as transactionSelectors } from '@/store/transactions';
+import { centsToDollars } from '@/utils';
 
-export default function BalanceDifference({ account, filterArray }) {
+export default function BalanceDifference({
+  accountId,
+  accountType,
+  filterArray,
+}) {
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
+
   if (filterArray.length <= 1) {
     return null;
   }
-  const { transactions, type } = account;
 
   const lastStatus = filterArray[filterArray.length - 1];
-  const difference = transactions
+  // Amounts are in cents
+  const differenceCents = transactions
     .filter((t) => t.status === lastStatus)
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
   // Hide indicator when difference is $0.00
-  if (difference === 0) {
+  if (differenceCents === 0) {
     return null;
   }
 
-  const isCreditCard = type === 'Credit Card';
-  const isPositive = difference >= 0;
+  // Convert to dollars for display
+  const differenceDollars = centsToDollars(differenceCents);
+
+  const isCreditCard = accountType === 'Credit Card';
+  const isPositive = differenceCents >= 0;
   const color = isCreditCard
     ? isPositive
       ? 'red'
@@ -52,7 +66,7 @@ export default function BalanceDifference({ account, filterArray }) {
         </span>
       )}
       $
-      {Math.abs(difference).toLocaleString(undefined, {
+      {Math.abs(differenceDollars).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}
@@ -61,14 +75,7 @@ export default function BalanceDifference({ account, filterArray }) {
 }
 
 BalanceDifference.propTypes = {
-  account: PropTypes.shape({
-    transactions: PropTypes.arrayOf(
-      PropTypes.shape({
-        status: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
-      })
-    ).isRequired,
-    type: PropTypes.string.isRequired,
-  }).isRequired,
+  accountId: PropTypes.string.isRequired,
+  accountType: PropTypes.string.isRequired,
   filterArray: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

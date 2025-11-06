@@ -1,5 +1,9 @@
 import LedgerRow from '@/components/LedgerRow';
-import { constants, selectors } from '@/store/accountsLegacy';
+import {
+  constants as accountConstants,
+  selectors as accountSelectors,
+} from '@/store/accounts';
+import { selectors as transactionSelectors } from '@/store/transactions';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -13,12 +17,17 @@ import { computeStatementMonth, dateCompareFn } from './utils';
 
 export default function LedgerTable({
   filterValue,
+  showUncategorizedOnly,
   collapsedGroups,
   setCollapsedGroups,
+  selectedTransactions,
+  onSelectionChange,
 }) {
   const { accountId } = useParams();
-  const account = useSelector(selectors.selectAccountById(accountId));
-  const { transactions } = account;
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
 
   const sortedTransactions = useMemo(
     () => [...transactions].sort(dateCompareFn),
@@ -34,13 +43,32 @@ export default function LedgerTable({
   }, [sortedTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    if (!filterValue) {
-      return transactionsWithBalance;
+    // Start with all transactions
+    let filtered = transactionsWithBalance;
+
+    // Apply uncategorized filter
+    if (showUncategorizedOnly) {
+      filtered = filtered.filter((transaction) => !transaction.categoryId);
     }
-    return transactionsWithBalance.filter((transaction) =>
-      transaction.description.toLowerCase().includes(filterValue.toLowerCase())
-    );
-  }, [filterValue, transactionsWithBalance]);
+
+    // Apply text filter
+    if (filterValue) {
+      filtered = filtered.filter(
+        (transaction) =>
+          transaction.description
+            .toLowerCase()
+            .includes(filterValue.toLowerCase()) ||
+          selectedTransactions.has(transaction.id)
+      );
+    }
+
+    return filtered;
+  }, [
+    filterValue,
+    showUncategorizedOnly,
+    transactionsWithBalance,
+    selectedTransactions,
+  ]);
 
   const toggleGroupCollapse = (groupId) => {
     setCollapsedGroups((prevCollapsedGroups) =>
@@ -94,6 +122,26 @@ export default function LedgerTable({
     return filteredTransactions[index - 1];
   };
 
+  const getSelectedCountForGroup = useCallback(
+    (groupId, isYear) => {
+      return filteredTransactions.filter((transaction) => {
+        const transactionGroupId = isYear
+          ? getYearIdentifier(transaction.date)
+          : getYearMonthKey(transaction.date);
+        return (
+          transactionGroupId === groupId &&
+          selectedTransactions.has(transaction.id)
+        );
+      }).length;
+    },
+    [
+      filteredTransactions,
+      selectedTransactions,
+      getYearIdentifier,
+      getYearMonthKey,
+    ]
+  );
+
   return (
     <TableContainer
       component={Paper}
@@ -117,11 +165,11 @@ export default function LedgerTable({
             // Check if statement period changes between previous and current transaction
             const statementDay = account.statementDay || 1;
             const currentStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD
+              account.type === accountConstants.AccountType.CREDIT_CARD
                 ? computeStatementMonth(transaction, statementDay)
                 : null;
             const previousStatementMonth =
-              account.type === constants.AccountType.CREDIT_CARD &&
+              account.type === accountConstants.AccountType.CREDIT_CARD &&
               previousTransaction
                 ? computeStatementMonth(previousTransaction, statementDay)
                 : null;
@@ -148,6 +196,7 @@ export default function LedgerTable({
                     onToggleCollapse={() => toggleGroupCollapse(yearId)}
                     onExpandYear={() => handleExpandYear(yearId)}
                     onCollapseYear={() => handleCollapseYear(yearId)}
+                    selectedCount={getSelectedCountForGroup(yearId, true)}
                   />
                 )}
                 {/* Render statement divider BEFORE month separator if it belongs to previous month */}
@@ -168,6 +217,10 @@ export default function LedgerTable({
                     previousTransaction={previousTransaction}
                     isCollapsed={collapsedGroups.includes(yearMonthKey)}
                     onToggleCollapse={() => toggleGroupCollapse(yearMonthKey)}
+                    selectedCount={getSelectedCountForGroup(
+                      yearMonthKey,
+                      false
+                    )}
                   />
                 )}
                 {!collapsedGroups.includes(yearId) &&
@@ -176,7 +229,8 @@ export default function LedgerTable({
                       {/* Render statement divider within the same month if no month boundary crossing */}
                       {isStatementMonthDifferent &&
                         !isNewMonth &&
-                        account.type === constants.AccountType.CREDIT_CARD && (
+                        account.type ===
+                          accountConstants.AccountType.CREDIT_CARD && (
                           <StatementSeparatorRow
                             statementDay={statementDay}
                             transaction={transaction}
@@ -188,6 +242,8 @@ export default function LedgerTable({
                         key={transaction.id}
                         row={transaction}
                         balance={transaction.balance}
+                        isSelected={selectedTransactions.has(transaction.id)}
+                        onSelectionChange={onSelectionChange}
                       />
                     </>
                   )}
@@ -202,6 +258,9 @@ export default function LedgerTable({
 
 LedgerTable.propTypes = {
   filterValue: PropTypes.string,
+  showUncategorizedOnly: PropTypes.bool,
   collapsedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
   setCollapsedGroups: PropTypes.func.isRequired,
+  selectedTransactions: PropTypes.instanceOf(Set),
+  onSelectionChange: PropTypes.func,
 };

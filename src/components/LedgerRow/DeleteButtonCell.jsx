@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions } from '@/store/transactionsLegacy';
+import { actions } from '@/store/transactions';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -16,7 +16,7 @@ export default function DeleteButtonCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ width: '50px' }}>
+    <TableCell style={{ width: '50px', textAlign: 'center' }}>
       <DeleteIcon
         onClick={handleDelete}
         style={{ cursor: 'pointer' }}

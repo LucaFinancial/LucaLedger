@@ -1,11 +1,28 @@
 import LedgerTable from '@/components/LedgerTable';
 import RepeatedTransactionsModal from '@/components/RepeatedTransactionsModal';
+import BulkEditModal from '@/components/BulkEditModal';
 import SettingsPanel from '@/components/SettingsPanel';
-import { selectors } from '@/store/accountsLegacy';
-import { Box, Button, TextField } from '@mui/material';
+import LedgerSettingsMenu from '@/components/LedgerSettingsMenu';
+import AccountSettingsModal from '@/components/AccountSettingsModal';
+import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  actions as transactionActions,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Tooltip,
+  Badge,
+} from '@mui/material';
+import { Clear, MoreVert, Edit, FilterList } from '@mui/icons-material';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
 import NewTransactionButton from './NewTransactionButton';
@@ -13,13 +30,59 @@ import NewTransactionButton from './NewTransactionButton';
 export default function Ledger() {
   const { accountId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [filterValue, setFilterValue] = useState('');
-  const account = useSelector(selectors.selectAccountById(accountId));
+  const [showUncategorizedOnly, setShowUncategorizedOnly] = useState(false);
+  const [selectedTransactions, setSelectedTransactions] = useState(new Set());
+  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
+  const [accountSettingsModalOpen, setAccountSettingsModalOpen] =
+    useState(false);
+  const account = useSelector(accountSelectors.selectAccountById(accountId));
+  const transactions = useSelector(
+    transactionSelectors.selectTransactionsByAccountId(accountId)
+  );
+  const flatCategories = useSelector(categorySelectors.selectAllCategories);
 
-  const allMonths = account?.transactions?.length
+  // Find transactions with invalid categories
+  const invalidCategoryCount = useMemo(() => {
+    return transactions.filter((transaction) => {
+      if (!transaction.categoryId) return false;
+      return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+    }).length;
+  }, [transactions, flatCategories]);
+
+  // Count uncategorized transactions
+  const uncategorizedCount = useMemo(() => {
+    return transactions.filter((transaction) => !transaction.categoryId).length;
+  }, [transactions]);
+
+  // Calculate filtered transactions for "Select All (Filtered)" button
+  // Only include transactions that match the filter (not already-selected ones)
+  const filteredTransactions = useMemo(() => {
+    let filtered = transactions;
+
+    // Apply uncategorized filter
+    if (showUncategorizedOnly) {
+      filtered = filtered.filter((transaction) => !transaction.categoryId);
+    }
+
+    // Apply text filter
+    if (filterValue) {
+      filtered = filtered.filter((transaction) =>
+        transaction.description
+          .toLowerCase()
+          .includes(filterValue.toLowerCase())
+      );
+    }
+
+    return filterValue || showUncategorizedOnly ? filtered : [];
+  }, [filterValue, showUncategorizedOnly, transactions]);
+
+  const allMonths = transactions?.length
     ? [
         ...new Set(
-          account.transactions.map((t) => {
+          transactions.map((t) => {
             const date = dayjs(t.date);
             return `${date.format('YYYY')}-${date.format('MMMM')}`;
           })
@@ -81,6 +144,82 @@ export default function Ledger() {
     setCollapsedGroups(getDefaultCollapsedGroups());
   };
 
+  const handleSelectionChange = (transactionId, isSelected) => {
+    setSelectedTransactions((prev) => {
+      const newSet = new Set(prev);
+      if (isSelected) {
+        newSet.add(transactionId);
+      } else {
+        newSet.delete(transactionId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkEditClick = () => {
+    setBulkEditModalOpen(true);
+  };
+
+  const handleBulkEditClose = () => {
+    setBulkEditModalOpen(false);
+  };
+
+  const handleBulkEditApply = (updates) => {
+    dispatch(
+      transactionActions.updateMultipleTransactionsFields(
+        Array.from(selectedTransactions),
+        updates
+      )
+    );
+    setSelectedTransactions(new Set());
+    setBulkEditModalOpen(false);
+  };
+
+  const handleSelectAllFiltered = () => {
+    // Select all transactions that match the current filter
+    const filteredIds = new Set(filteredTransactions.map((t) => t.id));
+    setSelectedTransactions(filteredIds);
+  };
+
+  const handleSettingsMenuOpen = (event) => {
+    setSettingsMenuAnchor(event.currentTarget);
+  };
+
+  const handleSettingsMenuClose = () => {
+    setSettingsMenuAnchor(null);
+  };
+
+  const handleAccountSettingsOpen = () => {
+    setAccountSettingsModalOpen(true);
+  };
+
+  const handleAccountSettingsClose = () => {
+    setAccountSettingsModalOpen(false);
+  };
+
+  const handleClearInvalidCategories = () => {
+    // Find all transactions with invalid categories and clear them
+    const transactionsToUpdate = transactions
+      .filter((transaction) => {
+        if (!transaction.categoryId) return false;
+        return !flatCategories.some((cat) => cat.id === transaction.categoryId);
+      })
+      .map((t) => t.id);
+
+    if (transactionsToUpdate.length > 0) {
+      dispatch(
+        transactionActions.updateMultipleTransactionsFields(
+          transactionsToUpdate,
+          { categoryId: null }
+        )
+      );
+    }
+  };
+
+  const handleClearSelected = () => {
+    setSelectedTransactions(new Set());
+  };
+
   return (
     <Box
       sx={{
@@ -95,7 +234,8 @@ export default function Ledger() {
       <Box
         sx={{
           width: '18%',
-          borderRight: '1px solid black',
+          borderRight: '1px solid',
+          borderColor: 'divider',
         }}
       >
         <SettingsPanel account={account} />
@@ -111,12 +251,42 @@ export default function Ledger() {
           }}
         >
           <AccountName account={account} />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title='Edit Transactions'>
+              <span>
+                <IconButton
+                  onClick={handleBulkEditClick}
+                  size='large'
+                  aria-label='edit selected transactions'
+                  disabled={selectedTransactions.size === 0}
+                >
+                  <Badge
+                    badgeContent={selectedTransactions.size}
+                    color='primary'
+                    max={999}
+                  >
+                    <Edit />
+                  </Badge>
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title='Ledger Settings'>
+              <IconButton
+                onClick={handleSettingsMenuOpen}
+                size='large'
+                aria-label='open ledger settings menu'
+              >
+                <MoreVert />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Box
           sx={{
             display: 'flex',
             flexDirection: 'row',
             padding: '15px',
+            gap: 1,
           }}
         >
           <TextField
@@ -126,19 +296,84 @@ export default function Ledger() {
             onChange={(e) => setFilterValue(e.target.value)}
             variant='outlined'
             size='small'
-            sx={{ width: '700px' }}
+            sx={{ width: '400px' }}
+            InputProps={{
+              endAdornment: filterValue && (
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='clear filter'
+                    onClick={() => setFilterValue('')}
+                    edge='end'
+                    size='small'
+                  >
+                    <Clear />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
-          <Button onClick={handleCollapseAll}>Collapse All</Button>
-          <Button onClick={handleExpandAll}>Expand All</Button>
-          <Button onClick={handleReset}>Reset</Button>
+          <Tooltip
+            title={
+              showUncategorizedOnly
+                ? 'Show all transactions'
+                : 'Show uncategorized only'
+            }
+          >
+            <Button
+              variant={showUncategorizedOnly ? 'contained' : 'outlined'}
+              onClick={() => setShowUncategorizedOnly(!showUncategorizedOnly)}
+              aria-label='Toggle uncategorized filter'
+              startIcon={<FilterList />}
+            >
+              Uncategorized{' '}
+              {uncategorizedCount > 0 && `(${uncategorizedCount})`}
+            </Button>
+          </Tooltip>
+          {(filterValue || showUncategorizedOnly) &&
+            filteredTransactions.length > 0 && (
+              <Button
+                variant='outlined'
+                onClick={handleSelectAllFiltered}
+                aria-label='Select all filtered transactions'
+              >
+                Select All ({filteredTransactions.length})
+              </Button>
+            )}
         </Box>
         <LedgerTable
           filterValue={filterValue}
+          showUncategorizedOnly={showUncategorizedOnly}
           collapsedGroups={collapsedGroups}
           setCollapsedGroups={setCollapsedGroups}
+          selectedTransactions={selectedTransactions}
+          onSelectionChange={handleSelectionChange}
         />
         <NewTransactionButton />
         <RepeatedTransactionsModal />
+        <BulkEditModal
+          open={bulkEditModalOpen}
+          onClose={handleBulkEditClose}
+          selectedCount={selectedTransactions.size}
+          onApplyChanges={handleBulkEditApply}
+        />
+        <LedgerSettingsMenu
+          anchorEl={settingsMenuAnchor}
+          open={Boolean(settingsMenuAnchor)}
+          onClose={handleSettingsMenuClose}
+          onCollapseAll={handleCollapseAll}
+          onExpandAll={handleExpandAll}
+          onReset={handleReset}
+          onAccountSettings={handleAccountSettingsOpen}
+          onClearInvalidCategories={handleClearInvalidCategories}
+          invalidCategoryCount={invalidCategoryCount}
+          onClearSelected={handleClearSelected}
+          selectedCount={selectedTransactions.size}
+        />
+        <AccountSettingsModal
+          open={accountSettingsModalOpen}
+          onClose={handleAccountSettingsClose}
+          account={account}
+        />
       </Box>
     </Box>
   );

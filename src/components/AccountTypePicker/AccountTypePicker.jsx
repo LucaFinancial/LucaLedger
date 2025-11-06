@@ -1,13 +1,18 @@
 import { Box, InputLabel, MenuItem, Select } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accountsLegacy';
+import { actions, constants } from '@/store/accounts';
 
 export default function AccountTypePicker({ account }) {
   const [type, setType] = useState(account.type);
   const dispatch = useDispatch();
+
+  // Sync local state when account prop changes
+  useEffect(() => {
+    setType(account.type);
+  }, [account.type]);
 
   const handleChange = (event) => {
     const { value } = event.target;

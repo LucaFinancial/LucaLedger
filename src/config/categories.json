@@ -1,0 +1,490 @@
+{
+  "categories": [
+    {
+      "id": "00000001-0000-0000-0000-000000000000",
+      "slug": "income",
+      "name": "Income",
+      "parentId": null
+    },
+    {
+      "id": "00000001-0000-0000-0000-000000000001",
+      "slug": "income-salary-wages",
+      "name": "Salary & Wages",
+      "parentId": "00000001-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000001-0000-0000-0000-000000000002",
+      "slug": "income-interest",
+      "name": "Interest",
+      "parentId": "00000001-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000001-0000-0000-0000-000000000003",
+      "slug": "income-gifts",
+      "name": "Gifts",
+      "parentId": "00000001-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000001-0000-0000-0000-000000000004",
+      "slug": "income-other",
+      "name": "Other",
+      "parentId": "00000001-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000000",
+      "slug": "housing",
+      "name": "Housing",
+      "parentId": null
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000001",
+      "slug": "housing-rent-mortgage",
+      "name": "Rent & Mortgage",
+      "parentId": "00000002-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000002",
+      "slug": "housing-property-taxes",
+      "name": "Property Taxes",
+      "parentId": "00000002-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000003",
+      "slug": "housing-home-insurance",
+      "name": "Home Insurance",
+      "parentId": "00000002-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000004",
+      "slug": "housing-repairs-maintenance",
+      "name": "Repairs & Maintenance",
+      "parentId": "00000002-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000002-0000-0000-0000-000000000005",
+      "slug": "housing-hoa-community-fees",
+      "name": "HOA & Community Fees",
+      "parentId": "00000002-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000003-0000-0000-0000-000000000000",
+      "slug": "household",
+      "name": "Household",
+      "parentId": null
+    },
+    {
+      "id": "00000003-0000-0000-0000-000000000001",
+      "slug": "household-supplies",
+      "name": "Supplies",
+      "parentId": "00000003-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000003-0000-0000-0000-000000000002",
+      "slug": "household-furniture-decor",
+      "name": "Furniture & Décor",
+      "parentId": "00000003-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000003-0000-0000-0000-000000000003",
+      "slug": "household-equipment-tools",
+      "name": "Equipment & Tools",
+      "parentId": "00000003-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000003-0000-0000-0000-000000000004",
+      "slug": "household-services-maintenance",
+      "name": "Services & Maintenance",
+      "parentId": "00000003-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000004-0000-0000-0000-000000000000",
+      "slug": "food",
+      "name": "Food",
+      "parentId": null
+    },
+    {
+      "id": "00000004-0000-0000-0000-000000000001",
+      "slug": "food-groceries",
+      "name": "Groceries",
+      "parentId": "00000004-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000004-0000-0000-0000-000000000002",
+      "slug": "food-restaurants",
+      "name": "Restaurants",
+      "parentId": "00000004-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000004-0000-0000-0000-000000000003",
+      "slug": "food-specialty",
+      "name": "Specialty",
+      "parentId": "00000004-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000000",
+      "slug": "transportation",
+      "name": "Transportation",
+      "parentId": null
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000001",
+      "slug": "transportation-gas-fuel",
+      "name": "Gas & Fuel",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000002",
+      "slug": "transportation-public-transit",
+      "name": "Public Transit",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000003",
+      "slug": "transportation-rideshare-taxi",
+      "name": "Rideshare & Taxi",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000004",
+      "slug": "transportation-parking-tolls",
+      "name": "Parking & Tolls",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000005",
+      "slug": "transportation-repairs-maintenance",
+      "name": "Repairs & Maintenance",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000005-0000-0000-0000-000000000006",
+      "slug": "transportation-insurance-registration",
+      "name": "Insurance & Registration",
+      "parentId": "00000005-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000000",
+      "slug": "healthcare",
+      "name": "Healthcare",
+      "parentId": null
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000001",
+      "slug": "healthcare-insurance",
+      "name": "Insurance",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000002",
+      "slug": "healthcare-doctor",
+      "name": "Doctor",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000003",
+      "slug": "healthcare-dental",
+      "name": "Dental",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000004",
+      "slug": "healthcare-vision",
+      "name": "Vision",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000005",
+      "slug": "healthcare-prescriptions",
+      "name": "Prescriptions",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000006-0000-0000-0000-000000000006",
+      "slug": "healthcare-supplies-equipment",
+      "name": "Supplies & Equipment",
+      "parentId": "00000006-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000000",
+      "slug": "personal",
+      "name": "Personal",
+      "parentId": null
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000001",
+      "slug": "personal-clothing-accessories",
+      "name": "Clothing & Accessories",
+      "parentId": "00000007-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000002",
+      "slug": "personal-toiletries-cosmetics",
+      "name": "Toiletries & Cosmetics",
+      "parentId": "00000007-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000003",
+      "slug": "personal-laundry-dry-cleaning",
+      "name": "Laundry & Dry Cleaning",
+      "parentId": "00000007-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000004",
+      "slug": "personal-electronics-tech",
+      "name": "Electronics & Tech",
+      "parentId": "00000007-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000007-0000-0000-0000-000000000005",
+      "slug": "personal-services-care",
+      "name": "Services & Care",
+      "parentId": "00000007-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000008-0000-0000-0000-000000000000",
+      "slug": "recreation",
+      "name": "Recreation",
+      "parentId": null
+    },
+    {
+      "id": "00000008-0000-0000-0000-000000000001",
+      "slug": "recreation-sports-fitness",
+      "name": "Sports & Fitness",
+      "parentId": "00000008-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000008-0000-0000-0000-000000000002",
+      "slug": "recreation-events-activities",
+      "name": "Events & Activities",
+      "parentId": "00000008-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000008-0000-0000-0000-000000000003",
+      "slug": "recreation-equipment-gear",
+      "name": "Equipment & Gear",
+      "parentId": "00000008-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000009-0000-0000-0000-000000000000",
+      "slug": "entertainment",
+      "name": "Entertainment",
+      "parentId": null
+    },
+    {
+      "id": "00000009-0000-0000-0000-000000000001",
+      "slug": "entertainment-streaming-media",
+      "name": "Streaming & Media",
+      "parentId": "00000009-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000009-0000-0000-0000-000000000002",
+      "slug": "entertainment-shows-events",
+      "name": "Shows & Events",
+      "parentId": "00000009-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000009-0000-0000-0000-000000000003",
+      "slug": "entertainment-games",
+      "name": "Games",
+      "parentId": "00000009-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000000",
+      "slug": "financial",
+      "name": "Financial",
+      "parentId": null
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000001",
+      "slug": "financial-interest-fees",
+      "name": "Interest & Fees",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000002",
+      "slug": "financial-credit-card-payments",
+      "name": "Credit Card Payments",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000003",
+      "slug": "financial-income-taxes",
+      "name": "Income Taxes",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000004",
+      "slug": "financial-transfers",
+      "name": "Transfers",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000005",
+      "slug": "financial-rewards-rebates",
+      "name": "Rewards & Rebates",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000a-0000-0000-0000-000000000006",
+      "slug": "financial-student-loans",
+      "name": "Student Loans",
+      "parentId": "0000000a-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000000",
+      "slug": "children",
+      "name": "Children",
+      "parentId": null
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000001",
+      "slug": "children-childcare-babysitting",
+      "name": "Childcare & Babysitting",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000002",
+      "slug": "children-school-education",
+      "name": "School & Education",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000003",
+      "slug": "children-sports-activities",
+      "name": "Sports & Activities",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000004",
+      "slug": "children-clothing-supplies",
+      "name": "Clothing & Supplies",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000005",
+      "slug": "children-toys-games",
+      "name": "Toys & Games",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000b-0000-0000-0000-000000000006",
+      "slug": "children-healthcare",
+      "name": "Healthcare",
+      "parentId": "0000000b-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000000",
+      "slug": "pets",
+      "name": "Pets",
+      "parentId": null
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000001",
+      "slug": "pets-food",
+      "name": "Food",
+      "parentId": "0000000c-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000002",
+      "slug": "pets-toys-supplies",
+      "name": "Toys & Supplies",
+      "parentId": "0000000c-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000003",
+      "slug": "pets-vet-services",
+      "name": "Vet Services",
+      "parentId": "0000000c-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000004",
+      "slug": "pets-grooming-care",
+      "name": "Grooming & Care",
+      "parentId": "0000000c-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000c-0000-0000-0000-000000000005",
+      "slug": "pets-boarding-daycare",
+      "name": "Boarding & Daycare",
+      "parentId": "0000000c-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000d-0000-0000-0000-000000000000",
+      "slug": "miscellaneous",
+      "name": "Miscellaneous",
+      "parentId": null
+    },
+    {
+      "id": "0000000d-0000-0000-0000-000000000001",
+      "slug": "miscellaneous-gifts-donations",
+      "name": "Gifts & Donations",
+      "parentId": "0000000d-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000d-0000-0000-0000-000000000002",
+      "slug": "miscellaneous-unknown",
+      "name": "Unknown",
+      "parentId": "0000000d-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000000",
+      "slug": "utilities",
+      "name": "Utilities",
+      "parentId": null
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000001",
+      "slug": "utilities-gas-electric",
+      "name": "Gas & Electric",
+      "parentId": "0000000e-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000002",
+      "slug": "utilities-water-sewer",
+      "name": "Water & Sewer",
+      "parentId": "0000000e-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000003",
+      "slug": "utilities-trash-recycling",
+      "name": "Trash & Recycling",
+      "parentId": "0000000e-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000004",
+      "slug": "utilities-internet",
+      "name": "Internet",
+      "parentId": "0000000e-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000e-0000-0000-0000-000000000005",
+      "slug": "utilities-phone-mobile",
+      "name": "Phone & Mobile",
+      "parentId": "0000000e-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000f-0000-0000-0000-000000000000",
+      "slug": "travel",
+      "name": "Travel",
+      "parentId": null
+    },
+    {
+      "id": "0000000f-0000-0000-0000-000000000001",
+      "slug": "travel-flights-rental-cars",
+      "name": "Flights & Rental Cars",
+      "parentId": "0000000f-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000f-0000-0000-0000-000000000002",
+      "slug": "travel-hotels-lodging",
+      "name": "Hotels & Lodging",
+      "parentId": "0000000f-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "0000000f-0000-0000-0000-000000000003",
+      "slug": "travel-supplies-equipment",
+      "name": "Supplies & Equipment",
+      "parentId": "0000000f-0000-0000-0000-000000000000"
+    }
+  ]
+}

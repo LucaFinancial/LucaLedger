@@ -10,10 +10,11 @@ import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { actions, constants } from '@/store/transactionsLegacy';
+import { actions, constants } from '@/store/transactions';
 import {
+  centsToDollars,
+  dollarsToCents,
   doublePrecisionFormatString,
-  parseFloatDoublePrecision,
 } from '@/utils';
 
 import { Cancel, Check } from '@mui/icons-material';
@@ -24,7 +25,7 @@ export default function AmountCell({ transaction }) {
   const inputRef = useRef(null);
   const [edit, setEdit] = useState(false);
   const [value, setValue] = useState(
-    parseFloatDoublePrecision(transaction.amount)
+    centsToDollars(transaction.amount).toFixed(2)
   );
 
   const validNumberRegex = /^-?\d+(\.\d{1,2})?$|^-?\.\d{1,2}$|^-?\d+\.$|^-?$/;
@@ -48,13 +49,14 @@ export default function AmountCell({ transaction }) {
       newValue = 0;
     }
     if (validNumberRegex.test(newValue)) {
-      newValue = parseFloatDoublePrecision(newValue);
+      // Convert dollars to cents for storage
+      const amountInCents = dollarsToCents(parseFloat(newValue));
       dispatch(
         actions.updateTransactionProperty(
           accountId,
           transaction,
           constants.TransactionFields.AMOUNT,
-          newValue
+          amountInCents
         )
       );
       setEdit(false);
@@ -62,12 +64,12 @@ export default function AmountCell({ transaction }) {
   };
 
   const handleCancel = () => {
-    setValue(parseFloatDoublePrecision(transaction.amount));
+    setValue(centsToDollars(transaction.amount).toFixed(2));
     setEdit(false);
   };
 
   const handleEdit = () => {
-    if (value === 0) setValue('');
+    if (value === '0.00') setValue('');
     setEdit(true);
     setTimeout(() => {
       inputRef.current.focus();
@@ -128,7 +130,7 @@ export default function AmountCell({ transaction }) {
           variant='body1'
           onClick={handleEdit}
         >
-          $ {doublePrecisionFormatString(transaction.amount)}
+          $ {doublePrecisionFormatString(centsToDollars(transaction.amount))}
         </Typography>
       )}
     </TableCell>
