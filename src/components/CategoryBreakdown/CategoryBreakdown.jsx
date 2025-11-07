@@ -64,7 +64,7 @@ export default function CategoryBreakdown() {
     const now = dayjs();
     const today = now.startOf('day');
 
-    // Find the Transfers category ID
+    // Find the Transfers and Income category IDs
     const transfersCategory = allCategories.find(
       (cat) => cat.slug === 'transfers'
     );
@@ -73,6 +73,14 @@ export default function CategoryBreakdown() {
       transfersCategory?.subcategories.map((sub) => sub.id) || [];
     const allTransferCategoryIds = transfersCategoryId
       ? [transfersCategoryId, ...transfersSubcategoryIds]
+      : [];
+
+    const incomeCategory = allCategories.find((cat) => cat.slug === 'income');
+    const incomeCategoryId = incomeCategory?.id;
+    const incomeSubcategoryIds =
+      incomeCategory?.subcategories.map((sub) => sub.id) || [];
+    const allIncomeCategoryIds = incomeCategoryId
+      ? [incomeCategoryId, ...incomeSubcategoryIds]
       : [];
 
     // Create category lookup map for O(1) lookups
@@ -104,19 +112,22 @@ export default function CategoryBreakdown() {
         return false;
       }
 
+      // Exclude income
+      if (tx.categoryId && allIncomeCategoryIds.includes(tx.categoryId)) {
+        return false;
+      }
+
       // Include all transaction types for current month
       return true;
     });
 
-    // Calculate totals by category and subcategory (only expenses, amount < 0)
+    // Calculate totals by category and subcategory (only expenses based on category)
     const categoryTotals = new Map();
     let currentExpenses = 0;
     let projectedExpenses = 0;
 
     periodTransactions.forEach((tx) => {
-      // Only count expenses (negative amounts)
-      if (tx.amount >= 0) return;
-
+      // All remaining transactions are expenses (we already filtered out income and transfers)
       const expenseAmount = Math.abs(tx.amount);
 
       const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
