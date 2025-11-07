@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PropTypes from 'prop-types';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
 import MonthOverviewSummary from './MonthOverviewSummary';
 import PlaceholderCard from './PlaceholderCard';
@@ -115,7 +116,7 @@ export default function CurrentMonthOverviewSection({
                 color='text.secondary'
                 sx={{ mr: 0.5 }}
               >
-                Projected:
+                Projected End:
               </Typography>
               <Typography
                 variant='body1'
@@ -125,7 +126,11 @@ export default function CurrentMonthOverviewSection({
                   display: 'inline',
                 }}
               >
-                {formatCurrency(totals.future)}
+                {formatCurrency(
+                  totals.current -
+                    currentMonthTotals.netFlow +
+                    monthEndProjections.projectedNetFlow
+                )}
               </Typography>
             </Box>
             <Box
@@ -503,3 +508,13 @@ export default function CurrentMonthOverviewSection({
     </Accordion>
   );
 }
+
+CurrentMonthOverviewSection.propTypes = {
+  dateRanges: PropTypes.object.isRequired,
+  totals: PropTypes.object.isRequired,
+  creditCardTotals: PropTypes.object.isRequired,
+  currentMonthTotals: PropTypes.object.isRequired,
+  monthEndProjections: PropTypes.object.isRequired,
+  remainingMonthTotals: PropTypes.object.isRequired,
+  formatCurrency: PropTypes.func.isRequired,
+};
