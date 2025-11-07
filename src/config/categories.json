@@ -296,36 +296,24 @@
     },
     {
       "id": "0000000a-0000-0000-0000-000000000001",
-      "slug": "financial-interest-fees",
-      "name": "Interest & Fees",
-      "parentId": "0000000a-0000-0000-0000-000000000000"
-    },
-    {
-      "id": "0000000a-0000-0000-0000-000000000002",
-      "slug": "financial-credit-card-payments",
-      "name": "Credit Card Payments",
-      "parentId": "0000000a-0000-0000-0000-000000000000"
-    },
-    {
-      "id": "0000000a-0000-0000-0000-000000000003",
       "slug": "financial-income-taxes",
       "name": "Income Taxes",
       "parentId": "0000000a-0000-0000-0000-000000000000"
     },
     {
-      "id": "0000000a-0000-0000-0000-000000000004",
-      "slug": "financial-transfers",
-      "name": "Transfers",
+      "id": "0000000a-0000-0000-0000-000000000002",
+      "slug": "financial-interest-fees",
+      "name": "Interest & Fees",
       "parentId": "0000000a-0000-0000-0000-000000000000"
     },
     {
-      "id": "0000000a-0000-0000-0000-000000000005",
+      "id": "0000000a-0000-0000-0000-000000000003",
       "slug": "financial-rewards-rebates",
       "name": "Rewards & Rebates",
       "parentId": "0000000a-0000-0000-0000-000000000000"
     },
     {
-      "id": "0000000a-0000-0000-0000-000000000006",
+      "id": "0000000a-0000-0000-0000-000000000004",
       "slug": "financial-student-loans",
       "name": "Student Loans",
       "parentId": "0000000a-0000-0000-0000-000000000000"
@@ -485,6 +473,24 @@
       "slug": "travel-supplies-equipment",
       "name": "Supplies & Equipment",
       "parentId": "0000000f-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000010-0000-0000-0000-000000000000",
+      "slug": "transfers",
+      "name": "Transfers",
+      "parentId": null
+    },
+    {
+      "id": "00000010-0000-0000-0000-000000000001",
+      "slug": "transfers-credit-card-payments",
+      "name": "Credit Card Payments",
+      "parentId": "00000010-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "00000010-0000-0000-0000-000000000002",
+      "slug": "transfers-account-transfers",
+      "name": "Account Transfers",
+      "parentId": "00000010-0000-0000-0000-000000000000"
     }
   ]
 }
