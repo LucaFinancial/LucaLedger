@@ -257,8 +257,15 @@ export default function CategoryBreakdown() {
     );
   }
 
-  // Prepare data for pie chart
-  const pieChartData = categoryData.categories.map((cat) => ({
+  // Prepare data for pie charts
+  const currentPieChartData = categoryData.categories
+    .filter((cat) => cat.current > 0)
+    .map((cat) => ({
+      name: cat.name,
+      value: centsToDollars(cat.current),
+    }));
+
+  const projectedPieChartData = categoryData.categories.map((cat) => ({
     name: cat.name,
     value: centsToDollars(cat.projected),
   }));
@@ -334,28 +341,98 @@ export default function CategoryBreakdown() {
           </Typography>
         </Paper>
       </Box>
-      {/* Chart and Table */}
+      {/* Charts Section */}
       <Box
         sx={{
           display: 'flex',
           gap: 3,
-          flexDirection: { xs: 'column', md: 'row' },
+          mb: 3,
+          flexDirection: { xs: 'column', lg: 'row' },
         }}
       >
-        {/* Pie Chart */}
+        {/* Current Spending Pie Chart */}
         <Box
           sx={{
             flex: 1,
             minHeight: 300,
           }}
         >
+          <Typography
+            variant='subtitle2'
+            sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
+          >
+            Current Spending
+          </Typography>
+          {currentPieChartData.length > 0 ? (
+            <ResponsiveContainer
+              width='100%'
+              height={300}
+            >
+              <PieChart>
+                <Pie
+                  data={currentPieChartData}
+                  cx='50%'
+                  cy='50%'
+                  labelLine={false}
+                  outerRadius={80}
+                  fill='#8884d8'
+                  dataKey='value'
+                  label={({ name, percent }) =>
+                    percent > 0.05
+                      ? `${name}: ${(percent * 100).toFixed(0)}%`
+                      : ''
+                  }
+                >
+                  {currentPieChartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-current-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Legend
+                  verticalAlign='bottom'
+                  height={36}
+                  formatter={(value) => value}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box
+              sx={{
+                height: 300,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              <Typography variant='body2'>No current expenses</Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* Projected Spending Pie Chart */}
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 300,
+          }}
+        >
+          <Typography
+            variant='subtitle2'
+            sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
+          >
+            Projected Spending
+          </Typography>
           <ResponsiveContainer
             width='100%'
             height={300}
           >
             <PieChart>
               <Pie
-                data={pieChartData}
+                data={projectedPieChartData}
                 cx='50%'
                 cy='50%'
                 labelLine={false}
@@ -368,9 +445,9 @@ export default function CategoryBreakdown() {
                     : ''
                 }
               >
-                {pieChartData.map((entry, index) => (
+                {projectedPieChartData.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-projected-${index}`}
                     fill={COLORS[index % COLORS.length]}
                   />
                 ))}
@@ -384,7 +461,15 @@ export default function CategoryBreakdown() {
             </PieChart>
           </ResponsiveContainer>
         </Box>
-
+      </Box>
+      {/* Chart and Table */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          flexDirection: { xs: 'column', md: 'row' },
+        }}
+      >
         {/* Category Table */}
         <Box sx={{ flex: 1 }}>
           <Table size='small'>
