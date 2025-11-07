@@ -79,28 +79,6 @@ export default function Dashboard() {
     }, {});
   }, [accounts]);
 
-  // Helper function to determine if a transaction represents an expense
-  // Uses category to determine: Income category = income, Transfers = neutral, all others = expense
-  const isExpenseTransaction = useCallback(
-    (tx) => {
-      if (!tx.categoryId) return false; // No category assigned
-
-      // Check if it's an income transaction
-      if (incomeCategoryIds.includes(tx.categoryId)) {
-        return false; // Income, not an expense
-      }
-
-      // Check if it's a transfer (neutral, not counted as income or expense)
-      if (transferCategoryIds.includes(tx.categoryId)) {
-        return false; // Transfer, not an expense
-      }
-
-      // Everything else is an expense
-      return true;
-    },
-    [incomeCategoryIds, transferCategoryIds]
-  );
-
   // Helper function to determine if a transaction is income
   const isIncomeTransaction = useCallback(
     (tx) => {

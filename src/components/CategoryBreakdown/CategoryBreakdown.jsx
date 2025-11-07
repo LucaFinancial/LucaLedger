@@ -64,6 +64,17 @@ export default function CategoryBreakdown() {
     const now = dayjs();
     const today = now.startOf('day');
 
+    // Find the Transfers category ID
+    const transfersCategory = allCategories.find(
+      (cat) => cat.slug === 'transfers'
+    );
+    const transfersCategoryId = transfersCategory?.id;
+    const transfersSubcategoryIds =
+      transfersCategory?.subcategories.map((sub) => sub.id) || [];
+    const allTransferCategoryIds = transfersCategoryId
+      ? [transfersCategoryId, ...transfersSubcategoryIds]
+      : [];
+
     // Create category lookup map for O(1) lookups
     const categoryMap = new Map();
     allCategories.forEach((cat) => {
@@ -85,6 +96,11 @@ export default function CategoryBreakdown() {
 
       // Check date range
       if (txDate.isBefore(startDate, 'day') || txDate.isAfter(endDate, 'day')) {
+        return false;
+      }
+
+      // Exclude transfers
+      if (tx.categoryId && allTransferCategoryIds.includes(tx.categoryId)) {
         return false;
       }
 
