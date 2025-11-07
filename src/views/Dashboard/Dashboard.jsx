@@ -7,40 +7,56 @@ import {
   constants as transactionConstants,
   selectors as transactionSelectors,
 } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import EventIcon from '@mui/icons-material/Event';
-import HistoryIcon from '@mui/icons-material/History';
+import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import BetaBanner from '@/components/BetaBanner';
-import CategoryBreakdown from '@/components/CategoryBreakdown';
 import { useMemo, useCallback } from 'react';
+import RecentActivitySection from './RecentActivitySection';
+import UpcomingActivitySection from './UpcomingActivitySection';
+import CurrentMonthOverviewSection from './CurrentMonthOverviewSection';
+import PlaceholderCard from './PlaceholderCard';
 
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
   const { totals, creditCardTotals } = useAccountBalances(accounts);
+
+  // Find the Income and Transfers parent category IDs
+  const incomeCategoryId = useMemo(() => {
+    const incomeCategory = categories.find(
+      (cat) => cat.slug === 'income' && !cat.parentId
+    );
+    return incomeCategory?.id;
+  }, [categories]);
+
+  const transfersCategoryId = useMemo(() => {
+    const transfersCategory = categories.find(
+      (cat) => cat.slug === 'transfers' && !cat.parentId
+    );
+    return transfersCategory?.id;
+  }, [categories]);
+
+  // Get all income category IDs (parent + children)
+  const incomeCategoryIds = useMemo(() => {
+    if (!incomeCategoryId) return [];
+    const subcategories = categories.filter(
+      (cat) => cat.parentId === incomeCategoryId
+    );
+    return [incomeCategoryId, ...subcategories.map((cat) => cat.id)];
+  }, [categories, incomeCategoryId]);
+
+  // Get all transfer category IDs (parent + children)
+  const transferCategoryIds = useMemo(() => {
+    if (!transfersCategoryId) return [];
+    const subcategories = categories.filter(
+      (cat) => cat.parentId === transfersCategoryId
+    );
+    return [transfersCategoryId, ...subcategories.map((cat) => cat.id)];
+  }, [categories, transfersCategoryId]);
 
   // Calculate date ranges (memoized to avoid recalculation)
   const dateRanges = useMemo(() => {
@@ -63,41 +79,53 @@ export default function Dashboard() {
     }, {});
   }, [accounts]);
 
-  // Helper function to determine if a transaction represents an expense
-  // For checking/savings: negative amount = expense
-  // For credit cards: positive amount = expense (charge), negative = payment
-  const isExpenseTransaction = useCallback(
+  // Helper function to determine if a transaction is income
+  const isIncomeTransaction = useCallback(
     (tx) => {
-      const account = accountMap[tx.accountId];
-      if (!account) return tx.amount < 0;
-
-      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-        return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
-      }
-      return tx.amount < 0; // For checking/savings, negative is expense
+      if (!tx.categoryId) return false;
+      return incomeCategoryIds.includes(tx.categoryId);
     },
-    [accountMap]
+    [incomeCategoryIds]
+  );
+
+  // Helper function to determine if a transaction is a transfer
+  const isTransferTransaction = useCallback(
+    (tx) => {
+      if (!tx.categoryId) return false;
+      return transferCategoryIds.includes(tx.categoryId);
+    },
+    [transferCategoryIds]
   );
 
   // Helper function to get the display color for a transaction
   const getTransactionColor = useCallback(
     (tx) => {
-      return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
+      if (isIncomeTransaction(tx)) return 'success.main';
+      return 'error.main'; // Expense
     },
-    [isExpenseTransaction]
+    [isIncomeTransaction]
   );
 
   // Helper function to categorize transaction as income or expense amount
   // Returns { income: number, expense: number } with absolute values
+  // Transfers are excluded from both income and expense totals
   const categorizeTransaction = useCallback(
     (tx) => {
       const absAmount = Math.abs(tx.amount);
-      if (isExpenseTransaction(tx)) {
-        return { income: 0, expense: absAmount };
+
+      // Transfers are neutral - don't count as income or expense
+      if (isTransferTransaction(tx)) {
+        return { income: 0, expense: 0 };
       }
-      return { income: absAmount, expense: 0 };
+
+      if (isIncomeTransaction(tx)) {
+        return { income: absAmount, expense: 0 };
+      }
+
+      // Everything else is an expense
+      return { income: 0, expense: absAmount };
     },
-    [isExpenseTransaction]
+    [isIncomeTransaction, isTransferTransaction]
   );
 
   // Filter transactions by time period
@@ -106,6 +134,11 @@ export default function Dashboard() {
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         const account = accountMap[tx.accountId];
+
+        // Exclude transfers
+        if (isTransferTransaction(tx)) {
+          return false;
+        }
 
         // Exclude credit card accounts
         if (account?.type === accountConstants.AccountType.CREDIT_CARD) {
@@ -126,12 +159,18 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateB.diff(dateA);
       });
-  }, [allTransactions, dateRanges, accountMap]);
+  }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 
   // Current month transactions
   const currentMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -140,7 +179,7 @@ export default function Dashboard() {
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     });
-  }, [allTransactions, dateRanges]);
+  }, [allTransactions, dateRanges, isTransferTransaction]);
 
   // Calculate current month totals (completed only)
   const currentMonthTotals = useMemo(() => {
@@ -162,6 +201,12 @@ export default function Dashboard() {
   const allMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -169,7 +214,7 @@ export default function Dashboard() {
           txDate.isSame(dateRanges.currentMonthEnd, 'day'))
       );
     });
-  }, [allTransactions, dateRanges]);
+  }, [allTransactions, dateRanges, isTransferTransaction]);
 
   // Calculate total projected month totals (all statuses)
   const projectedMonthTotals = useMemo(() => {
@@ -194,6 +239,11 @@ export default function Dashboard() {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         const account = accountMap[tx.accountId];
 
+        // Exclude transfers
+        if (isTransferTransaction(tx)) {
+          return false;
+        }
+
         // Exclude credit card accounts
         if (account?.type === accountConstants.AccountType.CREDIT_CARD) {
           return false;
@@ -212,7 +262,7 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateA.diff(dateB);
       });
-  }, [allTransactions, dateRanges, accountMap]);
+  }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
@@ -265,6 +315,12 @@ export default function Dashboard() {
 
     const remainingMonthTransactions = allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -284,7 +340,12 @@ export default function Dashboard() {
     });
 
     return { income, expenses, netFlow: income - expenses };
-  }, [allTransactions, dateRanges, categorizeTransaction]);
+  }, [
+    allTransactions,
+    dateRanges,
+    categorizeTransaction,
+    isTransferTransaction,
+  ]);
 
   // Calculate month-end projections
   const monthEndProjections = useMemo(() => {
@@ -333,1184 +394,55 @@ export default function Dashboard() {
       </Typography>
 
       {/* Recent Activity Section */}
-      <Accordion
-        defaultExpanded
-        sx={{
-          mb: 3,
-          borderLeft: '4px solid #ff9800',
-          '&:before': { display: 'none' },
-        }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          sx={{
-            backgroundColor: '#fff3e0',
-            '&:hover': { backgroundColor: '#ffe0b2' },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              width: '100%',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <HistoryIcon sx={{ color: '#ff9800' }} />
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 'bold' }}
-              >
-                Recent Activity
-              </Typography>
-              <Chip
-                label={`Last 14 Days`}
-                size='small'
-                sx={{ backgroundColor: '#ff9800', color: 'white' }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                ml: 'auto',
-                mr: 2,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Completed:
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: '#9e9e9e',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(recentTotals.completed)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Pending:
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: '#ff9800',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(recentTotals.pending)}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <strong>Date</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Account</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Description</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Status</strong>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <strong>Amount</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {recentTransactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      align='center'
-                      sx={{ py: 3, color: 'text.secondary' }}
-                    >
-                      No recent transactions in the last 14 days
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  recentTransactions.map((tx) => (
-                    <TableRow
-                      key={tx.id}
-                      sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}
-                    >
-                      <TableCell>
-                        {dayjs(tx.date, 'YYYY/MM/DD').format('MMM D, YYYY')}
-                      </TableCell>
-                      <TableCell>{getAccountName(tx.accountId)}</TableCell>
-                      <TableCell>{tx.description}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={tx.status}
-                          size='small'
-                          sx={{
-                            backgroundColor:
-                              tx.status ===
-                              transactionConstants.TransactionStatusEnum
-                                .COMPLETE
-                                ? '#9e9e9e'
-                                : '#ff9800',
-                            color: 'white',
-                            textTransform: 'capitalize',
-                            minWidth: '90px',
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color: getTransactionColor(tx),
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {formatTransactionAmount(tx.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-      </Accordion>
+      <RecentActivitySection
+        recentTransactions={recentTransactions}
+        recentTotals={recentTotals}
+        formatCurrency={formatCurrency}
+        formatTransactionAmount={formatTransactionAmount}
+        getTransactionColor={getTransactionColor}
+        getAccountName={getAccountName}
+      />
 
       {/* Future Activity Section */}
-      <Accordion
-        defaultExpanded
-        sx={{
-          mb: 3,
-          borderLeft: '4px solid #4caf50',
-          '&:before': { display: 'none' },
-        }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          sx={{
-            backgroundColor: '#e8f5e9',
-            '&:hover': { backgroundColor: '#c8e6c9' },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              width: '100%',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EventIcon sx={{ color: '#4caf50' }} />
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 'bold' }}
-              >
-                Upcoming Activity
-              </Typography>
-              <Chip
-                label={`Next 30 Days`}
-                size='small'
-                sx={{ backgroundColor: '#4caf50', color: 'white' }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                ml: 'auto',
-                mr: 2,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Scheduled:
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: '#2196f3',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(futureTotals.scheduled)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Planned:
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: '#4caf50',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(futureTotals.planned)}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <strong>Date</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Account</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Description</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Status</strong>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <strong>Amount</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {futureTransactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      align='center'
-                      sx={{ py: 3, color: 'text.secondary' }}
-                    >
-                      No upcoming scheduled or planned transactions
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  futureTransactions.map((tx) => (
-                    <TableRow
-                      key={tx.id}
-                      sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}
-                    >
-                      <TableCell>
-                        {dayjs(tx.date, 'YYYY/MM/DD').format('MMM D, YYYY')}
-                      </TableCell>
-                      <TableCell>{getAccountName(tx.accountId)}</TableCell>
-                      <TableCell>{tx.description}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={tx.status}
-                          size='small'
-                          sx={{
-                            backgroundColor:
-                              tx.status ===
-                              transactionConstants.TransactionStatusEnum
-                                .SCHEDULED
-                                ? '#2196f3'
-                                : '#4caf50',
-                            color: 'white',
-                            textTransform: 'capitalize',
-                            minWidth: '90px',
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color: getTransactionColor(tx),
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {formatTransactionAmount(tx.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-      </Accordion>
+      <UpcomingActivitySection
+        futureTransactions={futureTransactions}
+        futureTotals={futureTotals}
+        formatCurrency={formatCurrency}
+        formatTransactionAmount={formatTransactionAmount}
+        getTransactionColor={getTransactionColor}
+        getAccountName={getAccountName}
+      />
 
       {/* Current Month Overview Section */}
-      <Accordion
-        defaultExpanded
-        sx={{
-          mb: 3,
-          borderLeft: '4px solid #2196f3',
-          '&:before': { display: 'none' },
-        }}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          sx={{
-            backgroundColor: '#e3f2fd',
-            '&:hover': { backgroundColor: '#bbdefb' },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              width: '100%',
-              pr: 2,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingUpIcon sx={{ color: '#2196f3' }} />
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 'bold' }}
-              >
-                Current Month Overview
-              </Typography>
-              <Chip
-                label={dateRanges.today.format('MMMM YYYY')}
-                size='small'
-                sx={{ backgroundColor: '#2196f3', color: 'white' }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 3,
-                ml: 'auto',
-                alignItems: 'center',
-              }}
-            >
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Starting:
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{
-                    color: '#ba68c8',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(totals.current - currentMonthTotals.netFlow)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Current:
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{
-                    color: '#9c27b0',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(totals.current)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Projected:
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{
-                    color: '#7b1fa2',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(totals.future)}
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  borderLeft: '2px solid rgba(0,0,0,0.12)',
-                  paddingLeft: 2,
-                }}
-              >
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ mr: 0.5 }}
-                >
-                  Credit Card Balance:
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{
-                    color: '#d32f2f',
-                    fontWeight: 'bold',
-                    display: 'inline',
-                  }}
-                >
-                  {formatCurrency(creditCardTotals.current)}
-                  {creditCardTotals.pending !== creditCardTotals.current && (
-                    <span>
-                      {' '}
-                      (+
-                      {formatCurrency(
-                        creditCardTotals.pending - creditCardTotals.current
-                      )}{' '}
-                      pending)
-                    </span>
-                  )}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid
-            container
-            spacing={3}
-            sx={{ mb: 3 }}
-          >
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #4caf50',
-                  backgroundColor: '#f1f8f4',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Income
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                    }}
-                  >
-                    <Box>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Current
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{ color: '#4caf50', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(currentMonthTotals.income)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Projected
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{ color: '#388e3c', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(monthEndProjections.projectedIncome)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #f44336',
-                  backgroundColor: '#fef1f0',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Expenses
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                    }}
-                  >
-                    <Box>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Current
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{ color: '#f44336', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(currentMonthTotals.expenses)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Projected
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{ color: '#d32f2f', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(monthEndProjections.projectedExpenses)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #2196f3',
-                  backgroundColor: '#e3f2fd',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Net Flow
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                    }}
-                  >
-                    <Box>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Current
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{
-                          color:
-                            currentMonthTotals.netFlow >= 0
-                              ? '#4caf50'
-                              : '#f44336',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {formatCurrency(currentMonthTotals.netFlow)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      >
-                        Projected
-                      </Typography>
-                      <Typography
-                        variant='h5'
-                        sx={{
-                          color:
-                            monthEndProjections.projectedNetFlow >= 0
-                              ? '#4caf50'
-                              : '#f44336',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {formatCurrency(monthEndProjections.projectedNetFlow)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* Transaction Status Charges */}
-          <Grid
-            container
-            spacing={3}
-            sx={{ mb: 3 }}
-          >
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={3}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #2196f3',
-                  backgroundColor: '#e3f2fd',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Completed
-                  </Typography>
-                  <Typography
-                    variant='h4'
-                    sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                  >
-                    {formatCurrency(currentMonthTotals.netFlow)}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={3}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #ff9800',
-                  backgroundColor: '#fff3e0',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Pending
-                  </Typography>
-                  <Typography
-                    variant='h4'
-                    sx={{ color: '#ff9800', fontWeight: 'bold' }}
-                  >
-                    {formatCurrency(totals.pending - totals.current)}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={3}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #4caf50',
-                  backgroundColor: '#e8f5e9',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Scheduled
-                  </Typography>
-                  <Typography
-                    variant='h4'
-                    sx={{ color: '#4caf50', fontWeight: 'bold' }}
-                  >
-                    {formatCurrency(totals.scheduled - totals.pending)}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={3}
-            >
-              <Card
-                sx={{
-                  borderTop: '3px solid #673ab7',
-                  backgroundColor: '#ede7f6',
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    color='textSecondary'
-                    gutterBottom
-                  >
-                    Planned
-                  </Typography>
-                  <Typography
-                    variant='h4'
-                    sx={{ color: '#673ab7', fontWeight: 'bold' }}
-                  >
-                    {formatCurrency(totals.future - totals.scheduled)}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* Month Overview Summary */}
-          <Paper
-            sx={{
-              p: 3,
-              mb: 3,
-              backgroundColor: '#ffffff',
-              border: '1px solid #e0e0e0',
-            }}
-          >
-            <Typography
-              variant='h6'
-              sx={{ fontWeight: 'bold', mb: 2 }}
-            >
-              Month Overview
-            </Typography>
-
-            {/* Progress bar */}
-            <Box sx={{ mb: 3 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 1,
-                }}
-              >
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                >
-                  Day {monthEndProjections.currentDay} of{' '}
-                  {monthEndProjections.daysInMonth}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                >
-                  {monthEndProjections.daysRemaining} days remaining
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  width: '100%',
-                  height: 8,
-                  backgroundColor: '#e0e0e0',
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                }}
-              >
-                <Box
-                  sx={{
-                    width: `${monthEndProjections.monthProgress}%`,
-                    height: '100%',
-                    backgroundColor: '#2196f3',
-                    transition: 'width 0.3s ease',
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Three-column summary */}
-            <Grid
-              container
-              spacing={2}
-            >
-              {/* Month-to-Date (Actuals) */}
-              <Grid
-                item
-                xs={12}
-                md={4}
-              >
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: '#e3f2fd',
-                    border: '1px solid #2196f3',
-                  }}
-                >
-                  <Typography
-                    variant='subtitle2'
-                    sx={{ fontWeight: 'bold', mb: 1, color: '#2196f3' }}
-                  >
-                    Current
-                  </Typography>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Income
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{ color: '#4caf50', fontWeight: 'bold' }}
-                    >
-                      {formatCurrency(currentMonthTotals.income)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Expenses{' '}
-                      {totals.pending - totals.current < 0 && '(Pending)'}
-                    </Typography>
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}
-                    >
-                      <Typography
-                        variant='h6'
-                        sx={{ color: '#f44336', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(currentMonthTotals.expenses)}
-                      </Typography>
-                      {totals.pending - totals.current < 0 && (
-                        <Typography
-                          variant='body1'
-                          sx={{ color: '#ff9800', fontWeight: 'bold' }}
-                        >
-                          (
-                          {formatCurrency(
-                            Math.abs(totals.pending - totals.current)
-                          )}
-                          )
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                  <Box
-                    sx={{
-                      pt: 1,
-                      borderTop: '1px solid #90caf9',
-                    }}
-                  >
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Balance {totals.pending !== totals.current && '(Pending)'}
-                    </Typography>
-                    <Box
-                      sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}
-                    >
-                      <Typography
-                        variant='h6'
-                        sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                      >
-                        {formatCurrency(totals.current)}
-                      </Typography>
-                      {totals.pending !== totals.current && (
-                        <Typography
-                          variant='body1'
-                          sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                        >
-                          ({formatCurrency(totals.pending)})
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {/* Remaining Month (Scheduled/Planned) */}
-              <Grid
-                item
-                xs={12}
-                md={4}
-              >
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: '#fff3e0',
-                    border: '1px solid #ff9800',
-                  }}
-                >
-                  <Typography
-                    variant='subtitle2'
-                    sx={{ fontWeight: 'bold', mb: 1, color: '#ff9800' }}
-                  >
-                    Remaining
-                  </Typography>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Income
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{ color: '#4caf50', fontWeight: 'bold' }}
-                    >
-                      {formatCurrency(remainingMonthTotals.income)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Expenses
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{ color: '#f44336', fontWeight: 'bold' }}
-                    >
-                      {formatCurrency(remainingMonthTotals.expenses)}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      pt: 1,
-                      borderTop: '1px solid #ffcc80',
-                    }}
-                  >
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Net
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{
-                        color:
-                          remainingMonthTotals.netFlow >= 0
-                            ? '#4caf50'
-                            : '#f44336',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {formatCurrency(remainingMonthTotals.netFlow)}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {/* Month-End Projection */}
-              <Grid
-                item
-                xs={12}
-                md={4}
-              >
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: '#f3e5f5',
-                    border: '1px solid #9c27b0',
-                  }}
-                >
-                  <Typography
-                    variant='subtitle2'
-                    sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
-                  >
-                    Projected
-                  </Typography>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Income
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{ color: '#4caf50', fontWeight: 'bold' }}
-                    >
-                      {formatCurrency(monthEndProjections.projectedIncome)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Expenses
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{ color: '#f44336', fontWeight: 'bold' }}
-                    >
-                      {formatCurrency(monthEndProjections.projectedExpenses)}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      pt: 1,
-                      borderTop: '1px solid #ce93d8',
-                    }}
-                  >
-                    <Typography
-                      variant='caption'
-                      color='text.secondary'
-                    >
-                      Projected Balance
-                    </Typography>
-                    <Typography
-                      variant='h6'
-                      sx={{
-                        color:
-                          monthEndProjections.projectedNetFlow >= 0
-                            ? '#4caf50'
-                            : '#f44336',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {formatCurrency(totals.future)}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Category Breakdown */}
-          <CategoryBreakdown />
-
-          {/* Placeholder for Trend Chart */}
-          <Paper
-            sx={{
-              p: 3,
-              backgroundColor: '#f5f5f5',
-              border: '2px dashed #bdbdbd',
-              textAlign: 'center',
-            }}
-          >
-            <InfoOutlinedIcon sx={{ fontSize: 40, color: '#9e9e9e', mb: 1 }} />
-            <Typography
-              variant='h6'
-              sx={{ color: 'text.secondary', mb: 1 }}
-            >
-              Balance Trend Chart — Coming Soon
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{ color: 'text.secondary' }}
-            >
-              Track your balance movement throughout the current month
-            </Typography>
-          </Paper>
-        </AccordionDetails>
-      </Accordion>
+      <CurrentMonthOverviewSection
+        dateRanges={dateRanges}
+        totals={totals}
+        creditCardTotals={creditCardTotals}
+        currentMonthTotals={currentMonthTotals}
+        monthEndProjections={monthEndProjections}
+        remainingMonthTotals={remainingMonthTotals}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Placeholder for Monthly Summary */}
-      <Paper
-        sx={{
-          p: 3,
-          mb: 2,
-          backgroundColor: '#fff3e0',
-          border: '2px dashed #ff9800',
-          textAlign: 'center',
-        }}
-      >
-        <InfoOutlinedIcon sx={{ fontSize: 40, color: '#fb8c00', mb: 1 }} />
-        <Typography
-          variant='h6'
-          sx={{ color: 'text.secondary', mb: 1 }}
-        >
-          Monthly Summary — Coming Soon
-        </Typography>
-        <Typography
-          variant='body2'
-          sx={{ color: 'text.secondary' }}
-        >
-          Compare spending and income across recent months
-        </Typography>
-      </Paper>
+      <Box sx={{ mb: 2 }}>
+        <PlaceholderCard
+          title='Monthly Summary — Coming Soon'
+          description='Compare spending and income across recent months'
+          color='#fb8c00'
+          backgroundColor='#fff3e0'
+          borderColor='#ff9800'
+        />
+      </Box>
 
       {/* Placeholder for Tabbed Data View */}
-      <Paper
-        sx={{
-          p: 3,
-          backgroundColor: '#e1f5fe',
-          border: '2px dashed #03a9f4',
-          textAlign: 'center',
-        }}
-      >
-        <InfoOutlinedIcon sx={{ fontSize: 40, color: '#039be5', mb: 1 }} />
-        <Typography
-          variant='h6'
-          sx={{ color: 'text.secondary', mb: 1 }}
-        >
-          Tabbed Data Views — Coming Soon
-        </Typography>
-        <Typography
-          variant='body2'
-          sx={{ color: 'text.secondary' }}
-        >
-          Toggle between categories, date ranges, or account types for detailed
-          analysis
-        </Typography>
-      </Paper>
+      <PlaceholderCard
+        title='Tabbed Data Views — Coming Soon'
+        description='Toggle between categories, date ranges, or account types for detailed analysis'
+        color='#039be5'
+        backgroundColor='#e1f5fe'
+        borderColor='#03a9f4'
+      />
     </Box>
   );
 }

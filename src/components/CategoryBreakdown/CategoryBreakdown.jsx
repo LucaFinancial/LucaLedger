@@ -64,6 +64,25 @@ export default function CategoryBreakdown() {
     const now = dayjs();
     const today = now.startOf('day');
 
+    // Find the Transfers and Income category IDs
+    const transfersCategory = allCategories.find(
+      (cat) => cat.slug === 'transfers'
+    );
+    const transfersCategoryId = transfersCategory?.id;
+    const transfersSubcategoryIds =
+      transfersCategory?.subcategories.map((sub) => sub.id) || [];
+    const allTransferCategoryIds = transfersCategoryId
+      ? [transfersCategoryId, ...transfersSubcategoryIds]
+      : [];
+
+    const incomeCategory = allCategories.find((cat) => cat.slug === 'income');
+    const incomeCategoryId = incomeCategory?.id;
+    const incomeSubcategoryIds =
+      incomeCategory?.subcategories.map((sub) => sub.id) || [];
+    const allIncomeCategoryIds = incomeCategoryId
+      ? [incomeCategoryId, ...incomeSubcategoryIds]
+      : [];
+
     // Create category lookup map for O(1) lookups
     const categoryMap = new Map();
     allCategories.forEach((cat) => {
@@ -88,19 +107,27 @@ export default function CategoryBreakdown() {
         return false;
       }
 
+      // Exclude transfers
+      if (tx.categoryId && allTransferCategoryIds.includes(tx.categoryId)) {
+        return false;
+      }
+
+      // Exclude income
+      if (tx.categoryId && allIncomeCategoryIds.includes(tx.categoryId)) {
+        return false;
+      }
+
       // Include all transaction types for current month
       return true;
     });
 
-    // Calculate totals by category and subcategory (only expenses, amount < 0)
+    // Calculate totals by category and subcategory (only expenses based on category)
     const categoryTotals = new Map();
     let currentExpenses = 0;
     let projectedExpenses = 0;
 
     periodTransactions.forEach((tx) => {
-      // Only count expenses (negative amounts)
-      if (tx.amount >= 0) return;
-
+      // All remaining transactions are expenses (we already filtered out income and transfers)
       const expenseAmount = Math.abs(tx.amount);
 
       const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
@@ -241,8 +268,15 @@ export default function CategoryBreakdown() {
     );
   }
 
-  // Prepare data for pie chart
-  const pieChartData = categoryData.categories.map((cat) => ({
+  // Prepare data for pie charts
+  const currentPieChartData = categoryData.categories
+    .filter((cat) => cat.current > 0)
+    .map((cat) => ({
+      name: cat.name,
+      value: centsToDollars(cat.current),
+    }));
+
+  const projectedPieChartData = categoryData.categories.map((cat) => ({
     name: cat.name,
     value: centsToDollars(cat.projected),
   }));
@@ -318,28 +352,98 @@ export default function CategoryBreakdown() {
           </Typography>
         </Paper>
       </Box>
-      {/* Chart and Table */}
+      {/* Charts Section */}
       <Box
         sx={{
           display: 'flex',
           gap: 3,
-          flexDirection: { xs: 'column', md: 'row' },
+          mb: 3,
+          flexDirection: { xs: 'column', lg: 'row' },
         }}
       >
-        {/* Pie Chart */}
+        {/* Current Spending Pie Chart */}
         <Box
           sx={{
             flex: 1,
             minHeight: 300,
           }}
         >
+          <Typography
+            variant='subtitle2'
+            sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
+          >
+            Current Spending
+          </Typography>
+          {currentPieChartData.length > 0 ? (
+            <ResponsiveContainer
+              width='100%'
+              height={300}
+            >
+              <PieChart>
+                <Pie
+                  data={currentPieChartData}
+                  cx='50%'
+                  cy='50%'
+                  labelLine={false}
+                  outerRadius={80}
+                  fill='#8884d8'
+                  dataKey='value'
+                  label={({ name, percent }) =>
+                    percent > 0.05
+                      ? `${name}: ${(percent * 100).toFixed(0)}%`
+                      : ''
+                  }
+                >
+                  {currentPieChartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-current-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Legend
+                  verticalAlign='bottom'
+                  height={36}
+                  formatter={(value) => value}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box
+              sx={{
+                height: 300,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              <Typography variant='body2'>No current expenses</Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* Projected Spending Pie Chart */}
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 300,
+          }}
+        >
+          <Typography
+            variant='subtitle2'
+            sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
+          >
+            Projected Spending
+          </Typography>
           <ResponsiveContainer
             width='100%'
             height={300}
           >
             <PieChart>
               <Pie
-                data={pieChartData}
+                data={projectedPieChartData}
                 cx='50%'
                 cy='50%'
                 labelLine={false}
@@ -352,9 +456,9 @@ export default function CategoryBreakdown() {
                     : ''
                 }
               >
-                {pieChartData.map((entry, index) => (
+                {projectedPieChartData.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-projected-${index}`}
                     fill={COLORS[index % COLORS.length]}
                   />
                 ))}
@@ -368,7 +472,15 @@ export default function CategoryBreakdown() {
             </PieChart>
           </ResponsiveContainer>
         </Box>
-
+      </Box>
+      {/* Chart and Table */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 3,
+          flexDirection: { xs: 'column', md: 'row' },
+        }}
+      >
         {/* Category Table */}
         <Box sx={{ flex: 1 }}>
           <Table size='small'>
