@@ -7,6 +7,7 @@ import {
   constants as transactionConstants,
   selectors as transactionSelectors,
 } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
@@ -21,7 +22,41 @@ import PlaceholderCard from './PlaceholderCard';
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  const categories = useSelector(categorySelectors.selectAllCategories);
   const { totals, creditCardTotals } = useAccountBalances(accounts);
+
+  // Find the Income and Transfers parent category IDs
+  const incomeCategoryId = useMemo(() => {
+    const incomeCategory = categories.find(
+      (cat) => cat.slug === 'income' && !cat.parentId
+    );
+    return incomeCategory?.id;
+  }, [categories]);
+
+  const transfersCategoryId = useMemo(() => {
+    const transfersCategory = categories.find(
+      (cat) => cat.slug === 'transfers' && !cat.parentId
+    );
+    return transfersCategory?.id;
+  }, [categories]);
+
+  // Get all income category IDs (parent + children)
+  const incomeCategoryIds = useMemo(() => {
+    if (!incomeCategoryId) return [];
+    const subcategories = categories.filter(
+      (cat) => cat.parentId === incomeCategoryId
+    );
+    return [incomeCategoryId, ...subcategories.map((cat) => cat.id)];
+  }, [categories, incomeCategoryId]);
+
+  // Get all transfer category IDs (parent + children)
+  const transferCategoryIds = useMemo(() => {
+    if (!transfersCategoryId) return [];
+    const subcategories = categories.filter(
+      (cat) => cat.parentId === transfersCategoryId
+    );
+    return [transfersCategoryId, ...subcategories.map((cat) => cat.id)];
+  }, [categories, transfersCategoryId]);
 
   // Calculate date ranges (memoized to avoid recalculation)
   const dateRanges = useMemo(() => {
@@ -45,40 +80,74 @@ export default function Dashboard() {
   }, [accounts]);
 
   // Helper function to determine if a transaction represents an expense
-  // For checking/savings: negative amount = expense
-  // For credit cards: positive amount = expense (charge), negative = payment
+  // Uses category to determine: Income category = income, Transfers = neutral, all others = expense
   const isExpenseTransaction = useCallback(
     (tx) => {
-      const account = accountMap[tx.accountId];
-      if (!account) return tx.amount < 0;
+      if (!tx.categoryId) return false; // No category assigned
 
-      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-        return tx.amount > 0; // Positive amounts on credit cards are charges (expenses)
+      // Check if it's an income transaction
+      if (incomeCategoryIds.includes(tx.categoryId)) {
+        return false; // Income, not an expense
       }
-      return tx.amount < 0; // For checking/savings, negative is expense
+
+      // Check if it's a transfer (neutral, not counted as income or expense)
+      if (transferCategoryIds.includes(tx.categoryId)) {
+        return false; // Transfer, not an expense
+      }
+
+      // Everything else is an expense
+      return true;
     },
-    [accountMap]
+    [incomeCategoryIds, transferCategoryIds]
+  );
+
+  // Helper function to determine if a transaction is income
+  const isIncomeTransaction = useCallback(
+    (tx) => {
+      if (!tx.categoryId) return false;
+      return incomeCategoryIds.includes(tx.categoryId);
+    },
+    [incomeCategoryIds]
+  );
+
+  // Helper function to determine if a transaction is a transfer
+  const isTransferTransaction = useCallback(
+    (tx) => {
+      if (!tx.categoryId) return false;
+      return transferCategoryIds.includes(tx.categoryId);
+    },
+    [transferCategoryIds]
   );
 
   // Helper function to get the display color for a transaction
   const getTransactionColor = useCallback(
     (tx) => {
-      return isExpenseTransaction(tx) ? 'error.main' : 'success.main';
+      if (isIncomeTransaction(tx)) return 'success.main';
+      return 'error.main'; // Expense
     },
-    [isExpenseTransaction]
+    [isIncomeTransaction]
   );
 
   // Helper function to categorize transaction as income or expense amount
   // Returns { income: number, expense: number } with absolute values
+  // Transfers are excluded from both income and expense totals
   const categorizeTransaction = useCallback(
     (tx) => {
       const absAmount = Math.abs(tx.amount);
-      if (isExpenseTransaction(tx)) {
-        return { income: 0, expense: absAmount };
+
+      // Transfers are neutral - don't count as income or expense
+      if (isTransferTransaction(tx)) {
+        return { income: 0, expense: 0 };
       }
-      return { income: absAmount, expense: 0 };
+
+      if (isIncomeTransaction(tx)) {
+        return { income: absAmount, expense: 0 };
+      }
+
+      // Everything else is an expense
+      return { income: 0, expense: absAmount };
     },
-    [isExpenseTransaction]
+    [isIncomeTransaction, isTransferTransaction]
   );
 
   // Filter transactions by time period
@@ -87,6 +156,11 @@ export default function Dashboard() {
       .filter((tx) => {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         const account = accountMap[tx.accountId];
+
+        // Exclude transfers
+        if (isTransferTransaction(tx)) {
+          return false;
+        }
 
         // Exclude credit card accounts
         if (account?.type === accountConstants.AccountType.CREDIT_CARD) {
@@ -107,12 +181,18 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateB.diff(dateA);
       });
-  }, [allTransactions, dateRanges, accountMap]);
+  }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 
   // Current month transactions
   const currentMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -121,7 +201,7 @@ export default function Dashboard() {
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     });
-  }, [allTransactions, dateRanges]);
+  }, [allTransactions, dateRanges, isTransferTransaction]);
 
   // Calculate current month totals (completed only)
   const currentMonthTotals = useMemo(() => {
@@ -143,6 +223,12 @@ export default function Dashboard() {
   const allMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -150,7 +236,7 @@ export default function Dashboard() {
           txDate.isSame(dateRanges.currentMonthEnd, 'day'))
       );
     });
-  }, [allTransactions, dateRanges]);
+  }, [allTransactions, dateRanges, isTransferTransaction]);
 
   // Calculate total projected month totals (all statuses)
   const projectedMonthTotals = useMemo(() => {
@@ -175,6 +261,11 @@ export default function Dashboard() {
         const txDate = dayjs(tx.date, 'YYYY/MM/DD');
         const account = accountMap[tx.accountId];
 
+        // Exclude transfers
+        if (isTransferTransaction(tx)) {
+          return false;
+        }
+
         // Exclude credit card accounts
         if (account?.type === accountConstants.AccountType.CREDIT_CARD) {
           return false;
@@ -193,7 +284,7 @@ export default function Dashboard() {
         const dateB = dayjs(b.date, 'YYYY/MM/DD');
         return dateA.diff(dateB);
       });
-  }, [allTransactions, dateRanges, accountMap]);
+  }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
@@ -246,6 +337,12 @@ export default function Dashboard() {
 
     const remainingMonthTransactions = allTransactions.filter((tx) => {
       const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+
+      // Exclude transfers
+      if (isTransferTransaction(tx)) {
+        return false;
+      }
+
       return (
         (txDate.isAfter(dateRanges.currentMonthStart) ||
           txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
@@ -265,7 +362,12 @@ export default function Dashboard() {
     });
 
     return { income, expenses, netFlow: income - expenses };
-  }, [allTransactions, dateRanges, categorizeTransaction]);
+  }, [
+    allTransactions,
+    dateRanges,
+    categorizeTransaction,
+    isTransferTransaction,
+  ]);
 
   // Calculate month-end projections
   const monthEndProjections = useMemo(() => {
