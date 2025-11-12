@@ -49,9 +49,7 @@ export default function Categories() {
   const [searchHovered, setSearchHovered] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingCategory, setDeletingCategory] = useState(null);
-  const [deletingSubcategory, setDeletingSubcategory] = useState(null);
-  const [deletingParentId, setDeletingParentId] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(null); // { id, name, isSubcategory }
 
   // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
@@ -113,9 +111,11 @@ export default function Categories() {
 
   const handleDeleteCategory = (categoryId) => {
     const category = categories.find((cat) => cat.id === categoryId);
-    setDeletingCategory(category);
-    setDeletingSubcategory(null);
-    setDeletingParentId(null);
+    setDeletingCategory({
+      id: categoryId,
+      name: category?.name,
+      isSubcategory: false,
+    });
     setDeleteModalOpen(true);
   };
 
@@ -138,9 +138,11 @@ export default function Categories() {
     const subcategory = parentCategory?.subcategories?.find(
       (sub) => sub.id === subcategoryId
     );
-    setDeletingCategory(parentCategory);
-    setDeletingSubcategory(subcategory);
-    setDeletingParentId(parentId);
+    setDeletingCategory({
+      id: subcategoryId,
+      name: subcategory?.name,
+      isSubcategory: true,
+    });
     setDeleteModalOpen(true);
   };
 
@@ -165,16 +167,7 @@ export default function Categories() {
   };
 
   const handleConfirmDelete = () => {
-    if (deletingSubcategory && deletingParentId) {
-      // Deleting a subcategory
-      dispatch(
-        categoryActions.deleteSubcategory(
-          deletingParentId,
-          deletingSubcategory.id
-        )
-      );
-    } else if (deletingCategory) {
-      // Deleting a category
+    if (deletingCategory?.id) {
       dispatch(categoryActions.deleteCategory(deletingCategory.id));
     }
     handleCancelDelete();
@@ -183,8 +176,6 @@ export default function Categories() {
   const handleCancelDelete = () => {
     setDeleteModalOpen(false);
     setDeletingCategory(null);
-    setDeletingSubcategory(null);
-    setDeletingParentId(null);
   };
 
   return (
@@ -488,12 +479,8 @@ export default function Categories() {
         open={deleteModalOpen}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
-        categoryName={
-          deletingSubcategory
-            ? deletingSubcategory.name
-            : deletingCategory?.name
-        }
-        isSubcategory={!!deletingSubcategory}
+        categoryName={deletingCategory?.name}
+        isSubcategory={deletingCategory?.isSubcategory}
       />
     </Box>
   );
