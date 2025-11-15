@@ -112,6 +112,23 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('accounts', action.payload.id, action.payload);
   } else if (action.type === 'accounts/updateAccount') {
     queueWrite('accounts', action.payload.id, action.payload);
+  } else if (action.type === 'accounts/setAccounts') {
+    // When setting all accounts (e.g., during import), persist all to IndexedDB
+    const dek = getActiveDEK();
+    if (dek) {
+      // Import batchStoreEncryptedRecords for bulk operations
+      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+        const accountRecords = action.payload.map((account) => ({
+          id: account.id,
+          data: account,
+        }));
+        batchStoreEncryptedRecords('accounts', accountRecords, dek).catch(
+          (error) => {
+            console.error('Failed to persist accounts to IndexedDB:', error);
+          }
+        );
+      });
+    }
   } else if (action.type === 'accounts/removeAccount') {
     // Delete from IndexedDB immediately
     const accountId = action.payload;
@@ -125,6 +142,25 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('transactions', action.payload.id, action.payload);
   } else if (action.type === 'transactions/updateTransaction') {
     queueWrite('transactions', action.payload.id, action.payload);
+  } else if (action.type === 'transactions/setTransactions') {
+    // When setting all transactions (e.g., during import), persist all to IndexedDB
+    const dek = getActiveDEK();
+    if (dek) {
+      // Import batchStoreEncryptedRecords for bulk operations
+      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+        const transactionRecords = action.payload.map((transaction) => ({
+          id: transaction.id,
+          data: transaction,
+        }));
+        batchStoreEncryptedRecords(
+          'transactions',
+          transactionRecords,
+          dek
+        ).catch((error) => {
+          console.error('Failed to persist transactions to IndexedDB:', error);
+        });
+      });
+    }
   } else if (action.type === 'transactions/updateMultipleTransactions') {
     // Queue all updated transactions
     const { transactionIds } = action.payload;
