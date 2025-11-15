@@ -14,7 +14,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PropTypes from 'prop-types';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
 import MonthOverviewSummary from './MonthOverviewSummary';
-import PlaceholderCard from '../PlaceholderCard';
+import PlaceholderCard from './PlaceholderCard';
 
 export default function CurrentMonthOverviewSection({
   dateRanges,

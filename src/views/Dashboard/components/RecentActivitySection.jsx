@@ -114,8 +114,11 @@ export default function RecentActivitySection({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
-          <Table size='small'>
+        <TableContainer sx={{ maxHeight: 260, overflow: 'auto' }}>
+          <Table
+            size='small'
+            stickyHeader
+          >
             <TableHead>
               <TableRow>
                 <TableCell>

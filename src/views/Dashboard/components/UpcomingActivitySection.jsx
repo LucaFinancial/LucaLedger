@@ -114,8 +114,11 @@ export default function UpcomingActivitySection({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <TableContainer>
-          <Table size='small'>
+        <TableContainer sx={{ maxHeight: 260, overflow: 'auto' }}>
+          <Table
+            size='small'
+            stickyHeader
+          >
             <TableHead>
               <TableRow>
                 <TableCell>

@@ -9,7 +9,7 @@ import BetaBanner from '@/components/BetaBanner';
 import RecentActivitySection from './components/RecentActivitySection';
 import UpcomingActivitySection from './components/UpcomingActivitySection';
 import CurrentMonthOverviewSection from './components/CurrentMonthOverviewSection';
-import PlaceholderCard from './PlaceholderCard';
+import PlaceholderCard from './components/PlaceholderCard';
 import { useDateRanges } from './hooks/useDateRanges';
 import { useCategoryFilters } from './hooks/useCategoryFilters';
 import { useFilteredTransactions } from './hooks/useFilteredTransactions';
