@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import BetaBanner from '@/components/BetaBanner';
 import RecentActivitySection from './components/RecentActivitySection';
 import UpcomingActivitySection from './components/UpcomingActivitySection';
-import CurrentMonthOverviewSection from './components/CurrentMonthOverviewSection';
+import CurrentMonthOverviewSection from './components/CurrentMonthOverview';
 import PlaceholderCard from './components/PlaceholderCard';
 import { useDateRanges } from './hooks/useDateRanges';
 import { useCategoryFilters } from './hooks/useCategoryFilters';

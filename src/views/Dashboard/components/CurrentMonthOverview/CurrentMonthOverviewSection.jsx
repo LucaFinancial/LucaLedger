@@ -2,7 +2,7 @@ import { Accordion, AccordionDetails } from '@mui/material';
 import PropTypes from 'prop-types';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
 import MonthOverviewSummary from './MonthOverviewSummary';
-import PlaceholderCard from './PlaceholderCard';
+import PlaceholderCard from '../PlaceholderCard';
 import MonthOverviewHeader from './MonthOverviewHeader';
 import MonthlyIncomeExpenseCards from './MonthlyIncomeExpenseCards';
 
