@@ -1,7 +1,13 @@
 import { Paper, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
-export default function PlaceholderCard({ title, description, color = '#9e9e9e', backgroundColor = '#f5f5f5', borderColor = '#bdbdbd' }) {
+export default function PlaceholderCard({
+  title,
+  description,
+  color = '#9e9e9e',
+  backgroundColor = '#f5f5f5',
+  borderColor = '#bdbdbd',
+}) {
   return (
     <Paper
       sx={{
