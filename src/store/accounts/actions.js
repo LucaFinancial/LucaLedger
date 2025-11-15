@@ -35,50 +35,6 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-/**
- * Load account data from a JSON file with idempotent upsert behavior.
- *
- * This function implements idempotent import logic, meaning importing the same
- * file multiple times will NOT create duplicates. Instead, it will:
- * - Insert new records (by ID) that don't exist
- * - Update/overwrite existing records (by ID) with imported data
- * - Preserve existing records not present in the import file
- *
- * The import file is treated as the source of truth for the records it contains.
- *
- * @param {Object} data - The imported ledger data
- * @param {string} data.schemaVersion - Schema version (required, e.g., "2.1.0")
- * @param {Array} data.accounts - Array of account objects with unique IDs
- * @param {Array} data.transactions - Array of transaction objects with unique IDs
- * @param {Array} [data.categories] - Optional array of category objects
- * @param {boolean|null} shouldOverwriteCategories - Whether to overwrite existing categories
- *   - true: Replace all categories with imported ones
- *   - false: Keep existing categories, ignore imported ones
- *   - null: Prompt user if categories exist (default)
- *
- * @returns {Function} Redux thunk action
- *
- * @example
- * // First import: creates 2 accounts, 3 transactions
- * dispatch(loadAccount({
- *   schemaVersion: "2.1.0",
- *   accounts: [{ id: "acc-1", name: "Checking" }, { id: "acc-2", name: "Savings" }],
- *   transactions: [{ id: "txn-1", ... }, { id: "txn-2", ... }, { id: "txn-3", ... }]
- * }));
- * // Result: 2 accounts, 3 transactions
- *
- * // Second import: updates acc-1, adds acc-3, preserves acc-2
- * dispatch(loadAccount({
- *   schemaVersion: "2.1.0",
- *   accounts: [{ id: "acc-1", name: "Checking UPDATED" }, { id: "acc-3", name: "Credit" }],
- *   transactions: [{ id: "txn-1", ... }, { id: "txn-4", ... }]
- * }));
- * // Result: 3 accounts (acc-1 updated, acc-2 preserved, acc-3 added)
- * //         4 transactions (txn-1 updated, txn-2 & txn-3 preserved, txn-4 added)
- *
- * Performance: Handles 10,000+ rows efficiently using Map-based upsert.
- * Encryption: Works with both encrypted (IndexedDB) and unencrypted (localStorage) storage.
- */
 export const loadAccount =
   (data, shouldOverwriteCategories = null) =>
   async (dispatch, getState) => {
