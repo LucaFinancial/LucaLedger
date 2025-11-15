@@ -1,7 +1,14 @@
 import { Paper, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import PropTypes from 'prop-types';
 
-export default function PlaceholderCard({ title, description, color = '#9e9e9e', backgroundColor = '#f5f5f5', borderColor = '#bdbdbd' }) {
+export default function PlaceholderCard({
+  title,
+  description,
+  color = '#9e9e9e',
+  backgroundColor = '#f5f5f5',
+  borderColor = '#bdbdbd',
+}) {
   return (
     <Paper
       sx={{
@@ -27,3 +34,11 @@ export default function PlaceholderCard({ title, description, color = '#9e9e9e',
     </Paper>
   );
 }
+
+PlaceholderCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  color: PropTypes.string,
+  backgroundColor: PropTypes.string,
+  borderColor: PropTypes.string,
+};
