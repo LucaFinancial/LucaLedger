@@ -123,7 +123,7 @@ export default function CategoryDialog({
         } else if (subcategory && parentId) {
           // Update subcategory
           dispatch(
-            categoryActions.updateSubcategory(parentId, subcategory.id, {
+            categoryActions.updateCategory(subcategory.id, {
               name: name.trim(),
             })
           );
