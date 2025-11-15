@@ -15,6 +15,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EventIcon from '@mui/icons-material/Event';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { constants as transactionConstants } from '@/store/transactions';
 
 export default function UpcomingActivitySection({
@@ -113,8 +114,11 @@ export default function UpcomingActivitySection({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <TableContainer>
-          <Table size='small'>
+        <TableContainer sx={{ maxHeight: 260, overflow: 'auto' }}>
+          <Table
+            size='small'
+            stickyHeader
+          >
             <TableHead>
               <TableRow>
                 <TableCell>
@@ -191,3 +195,15 @@ export default function UpcomingActivitySection({
     </Accordion>
   );
 }
+
+UpcomingActivitySection.propTypes = {
+  futureTransactions: PropTypes.array.isRequired,
+  futureTotals: PropTypes.shape({
+    scheduled: PropTypes.number.isRequired,
+    planned: PropTypes.number.isRequired,
+  }).isRequired,
+  formatCurrency: PropTypes.func.isRequired,
+  formatTransactionAmount: PropTypes.func.isRequired,
+  getTransactionColor: PropTypes.func.isRequired,
+  getAccountName: PropTypes.func.isRequired,
+};
