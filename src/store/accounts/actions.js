@@ -6,6 +6,7 @@ import { validateAccount } from '@/validation/validator';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import {
   addAccount,
+  setAccounts,
   updateAccount as updateAccountNormalized,
   removeAccount,
   setLoading,
@@ -13,8 +14,13 @@ import {
   addLoadingAccountId,
   clearLoadingAccountIds,
 } from './slice';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
-import { addTransaction, removeTransaction } from '@/store/transactions/slice';
+import {
+  addTransaction,
+  setTransactions,
+  removeTransaction,
+} from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories';
 import { dollarsToCents } from '@/utils';
 
@@ -110,16 +116,33 @@ export const loadAccount =
         }));
       }
 
-      // Load all accounts
+      // Get current state for idempotent merge
+      const currentState = getState();
+      const existingAccounts = accountSelectors.selectAccounts(currentState);
+      const existingTransactions =
+        transactionSelectors.selectTransactions(currentState);
+
+      // Idempotent upsert: merge imported data with existing data by ID
+      // Create a map of existing items for efficient lookup
+      const accountsMap = new Map(existingAccounts.map((acc) => [acc.id, acc]));
+      const transactionsMap = new Map(
+        existingTransactions.map((txn) => [txn.id, txn])
+      );
+
+      // Upsert imported accounts (overwrites existing by ID)
       accountsToLoad.forEach((accountData) => {
-        dispatch(addAccount(accountData));
+        accountsMap.set(accountData.id, accountData);
         dispatch(addLoadingAccountId(accountData.id));
       });
 
-      // Load all transactions
+      // Upsert imported transactions (overwrites existing by ID)
       transactionsToLoad.forEach((transaction) => {
-        dispatch(addTransaction(transaction));
+        transactionsMap.set(transaction.id, transaction);
       });
+
+      // Replace entire collections with merged data
+      dispatch(setAccounts(Array.from(accountsMap.values())));
+      dispatch(setTransactions(Array.from(transactionsMap.values())));
 
       // Load categories if user confirmed or no existing categories
       if (shouldLoadCategories && categoriesToLoad) {
