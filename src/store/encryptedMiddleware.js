@@ -152,14 +152,13 @@ function handleEncryptedPersistence(action, state) {
           id: transaction.id,
           data: transaction,
         }));
-        batchStoreEncryptedRecords('transactions', transactionRecords, dek).catch(
-          (error) => {
-            console.error(
-              'Failed to persist transactions to IndexedDB:',
-              error
-            );
-          }
-        );
+        batchStoreEncryptedRecords(
+          'transactions',
+          transactionRecords,
+          dek
+        ).catch((error) => {
+          console.error('Failed to persist transactions to IndexedDB:', error);
+        });
       });
     }
   } else if (action.type === 'transactions/updateMultipleTransactions') {
