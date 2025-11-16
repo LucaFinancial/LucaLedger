@@ -11,7 +11,6 @@ export default function LedgerHeader() {
         <TableCell>Description</TableCell>
         <TableCell>Amount</TableCell>
         <TableCell>Balance</TableCell>
-        <TableCell>Split</TableCell>
         <TableCell>Actions</TableCell>
       </TableRow>
     </TableHead>
