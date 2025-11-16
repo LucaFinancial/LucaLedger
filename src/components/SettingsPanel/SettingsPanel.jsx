@@ -38,10 +38,12 @@ export default function SettingsPanel({ account }) {
     <Box
       sx={{
         width: '100%',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         py: 2,
+        px: 1,
+        overflow: 'auto',
       }}
     >
       <Typography
@@ -53,11 +55,12 @@ export default function SettingsPanel({ account }) {
           width: '100%',
           pb: 1,
           mb: 2,
+          fontSize: '1rem',
         }}
       >
         Account Info
       </Typography>
-      <Box>
+      <Box sx={{ px: 1 }}>
         <SettingsPanelItem>
           <AccountTypePicker account={account} />
         </SettingsPanelItem>

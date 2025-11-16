@@ -19,7 +19,7 @@ import {
   Tooltip,
   Badge,
 } from '@mui/material';
-import { Clear, MoreVert, Edit, FilterList } from '@mui/icons-material';
+import { Clear, MoreVert, Edit, Menu } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,6 +37,9 @@ export default function Ledger() {
   const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
   const [accountSettingsModalOpen, setAccountSettingsModalOpen] =
+    useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
@@ -197,6 +200,14 @@ export default function Ledger() {
     setAccountSettingsModalOpen(false);
   };
 
+  const handleRepeatedTransactionsOpen = () => {
+    setRepeatedTransactionsModalOpen(true);
+  };
+
+  const handleRepeatedTransactionsClose = () => {
+    setRepeatedTransactionsModalOpen(false);
+  };
+
   const handleClearInvalidCategories = () => {
     // Find all transactions with invalid categories and clear them
     const transactionsToUpdate = transactions
@@ -220,6 +231,14 @@ export default function Ledger() {
     setSelectedTransactions(new Set());
   };
 
+  const handleToggleUncategorized = () => {
+    setShowUncategorizedOnly(!showUncategorizedOnly);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <Box
       sx={{
@@ -227,36 +246,105 @@ export default function Ledger() {
         height: 'calc(100vh - 64px)',
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-around',
         overflow: 'hidden',
       }}
     >
+      {/* Collapsible Left Sidebar */}
       <Box
         sx={{
-          width: '18%',
-          borderRight: '1px solid',
+          width: sidebarOpen ? '240px' : '0px',
+          minWidth: sidebarOpen ? '240px' : '0px',
+          borderRight: sidebarOpen ? '1px solid' : 'none',
           borderColor: 'divider',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease',
         }}
       >
-        <SettingsPanel account={account} />
+        {sidebarOpen && <SettingsPanel account={account} />}
       </Box>
-      <Box sx={{ width: '82%', overflow: 'hidden' }}>
+
+      {/* Main Content Area */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Unified Toolbar */}
         <Box
-          style={{
+          sx={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '15px',
+            padding: '12px 16px',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            gap: 2,
           }}
         >
-          <AccountName account={account} />
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          {/* Left Section: Menu + Account Name */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}>
+              <IconButton
+                onClick={toggleSidebar}
+                size='medium'
+                aria-label='toggle sidebar'
+              >
+                <Menu />
+              </IconButton>
+            </Tooltip>
+            <AccountName account={account} />
+          </Box>
+
+          {/* Center Section: Search */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+            <TextField
+              id='filter'
+              placeholder='Search transactions...'
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              variant='outlined'
+              size='small'
+              sx={{ width: '300px' }}
+              InputProps={{
+                endAdornment: filterValue && (
+                  <InputAdornment position='end'>
+                    <IconButton
+                      aria-label='clear filter'
+                      onClick={() => setFilterValue('')}
+                      edge='end'
+                      size='small'
+                    >
+                      <Clear />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {(filterValue || showUncategorizedOnly) &&
+              filteredTransactions.length > 0 && (
+                <Button
+                  variant='outlined'
+                  onClick={handleSelectAllFiltered}
+                  aria-label='Select all filtered transactions'
+                  size='small'
+                >
+                  Select All ({filteredTransactions.length})
+                </Button>
+              )}
+          </Box>
+
+          {/* Right Section: Action Buttons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <NewTransactionButton compact />
             <Tooltip title='Edit Transactions'>
               <span>
                 <IconButton
                   onClick={handleBulkEditClick}
-                  size='large'
+                  size='medium'
                   aria-label='edit selected transactions'
                   disabled={selectedTransactions.size === 0}
                 >
@@ -273,7 +361,7 @@ export default function Ledger() {
             <Tooltip title='Ledger Settings'>
               <IconButton
                 onClick={handleSettingsMenuOpen}
-                size='large'
+                size='medium'
                 aria-label='open ledger settings menu'
               >
                 <MoreVert />
@@ -281,75 +369,22 @@ export default function Ledger() {
             </Tooltip>
           </Box>
         </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            padding: '15px',
-            gap: 1,
-          }}
-        >
-          <TextField
-            id='filter'
-            label='Filter'
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            variant='outlined'
-            size='small'
-            sx={{ width: '400px' }}
-            InputProps={{
-              endAdornment: filterValue && (
-                <InputAdornment position='end'>
-                  <IconButton
-                    aria-label='clear filter'
-                    onClick={() => setFilterValue('')}
-                    edge='end'
-                    size='small'
-                  >
-                    <Clear />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
+
+        {/* Table Container */}
+        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+          <LedgerTable
+            filterValue={filterValue}
+            showUncategorizedOnly={showUncategorizedOnly}
+            collapsedGroups={collapsedGroups}
+            setCollapsedGroups={setCollapsedGroups}
+            selectedTransactions={selectedTransactions}
+            onSelectionChange={handleSelectionChange}
           />
-          <Tooltip
-            title={
-              showUncategorizedOnly
-                ? 'Show all transactions'
-                : 'Show uncategorized only'
-            }
-          >
-            <Button
-              variant={showUncategorizedOnly ? 'contained' : 'outlined'}
-              onClick={() => setShowUncategorizedOnly(!showUncategorizedOnly)}
-              aria-label='Toggle uncategorized filter'
-              startIcon={<FilterList />}
-            >
-              Uncategorized{' '}
-              {uncategorizedCount > 0 && `(${uncategorizedCount})`}
-            </Button>
-          </Tooltip>
-          {(filterValue || showUncategorizedOnly) &&
-            filteredTransactions.length > 0 && (
-              <Button
-                variant='outlined'
-                onClick={handleSelectAllFiltered}
-                aria-label='Select all filtered transactions'
-              >
-                Select All ({filteredTransactions.length})
-              </Button>
-            )}
         </Box>
-        <LedgerTable
-          filterValue={filterValue}
-          showUncategorizedOnly={showUncategorizedOnly}
-          collapsedGroups={collapsedGroups}
-          setCollapsedGroups={setCollapsedGroups}
-          selectedTransactions={selectedTransactions}
-          onSelectionChange={handleSelectionChange}
+        <RepeatedTransactionsModal
+          open={repeatedTransactionsModalOpen}
+          onClose={handleRepeatedTransactionsClose}
         />
-        <NewTransactionButton />
-        <RepeatedTransactionsModal />
         <BulkEditModal
           open={bulkEditModalOpen}
           onClose={handleBulkEditClose}
@@ -368,6 +403,10 @@ export default function Ledger() {
           invalidCategoryCount={invalidCategoryCount}
           onClearSelected={handleClearSelected}
           selectedCount={selectedTransactions.size}
+          onCreateRepeatedTransactions={handleRepeatedTransactionsOpen}
+          showUncategorizedOnly={showUncategorizedOnly}
+          onToggleUncategorized={handleToggleUncategorized}
+          uncategorizedCount={uncategorizedCount}
         />
         <AccountSettingsModal
           open={accountSettingsModalOpen}

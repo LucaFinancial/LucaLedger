@@ -14,6 +14,8 @@ import {
   RestartAlt,
   Category,
   ClearAll,
+  Repeat,
+  FilterList,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
@@ -29,6 +31,10 @@ export default function LedgerSettingsMenu({
   invalidCategoryCount,
   onClearSelected,
   selectedCount,
+  onCreateRepeatedTransactions,
+  showUncategorizedOnly,
+  onToggleUncategorized,
+  uncategorizedCount,
 }) {
   const handleMenuItemClick = (callback) => {
     callback();
@@ -57,6 +63,17 @@ export default function LedgerSettingsMenu({
           View Controls
         </Typography>
       </Box>
+      <MenuItem onClick={() => handleMenuItemClick(onToggleUncategorized)}>
+        <ListItemIcon>
+          <FilterList fontSize='small' />
+        </ListItemIcon>
+        <ListItemText>
+          {showUncategorizedOnly
+            ? 'Show All Transactions'
+            : 'Show Only Uncategorized'}
+          {uncategorizedCount > 0 && ` (${uncategorizedCount})`}
+        </ListItemText>
+      </MenuItem>
       <MenuItem onClick={() => handleMenuItemClick(onCollapseAll)}>
         <ListItemIcon>
           <UnfoldLess fontSize='small' />
@@ -91,6 +108,14 @@ export default function LedgerSettingsMenu({
           <Settings fontSize='small' />
         </ListItemIcon>
         <ListItemText>Account Settings</ListItemText>
+      </MenuItem>
+      <MenuItem
+        onClick={() => handleMenuItemClick(onCreateRepeatedTransactions)}
+      >
+        <ListItemIcon>
+          <Repeat fontSize='small' />
+        </ListItemIcon>
+        <ListItemText>Create Repeated Transactions</ListItemText>
       </MenuItem>
 
       <Divider sx={{ my: 1 }} />
@@ -143,9 +168,14 @@ LedgerSettingsMenu.propTypes = {
   invalidCategoryCount: PropTypes.number,
   onClearSelected: PropTypes.func.isRequired,
   selectedCount: PropTypes.number,
+  onCreateRepeatedTransactions: PropTypes.func.isRequired,
+  showUncategorizedOnly: PropTypes.bool.isRequired,
+  onToggleUncategorized: PropTypes.func.isRequired,
+  uncategorizedCount: PropTypes.number,
 };
 
 LedgerSettingsMenu.defaultProps = {
   invalidCategoryCount: 0,
   selectedCount: 0,
+  uncategorizedCount: 0,
 };
