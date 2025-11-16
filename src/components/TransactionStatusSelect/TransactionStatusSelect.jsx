@@ -6,6 +6,41 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 
+const getStatusColor = (status) => {
+  switch (status) {
+    case constants.TransactionStatusEnum.COMPLETE:
+      return {
+        color: 'success.main',
+        bgcolor: 'success.light',
+        borderColor: 'success.main',
+      };
+    case constants.TransactionStatusEnum.PENDING:
+      return {
+        color: 'warning.main',
+        bgcolor: 'warning.light',
+        borderColor: 'warning.main',
+      };
+    case constants.TransactionStatusEnum.PLANNED:
+      return {
+        color: 'info.main',
+        bgcolor: 'info.light',
+        borderColor: 'info.main',
+      };
+    case constants.TransactionStatusEnum.SCHEDULED:
+      return {
+        color: 'secondary.main',
+        bgcolor: 'secondary.light',
+        borderColor: 'secondary.main',
+      };
+    default:
+      return {
+        color: 'text.primary',
+        bgcolor: 'background.paper',
+        borderColor: 'divider',
+      };
+  }
+};
+
 export default function TransactionStatusSelect({ transaction }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
@@ -27,6 +62,8 @@ export default function TransactionStatusSelect({ transaction }) {
     );
     setStatus(value);
   };
+
+  const statusColors = getStatusColor(status);
 
   return (
     <FormControl
@@ -50,6 +87,9 @@ export default function TransactionStatusSelect({ transaction }) {
         onChange={handleChange}
         sx={{
           textTransform: 'capitalize',
+          color: statusColors.color,
+          fontWeight: 500,
+          fontSize: '0.875rem',
         }}
       >
         {Object.keys(constants.TransactionStatusEnum).map((key) => {

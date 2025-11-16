@@ -1,7 +1,6 @@
 import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import { constants } from '@/store/transactions';
 import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
 import CategoryCell from './CategoryCell';
@@ -11,32 +10,25 @@ import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 
-const setBgColor = (status) => {
-  switch (status) {
-    case constants.TransactionStatusEnum.COMPLETE:
-      return 'lightgray';
-    case constants.TransactionStatusEnum.PENDING:
-      return 'yellow';
-    case constants.TransactionStatusEnum.PLANNED:
-      return 'lightgreen';
-    case constants.TransactionStatusEnum.SCHEDULED:
-      return 'lightblue';
-    default:
-      return 'white';
-  }
-};
-
 export default function LedgerRow({
   row,
   balance,
   isSelected,
   onSelectionChange,
 }) {
-  const bgColor = isSelected ? '#ffe6f0' : setBgColor(row.status);
-
   return (
     <TableRow
-      sx={{ background: bgColor, '& .MuiTableCell-root': { padding: '4px' } }}
+      sx={{
+        backgroundColor: isSelected ? 'action.selected' : 'inherit',
+        '&:hover': {
+          backgroundColor: isSelected ? 'action.selected' : 'action.hover',
+        },
+        '& .MuiTableCell-root': {
+          padding: '8px 12px',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        },
+      }}
     >
       <SelectionCell
         transaction={row}

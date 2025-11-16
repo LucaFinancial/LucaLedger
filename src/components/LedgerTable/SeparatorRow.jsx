@@ -33,17 +33,21 @@ export default function SeparatorRow({
       sx={{
         '& td': {
           borderBottom: 'unset',
-          bgcolor: isYear ? 'grey.200' : 'grey.100',
-          py: isYear ? 0.5 : 1,
+          bgcolor: isYear ? 'grey.50' : 'background.paper',
+          py: isYear ? 1 : 0.75,
           px: 2,
+          fontWeight: isYear ? 600 : 500,
+        },
+        '&:hover': {
+          '& td': {
+            bgcolor: isYear ? 'grey.100' : 'grey.50',
+          },
         },
       }}
     >
       <TableCell
         colSpan={8}
         sx={{
-          backgroundColor: isYear ? '#f5f5f5' : '#fafafa',
-          fontWeight: isYear ? 'bold' : 'normal',
           paddingLeft: isYear ? '16px' : '32px',
         }}
       >

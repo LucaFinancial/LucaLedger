@@ -2,7 +2,6 @@ import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
-import AccountTypePicker from '@/components/AccountTypePicker';
 import StatementDayInput from '@/components/StatementDayInput';
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
@@ -61,9 +60,6 @@ export default function SettingsPanel({ account }) {
         Account Info
       </Typography>
       <Box sx={{ px: 1 }}>
-        <SettingsPanelItem>
-          <AccountTypePicker account={account} />
-        </SettingsPanelItem>
         <SettingsPanelItem>
           <StatementDayInput account={account} />
         </SettingsPanelItem>
