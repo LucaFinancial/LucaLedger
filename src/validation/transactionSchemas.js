@@ -67,8 +67,15 @@ const transactionSchema = {
       description: 'Description of the transaction',
     },
     categoryId: {
-      type: ['string', 'null'],
-      minLength: 1,
+      oneOf: [
+        {
+          type: 'string',
+          minLength: 1,
+        },
+        {
+          type: 'null',
+        },
+      ],
       description: 'Category UUID for this transaction',
     },
     splits: {
