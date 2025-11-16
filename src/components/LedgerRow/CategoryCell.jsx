@@ -1,11 +1,20 @@
-import { TableCell } from '@mui/material';
+import { Badge, Box, IconButton, TableCell, Tooltip } from '@mui/material';
+import { CallSplit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { actions as transactionActions } from '@/store/transactions';
+import {
+  actions as transactionActions,
+  updateTransaction,
+} from '@/store/transactions';
 import CategorySelect from '@/components/CategorySelect';
+import SplitEditorModal from '@/components/SplitEditorModal';
 
 export default function CategoryCell({ transaction }) {
   const dispatch = useDispatch();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const hasSplits = transaction.splits && transaction.splits.length > 0;
 
   const handleCategoryChange = (categoryId) => {
     dispatch(
@@ -18,18 +27,61 @@ export default function CategoryCell({ transaction }) {
     );
   };
 
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleSaveSplits = (splits) => {
+    const updatedTransaction = {
+      ...transaction,
+      splits: splits.length > 0 ? splits : undefined,
+    };
+    dispatch(updateTransaction(updatedTransaction));
+  };
+
   return (
-    <TableCell sx={{ minWidth: 220 }}>
-      <CategorySelect
-        value={transaction.categoryId}
-        onChange={handleCategoryChange}
-        size='small'
-        variant='standard'
-        fullWidth
-        label=''
-        placeholder='Category'
+    <>
+      <TableCell sx={{ minWidth: 220 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ flex: 1 }}>
+            <CategorySelect
+              value={transaction.categoryId}
+              onChange={handleCategoryChange}
+              size='small'
+              variant='standard'
+              fullWidth
+              label=''
+              placeholder='Category'
+            />
+          </Box>
+          <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
+            <IconButton
+              onClick={handleOpenModal}
+              size='small'
+              color={hasSplits ? 'primary' : 'default'}
+            >
+              <Badge
+                badgeContent={hasSplits ? transaction.splits.length : 0}
+                color='primary'
+                invisible={!hasSplits}
+              >
+                <CallSplit fontSize='small' />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </TableCell>
+      <SplitEditorModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        transaction={transaction}
+        onSave={handleSaveSplits}
       />
-    </TableCell>
+    </>
   );
 }
 
