@@ -13,7 +13,6 @@ import {
   UnfoldMore,
   RestartAlt,
   Category,
-  ClearAll,
   Repeat,
   FilterList,
 } from '@mui/icons-material';
@@ -29,8 +28,6 @@ export default function LedgerSettingsMenu({
   onAccountSettings,
   onClearInvalidCategories,
   invalidCategoryCount,
-  onClearSelected,
-  selectedCount,
   onCreateRepeatedTransactions,
   showUncategorizedOnly,
   onToggleUncategorized,
@@ -129,18 +126,6 @@ export default function LedgerSettingsMenu({
         </Typography>
       </Box>
       <MenuItem
-        onClick={() => handleMenuItemClick(onClearSelected)}
-        disabled={selectedCount === 0}
-      >
-        <ListItemIcon>
-          <ClearAll fontSize='small' />
-        </ListItemIcon>
-        <ListItemText>
-          Deselect All
-          {selectedCount > 0 && ` (${selectedCount})`}
-        </ListItemText>
-      </MenuItem>
-      <MenuItem
         onClick={() => handleMenuItemClick(onClearInvalidCategories)}
         disabled={invalidCategoryCount === 0}
       >
@@ -166,8 +151,6 @@ LedgerSettingsMenu.propTypes = {
   onAccountSettings: PropTypes.func.isRequired,
   onClearInvalidCategories: PropTypes.func.isRequired,
   invalidCategoryCount: PropTypes.number,
-  onClearSelected: PropTypes.func.isRequired,
-  selectedCount: PropTypes.number,
   onCreateRepeatedTransactions: PropTypes.func.isRequired,
   showUncategorizedOnly: PropTypes.bool.isRequired,
   onToggleUncategorized: PropTypes.func.isRequired,
@@ -176,6 +159,5 @@ LedgerSettingsMenu.propTypes = {
 
 LedgerSettingsMenu.defaultProps = {
   invalidCategoryCount: 0,
-  selectedCount: 0,
   uncategorizedCount: 0,
 };

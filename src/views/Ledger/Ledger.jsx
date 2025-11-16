@@ -17,7 +17,7 @@ import {
   InputAdornment,
   TextField,
   Tooltip,
-  Badge,
+  Chip,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu } from '@mui/icons-material';
 import dayjs from 'dayjs';
@@ -235,6 +235,8 @@ export default function Ledger() {
     setShowUncategorizedOnly(!showUncategorizedOnly);
   };
 
+  const hasActiveFilters = filterValue || showUncategorizedOnly;
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -324,7 +326,30 @@ export default function Ledger() {
                 ),
               }}
             />
-            {(filterValue || showUncategorizedOnly) &&
+
+            {/* Active Filter Chips */}
+            {showUncategorizedOnly && (
+              <Chip
+                label='Uncategorized Only'
+                size='small'
+                onDelete={handleToggleUncategorized}
+                color='primary'
+                variant='outlined'
+              />
+            )}
+
+            {/* Select All / Deselect All Button */}
+            {selectedTransactions.size > 0 ? (
+              <Button
+                variant='outlined'
+                onClick={handleClearSelected}
+                aria-label='Deselect all transactions'
+                size='small'
+              >
+                Deselect All ({selectedTransactions.size})
+              </Button>
+            ) : (
+              (filterValue || showUncategorizedOnly) &&
               filteredTransactions.length > 0 && (
                 <Button
                   variant='outlined'
@@ -334,30 +359,41 @@ export default function Ledger() {
                 >
                   Select All ({filteredTransactions.length})
                 </Button>
-              )}
+              )
+            )}
           </Box>
 
           {/* Right Section: Action Buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <NewTransactionButton compact />
-            <Tooltip title='Edit Transactions'>
-              <span>
-                <IconButton
-                  onClick={handleBulkEditClick}
-                  size='medium'
-                  aria-label='edit selected transactions'
-                  disabled={selectedTransactions.size === 0}
-                >
-                  <Badge
-                    badgeContent={selectedTransactions.size}
-                    color='primary'
-                    max={999}
+
+            {/* Bulk Edit Button - More prominent when items selected */}
+            {selectedTransactions.size > 0 ? (
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={handleBulkEditClick}
+                aria-label='edit selected transactions'
+                size='small'
+                startIcon={<Edit />}
+              >
+                Edit ({selectedTransactions.size})
+              </Button>
+            ) : (
+              <Tooltip title='Select transactions to edit'>
+                <span>
+                  <IconButton
+                    onClick={handleBulkEditClick}
+                    size='medium'
+                    aria-label='edit selected transactions'
+                    disabled
                   >
                     <Edit />
-                  </Badge>
-                </IconButton>
-              </span>
-            </Tooltip>
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+
             <Tooltip title='Ledger Settings'>
               <IconButton
                 onClick={handleSettingsMenuOpen}
@@ -369,6 +405,27 @@ export default function Ledger() {
             </Tooltip>
           </Box>
         </Box>
+
+        {/* Filter Results Summary */}
+        {hasActiveFilters && (
+          <Box
+            sx={{
+              px: 2,
+              py: 1,
+              backgroundColor: 'info.light',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ fontSize: '0.875rem', color: 'info.dark' }}>
+              Showing {filteredTransactions.length} of {transactions.length}{' '}
+              transactions
+            </Box>
+          </Box>
+        )}
 
         {/* Table Container */}
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
@@ -401,8 +458,6 @@ export default function Ledger() {
           onAccountSettings={handleAccountSettingsOpen}
           onClearInvalidCategories={handleClearInvalidCategories}
           invalidCategoryCount={invalidCategoryCount}
-          onClearSelected={handleClearSelected}
-          selectedCount={selectedTransactions.size}
           onCreateRepeatedTransactions={handleRepeatedTransactionsOpen}
           showUncategorizedOnly={showUncategorizedOnly}
           onToggleUncategorized={handleToggleUncategorized}

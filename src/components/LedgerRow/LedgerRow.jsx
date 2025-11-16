@@ -1,6 +1,7 @@
 import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
+import { constants } from '@/store/transactions';
 import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
 import CategoryCell from './CategoryCell';
@@ -10,21 +11,42 @@ import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 
+const getStatusBackground = (status, isSelected) => {
+  if (isSelected) {
+    return '#ffe6f0';
+  }
+
+  switch (status) {
+    case constants.TransactionStatusEnum.COMPLETE:
+      return '#e0e0e0'; // lightgray
+    case constants.TransactionStatusEnum.PENDING:
+      return '#fff9c4'; // light yellow
+    case constants.TransactionStatusEnum.PLANNED:
+      return '#c8e6c9'; // light green
+    case constants.TransactionStatusEnum.SCHEDULED:
+      return '#b3e5fc'; // light blue
+    default:
+      return 'white';
+  }
+};
+
 export default function LedgerRow({
   row,
   balance,
   isSelected,
   onSelectionChange,
 }) {
+  const bgColor = getStatusBackground(row.status, isSelected);
+
   return (
     <TableRow
       sx={{
-        backgroundColor: isSelected ? 'action.selected' : 'inherit',
+        backgroundColor: bgColor,
         '&:hover': {
-          backgroundColor: isSelected ? 'action.selected' : 'action.hover',
+          filter: 'brightness(0.95)',
         },
         '& .MuiTableCell-root': {
-          padding: '8px 12px',
+          padding: '2px 4px',
           borderBottom: '1px solid',
           borderColor: 'divider',
         },
