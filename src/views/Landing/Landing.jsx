@@ -104,10 +104,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#4caf50',
-                backgroundColor: '#e8f5e9',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: '#c8e6c9',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -115,7 +115,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 📊 Transaction Categories
               </Typography>
@@ -135,10 +135,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff9800',
-                backgroundColor: '#fff3e0',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
                 '&:hover': {
-                  backgroundColor: '#ffe0b2',
+                  backgroundColor: '#e1bee7',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -146,7 +146,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
               >
                 ✏️ Bulk Edit for Transactions
               </Typography>
@@ -165,10 +165,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#f44336',
-                backgroundColor: '#ffebee',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: '#ffcdd2',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -176,7 +176,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#c62828', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🔒 Enhanced Security
               </Typography>
@@ -196,10 +196,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#2196f3',
-                backgroundColor: '#e3f2fd',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: '#bbdefb',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -207,7 +207,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 📁 Unified File Format
               </Typography>
@@ -227,10 +227,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#9c27b0',
-                backgroundColor: '#f3e5f5',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
                 '&:hover': {
-                  backgroundColor: '#e1bee7',
+                  backgroundColor: '#b2ebf2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -238,7 +238,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
               >
                 💰 Improved Precision
               </Typography>
@@ -301,10 +301,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff9800',
-                backgroundColor: '#fff3e0',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: '#ffe0b2',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -312,7 +312,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 🔀 Split Categories for Transactions
               </Typography>
@@ -365,10 +365,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#00bcd4',
-                backgroundColor: '#e0f7fa',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: '#b2ebf2',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -376,7 +376,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🔄 Recurring Transactions
               </Typography>
@@ -396,10 +396,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff5722',
-                backgroundColor: '#fbe9e7',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: '#ffccbc',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -407,7 +407,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#d84315', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 📈 Advanced Reporting & Analytics
               </Typography>
@@ -427,10 +427,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#4caf50',
-                backgroundColor: '#e8f5e9',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
                 '&:hover': {
-                  backgroundColor: '#c8e6c9',
+                  backgroundColor: '#b2ebf2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -438,7 +438,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
               >
                 🎯 Smart Budget Management
               </Typography>
@@ -458,10 +458,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#673ab7',
-                backgroundColor: '#ede7f6',
+                borderColor: '#009688',
+                backgroundColor: '#e0f2f1',
                 '&:hover': {
-                  backgroundColor: '#d1c4e9',
+                  backgroundColor: '#b2dfdb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -469,7 +469,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#512da8', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#00695c', mb: 1 }}
               >
                 📊 Investment Account Tracking
               </Typography>
@@ -502,10 +502,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#4caf50',
-                backgroundColor: '#e8f5e9',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: '#c8e6c9',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -513,7 +513,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 🔐 Complete Privacy
               </Typography>
@@ -534,10 +534,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#2196f3',
-                backgroundColor: '#e3f2fd',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
                 '&:hover': {
-                  backgroundColor: '#bbdefb',
+                  backgroundColor: '#e1bee7',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -545,7 +545,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
               >
                 ✈️ Works Completely Offline
               </Typography>
@@ -565,10 +565,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff9800',
-                backgroundColor: '#fff3e0',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: '#ffe0b2',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -576,7 +576,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🛡️ Industry-Standard Encryption
               </Typography>
@@ -597,10 +597,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#9c27b0',
-                backgroundColor: '#f3e5f5',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: '#e1bee7',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -608,7 +608,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 🚀 Modern Storage Architecture
               </Typography>
