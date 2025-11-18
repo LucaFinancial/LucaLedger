@@ -1,7 +1,15 @@
-import { Box, Typography, Divider } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Divider,
+  Select,
+  MenuItem,
+  Tabs,
+  Tab,
+} from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -17,6 +25,12 @@ export default function SettingsPanel({ account, selectedYear }) {
     transactionSelectors.selectTransactionsByAccountId(account.id)
   );
   const categories = useSelector(categorySelectors.selectAllCategories);
+
+  // Month selector state for category spending
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
+
+  // View selector state for category spending (current, pending, scheduled)
+  const [selectedView, setSelectedView] = useState('current');
 
   // Filter transactions by selected year for income/expense/category stats
   const yearFilteredTransactions = useMemo(() => {
@@ -96,17 +110,43 @@ export default function SettingsPanel({ account, selectedYear }) {
     return { totalIncome: income, totalExpenses: expenses };
   }, [yearFilteredTransactions]);
 
-  // Calculate top spending categories (completed transactions, expenses only)
+  // Calculate top spending categories based on selected view and month
   const topCategories = useMemo(() => {
-    const completed = yearFilteredTransactions.filter(
-      (t) =>
-        t.status === transactionConstants.TransactionStatusEnum.COMPLETE &&
-        Number(t.amount) < 0
-    );
+    let filtered = yearFilteredTransactions.filter((t) => Number(t.amount) < 0);
+
+    // Filter by status based on selected view
+    if (selectedView === 'current') {
+      // Current: only completed transactions
+      filtered = filtered.filter(
+        (t) => t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+      );
+    } else if (selectedView === 'pending') {
+      // Pending: completed + pending transactions
+      filtered = filtered.filter(
+        (t) =>
+          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
+          t.status === transactionConstants.TransactionStatusEnum.PENDING
+      );
+    } else if (selectedView === 'scheduled') {
+      // Scheduled: completed + pending + scheduled transactions
+      filtered = filtered.filter(
+        (t) =>
+          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
+          t.status === transactionConstants.TransactionStatusEnum.PENDING ||
+          t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+      );
+    }
+
+    // Apply month filter
+    if (selectedMonth !== 'all') {
+      filtered = filtered.filter((t) => {
+        return dayjs(t.date).format('YYYY-MM') === selectedMonth;
+      });
+    }
 
     const categoryTotals = new Map();
 
-    completed.forEach((t) => {
+    filtered.forEach((t) => {
       if (!t.categoryId) return;
       const current = categoryTotals.get(t.categoryId) || 0;
       categoryTotals.set(t.categoryId, current + Math.abs(Number(t.amount)));
@@ -123,7 +163,16 @@ export default function SettingsPanel({ account, selectedYear }) {
       .slice(0, 5);
 
     return sorted;
-  }, [yearFilteredTransactions, categories]);
+  }, [yearFilteredTransactions, categories, selectedMonth, selectedView]);
+
+  // Get available months from the year-filtered transactions
+  const availableMonths = useMemo(() => {
+    const months = new Set();
+    yearFilteredTransactions.forEach((t) => {
+      months.add(dayjs(t.date).format('YYYY-MM'));
+    });
+    return Array.from(months).sort().reverse();
+  }, [yearFilteredTransactions]);
 
   // Calculate date range
   const dateRange = useMemo(() => {
@@ -173,7 +222,7 @@ export default function SettingsPanel({ account, selectedYear }) {
         </Box>
       </Box>
 
-      {topCategories.length > 0 && (
+      {yearFilteredTransactions.length > 0 && (
         <>
           <Divider sx={{ my: 1 }} />
           <Box sx={{ px: 2 }}>
@@ -185,13 +234,91 @@ export default function SettingsPanel({ account, selectedYear }) {
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 display: 'block',
-                mb: 2,
+                mb: 1.5,
               }}
             >
               Spending by Category
             </Typography>
 
-            {/* Pie Chart */}
+            {/* Month Selector */}
+            <Select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              size='small'
+              fullWidth
+              sx={{
+                mb: 2,
+                fontSize: '0.875rem',
+                '& .MuiSelect-select': {
+                  py: 1,
+                },
+              }}
+            >
+              <MenuItem value='all'>All Year</MenuItem>
+              {availableMonths.map((month) => (
+                <MenuItem
+                  key={month}
+                  value={month}
+                >
+                  {dayjs(month).format('MMMM YYYY')}
+                </MenuItem>
+              ))}
+            </Select>
+
+            {/* View Selector Tabs */}
+            <Tabs
+              value={selectedView}
+              onChange={(e, newValue) => setSelectedView(newValue)}
+              sx={{
+                mb: 2,
+                minHeight: 'auto',
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#1976d2',
+                },
+              }}
+            >
+              <Tab
+                value='current'
+                label='Current'
+                sx={{
+                  minHeight: 'auto',
+                  py: 1,
+                  px: 2,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  minWidth: 'auto',
+                  flex: 1,
+                }}
+              />
+              <Tab
+                value='pending'
+                label='Pending'
+                sx={{
+                  minHeight: 'auto',
+                  py: 1,
+                  px: 2,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  minWidth: 'auto',
+                  flex: 1,
+                }}
+              />
+              <Tab
+                value='scheduled'
+                label='Scheduled'
+                sx={{
+                  minHeight: 'auto',
+                  py: 1,
+                  px: 2,
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  minWidth: 'auto',
+                  flex: 1,
+                }}
+              />
+            </Tabs>
+
+            {/* Pie Chart - always show, even with no data */}
             <Box
               sx={{
                 width: '100%',
@@ -205,129 +332,161 @@ export default function SettingsPanel({ account, selectedYear }) {
               >
                 <PieChart>
                   <Pie
-                    data={topCategories.map((cat) => ({
-                      name: cat.categoryName,
-                      value: centsToDollars(cat.total),
-                    }))}
+                    data={
+                      topCategories.length > 0
+                        ? topCategories.map((cat) => ({
+                            name: cat.categoryName,
+                            value: centsToDollars(cat.total),
+                          }))
+                        : [{ name: 'No Data', value: 1 }]
+                    }
                     cx='50%'
                     cy='50%'
                     outerRadius={70}
                     dataKey='value'
                   >
-                    {topCategories.map((entry, index) => {
-                      const colors = [
-                        '#1976d2',
-                        '#42a5f5',
-                        '#64b5f6',
-                        '#90caf9',
-                        '#bbdefb',
-                      ];
-                      return (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={colors[index % colors.length]}
-                        />
-                      );
-                    })}
+                    {topCategories.length > 0 ? (
+                      topCategories.map((entry, index) => {
+                        const colors = [
+                          '#1976d2',
+                          '#42a5f5',
+                          '#64b5f6',
+                          '#90caf9',
+                          '#bbdefb',
+                        ];
+                        return (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={colors[index % colors.length]}
+                          />
+                        );
+                      })
+                    ) : (
+                      <Cell
+                        key='no-data'
+                        fill='#e0e0e0'
+                      />
+                    )}
                   </Pie>
-                  <Tooltip
-                    formatter={(value) =>
-                      `$${Number(value).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}`
-                    }
-                  />
+                  {topCategories.length > 0 && (
+                    <Tooltip
+                      formatter={(value) =>
+                        `$${Number(value).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
+                      }
+                    />
+                  )}
                 </PieChart>
               </ResponsiveContainer>
             </Box>
 
-            {/* Legend */}
-            {topCategories.map((cat, index) => {
-              const total = topCategories.reduce((sum, c) => sum + c.total, 0);
-              const percentage = ((cat.total / total) * 100).toFixed(1);
-              const colors = [
-                '#1976d2',
-                '#42a5f5',
-                '#64b5f6',
-                '#90caf9',
-                '#bbdefb',
-              ];
+            {/* Legend - only show when there's data */}
+            {topCategories.length === 0 ? (
+              <Typography
+                variant='body2'
+                sx={{
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  py: 2,
+                  fontStyle: 'italic',
+                }}
+              >
+                No spending data for selected period
+              </Typography>
+            ) : (
+              <>
+                {topCategories.map((cat, index) => {
+                  const total = topCategories.reduce(
+                    (sum, c) => sum + c.total,
+                    0
+                  );
+                  const percentage = ((cat.total / total) * 100).toFixed(1);
+                  const colors = [
+                    '#1976d2',
+                    '#42a5f5',
+                    '#64b5f6',
+                    '#90caf9',
+                    '#bbdefb',
+                  ];
 
-              return (
-                <Box
-                  key={cat.categoryId}
-                  sx={{
-                    py: 1.5,
-                    borderBottom:
-                      index < topCategories.length - 1
-                        ? '1px solid rgba(0, 0, 0, 0.06)'
-                        : 'none',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      mb: 0.5,
-                    }}
-                  >
+                  return (
                     <Box
+                      key={cat.categoryId}
                       sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: '50%',
-                        backgroundColor: colors[index % colors.length],
-                        flexShrink: 0,
-                      }}
-                    />
-                    <Typography
-                      variant='body2'
-                      sx={{
-                        color: 'text.primary',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
+                        py: 1.5,
+                        borderBottom:
+                          index < topCategories.length - 1
+                            ? '1px solid rgba(0, 0, 0, 0.06)'
+                            : 'none',
                       }}
                     >
-                      {cat.categoryName}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                      pl: 2.25,
-                    }}
-                  >
-                    <Typography
-                      variant='body2'
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                        color: 'text.primary',
-                      }}
-                    >
-                      $
-                      {centsToDollars(cat.total).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Typography>
-                    <Typography
-                      variant='caption'
-                      sx={{
-                        color: 'text.secondary',
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {percentage}%
-                    </Typography>
-                  </Box>
-                </Box>
-              );
-            })}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 0.5,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            backgroundColor: colors[index % colors.length],
+                            flexShrink: 0,
+                          }}
+                        />
+                        <Typography
+                          variant='body2'
+                          sx={{
+                            color: 'text.primary',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {cat.categoryName}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          pl: 2.25,
+                        }}
+                      >
+                        <Typography
+                          variant='body2'
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '1rem',
+                            color: 'text.primary',
+                          }}
+                        >
+                          $
+                          {centsToDollars(cat.total).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </Typography>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {percentage}%
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </>
+            )}
           </Box>
         </>
       )}
