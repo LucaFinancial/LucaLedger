@@ -18,6 +18,7 @@ import { SettingsPanelItem } from './SettingsPanelItem';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { constants as transactionConstants } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { constants as accountConstants } from '@/store/accounts';
 import { centsToDollars } from '@/utils';
 
 export default function SettingsPanel({ account, selectedYear }) {
@@ -98,21 +99,40 @@ export default function SettingsPanel({ account, selectedYear }) {
     let income = 0;
     let expenses = 0;
 
+    const isCreditCard =
+      account.type === accountConstants.AccountType.CREDIT_CARD;
+
     completed.forEach((t) => {
       const amount = Number(t.amount);
-      if (amount > 0) {
-        income += amount;
+      if (isCreditCard) {
+        // Credit cards: positive = expenses, negative = payments
+        if (amount > 0) {
+          expenses += amount;
+        } else {
+          income += Math.abs(amount);
+        }
       } else {
-        expenses += Math.abs(amount);
+        // Checking/Savings: positive = income, negative = expenses
+        if (amount > 0) {
+          income += amount;
+        } else {
+          expenses += Math.abs(amount);
+        }
       }
     });
 
     return { totalIncome: income, totalExpenses: expenses };
-  }, [yearFilteredTransactions]);
+  }, [yearFilteredTransactions, account.type]);
 
   // Calculate top spending categories based on selected view and month
   const topCategories = useMemo(() => {
-    let expenses = yearFilteredTransactions.filter((t) => Number(t.amount) < 0);
+    const isCreditCard =
+      account.type === accountConstants.AccountType.CREDIT_CARD;
+
+    // For credit cards, expenses are positive amounts; for checking/savings, they're negative
+    let expenses = yearFilteredTransactions.filter((t) =>
+      isCreditCard ? Number(t.amount) > 0 : Number(t.amount) < 0
+    );
 
     // Apply month filter first
     if (selectedMonth !== 'all') {
@@ -193,7 +213,13 @@ export default function SettingsPanel({ account, selectedYear }) {
     });
 
     return categoryDetails;
-  }, [yearFilteredTransactions, categories, selectedMonth, selectedView]);
+  }, [
+    yearFilteredTransactions,
+    categories,
+    selectedMonth,
+    selectedView,
+    account.type,
+  ]);
 
   // Get available months from the year-filtered transactions
   const availableMonths = useMemo(() => {
