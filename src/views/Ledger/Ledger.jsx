@@ -93,15 +93,40 @@ export default function Ledger() {
 
     // Apply text filter
     if (filterValue) {
-      filtered = filtered.filter((transaction) =>
-        transaction.description
+      const lowerFilter = filterValue.toLowerCase();
+      filtered = filtered.filter((transaction) => {
+        // Check description
+        const matchesDescription = transaction.description
           .toLowerCase()
-          .includes(filterValue.toLowerCase())
-      );
+          .includes(lowerFilter);
+
+        // Check category name
+        const category = flatCategories.find(
+          (cat) => cat.id === transaction.categoryId
+        );
+        const matchesCategory = category?.name
+          .toLowerCase()
+          .includes(lowerFilter);
+
+        // Check parent category name if this is a subcategory
+        const parentCategory = category?.parentId
+          ? flatCategories.find((cat) => cat.id === category.parentId)
+          : null;
+        const matchesParentCategory = parentCategory?.name
+          .toLowerCase()
+          .includes(lowerFilter);
+
+        return matchesDescription || matchesCategory || matchesParentCategory;
+      });
     }
 
     return filterValue || showUncategorizedOnly ? filtered : [];
-  }, [filterValue, showUncategorizedOnly, yearFilteredTransactions]);
+  }, [
+    filterValue,
+    showUncategorizedOnly,
+    yearFilteredTransactions,
+    flatCategories,
+  ]);
 
   const allMonths = transactions?.length
     ? [
@@ -354,12 +379,12 @@ export default function Ledger() {
             </FormControl>
             <TextField
               id='filter'
-              placeholder='Search transactions...'
+              placeholder='Search categories and descriptions...'
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
               variant='outlined'
               size='small'
-              sx={{ width: '300px' }}
+              sx={{ width: '425px' }}
               InputProps={{
                 endAdornment: filterValue && (
                   <InputAdornment position='end'>
