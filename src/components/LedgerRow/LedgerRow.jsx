@@ -13,7 +13,7 @@ import StatusCell from './StatusCell';
 
 const getStatusBackground = (status, isSelected) => {
   if (isSelected) {
-    return '#ffe6f0';
+    return '#f57c00'; // chart orange
   }
 
   switch (status) {
@@ -42,6 +42,7 @@ export default function LedgerRow({
     <TableRow
       sx={{
         backgroundColor: bgColor,
+        color: isSelected ? 'white' : 'inherit',
         '&:hover': {
           filter: 'brightness(0.95)',
         },
@@ -49,6 +50,7 @@ export default function LedgerRow({
           padding: '2px 4px',
           borderBottom: '1px solid',
           borderColor: 'divider',
+          color: isSelected ? 'white' : 'inherit',
         },
       }}
     >
@@ -57,9 +59,15 @@ export default function LedgerRow({
         isSelected={isSelected}
         onSelectionChange={onSelectionChange}
       />
-      <StatusCell transaction={row} />
+      <StatusCell
+        transaction={row}
+        isSelected={isSelected}
+      />
       <DateCell transaction={row} />
-      <CategoryCell transaction={row} />
+      <CategoryCell
+        transaction={row}
+        isSelected={isSelected}
+      />
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />

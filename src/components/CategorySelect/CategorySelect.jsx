@@ -16,6 +16,7 @@ export default function CategorySelect({
   error = false,
   helperText = '',
   fullWidth = false,
+  isSelected = false,
 }) {
   const categories = useSelector(
     categorySelectors.selectCategoriesHierarchical
@@ -231,8 +232,8 @@ export default function CategorySelect({
               variant={variant}
               error={error || isInvalidCategory}
               helperText={helperText}
-              sx={
-                isInvalidCategory
+              sx={{
+                ...(isInvalidCategory
                   ? {
                       '& .MuiInputBase-input': {
                         color: 'error.main',
@@ -242,8 +243,17 @@ export default function CategorySelect({
                         opacity: 1,
                       },
                     }
-                  : undefined
-              }
+                  : isSelected
+                  ? {
+                      '& .MuiInputBase-input': {
+                        color: 'white',
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: 'white',
+                      },
+                    }
+                  : undefined),
+              }}
               InputProps={inputProps}
             />
           );
@@ -323,4 +333,5 @@ CategorySelect.propTypes = {
   error: PropTypes.bool,
   helperText: PropTypes.string,
   fullWidth: PropTypes.bool,
+  isSelected: PropTypes.bool,
 };

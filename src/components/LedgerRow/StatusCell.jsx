@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import TransactionStatusSelect from '@/components/TransactionStatusSelect';
 
-export default function StatusCell({ transaction }) {
+export default function StatusCell({ transaction, isSelected }) {
   return (
     <TableCell
       style={{
@@ -11,11 +11,15 @@ export default function StatusCell({ transaction }) {
         paddingLeft: '10px',
       }}
     >
-      <TransactionStatusSelect transaction={transaction} />
+      <TransactionStatusSelect
+        transaction={transaction}
+        isSelected={isSelected}
+      />
     </TableCell>
   );
 }
 
 StatusCell.propTypes = {
   transaction: PropTypes.object.isRequired,
+  isSelected: PropTypes.bool,
 };

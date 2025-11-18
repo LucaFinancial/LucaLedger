@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { actions as transactionActions } from '@/store/transactions';
 import CategorySelect from '@/components/CategorySelect';
 
-export default function CategoryCell({ transaction }) {
+export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
 
   const handleCategoryChange = (categoryId) => {
@@ -28,6 +28,7 @@ export default function CategoryCell({ transaction }) {
         fullWidth
         label=''
         placeholder='Category'
+        isSelected={isSelected}
       />
     </TableCell>
   );
@@ -35,4 +36,5 @@ export default function CategoryCell({ transaction }) {
 
 CategoryCell.propTypes = {
   transaction: PropTypes.object.isRequired,
+  isSelected: PropTypes.bool,
 };
