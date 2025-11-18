@@ -224,6 +224,24 @@ export default function Ledger() {
     setBulkEditModalOpen(false);
   };
 
+  const handleDeleteTransactions = () => {
+    // Delete all selected transactions
+    const transactionIds = Array.from(selectedTransactions);
+    transactionIds.forEach((transactionId) => {
+      const transaction = transactions.find((t) => t.id === transactionId);
+      if (transaction) {
+        dispatch(
+          transactionActions.removeTransactionById(
+            transaction.accountId,
+            transaction
+          )
+        );
+      }
+    });
+    setSelectedTransactions(new Set());
+    setBulkEditModalOpen(false);
+  };
+
   const handleSelectAllFiltered = () => {
     // Select all transactions that match the current filter
     const filteredIds = new Set(filteredTransactions.map((t) => t.id));
@@ -522,6 +540,7 @@ export default function Ledger() {
           onClose={handleBulkEditClose}
           selectedCount={selectedTransactions.size}
           onApplyChanges={handleBulkEditApply}
+          onDeleteTransactions={handleDeleteTransactions}
         />
         <LedgerSettingsMenu
           anchorEl={settingsMenuAnchor}
