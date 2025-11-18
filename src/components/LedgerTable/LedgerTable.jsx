@@ -22,6 +22,7 @@ export default function LedgerTable({
   setCollapsedGroups,
   selectedTransactions,
   onSelectionChange,
+  selectedYear,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
@@ -29,10 +30,18 @@ export default function LedgerTable({
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
-  const sortedTransactions = useMemo(
-    () => [...transactions].sort(dateCompareFn),
-    [transactions]
-  );
+  const sortedTransactions = useMemo(() => {
+    let filtered = transactions;
+
+    // Apply year filter
+    if (selectedYear !== 'all') {
+      filtered = filtered.filter(
+        (t) => dayjs(t.date).format('YYYY') === selectedYear
+      );
+    }
+
+    return [...filtered].sort(dateCompareFn);
+  }, [transactions, selectedYear]);
 
   const transactionsWithBalance = useMemo(() => {
     let currentBalance = 0.0;
@@ -263,4 +272,5 @@ LedgerTable.propTypes = {
   setCollapsedGroups: PropTypes.func.isRequired,
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
+  selectedYear: PropTypes.string.isRequired,
 };

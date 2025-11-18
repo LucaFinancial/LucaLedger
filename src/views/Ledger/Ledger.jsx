@@ -18,6 +18,10 @@ import {
   TextField,
   Tooltip,
   Chip,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu } from '@mui/icons-material';
 import dayjs from 'dayjs';
@@ -41,6 +45,7 @@ export default function Ledger() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
+  const [selectedYear, setSelectedYear] = useState('all');
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
@@ -60,10 +65,26 @@ export default function Ledger() {
     return transactions.filter((transaction) => !transaction.categoryId).length;
   }, [transactions]);
 
+  // Get available years from transactions
+  const availableYears = useMemo(() => {
+    const years = [
+      ...new Set(transactions.map((t) => dayjs(t.date).format('YYYY'))),
+    ];
+    return years.sort((a, b) => b.localeCompare(a)); // Sort descending
+  }, [transactions]);
+
+  // Filter transactions by selected year
+  const yearFilteredTransactions = useMemo(() => {
+    if (selectedYear === 'all') return transactions;
+    return transactions.filter(
+      (t) => dayjs(t.date).format('YYYY') === selectedYear
+    );
+  }, [transactions, selectedYear]);
+
   // Calculate filtered transactions for "Select All (Filtered)" button
   // Only include transactions that match the filter (not already-selected ones)
   const filteredTransactions = useMemo(() => {
-    let filtered = transactions;
+    let filtered = yearFilteredTransactions;
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
@@ -80,7 +101,7 @@ export default function Ledger() {
     }
 
     return filterValue || showUncategorizedOnly ? filtered : [];
-  }, [filterValue, showUncategorizedOnly, transactions]);
+  }, [filterValue, showUncategorizedOnly, yearFilteredTransactions]);
 
   const allMonths = transactions?.length
     ? [
@@ -262,7 +283,12 @@ export default function Ledger() {
           transition: 'all 0.3s ease',
         }}
       >
-        {sidebarOpen && <SettingsPanel account={account} />}
+        {sidebarOpen && (
+          <SettingsPanel
+            account={account}
+            selectedYear={selectedYear}
+          />
+        )}
       </Box>
 
       {/* Main Content Area */}
@@ -301,8 +327,31 @@ export default function Ledger() {
             <AccountName account={account} />
           </Box>
 
-          {/* Center Section: Search */}
+          {/* Center Section: Year Filter + Search */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+            <FormControl
+              size='small'
+              sx={{ minWidth: 120 }}
+            >
+              <InputLabel id='year-filter-label'>Year</InputLabel>
+              <Select
+                labelId='year-filter-label'
+                id='year-filter'
+                value={selectedYear}
+                label='Year'
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <MenuItem value='all'>All Years</MenuItem>
+                {availableYears.map((year) => (
+                  <MenuItem
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               id='filter'
               placeholder='Search transactions...'
@@ -436,6 +485,7 @@ export default function Ledger() {
             setCollapsedGroups={setCollapsedGroups}
             selectedTransactions={selectedTransactions}
             onSelectionChange={handleSelectionChange}
+            selectedYear={selectedYear}
           />
         </Box>
         <RepeatedTransactionsModal
