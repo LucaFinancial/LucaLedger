@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
 import { SettingsPanelItem } from './SettingsPanelItem';
@@ -150,241 +151,174 @@ export default function SettingsPanel({ account, selectedYear }) {
         overflow: 'auto',
       }}
     >
-      {/* Balances Section */}
-      <Typography
-        variant='h6'
-        sx={{
-          textAlign: 'center',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          width: '100%',
-          pb: 1,
-          mb: 2,
-          fontSize: '1rem',
-          fontWeight: 600,
-        }}
-      >
-        Balances
-      </Typography>
-      <Box sx={{ px: 1, mb: 3 }}>
-        <SettingsPanelItem>
-          <BalanceDisplay
-            label='Current Balance'
-            balance={currentBalance}
-          />
-        </SettingsPanelItem>
-        <SettingsPanelItem>
+      {/* Balances */}
+      <Box sx={{ px: 2, mb: 2 }}>
+        <BalanceDisplay
+          label='Current Balance'
+          balance={currentBalance}
+        />
+        <Box sx={{ mt: 2 }}>
           <BalanceDisplay
             label='Pending Balance'
             balance={pendingBalance}
             difference={pendingAmount}
             accountType={account.type}
           />
-        </SettingsPanelItem>
-        <SettingsPanelItem>
+        </Box>
+        <Box sx={{ mt: 2 }}>
           <BalanceDisplay
             label='Scheduled Balance'
             balance={scheduledBalance}
             difference={scheduledAmount}
             accountType={account.type}
           />
-        </SettingsPanelItem>
-      </Box>
-
-      <Divider sx={{ mb: 2 }} />
-
-      {/* Income & Expenses Section */}
-      <Typography
-        variant='h6'
-        sx={{
-          textAlign: 'center',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          width: '100%',
-          pb: 1,
-          mb: 2,
-          fontSize: '1rem',
-          fontWeight: 600,
-        }}
-      >
-        Activity
-      </Typography>
-      <Box sx={{ px: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
-            Total Income
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ fontWeight: 600, color: 'success.main' }}
-          >
-            $
-            {centsToDollars(totalIncome).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
-            Total Expenses
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ fontWeight: 600, color: 'error.main' }}
-          >
-            $
-            {centsToDollars(totalExpenses).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            pt: 1,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Typography
-            variant='body2'
-            sx={{ fontWeight: 600 }}
-          >
-            Net
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{
-              fontWeight: 600,
-              color:
-                totalIncome - totalExpenses >= 0
-                  ? 'success.main'
-                  : 'error.main',
-            }}
-          >
-            $
-            {centsToDollars(totalIncome - totalExpenses).toLocaleString(
-              undefined,
-              {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }
-            )}
-          </Typography>
         </Box>
       </Box>
 
       {topCategories.length > 0 && (
         <>
-          <Divider sx={{ mb: 2 }} />
-
-          {/* Top Spending Categories */}
-          <Typography
-            variant='h6'
-            sx={{
-              textAlign: 'center',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              width: '100%',
-              pb: 1,
-              mb: 2,
-              fontSize: '1rem',
-              fontWeight: 600,
-            }}
-          >
-            Top Spending
-          </Typography>
-          <Box sx={{ px: 2, mb: 2 }}>
-            {topCategories.map((cat, index) => (
-              <Box
-                key={cat.categoryId}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 1,
-                  alignItems: 'center',
-                }}
-              >
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: 'text.secondary',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    flex: 1,
-                    mr: 1,
-                  }}
-                >
-                  {index + 1}. {cat.categoryName}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{ fontWeight: 500 }}
-                >
-                  $
-                  {centsToDollars(cat.total).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </>
-      )}
-
-      {dateRange && (
-        <>
-          <Divider sx={{ mb: 2 }} />
-
-          {/* Date Range */}
-          <Typography
-            variant='h6'
-            sx={{
-              textAlign: 'center',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              width: '100%',
-              pb: 1,
-              mb: 2,
-              fontSize: '1rem',
-              fontWeight: 600,
-            }}
-          >
-            Date Range
-          </Typography>
+          <Divider sx={{ my: 2 }} />
           <Box sx={{ px: 2 }}>
             <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ textAlign: 'center' }}
+              variant='caption'
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                display: 'block',
+                mb: 2,
+              }}
             >
-              {dateRange.earliest}
+              Spending by Category
             </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ textAlign: 'center', fontWeight: 600 }}
+
+            {/* Pie Chart */}
+            <Box
+              sx={{
+                width: '100%',
+                height: 200,
+                mb: 2,
+              }}
             >
-              to
-            </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ textAlign: 'center' }}
-            >
-              {dateRange.latest}
-            </Typography>
+              <ResponsiveContainer
+                width='100%'
+                height='100%'
+              >
+                <PieChart>
+                  <Pie
+                    data={topCategories.map((cat) => ({
+                      name: cat.categoryName,
+                      value: centsToDollars(cat.total),
+                    }))}
+                    cx='50%'
+                    cy='50%'
+                    outerRadius={70}
+                    dataKey='value'
+                  >
+                    {topCategories.map((entry, index) => {
+                      const colors = [
+                        '#1976d2',
+                        '#42a5f5',
+                        '#64b5f6',
+                        '#90caf9',
+                        '#bbdefb',
+                      ];
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={colors[index % colors.length]}
+                        />
+                      );
+                    })}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) =>
+                      `$${Number(value).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
+                    }
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
+
+            {/* Legend */}
+            {topCategories.map((cat, index) => {
+              const total = topCategories.reduce((sum, c) => sum + c.total, 0);
+              const percentage = ((cat.total / total) * 100).toFixed(1);
+              const colors = [
+                '#1976d2',
+                '#42a5f5',
+                '#64b5f6',
+                '#90caf9',
+                '#bbdefb',
+              ];
+
+              return (
+                <Box
+                  key={cat.categoryId}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    py: 1,
+                    borderBottom:
+                      index < topCategories.length - 1
+                        ? '1px solid rgba(0, 0, 0, 0.06)'
+                        : 'none',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        backgroundColor: colors[index % colors.length],
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Typography
+                      variant='body2'
+                      sx={{
+                        color: 'text.primary',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {cat.categoryName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography
+                      variant='body2'
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        color: 'text.primary',
+                      }}
+                    >
+                      $
+                      {centsToDollars(cat.total).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </Typography>
+                    <Typography
+                      variant='caption'
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      {percentage}%
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })}
           </Box>
         </>
       )}
