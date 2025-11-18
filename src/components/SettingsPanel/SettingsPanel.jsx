@@ -252,11 +252,11 @@ export default function SettingsPanel({ account, selectedYear }) {
         display: 'flex',
         flexDirection: 'column',
         py: 2,
-        px: 1,
+        px: 0.5,
       }}
     >
       {/* Balances */}
-      <Box sx={{ px: 2, flexShrink: 0 }}>
+      <Box sx={{ px: 1.5, flexShrink: 0 }}>
         <BalanceDisplay
           label='Current Balance'
           balance={currentBalance}
@@ -280,7 +280,7 @@ export default function SettingsPanel({ account, selectedYear }) {
           <Divider sx={{ my: 1.25, flexShrink: 0 }} />
           <Box
             sx={{
-              px: 2,
+              px: 1.5,
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',

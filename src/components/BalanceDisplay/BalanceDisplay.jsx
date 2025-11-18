@@ -57,6 +57,7 @@ export default function BalanceDisplay({
         sx={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: 1,
           mb: 0.5,
         }}
@@ -65,7 +66,7 @@ export default function BalanceDisplay({
           variant='caption'
           sx={{
             color: 'text.secondary',
-            fontSize: '0.6rem',
+            fontSize: '0.7rem',
             textTransform: 'uppercase',
             letterSpacing: '0.8px',
             fontWeight: 600,
@@ -76,7 +77,7 @@ export default function BalanceDisplay({
         >
           <Box
             component='span'
-            sx={{ fontSize: '0.7rem' }}
+            sx={{ fontSize: '0.8rem' }}
           >
             {getIcon()}
           </Box>
