@@ -17,7 +17,7 @@ export default function SettingsPanel({ account, selectedYear }) {
   );
   const categories = useSelector(categorySelectors.selectAllCategories);
 
-  // Filter transactions by selected year
+  // Filter transactions by selected year for income/expense/category stats
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
     return transactions.filter(
@@ -25,40 +25,50 @@ export default function SettingsPanel({ account, selectedYear }) {
     );
   }, [transactions, selectedYear]);
 
+  // For balances, use ALL transactions up to the end of the selected year
+  const balanceTransactions = useMemo(() => {
+    if (selectedYear === 'all') return transactions;
+    const endOfYear = dayjs(`${selectedYear}-12-31`);
+    return transactions.filter((t) => {
+      const txDate = dayjs(t.date);
+      return txDate.isBefore(endOfYear) || txDate.isSame(endOfYear, 'day');
+    });
+  }, [transactions, selectedYear]);
+
   // Calculate balances with correct status values (no trailing spaces)
   const currentBalance = useMemo(() => {
-    return yearFilteredTransactions
+    return balanceTransactions
       .filter(
         (transaction) =>
           transaction.status ===
           transactionConstants.TransactionStatusEnum.COMPLETE
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
-  }, [yearFilteredTransactions]);
+  }, [balanceTransactions]);
 
   const pendingAmount = useMemo(() => {
-    return yearFilteredTransactions
+    return balanceTransactions
       .filter(
         (transaction) =>
           transaction.status ===
           transactionConstants.TransactionStatusEnum.PENDING
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
-  }, [yearFilteredTransactions]);
+  }, [balanceTransactions]);
 
   const pendingBalance = useMemo(() => {
     return currentBalance + pendingAmount;
   }, [currentBalance, pendingAmount]);
 
   const scheduledAmount = useMemo(() => {
-    return yearFilteredTransactions
+    return balanceTransactions
       .filter(
         (transaction) =>
           transaction.status ===
           transactionConstants.TransactionStatusEnum.SCHEDULED
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
-  }, [yearFilteredTransactions]);
+  }, [balanceTransactions]);
 
   const scheduledBalance = useMemo(() => {
     return pendingBalance + scheduledAmount;
