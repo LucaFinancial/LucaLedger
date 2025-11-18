@@ -104,10 +104,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'success.main',
-                backgroundColor: 'success.50',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: 'success.100',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -115,7 +115,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'success.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 📊 Transaction Categories
               </Typography>
@@ -135,10 +135,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'primary.main',
-                backgroundColor: 'primary.50',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: 'primary.100',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -146,7 +146,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'primary.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 ✏️ Bulk Edit for Transactions
               </Typography>
@@ -165,10 +165,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'warning.main',
-                backgroundColor: 'warning.50',
+                borderColor: '#f44336',
+                backgroundColor: '#ffebee',
                 '&:hover': {
-                  backgroundColor: 'warning.100',
+                  backgroundColor: '#ffcdd2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -176,7 +176,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'warning.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#c62828', mb: 1 }}
               >
                 🔒 Enhanced Security
               </Typography>
@@ -190,16 +190,16 @@ export default function Landing() {
               </Typography>
             </Paper>
 
-            {/* Improved File Handling */}
+            {/* Unified File Format */}
             <Paper
               elevation={1}
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'info.main',
-                backgroundColor: 'info.50',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: 'info.100',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -207,7 +207,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'info.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 📁 Unified File Format
               </Typography>
@@ -227,10 +227,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'secondary.main',
-                backgroundColor: 'secondary.50',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
                 '&:hover': {
-                  backgroundColor: 'secondary.100',
+                  backgroundColor: '#e1bee7',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -238,7 +238,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'secondary.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
               >
                 💰 Improved Precision
               </Typography>
@@ -251,63 +251,37 @@ export default function Landing() {
               </Typography>
             </Paper>
 
-            {/* Additional Features */}
-            <Box sx={{ mt: 1 }}>
+            {/* Refreshed Ledger View */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#009688',
+                backgroundColor: '#e0f2f1',
+                '&:hover': {
+                  backgroundColor: '#b2dfdb',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
               <Typography
                 variant='h6'
-                sx={{ mb: 2, color: 'text.primary', fontWeight: 500 }}
+                sx={{ fontWeight: 600, color: '#00695c', mb: 1 }}
               >
-                Plus many more improvements:
+                🎨 Refreshed Ledger View
               </Typography>
-              <Box
-                component='ul'
-                sx={{
-                  listStyle: 'none',
-                  pl: 0,
-                  m: 0,
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                  gap: 1.5,
-                }}
+              <Typography
+                variant='body1'
+                color='text.secondary'
               >
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Clear filter button in ledger view
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    User settings page for personalization
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Account-specific settings page
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Unified store architecture
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
+                Modern, intuitive ledger interface with enhanced balance cards,
+                interactive spending visualizations by category with pie charts,
+                and smart filtering by month and transaction status for better
+                financial insights.
+              </Typography>
+            </Paper>
           </Box>
         </Section>
 
