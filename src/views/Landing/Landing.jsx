@@ -295,6 +295,37 @@ export default function Landing() {
             Ledger even more powerful for managing your finances:
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Split Categories */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
+                '&:hover': {
+                  backgroundColor: '#ffe0b2',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+              >
+                🔀 Split Categories for Transactions
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Allocate a single transaction across multiple categories with
+                custom split amounts. Perfect for purchases covering different
+                expense types like groceries and household items in one trip.
+              </Typography>
+            </Paper>
+
             {/* Double-entry Accounting */}
             <Paper
               elevation={1}
@@ -322,7 +353,9 @@ export default function Landing() {
               >
                 Professional-grade double-entry bookkeeping system for accurate
                 financial tracking with debits, credits, and automatic balance
-                reconciliation.
+                reconciliation. Link transactions across accounts to track
+                transfers, payments, and movements between your checking,
+                savings, and credit card accounts seamlessly.
               </Typography>
             </Paper>
 
