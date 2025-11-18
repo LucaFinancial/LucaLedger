@@ -152,20 +152,18 @@ export default function SettingsPanel({ account, selectedYear }) {
       }}
     >
       {/* Balances */}
-      <Box sx={{ px: 2, mb: 2 }}>
+      <Box sx={{ px: 2 }}>
         <BalanceDisplay
           label='Current Balance'
           balance={currentBalance}
         />
-        <Box sx={{ mt: 2 }}>
-          <BalanceDisplay
-            label='Pending Balance'
-            balance={pendingBalance}
-            difference={pendingAmount}
-            accountType={account.type}
-          />
-        </Box>
-        <Box sx={{ mt: 2 }}>
+        <BalanceDisplay
+          label='Pending Balance'
+          balance={pendingBalance}
+          difference={pendingAmount}
+          accountType={account.type}
+        />
+        <Box sx={{ mb: 0 }}>
           <BalanceDisplay
             label='Scheduled Balance'
             balance={scheduledBalance}
@@ -177,7 +175,7 @@ export default function SettingsPanel({ account, selectedYear }) {
 
       {topCategories.length > 0 && (
         <>
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 1 }} />
           <Box sx={{ px: 2 }}>
             <Typography
               variant='caption'

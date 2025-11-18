@@ -32,30 +32,42 @@ export default function BalanceDisplay({
     <Box
       sx={{
         width: '100%',
-        mb: 2.5,
+        mb: 1.5,
+        p: 2,
+        backgroundColor: 'rgba(33, 150, 243, 0.04)',
+        borderRadius: '8px',
+        border: '1px solid rgba(33, 150, 243, 0.12)',
+        transition: 'all 0.2s ease-in-out',
+        cursor: 'default',
+        '&:hover': {
+          backgroundColor: 'rgba(33, 150, 243, 0.08)',
+          boxShadow: '0 4px 12px rgba(33, 150, 243, 0.15)',
+          transform: 'translateY(-2px)',
+        },
       }}
     >
       <Typography
         variant='caption'
         sx={{
           color: 'text.secondary',
-          fontSize: '0.75rem',
+          fontSize: '0.7rem',
           textTransform: 'uppercase',
-          letterSpacing: '0.5px',
+          letterSpacing: '0.8px',
+          fontWeight: 600,
           display: 'block',
-          mb: 0.5,
+          mb: 0.75,
         }}
       >
         {label}
       </Typography>
       <Typography
-        variant='h5'
+        variant='h4'
         sx={{
           ...textStyle,
           fontWeight: 700,
-          fontSize: '1.5rem',
-          mb:
-            differenceInDollars !== null && differenceInDollars !== 0 ? 0.5 : 0,
+          fontSize: '1.75rem',
+          lineHeight: 1,
+          mb: differenceInDollars !== null && differenceInDollars !== 0 ? 1 : 0,
         }}
       >
         $
@@ -65,23 +77,38 @@ export default function BalanceDisplay({
         })}
       </Typography>
       {differenceInDollars !== null && differenceInDollars !== 0 && (
-        <Typography
-          variant='body2'
+        <Box
           sx={{
-            color: differenceColor,
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             gap: 0.5,
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '12px',
+            backgroundColor:
+              differenceColor === 'green'
+                ? 'rgba(76, 175, 80, 0.15)'
+                : 'rgba(244, 67, 54, 0.15)',
           }}
         >
-          {differenceInDollars >= 0 ? '▲' : '▼'}$
-          {Math.abs(differenceInDollars).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </Typography>
+          <Typography
+            variant='body2'
+            sx={{
+              color: differenceColor,
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.25,
+            }}
+          >
+            {differenceInDollars >= 0 ? '▲' : '▼'}$
+            {Math.abs(differenceInDollars).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Typography>
+        </Box>
       )}
     </Box>
   );
