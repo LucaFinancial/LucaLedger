@@ -12,6 +12,7 @@ import NavItem from './NavItem';
 
 import {
   Home as HomeIcon,
+  HelpOutline as HelpIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 
@@ -50,6 +51,16 @@ export default function AppHeader() {
           Luca Ledger
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Tooltip title='Help'>
+            <IconButton
+              component={Link}
+              to='/help'
+              aria-label='Help'
+              sx={{ color: 'white' }}
+            >
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title='Settings'>
             <IconButton
               component={Link}
