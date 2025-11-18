@@ -486,7 +486,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                           pl: 2.25,
                         }}
                       >
-                        {/* Completed Amount - Primary Display */}
+                        {/* Primary Amount - changes based on selected view */}
                         <Box
                           sx={{
                             display: 'flex',
@@ -503,17 +503,27 @@ export default function SettingsPanel({ account, selectedYear }) {
                             sx={{
                               fontWeight: 600,
                               fontSize: '1rem',
-                              color: 'text.primary',
+                              color:
+                                selectedView === 'current'
+                                  ? 'text.primary'
+                                  : selectedView === 'pending'
+                                  ? 'warning.main'
+                                  : 'info.main',
                             }}
                           >
                             $
-                            {centsToDollars(cat.completedTotal).toLocaleString(
-                              undefined,
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
+                            {centsToDollars(
+                              selectedView === 'current'
+                                ? cat.completedTotal
+                                : selectedView === 'pending'
+                                ? cat.completedTotal + cat.pendingTotal
+                                : cat.completedTotal +
+                                  cat.pendingTotal +
+                                  cat.scheduledTotal
+                            ).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </Typography>
                           <Typography
                             variant='caption'
