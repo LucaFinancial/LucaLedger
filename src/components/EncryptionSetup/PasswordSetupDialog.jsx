@@ -10,9 +10,6 @@ import {
   IconButton,
   InputAdornment,
   Alert,
-  FormControlLabel,
-  Checkbox,
-  Tooltip,
 } from '@mui/material';
 import {
   Visibility,
@@ -21,46 +18,75 @@ import {
   Refresh,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateSecurePassword } from '@/crypto/encryption';
 
 export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
-  const [useGenerated, setUseGenerated] = useState(true);
-  const [generatedPassword, setGeneratedPassword] = useState(
-    generateSecurePassword()
-  );
-  const [customPassword, setCustomPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [stayLoggedIn, setStayLoggedIn] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef(null);
 
-  const handleGenerateNew = () => {
-    setGeneratedPassword(generateSecurePassword());
-    setCopied(false);
+  const handleGeneratePassword = () => {
+    const newPassword = generateSecurePassword();
+    setPassword(newPassword);
+    setConfirmPassword(newPassword);
+    setShowPassword(true);
+    setIsGenerated(true);
+    setPasswordCopied(false);
   };
 
   const handleCopyPassword = () => {
-    navigator.clipboard.writeText(generatedPassword);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(password);
+    setPasswordCopied(true);
+    setCountdown(10);
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // Start countdown
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          setPasswordCopied(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    setIsGenerated(false);
+    setPasswordCopied(false);
   };
 
   const handleSubmit = () => {
-    const password = useGenerated ? generatedPassword : customPassword;
-
-    if (!useGenerated && customPassword !== confirmPassword) {
-      return; // Passwords don't match
-    }
-
-    onComplete(password, stayLoggedIn);
+    onComplete(password, true); // Always stay logged in
   };
 
   const isValid = () => {
-    if (useGenerated) {
-      return true;
-    }
-    return customPassword.length >= 8 && customPassword === confirmPassword;
+    if (password.length < 8) return false;
+    if (password !== confirmPassword) return false;
+    // If generated password, must be copied before enabling
+    if (isGenerated && !passwordCopied) return false;
+    return true;
   };
 
   return (
@@ -84,128 +110,71 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
 
         <Box sx={{ mb: 2 }}>
           <Button
-            variant={useGenerated ? 'contained' : 'outlined'}
-            onClick={() => setUseGenerated(true)}
-            sx={{ mr: 1 }}
+            variant='outlined'
+            onClick={handleGeneratePassword}
+            startIcon={<Refresh />}
+            fullWidth
           >
             Generate Secure Password
           </Button>
-          <Button
-            variant={!useGenerated ? 'contained' : 'outlined'}
-            onClick={() => setUseGenerated(false)}
-          >
-            Use My Own Password
-          </Button>
         </Box>
 
-        {useGenerated ? (
-          <Box>
-            <Typography
-              variant='body2'
-              sx={{ mb: 1 }}
-            >
-              A secure password has been generated for you. Please copy and save
-              it in a password manager.
-            </Typography>
-            <TextField
-              fullWidth
-              value={generatedPassword}
-              type={showPassword ? 'text' : 'password'}
-              InputProps={{
-                readOnly: true,
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                    <IconButton
-                      onClick={handleCopyPassword}
-                      color={copied ? 'success' : 'default'}
-                    >
-                      <ContentCopy />
-                    </IconButton>
-                    <IconButton onClick={handleGenerateNew}>
-                      <Refresh />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 1 }}
-            />
-            {copied && (
-              <Typography
-                variant='caption'
-                color='success.main'
-              >
-                Password copied to clipboard!
-              </Typography>
-            )}
-          </Box>
-        ) : (
-          <Box>
-            <TextField
-              fullWidth
-              label='Password'
-              type={showPassword ? 'text' : 'password'}
-              value={customPassword}
-              onChange={(e) => setCustomPassword(e.target.value)}
-              autoComplete='new-password'
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              helperText='Minimum 8 characters'
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label='Confirm Password'
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete='new-password'
-              error={
-                confirmPassword.length > 0 && customPassword !== confirmPassword
-              }
-              helperText={
-                confirmPassword.length > 0 && customPassword !== confirmPassword
-                  ? 'Passwords do not match'
-                  : ''
-              }
-            />
-          </Box>
-        )}
-
-        <Tooltip
-          title='Keep you logged in while this browser tab remains open. You will need to enter your password again if you close the tab or browser.'
-          arrow
-          placement='top'
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={stayLoggedIn}
-                onChange={(e) => setStayLoggedIn(e.target.checked)}
-              />
-            }
-            label='Stay logged in during this session'
-            sx={{ mt: 2 }}
-          />
-        </Tooltip>
+        <TextField
+          fullWidth
+          label='Password'
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => handlePasswordChange(e.target.value)}
+          autoComplete='new-password'
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position='end'>
+                <IconButton onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          helperText='Minimum 8 characters'
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          fullWidth
+          label='Confirm Password'
+          type={showPassword ? 'text' : 'password'}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete='new-password'
+          error={confirmPassword.length > 0 && password !== confirmPassword}
+          helperText={
+            confirmPassword.length > 0 && password !== confirmPassword
+              ? 'Passwords do not match'
+              : ''
+          }
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
+        {isGenerated && password && (
+          <Button
+            onClick={handleCopyPassword}
+            startIcon={<ContentCopy />}
+            color={passwordCopied ? 'success' : 'primary'}
+            variant='outlined'
+          >
+            {passwordCopied ? 'Copied!' : 'Copy Password'}
+          </Button>
+        )}
         <Button
           onClick={handleSubmit}
           variant='contained'
           disabled={!isValid()}
         >
-          Enable Encryption
+          {isGenerated && !passwordCopied && countdown === 0
+            ? 'Copy Password to Enable'
+            : isGenerated && passwordCopied && countdown > 0
+            ? `Enable in ${countdown}s`
+            : 'Enable Encryption'}
         </Button>
       </DialogActions>
     </Dialog>

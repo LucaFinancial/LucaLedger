@@ -4,6 +4,7 @@ import {
   selectors as accountSelectors,
 } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as categorySelectors } from '@/store/categories';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -22,12 +23,14 @@ export default function LedgerTable({
   setCollapsedGroups,
   selectedTransactions,
   onSelectionChange,
+  selectedYear,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
+  const categories = useSelector(categorySelectors.selectAllCategories);
 
   const sortedTransactions = useMemo(
     () => [...transactions].sort(dateCompareFn),
@@ -43,8 +46,15 @@ export default function LedgerTable({
   }, [sortedTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    // Start with all transactions
+    // Start with all transactions with balance
     let filtered = transactionsWithBalance;
+
+    // Apply year filter
+    if (selectedYear !== 'all') {
+      filtered = filtered.filter(
+        (t) => dayjs(t.date).format('YYYY') === selectedYear
+      );
+    }
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
@@ -53,13 +63,37 @@ export default function LedgerTable({
 
     // Apply text filter
     if (filterValue) {
-      filtered = filtered.filter(
-        (transaction) =>
-          transaction.description
-            .toLowerCase()
-            .includes(filterValue.toLowerCase()) ||
+      const lowerFilter = filterValue.toLowerCase();
+      filtered = filtered.filter((transaction) => {
+        // Check description
+        const matchesDescription = transaction.description
+          .toLowerCase()
+          .includes(lowerFilter);
+
+        // Check category name
+        const category = categories.find(
+          (cat) => cat.id === transaction.categoryId
+        );
+        const matchesCategory = category?.name
+          .toLowerCase()
+          .includes(lowerFilter);
+
+        // Check parent category name if this is a subcategory
+        const parentCategory = category?.parentId
+          ? categories.find((cat) => cat.id === category.parentId)
+          : null;
+        const matchesParentCategory = parentCategory?.name
+          .toLowerCase()
+          .includes(lowerFilter);
+
+        // Include if matches description, category, parent category, or is already selected
+        return (
+          matchesDescription ||
+          matchesCategory ||
+          matchesParentCategory ||
           selectedTransactions.has(transaction.id)
-      );
+        );
+      });
     }
 
     return filtered;
@@ -68,6 +102,8 @@ export default function LedgerTable({
     showUncategorizedOnly,
     transactionsWithBalance,
     selectedTransactions,
+    selectedYear,
+    categories,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -145,7 +181,7 @@ export default function LedgerTable({
   return (
     <TableContainer
       component={Paper}
-      style={{ overflow: 'auto', height: 'calc(100vh - 293px)' }}
+      style={{ overflow: 'auto', height: '100%' }}
     >
       <Table stickyHeader>
         <LedgerHeader />
@@ -263,4 +299,5 @@ LedgerTable.propTypes = {
   setCollapsedGroups: PropTypes.func.isRequired,
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
+  selectedYear: PropTypes.string.isRequired,
 };

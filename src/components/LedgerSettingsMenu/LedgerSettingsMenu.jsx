@@ -13,7 +13,8 @@ import {
   UnfoldMore,
   RestartAlt,
   Category,
-  ClearAll,
+  Repeat,
+  FilterList,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 
@@ -27,8 +28,10 @@ export default function LedgerSettingsMenu({
   onAccountSettings,
   onClearInvalidCategories,
   invalidCategoryCount,
-  onClearSelected,
-  selectedCount,
+  onCreateRepeatedTransactions,
+  showUncategorizedOnly,
+  onToggleUncategorized,
+  uncategorizedCount,
 }) {
   const handleMenuItemClick = (callback) => {
     callback();
@@ -57,6 +60,17 @@ export default function LedgerSettingsMenu({
           View Controls
         </Typography>
       </Box>
+      <MenuItem onClick={() => handleMenuItemClick(onToggleUncategorized)}>
+        <ListItemIcon>
+          <FilterList fontSize='small' />
+        </ListItemIcon>
+        <ListItemText>
+          {showUncategorizedOnly
+            ? 'Show All Transactions'
+            : 'Show Only Uncategorized'}
+          {uncategorizedCount > 0 && ` (${uncategorizedCount})`}
+        </ListItemText>
+      </MenuItem>
       <MenuItem onClick={() => handleMenuItemClick(onCollapseAll)}>
         <ListItemIcon>
           <UnfoldLess fontSize='small' />
@@ -92,6 +106,14 @@ export default function LedgerSettingsMenu({
         </ListItemIcon>
         <ListItemText>Account Settings</ListItemText>
       </MenuItem>
+      <MenuItem
+        onClick={() => handleMenuItemClick(onCreateRepeatedTransactions)}
+      >
+        <ListItemIcon>
+          <Repeat fontSize='small' />
+        </ListItemIcon>
+        <ListItemText>Create Repeated Transactions</ListItemText>
+      </MenuItem>
 
       <Divider sx={{ my: 1 }} />
 
@@ -103,18 +125,6 @@ export default function LedgerSettingsMenu({
           Data Actions
         </Typography>
       </Box>
-      <MenuItem
-        onClick={() => handleMenuItemClick(onClearSelected)}
-        disabled={selectedCount === 0}
-      >
-        <ListItemIcon>
-          <ClearAll fontSize='small' />
-        </ListItemIcon>
-        <ListItemText>
-          Deselect All
-          {selectedCount > 0 && ` (${selectedCount})`}
-        </ListItemText>
-      </MenuItem>
       <MenuItem
         onClick={() => handleMenuItemClick(onClearInvalidCategories)}
         disabled={invalidCategoryCount === 0}
@@ -141,11 +151,13 @@ LedgerSettingsMenu.propTypes = {
   onAccountSettings: PropTypes.func.isRequired,
   onClearInvalidCategories: PropTypes.func.isRequired,
   invalidCategoryCount: PropTypes.number,
-  onClearSelected: PropTypes.func.isRequired,
-  selectedCount: PropTypes.number,
+  onCreateRepeatedTransactions: PropTypes.func.isRequired,
+  showUncategorizedOnly: PropTypes.bool.isRequired,
+  onToggleUncategorized: PropTypes.func.isRequired,
+  uncategorizedCount: PropTypes.number,
 };
 
 LedgerSettingsMenu.defaultProps = {
   invalidCategoryCount: 0,
-  selectedCount: 0,
+  uncategorizedCount: 0,
 };

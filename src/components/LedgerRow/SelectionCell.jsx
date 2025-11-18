@@ -12,6 +12,12 @@ export default function SelectionCell({
         checked={isSelected}
         onChange={(e) => onSelectionChange(transaction.id, e.target.checked)}
         size='small'
+        sx={{
+          color: isSelected ? 'white' : 'inherit',
+          '&.Mui-checked': {
+            color: isSelected ? 'white' : 'primary.main',
+          },
+        }}
       />
     </TableCell>
   );

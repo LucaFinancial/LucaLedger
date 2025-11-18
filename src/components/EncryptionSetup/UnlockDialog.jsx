@@ -6,21 +6,17 @@ import {
   Button,
   TextField,
   Typography,
-  FormControlLabel,
-  Checkbox,
   Alert,
-  Tooltip,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 export default function UnlockDialog({ open, onUnlock, error }) {
   const [password, setPassword] = useState('');
-  const [stayLoggedIn, setStayLoggedIn] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUnlock(password, stayLoggedIn);
+    onUnlock(password, true); // Always stay logged in
   };
 
   return (
@@ -58,23 +54,6 @@ export default function UnlockDialog({ open, onUnlock, error }) {
             autoComplete='current-password'
             required
           />
-
-          <Tooltip
-            title='Keep you logged in while this browser tab remains open. You will need to enter your password again if you close the tab or browser.'
-            arrow
-            placement='top'
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={stayLoggedIn}
-                  onChange={(e) => setStayLoggedIn(e.target.checked)}
-                />
-              }
-              label='Stay logged in during this session'
-              sx={{ mt: 2 }}
-            />
-          </Tooltip>
         </DialogContent>
         <DialogActions>
           <Button
