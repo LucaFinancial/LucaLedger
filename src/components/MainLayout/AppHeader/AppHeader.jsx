@@ -18,7 +18,13 @@ import {
 
 export default function AppHeader() {
   return (
-    <AppBar position='static'>
+    <AppBar
+      position='fixed'
+      sx={{
+        top: 0,
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+      }}
+    >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Link to='/'>
