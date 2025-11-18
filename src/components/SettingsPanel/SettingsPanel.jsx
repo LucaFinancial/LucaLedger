@@ -260,17 +260,21 @@ export default function SettingsPanel({ account, selectedYear }) {
                 <Box
                   key={cat.categoryId}
                   sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    py: 1,
+                    py: 1.5,
                     borderBottom:
                       index < topCategories.length - 1
                         ? '1px solid rgba(0, 0, 0, 0.06)'
                         : 'none',
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      mb: 0.5,
+                    }}
+                  >
                     <Box
                       sx={{
                         width: 10,
@@ -291,12 +295,19 @@ export default function SettingsPanel({ account, selectedYear }) {
                       {cat.categoryName}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      pl: 2.25,
+                    }}
+                  >
                     <Typography
                       variant='body2'
                       sx={{
                         fontWeight: 600,
-                        fontSize: '0.875rem',
+                        fontSize: '1rem',
                         color: 'text.primary',
                       }}
                     >

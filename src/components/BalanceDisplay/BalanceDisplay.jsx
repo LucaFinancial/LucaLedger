@@ -32,57 +32,30 @@ export default function BalanceDisplay({
     <Box
       sx={{
         width: '100%',
-        pb: 1.5,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        mb: 2.5,
       }}
     >
-      <Box
+      <Typography
+        variant='caption'
         sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          color: 'text.secondary',
+          fontSize: '0.75rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          display: 'block',
           mb: 0.5,
         }}
       >
-        <Typography
-          variant='caption'
-          sx={{
-            color: 'text.secondary',
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {label}
-        </Typography>
-        {differenceInDollars !== null && differenceInDollars !== 0 && (
-          <Typography
-            variant='caption'
-            sx={{
-              color: differenceColor,
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.25,
-            }}
-          >
-            {differenceInDollars >= 0 ? '▲' : '▼'}$
-            {Math.abs(differenceInDollars).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Typography>
-        )}
-      </Box>
+        {label}
+      </Typography>
       <Typography
-        variant='h6'
+        variant='h5'
         sx={{
           ...textStyle,
-          fontWeight: 600,
-          fontSize: '1.25rem',
+          fontWeight: 700,
+          fontSize: '1.5rem',
+          mb:
+            differenceInDollars !== null && differenceInDollars !== 0 ? 0.5 : 0,
         }}
       >
         $
@@ -91,6 +64,25 @@ export default function BalanceDisplay({
           maximumFractionDigits: 2,
         })}
       </Typography>
+      {differenceInDollars !== null && differenceInDollars !== 0 && (
+        <Typography
+          variant='body2'
+          sx={{
+            color: differenceColor,
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          {differenceInDollars >= 0 ? '▲' : '▼'}$
+          {Math.abs(differenceInDollars).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </Typography>
+      )}
     </Box>
   );
 }
