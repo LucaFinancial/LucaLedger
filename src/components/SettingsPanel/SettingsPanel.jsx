@@ -503,12 +503,23 @@ export default function SettingsPanel({ account, selectedYear }) {
                             sx={{
                               fontWeight: 600,
                               fontSize: '1rem',
-                              color:
-                                selectedView === 'current'
-                                  ? 'text.primary'
-                                  : selectedView === 'pending'
-                                  ? 'warning.main'
-                                  : 'info.main',
+                              color: (() => {
+                                if (selectedView === 'current') {
+                                  return 'text.primary';
+                                } else if (selectedView === 'pending') {
+                                  // Show pending color only if there's pending amount
+                                  return cat.pendingTotal > 0
+                                    ? 'warning.main'
+                                    : 'text.primary';
+                                } else {
+                                  // scheduled view
+                                  if (cat.scheduledTotal > 0)
+                                    return 'info.main';
+                                  if (cat.pendingTotal > 0)
+                                    return 'warning.main';
+                                  return 'text.primary';
+                                }
+                              })(),
                             }}
                           >
                             $
