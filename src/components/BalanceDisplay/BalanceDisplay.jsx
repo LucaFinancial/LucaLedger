@@ -28,12 +28,19 @@ export default function BalanceDisplay({
       : 'red';
   }
 
+  // Determine icon based on label
+  const getIcon = () => {
+    if (label.includes('Pending')) return '⏱';
+    if (label.includes('Scheduled')) return '📅';
+    return '💰';
+  };
+
   return (
     <Box
       sx={{
         width: '100%',
-        mb: 1.5,
-        p: 2,
+        mb: 0.75,
+        p: 1.25,
         backgroundColor: 'rgba(33, 150, 243, 0.04)',
         borderRadius: '8px',
         border: '1px solid rgba(33, 150, 243, 0.12)',
@@ -46,28 +53,77 @@ export default function BalanceDisplay({
         },
       }}
     >
-      <Typography
-        variant='caption'
+      <Box
         sx={{
-          color: 'text.secondary',
-          fontSize: '0.7rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          fontWeight: 600,
-          display: 'block',
-          mb: 0.75,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 0.5,
         }}
       >
-        {label}
-      </Typography>
+        <Typography
+          variant='caption'
+          sx={{
+            color: 'text.secondary',
+            fontSize: '0.6rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.8px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <Box
+            component='span'
+            sx={{ fontSize: '0.7rem' }}
+          >
+            {getIcon()}
+          </Box>
+          {label.replace(' Balance', '')}
+        </Typography>
+        {differenceInDollars !== null && differenceInDollars !== 0 && (
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.25,
+              px: 0.75,
+              py: 0.25,
+              borderRadius: '8px',
+              backgroundColor:
+                differenceColor === 'green'
+                  ? 'rgba(76, 175, 80, 0.15)'
+                  : 'rgba(244, 67, 54, 0.15)',
+            }}
+          >
+            <Typography
+              variant='body2'
+              sx={{
+                color: differenceColor,
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.25,
+              }}
+            >
+              {differenceInDollars >= 0 ? '▲' : '▼'}$
+              {Math.abs(differenceInDollars).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </Typography>
+          </Box>
+        )}
+      </Box>
       <Typography
         variant='h4'
         sx={{
           ...textStyle,
           fontWeight: 700,
-          fontSize: '1.75rem',
+          fontSize: '1.15rem',
           lineHeight: 1,
-          mb: differenceInDollars !== null && differenceInDollars !== 0 ? 1 : 0,
         }}
       >
         $
@@ -76,40 +132,6 @@ export default function BalanceDisplay({
           maximumFractionDigits: 2,
         })}
       </Typography>
-      {differenceInDollars !== null && differenceInDollars !== 0 && (
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            px: 1.5,
-            py: 0.5,
-            borderRadius: '12px',
-            backgroundColor:
-              differenceColor === 'green'
-                ? 'rgba(76, 175, 80, 0.15)'
-                : 'rgba(244, 67, 54, 0.15)',
-          }}
-        >
-          <Typography
-            variant='body2'
-            sx={{
-              color: differenceColor,
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.25,
-            }}
-          >
-            {differenceInDollars >= 0 ? '▲' : '▼'}$
-            {Math.abs(differenceInDollars).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Typography>
-        </Box>
-      )}
     </Box>
   );
 }

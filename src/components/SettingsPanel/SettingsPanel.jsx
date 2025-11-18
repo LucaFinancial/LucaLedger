@@ -112,24 +112,29 @@ export default function SettingsPanel({ account, selectedYear }) {
 
   // Calculate top spending categories based on selected view and month
   const topCategories = useMemo(() => {
-    let filtered = yearFilteredTransactions.filter((t) => Number(t.amount) < 0);
+    let expenses = yearFilteredTransactions.filter((t) => Number(t.amount) < 0);
 
-    // Filter by status based on selected view
+    // Apply month filter first
+    if (selectedMonth !== 'all') {
+      expenses = expenses.filter((t) => {
+        return dayjs(t.date).format('YYYY-MM') === selectedMonth;
+      });
+    }
+
+    // Determine which transactions to use for ranking based on selected view
+    let rankingTransactions = expenses;
     if (selectedView === 'current') {
-      // Current: only completed transactions
-      filtered = filtered.filter(
+      rankingTransactions = expenses.filter(
         (t) => t.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     } else if (selectedView === 'pending') {
-      // Pending: completed + pending transactions
-      filtered = filtered.filter(
+      rankingTransactions = expenses.filter(
         (t) =>
           t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
           t.status === transactionConstants.TransactionStatusEnum.PENDING
       );
     } else if (selectedView === 'scheduled') {
-      // Scheduled: completed + pending + scheduled transactions
-      filtered = filtered.filter(
+      rankingTransactions = expenses.filter(
         (t) =>
           t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
           t.status === transactionConstants.TransactionStatusEnum.PENDING ||
@@ -137,32 +142,58 @@ export default function SettingsPanel({ account, selectedYear }) {
       );
     }
 
-    // Apply month filter
-    if (selectedMonth !== 'all') {
-      filtered = filtered.filter((t) => {
-        return dayjs(t.date).format('YYYY-MM') === selectedMonth;
-      });
-    }
-
+    // Calculate totals for ranking
     const categoryTotals = new Map();
-
-    filtered.forEach((t) => {
+    rankingTransactions.forEach((t) => {
       if (!t.categoryId) return;
       const current = categoryTotals.get(t.categoryId) || 0;
       categoryTotals.set(t.categoryId, current + Math.abs(Number(t.amount)));
     });
 
-    const sorted = Array.from(categoryTotals.entries())
-      .map(([categoryId, total]) => ({
+    // Get top 5 categories by total
+    const topCategoryIds = Array.from(categoryTotals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([categoryId]) => categoryId);
+
+    // Now calculate separate amounts by status for these top categories
+    const categoryDetails = topCategoryIds.map((categoryId) => {
+      const categoryTransactions = expenses.filter(
+        (t) => t.categoryId === categoryId
+      );
+
+      const completedTotal = categoryTransactions
+        .filter(
+          (t) =>
+            t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        )
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+      const pendingTotal = categoryTransactions
+        .filter(
+          (t) => t.status === transactionConstants.TransactionStatusEnum.PENDING
+        )
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+      const scheduledTotal = categoryTransactions
+        .filter(
+          (t) =>
+            t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+        )
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+      return {
         categoryId,
         categoryName:
           categories.find((c) => c.id === categoryId)?.name || 'Unknown',
-        total,
-      }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 5);
+        completedTotal,
+        pendingTotal,
+        scheduledTotal,
+        rankingTotal: categoryTotals.get(categoryId),
+      };
+    });
 
-    return sorted;
+    return categoryDetails;
   }, [yearFilteredTransactions, categories, selectedMonth, selectedView]);
 
   // Get available months from the year-filtered transactions
@@ -212,19 +243,17 @@ export default function SettingsPanel({ account, selectedYear }) {
           difference={pendingAmount}
           accountType={account.type}
         />
-        <Box sx={{ mb: 0 }}>
-          <BalanceDisplay
-            label='Scheduled Balance'
-            balance={scheduledBalance}
-            difference={scheduledAmount}
-            accountType={account.type}
-          />
-        </Box>
+        <BalanceDisplay
+          label='Scheduled Balance'
+          balance={scheduledBalance}
+          difference={scheduledAmount}
+          accountType={account.type}
+        />
       </Box>
 
       {yearFilteredTransactions.length > 0 && (
         <>
-          <Divider sx={{ my: 1 }} />
+          <Divider sx={{ my: 1.25 }} />
           <Box sx={{ px: 2 }}>
             <Typography
               variant='caption'
@@ -234,7 +263,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 display: 'block',
-                mb: 1.5,
+                mb: 1,
               }}
             >
               Spending by Category
@@ -322,8 +351,8 @@ export default function SettingsPanel({ account, selectedYear }) {
             <Box
               sx={{
                 width: '100%',
-                height: 200,
-                mb: 2,
+                height: 180,
+                mb: 1,
               }}
             >
               <ResponsiveContainer
@@ -336,7 +365,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                       topCategories.length > 0
                         ? topCategories.map((cat) => ({
                             name: cat.categoryName,
-                            value: centsToDollars(cat.total),
+                            value: centsToDollars(cat.rankingTotal),
                           }))
                         : [{ name: 'No Data', value: 1 }]
                     }
@@ -399,10 +428,12 @@ export default function SettingsPanel({ account, selectedYear }) {
               <>
                 {topCategories.map((cat, index) => {
                   const total = topCategories.reduce(
-                    (sum, c) => sum + c.total,
+                    (sum, c) => sum + c.rankingTotal,
                     0
                   );
-                  const percentage = ((cat.total / total) * 100).toFixed(1);
+                  const percentage = ((cat.rankingTotal / total) * 100).toFixed(
+                    1
+                  );
                   const colors = [
                     '#1976d2',
                     '#42a5f5',
@@ -452,35 +483,160 @@ export default function SettingsPanel({ account, selectedYear }) {
                       </Box>
                       <Box
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
                           pl: 2.25,
                         }}
                       >
-                        <Typography
-                          variant='body2'
+                        {/* Completed Amount - Primary Display */}
+                        <Box
                           sx={{
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            color: 'text.primary',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'baseline',
+                            mb:
+                              cat.pendingTotal > 0 || cat.scheduledTotal > 0
+                                ? 0.5
+                                : 0,
                           }}
                         >
-                          $
-                          {centsToDollars(cat.total).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </Typography>
-                        <Typography
-                          variant='caption'
-                          sx={{
-                            color: 'text.secondary',
-                            fontSize: '0.75rem',
-                          }}
-                        >
-                          {percentage}%
-                        </Typography>
+                          <Typography
+                            variant='body2'
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              color: 'text.primary',
+                            }}
+                          >
+                            $
+                            {centsToDollars(cat.completedTotal).toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </Typography>
+                          <Typography
+                            variant='caption'
+                            sx={{
+                              color: 'text.secondary',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            {percentage}%
+                          </Typography>
+                        </Box>
+
+                        {/* Pending and Scheduled Indicators */}
+                        {(cat.pendingTotal > 0 || cat.scheduledTotal > 0) && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: 2,
+                            }}
+                          >
+                            {/* Pending - always on left */}
+                            {cat.pendingTotal > 0 ? (
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 0.25,
+                                }}
+                              >
+                                <Typography
+                                  variant='caption'
+                                  sx={{
+                                    color: 'text.secondary',
+                                    fontSize: '0.65rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  <Box
+                                    component='span'
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                    }}
+                                  >
+                                    ⏱
+                                  </Box>
+                                  Pending
+                                </Typography>
+                                <Typography
+                                  variant='body2'
+                                  sx={{
+                                    color: 'warning.main',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  $
+                                  {centsToDollars(
+                                    cat.pendingTotal
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Box sx={{ width: 80 }} /> // Spacer to keep scheduled on right
+                            )}
+
+                            {/* Scheduled - always on right */}
+                            {cat.scheduledTotal > 0 && (
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 0.25,
+                                }}
+                              >
+                                <Typography
+                                  variant='caption'
+                                  sx={{
+                                    color: 'text.secondary',
+                                    fontSize: '0.65rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  <Box
+                                    component='span'
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                    }}
+                                  >
+                                    📅
+                                  </Box>
+                                  Scheduled
+                                </Typography>
+                                <Typography
+                                  variant='body2'
+                                  sx={{
+                                    color: 'info.main',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  $
+                                  {centsToDollars(
+                                    cat.scheduledTotal
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        )}
                       </Box>
                     </Box>
                   );
