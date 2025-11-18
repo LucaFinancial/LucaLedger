@@ -45,7 +45,7 @@ export default function Ledger() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
-  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(dayjs().format('YYYY'));
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)

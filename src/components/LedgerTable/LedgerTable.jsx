@@ -30,18 +30,10 @@ export default function LedgerTable({
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
 
-  const sortedTransactions = useMemo(() => {
-    let filtered = transactions;
-
-    // Apply year filter
-    if (selectedYear !== 'all') {
-      filtered = filtered.filter(
-        (t) => dayjs(t.date).format('YYYY') === selectedYear
-      );
-    }
-
-    return [...filtered].sort(dateCompareFn);
-  }, [transactions, selectedYear]);
+  const sortedTransactions = useMemo(
+    () => [...transactions].sort(dateCompareFn),
+    [transactions]
+  );
 
   const transactionsWithBalance = useMemo(() => {
     let currentBalance = 0.0;
@@ -52,8 +44,15 @@ export default function LedgerTable({
   }, [sortedTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    // Start with all transactions
+    // Start with all transactions with balance
     let filtered = transactionsWithBalance;
+
+    // Apply year filter
+    if (selectedYear !== 'all') {
+      filtered = filtered.filter(
+        (t) => dayjs(t.date).format('YYYY') === selectedYear
+      );
+    }
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
@@ -77,6 +76,7 @@ export default function LedgerTable({
     showUncategorizedOnly,
     transactionsWithBalance,
     selectedTransactions,
+    selectedYear,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
