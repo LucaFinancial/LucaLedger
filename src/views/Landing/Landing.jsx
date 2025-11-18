@@ -52,7 +52,9 @@ function Section({ title, children, defaultExpanded = true }) {
       </AccordionSummary>
       <AccordionDetails
         sx={{
-          p: 4,
+          pt: 2,
+          px: 4,
+          pb: 4,
           background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
         }}
       >
@@ -97,7 +99,15 @@ export default function Landing() {
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Typography
+            variant='body1'
+            sx={{ mb: 2, color: 'text.secondary' }}
+          >
+            Version 2 brings powerful new capabilities and architectural
+            improvements to help you manage your finances more effectively and
+            securely.
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {/* Transaction Categories */}
             <Paper
               elevation={1}
