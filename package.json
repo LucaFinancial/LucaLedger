@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.0.0-beta.24",
+  "version": "2.0.0-beta.25",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -25,6 +25,7 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "d3": "^7.9.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.10",
     "dexie": "^4.2.1",
     "immer": "^10.0.3",
