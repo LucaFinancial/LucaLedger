@@ -181,13 +181,6 @@ export default function LedgerTable({
     [getYearIdentifier, getMonthIdentifier]
   );
 
-  const getPreviousTransaction = (index) => {
-    if (index === 0) {
-      return null;
-    }
-    return filteredTransactions[index - 1];
-  };
-
   const getSelectedCountForGroup = useCallback(
     (groupId, isYear) => {
       return filteredTransactions.filter((transaction) => {
@@ -227,6 +220,7 @@ export default function LedgerTable({
       if (!groups[year][yearMonthKey]) {
         groups[year][yearMonthKey] = {
           month,
+          firstTransactionDate: transaction.date,
           items: [],
         };
       }
@@ -383,9 +377,7 @@ export default function LedgerTable({
                     return (
                       <Fragment key={yearMonthKey}>
                         <SeparatorRow
-                          transaction={{
-                            date: `${year}-${monthData.month}-01`,
-                          }}
+                          transaction={{ date: monthData.firstTransactionDate }}
                           previousTransaction={null}
                           isCollapsed={isMonthCollapsed}
                           onToggleCollapse={() =>
@@ -398,7 +390,7 @@ export default function LedgerTable({
                         />
 
                         {!isMonthCollapsed &&
-                          monthData.items.map((item, index) => {
+                          monthData.items.map((item) => {
                             if (item.type === 'transaction') {
                               const transaction = item.data;
                               return (
