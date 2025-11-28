@@ -90,7 +90,7 @@ export const lockStatement = (statementId) => (dispatch) => {
  */
 export const ensureCurrentStatement = (accountId) => (dispatch, getState) => {
   const state = getState();
-  const account = state.accounts.find((a) => a.id === accountId);
+  const account = state.accounts.data.find((a) => a.id === accountId);
 
   if (!account || !account.statementDay) {
     return null; // Not a credit card or no statement day configured
@@ -141,7 +141,7 @@ export const ensureCurrentStatement = (accountId) => (dispatch, getState) => {
  */
 export const backfillStatements = (accountId) => (dispatch, getState) => {
   const state = getState();
-  const account = state.accounts.find((a) => a.id === accountId);
+  const account = state.accounts.data.find((a) => a.id === accountId);
 
   if (!account || !account.statementDay) {
     return []; // Not a credit card or no statement day configured
@@ -197,8 +197,8 @@ export const autoGenerateStatements = (accountId) => (dispatch) => {
  */
 export const autoGenerateAllStatements = () => (dispatch, getState) => {
   const state = getState();
-  const creditCardAccounts = state.accounts.filter(
-    (a) => a.accountType === 'credit' && a.statementDay
+  const creditCardAccounts = state.accounts.data.filter(
+    (a) => a.type === 'Credit Card' && a.statementDay
   );
 
   const results = {};
