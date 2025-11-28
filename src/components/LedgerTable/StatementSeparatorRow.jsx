@@ -4,10 +4,11 @@ import {
   Typography,
   IconButton,
   Box,
+  Button,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { format, parseISO } from 'date-fns';
-import { Visibility, Lock } from '@mui/icons-material';
+import { Visibility, Lock, Add } from '@mui/icons-material';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -91,6 +92,21 @@ export default function StatementSeparatorRow({
     setModalOpen(false);
   };
 
+  const handleCreateStatement = () => {
+    // Create a new statement for this period
+    dispatch(
+      statementActions.createStatement({
+        accountId,
+        closingDate: closingDateWithSlashes,
+        periodStart,
+        periodEnd,
+        transactionIds: transactions.map((t) => t.id),
+        total: allCharges,
+        status: 'draft',
+      })
+    );
+  };
+
   return (
     <>
       <TableRow>
@@ -112,7 +128,7 @@ export default function StatementSeparatorRow({
               >
                 Statement {statementDate} ({dateRange})
               </Typography>
-              {statement && <StatementStatusBadge status={statement.status} />}
+              <StatementStatusBadge status={statement?.status || 'draft'} />
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -139,7 +155,7 @@ export default function StatementSeparatorRow({
                 ${formatAmount(allCharges)}
               </Typography>
 
-              {statement && (
+              {statement ? (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                   <IconButton
                     size='small'
@@ -160,6 +176,15 @@ export default function StatementSeparatorRow({
                       </IconButton>
                     )}
                 </Box>
+              ) : (
+                <Button
+                  size='small'
+                  variant='outlined'
+                  startIcon={<Add />}
+                  onClick={handleCreateStatement}
+                >
+                  Create Statement
+                </Button>
               )}
             </Box>
           </Box>

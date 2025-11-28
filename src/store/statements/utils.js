@@ -94,6 +94,22 @@ export function getPreviousPeriod(closingDate, statementDay) {
 }
 
 /**
+ * Get the next statement period relative to a given closing date
+ * @param {string} closingDate - Closing date in YYYY/MM/DD format
+ * @param {number} statementDay - Day of month when statement closes (1-31)
+ * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
+ */
+export function getNextPeriod(closingDate, statementDay) {
+  // Parse the closing date and go forward one day to get into next period
+  const date = parseISO(closingDate.replace(/\//g, '-'));
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + 1);
+  const nextDateStr = format(nextDate, 'yyyy/MM/dd');
+
+  return calculateStatementPeriod(nextDateStr, statementDay);
+}
+
+/**
  * Check if a statement already exists for a given period and account
  * @param {Array} statements - Array of all statements
  * @param {string} accountId - Account ID
@@ -182,21 +198,31 @@ export function getEarliestStatementDate(account, transactions) {
 
 /**
  * Determine if a date is in the past, present, or future relative to today
- * @param {string} closingDate - Closing date in YYYY/MM/DD format
- * @returns {string} - 'past', 'current', or 'future'
+ * A period is "current" if today falls between periodStart and periodEnd (inclusive)
+ * @param {string} periodStart - Period start date in YYYY/MM/DD format
+ * @param {string} periodEnd - Period end date in YYYY/MM/DD format
+ * @returns {string} - 'past', 'current', or 'draft'
  */
-export function determineStatementStatus(closingDate) {
+export function determineStatementStatus(periodStart, periodEnd) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const closing = parseISO(closingDate.replace(/\//g, '-'));
-  closing.setHours(0, 0, 0, 0);
+  const start = parseISO(periodStart.replace(/\//g, '-'));
+  start.setHours(0, 0, 0, 0);
 
-  if (isBefore(closing, today)) {
-    return 'past';
-  } else if (isAfter(closing, today)) {
+  const end = parseISO(periodEnd.replace(/\//g, '-'));
+  end.setHours(0, 0, 0, 0);
+
+  // If today is before the period starts, it's a future/draft statement
+  if (isBefore(today, start)) {
     return 'draft';
-  } else {
+  }
+  // If today is after the period ends, it's a past statement
+  else if (isAfter(today, end)) {
+    return 'past';
+  }
+  // If today is within the period (inclusive), it's current
+  else {
     return 'current';
   }
 }
@@ -226,7 +252,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   while (true) {
     const periodClosing = parseISO(period.closingDate.replace(/\//g, '-'));
 
-    // Stop if we've gone beyond the current period
+    // Stop if we've gone beyond the current period (use >= to include current)
     if (isAfter(periodClosing, currentClosing)) {
       break;
     }
@@ -244,8 +270,11 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       // Calculate total
       const total = calculatePeriodTotal(transactions, transactionIds);
 
-      // Determine status
-      const status = determineStatementStatus(period.closingDate);
+      // Determine status based on whether today falls in this period
+      const status = determineStatementStatus(
+        period.periodStart,
+        period.periodEnd
+      );
 
       missingPeriods.push({
         accountId: account.id,
@@ -258,16 +287,8 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       });
     }
 
-    // Move to next period
-    period = getPreviousPeriod(period.closingDate, statementDay);
-    // Actually we want to move forward, so let's calculate the next period
-    // by going forward one month from the current closing date
-    const nextMonth = addMonths(
-      parseISO(period.closingDate.replace(/\//g, '-')),
-      2 // Add 2 because we went back 1, so we need to go forward 2 total
-    );
-    const nextDateStr = format(nextMonth, 'yyyy/MM/dd');
-    period = calculateStatementPeriod(nextDateStr, statementDay);
+    // Move to next period - go forward one day from closing date
+    period = getNextPeriod(period.closingDate, statementDay);
   }
 
   return missingPeriods;
