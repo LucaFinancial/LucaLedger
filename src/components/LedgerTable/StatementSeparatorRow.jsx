@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { format, parseISO } from 'date-fns';
-import { Visibility, Lock, Add } from '@mui/icons-material';
+import { Visibility, Lock, LockOpen, Add } from '@mui/icons-material';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -164,17 +164,27 @@ export default function StatementSeparatorRow({
                   >
                     <Visibility fontSize='small' />
                   </IconButton>
-                  {statement.status !== 'locked' &&
-                    statement.status !== 'draft' && (
-                      <IconButton
-                        size='small'
-                        onClick={handleLock}
-                        title='Lock Statement'
-                        color='error'
-                      >
+                  {statement.status === 'past' && (
+                    <IconButton
+                      size='small'
+                      onClick={handleLock}
+                      title={
+                        statement.status === 'locked'
+                          ? 'Statement Locked'
+                          : 'Lock Statement'
+                      }
+                      color={
+                        statement.status === 'locked' ? 'default' : 'error'
+                      }
+                      disabled={statement.status === 'locked'}
+                    >
+                      {statement.status === 'locked' ? (
                         <Lock fontSize='small' />
-                      </IconButton>
-                    )}
+                      ) : (
+                        <LockOpen fontSize='small' />
+                      )}
+                    </IconButton>
+                  )}
                 </Box>
               ) : (
                 <Button
