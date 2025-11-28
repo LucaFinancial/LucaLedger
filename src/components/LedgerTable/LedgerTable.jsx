@@ -61,7 +61,6 @@ export default function LedgerTable({
     if (selectedYear !== 'all') {
       filtered = filtered.filter((t) => {
         if (!t.date) return false;
-        console.log('Filtering transaction date:', t.date);
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
