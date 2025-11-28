@@ -34,6 +34,8 @@ import {
 import { setAccounts } from '@/store/accounts/slice';
 import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
+import { setStatements } from '@/store/statements/slice';
+import { actions as statementActions } from '@/store/statements';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
@@ -209,12 +211,17 @@ export default function EncryptionProvider() {
     let schemaVersion = localStorage.getItem('dataSchemaVersion');
 
     // Load encrypted data into Redux
-    let [encryptedAccounts, encryptedTransactions, encryptedCategories] =
-      await Promise.all([
-        getAllEncryptedRecords('accounts', dek),
-        getAllEncryptedRecords('transactions', dek),
-        getAllEncryptedRecords('categories', dek),
-      ]);
+    let [
+      encryptedAccounts,
+      encryptedTransactions,
+      encryptedCategories,
+      encryptedStatements,
+    ] = await Promise.all([
+      getAllEncryptedRecords('accounts', dek),
+      getAllEncryptedRecords('transactions', dek),
+      getAllEncryptedRecords('categories', dek),
+      getAllEncryptedRecords('statements', dek),
+    ]);
 
     // Check if we need to migrate from schema 2.0.0 to 2.0.1
     const needsMigration =
@@ -295,6 +302,7 @@ export default function EncryptionProvider() {
       },
       transactions: [],
       categories: [],
+      statements: [],
     };
     localStorage.setItem('reduxState', JSON.stringify(emptyState));
 
@@ -320,6 +328,13 @@ export default function EncryptionProvider() {
     dispatch(setAccounts(encryptedAccounts));
     dispatch(setTransactions(encryptedTransactions));
     dispatch(setCategories(categoriesToLoad));
+    dispatch(setStatements(encryptedStatements || []));
+
+    // Auto-generate missing statements for all credit card accounts
+    // Run this after data is loaded into Redux
+    setTimeout(() => {
+      dispatch(statementActions.autoGenerateAllStatements());
+    }, 0);
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {

@@ -73,7 +73,6 @@ export default function StatementSeparatorRow({
 }
 
 StatementSeparatorRow.propTypes = {
-  statementDay: PropTypes.number.isRequired,
   statementDate: PropTypes.string.isRequired,
   periodStart: PropTypes.string.isRequired,
   periodEnd: PropTypes.string.isRequired,

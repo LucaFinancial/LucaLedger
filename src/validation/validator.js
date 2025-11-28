@@ -24,6 +24,7 @@ import addFormats from 'ajv-formats';
 import { accountSchemas } from './accountSchemas';
 import { transactionSchemas } from './transactionSchemas';
 import { categorySchemas } from './categorySchemas';
+import { statementSchemas } from './statementSchemas';
 
 // Create and configure AJV instance
 const ajv = new Ajv({
@@ -48,6 +49,9 @@ const transactionValidator = ajv.compile(transactionSchemas.transaction);
 
 // Compile schema for categories
 const categoryValidator = ajv.compile(categorySchemas.category);
+
+// Compile schema for statements
+const statementValidator = ajv.compile(statementSchemas.statement);
 
 /**
  * Formats AJV errors into user-friendly messages
@@ -191,6 +195,37 @@ export function validateCategorySync(category) {
 }
 
 /**
+ * Validates a statement against its schema
+ * @param {Object} statement - Statement data to validate
+ * @returns {Object} { valid: boolean, errors: Array }
+ */
+export function validateStatement(statement) {
+  const valid = statementValidator(statement);
+
+  return {
+    valid,
+    errors: valid ? [] : formatErrors(statementValidator.errors),
+  };
+}
+
+/**
+ * Validates a statement and throws an error if invalid
+ * @param {Object} statement - Statement data to validate
+ * @throws {Error} Validation error with details
+ */
+export function validateStatementSync(statement) {
+  const result = validateStatement(statement);
+
+  if (!result.valid) {
+    const error = new Error(result.errors[0]);
+    error.errors = result.errors;
+    throw error;
+  }
+
+  return statement;
+}
+
+/**
  * Gets the AJV instance for advanced use cases
  * @returns {Ajv} Configured AJV instance
  */
@@ -205,5 +240,7 @@ export default {
   validateTransactionSync,
   validateCategory,
   validateCategorySync,
+  validateStatement,
+  validateStatementSync,
   getAjvInstance,
 };

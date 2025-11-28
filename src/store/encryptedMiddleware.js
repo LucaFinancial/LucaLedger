@@ -220,6 +220,38 @@ function handleEncryptedPersistence(action, state) {
     // For unencrypted mode, let the regular persistence handle it via the state update
     // No special localStorage handling needed here - it will be handled by the main middleware logic
   }
+
+  // Handle statement actions
+  if (action.type === 'statements/addStatement') {
+    queueWrite('statements', action.payload.id, action.payload);
+  } else if (action.type === 'statements/updateStatement') {
+    queueWrite('statements', action.payload.id, action.payload);
+  } else if (action.type === 'statements/lockStatement') {
+    queueWrite('statements', action.payload.id, action.payload);
+  } else if (action.type === 'statements/setStatements') {
+    // When setting all statements (e.g., during import/load), persist all to IndexedDB
+    const dek = getActiveDEK();
+    if (dek) {
+      // Import batchStoreEncryptedRecords for bulk operations
+      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+        const statementRecords = action.payload.map((statement) => ({
+          id: statement.id,
+          data: statement,
+        }));
+        batchStoreEncryptedRecords('statements', statementRecords, dek).catch(
+          (error) => {
+            console.error('Failed to persist statements to IndexedDB:', error);
+          }
+        );
+      });
+    }
+  } else if (action.type === 'statements/removeStatement') {
+    // Delete from IndexedDB immediately
+    const statementId = action.payload;
+    db.statements.delete(statementId).catch((error) => {
+      console.error('Failed to delete statement from IndexedDB:', error);
+    });
+  }
 }
 
 /**
@@ -230,11 +262,13 @@ export async function loadEncryptedState(dek) {
     const accounts = await getAllEncryptedRecords('accounts', dek);
     const transactions = await getAllEncryptedRecords('transactions', dek);
     const categories = await getAllEncryptedRecords('categories', dek);
+    const statements = await getAllEncryptedRecords('statements', dek);
 
     return {
       accounts: accounts || [],
       transactions: transactions || [],
       categories: categories || [],
+      statements: statements || [],
     };
   } catch (error) {
     console.error('Failed to load encrypted state:', error);
