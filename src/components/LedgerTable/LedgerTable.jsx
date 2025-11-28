@@ -408,13 +408,11 @@ export default function LedgerTable({
                                 <StatementSeparatorRow
                                   key={`statement-${item.date}`}
                                   statementDay={item.statementClosingDay}
-                                  statementDate={format(
-                                    parseISO(item.date.replace(/\//g, '-')),
-                                    'MMMM dd yyyy'
-                                  )}
+                                  statementDate={item.date}
                                   periodStart={item.periodStart}
                                   periodEnd={item.periodEnd}
                                   transactions={item.transactions}
+                                  accountId={account.id}
                                 />
                               );
                             }
