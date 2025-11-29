@@ -226,6 +226,7 @@ StatementCard.propTypes = {
     isStartDateModified: PropTypes.bool.isRequired,
     isEndDateModified: PropTypes.bool.isRequired,
     isTotalModified: PropTypes.bool.isRequired,
+    statementPeriod: PropTypes.string,
   }).isRequired,
   onView: PropTypes.func,
   onLock: PropTypes.func,

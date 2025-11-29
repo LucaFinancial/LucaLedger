@@ -35,7 +35,6 @@ import { setAccounts } from '@/store/accounts/slice';
 import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
 import { setStatements } from '@/store/statements/slice';
-import { actions as statementActions } from '@/store/statements';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
