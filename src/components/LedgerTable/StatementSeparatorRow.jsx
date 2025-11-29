@@ -5,10 +5,19 @@ import {
   IconButton,
   Box,
   Button,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { format, parseISO } from 'date-fns';
-import { Visibility, Lock, LockOpen, Add } from '@mui/icons-material';
+import {
+  Visibility,
+  Lock,
+  LockOpen,
+  Add,
+  Warning,
+  Error,
+} from '@mui/icons-material';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -39,6 +48,13 @@ export default function StatementSeparatorRow({
       accountId,
       closingDateWithSlashes
     )
+  );
+
+  // Get issue information for this statement
+  const issues = useSelector(
+    statement
+      ? statementSelectors.selectStatementIssues(statement.id)
+      : () => null
   );
 
   // Calculate charges by status
@@ -92,6 +108,11 @@ export default function StatementSeparatorRow({
     dispatch(statementActions.updateStatementProperty(statementId, updates));
   };
 
+  const handleDelete = (statementId) => {
+    dispatch(statementActions.deleteStatement(statementId));
+    setModalOpen(false);
+  };
+
   const handleModalClose = () => {
     setModalOpen(false);
   };
@@ -143,6 +164,40 @@ export default function StatementSeparatorRow({
                   )}
               </Typography>
               <StatementStatusBadge status={statement?.status || 'draft'} />
+              {issues?.hasDuplicate && (
+                <Tooltip title='Duplicate statement period detected'>
+                  <Chip
+                    icon={<Error />}
+                    label='Duplicate'
+                    size='small'
+                    color='error'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasOverlap && !issues.hasDuplicate && (
+                <Tooltip
+                  title={`Overlaps by ${issues.overlapDays} day${
+                    issues.overlapDays !== 1 ? 's' : ''
+                  }`}
+                >
+                  <Chip
+                    icon={<Warning />}
+                    label='Overlap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasGap && !issues.hasDuplicate && !issues.hasOverlap && (
+                <Tooltip title={`${issues.gapDays} day gap`}>
+                  <Chip
+                    icon={<Warning />}
+                    label='Gap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -223,6 +278,7 @@ export default function StatementSeparatorRow({
           onSave={handleSave}
           onLock={handleLock}
           onUnlock={handleUnlock}
+          onDelete={handleDelete}
           readOnly={statement.status === 'locked'}
         />
       )}

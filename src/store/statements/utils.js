@@ -14,12 +14,23 @@ import {
 } from 'date-fns';
 
 /**
- * Calculate the statement period for a given date and statement day
+ * Calculate statement period string from closing date
+ * This is the canonical implementation used everywhere
+ * @param {string} closingDate - Closing date in YYYY/MM/DD format
+ * @returns {string} Period in YYYY-MM format
+ */
+export function calculateStatementPeriod(closingDate) {
+  const date = parseISO(closingDate.replace(/\//g, '-'));
+  return format(date, 'yyyy-MM');
+}
+
+/**
+ * Calculate the statement period dates for a given date and statement day
  * @param {string} dateStr - Date in YYYY/MM/DD format
  * @param {number} statementDay - Day of month when statement closes (1-31)
  * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
  */
-export function calculateStatementPeriod(dateStr, statementDay) {
+export function calculateStatementDates(dateStr, statementDay) {
   // Convert slash format to hyphen format for parseISO
   const date = parseISO(dateStr.replace(/\//g, '-'));
   const dayOfMonth = date.getDate();
@@ -74,7 +85,7 @@ export function calculateStatementPeriod(dateStr, statementDay) {
  */
 export function getCurrentPeriod(statementDay) {
   const today = format(new Date(), 'yyyy/MM/dd');
-  return calculateStatementPeriod(today, statementDay);
+  return calculateStatementDates(today, statementDay);
 }
 
 /**
@@ -90,7 +101,7 @@ export function getPreviousPeriod(closingDate, statementDay) {
   prevDate.setDate(prevDate.getDate() - 1);
   const prevDateStr = format(prevDate, 'yyyy/MM/dd');
 
-  return calculateStatementPeriod(prevDateStr, statementDay);
+  return calculateStatementDates(prevDateStr, statementDay);
 }
 
 /**
@@ -106,20 +117,38 @@ export function getNextPeriod(closingDate, statementDay) {
   nextDate.setDate(nextDate.getDate() + 1);
   const nextDateStr = format(nextDate, 'yyyy/MM/dd');
 
-  return calculateStatementPeriod(nextDateStr, statementDay);
+  return calculateStatementDates(nextDateStr, statementDay);
 }
 
 /**
  * Check if a statement already exists for a given period and account
+ * Uses the statementPeriod field for reliable period matching
  * @param {Array} statements - Array of all statements
  * @param {string} accountId - Account ID
- * @param {string} closingDate - Closing date in YYYY/MM/DD format
- * @returns {boolean} - True if statement exists
+ * @param {string} closingDate - Closing date in YYYY/MM/DD format (used to calculate target period)
+ * @returns {boolean} - True if statement exists for this period
  */
 export function statementExistsForPeriod(statements, accountId, closingDate) {
-  return statements.some(
-    (stmt) => stmt.accountId === accountId && stmt.closingDate === closingDate
-  );
+  // Parse the closing date to calculate the target period (YYYY-MM format)
+  const closingDateParsed = parseISO(closingDate.replace(/\//g, '-'));
+  const targetPeriod = format(closingDateParsed, 'yyyy-MM');
+
+  // Check if any statement exists for this account with matching statementPeriod
+  return statements.some((stmt) => {
+    if (stmt.accountId !== accountId) return false;
+
+    // If statement has the statementPeriod field, use it for comparison
+    if (stmt.statementPeriod) {
+      return stmt.statementPeriod === targetPeriod;
+    }
+
+    // Fallback for old statements without statementPeriod field
+    // Parse the statement's periodStart to determine its period
+    const stmtPeriodStart = parseISO(stmt.periodStart.replace(/\//g, '-'));
+    const stmtPeriod = format(stmtPeriodStart, 'yyyy-MM');
+
+    return stmtPeriod === targetPeriod;
+  });
 }
 
 /**
@@ -243,7 +272,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   const currentPeriod = getCurrentPeriod(statementDay);
 
   // Start from the earliest date and walk forward
-  let period = calculateStatementPeriod(earliestDate, statementDay);
+  let period = calculateStatementDates(earliestDate, statementDay);
   const currentClosing = parseISO(
     currentPeriod.closingDate.replace(/\//g, '-')
   );
@@ -276,11 +305,15 @@ export function getMissingStatementPeriods(account, statements, transactions) {
         period.periodEnd
       );
 
+      // Calculate statement period from closing date for consistent duplicate detection
+      const statementPeriod = calculateStatementPeriod(period.closingDate);
+
       missingPeriods.push({
         accountId: account.id,
         closingDate: period.closingDate,
         periodStart: period.periodStart,
         periodEnd: period.periodEnd,
+        statementPeriod,
         transactionIds,
         total,
         status,

@@ -205,62 +205,77 @@ export const unlockStatement = (statementId) => (dispatch) => {
 };
 
 /**
- * Auto-generates the current period statement if it doesn't exist
- * @param {string} accountId - Account ID
- * @returns {Object|null} - Created statement or null if not needed
+ * Deletes a statement
+ * @param {string} statementId - Statement ID
  */
-export const ensureCurrentStatement = (accountId) => (dispatch, getState) => {
-  const state = getState();
-  const account = state.accounts.data.find((a) => a.id === accountId);
-
-  if (!account || !account.statementDay) {
-    return null; // Not a credit card or no statement day configured
-  }
-
-  const statements = state.statements.filter((s) => s.accountId === accountId);
-  const transactions = state.transactions.filter(
-    (t) => t.accountId === accountId
-  );
-
-  // Get current period
-  const currentPeriod = getCurrentPeriod(account.statementDay);
-
-  // Check if statement already exists for current period
-  if (
-    statementExistsForPeriod(statements, accountId, currentPeriod.closingDate)
-  ) {
-    return null; // Already exists
-  }
-
-  // Get missing periods (will include current if missing)
-  const missingPeriods = getMissingStatementPeriods(
-    account,
-    statements,
-    transactions
-  );
-
-  // Find the current period in missing periods
-  const currentMissing = missingPeriods.find(
-    (p) => p.closingDate === currentPeriod.closingDate
-  );
-
-  if (currentMissing) {
-    const newStatement = generateStatement(currentMissing);
-    if (newStatement) {
-      dispatch(addStatement(newStatement));
-      return newStatement;
-    }
-  }
-
-  return null;
+export const deleteStatement = (statementId) => (dispatch) => {
+  dispatch(removeStatement(statementId));
 };
 
 /**
- * Auto-generates all missing historical statements for an account
+ * Fixes an overlap issue by adjusting the adjacent statement's dates
+ * @param {string} currentStatementId - The statement being viewed
+ * @param {string} adjacentStatementId - The statement with overlapping/gap dates
+ */
+export const fixStatementIssue =
+  (currentStatementId, adjacentStatementId) => (dispatch, getState) => {
+    const state = getState();
+    const currentStmt = state.statements.find(
+      (s) => s.id === currentStatementId
+    );
+    const adjacentStmt = state.statements.find(
+      (s) => s.id === adjacentStatementId
+    );
+
+    if (!currentStmt || !adjacentStmt) {
+      console.error('Statements not found for fix operation');
+      return;
+    }
+
+    // Determine which statement comes first chronologically
+    const currentStart = parseISO(currentStmt.periodStart.replace(/\//g, '-'));
+    const adjacentStart = parseISO(
+      adjacentStmt.periodStart.replace(/\//g, '-')
+    );
+
+    if (currentStart < adjacentStart) {
+      // Current statement is before adjacent - adjust adjacent's start date
+      const newAdjacentStart = format(
+        addDays(parseISO(currentStmt.periodEnd.replace(/\//g, '-')), 1),
+        'yyyy/MM/dd'
+      );
+      dispatch(
+        updateStatementNormalized({
+          ...adjacentStmt,
+          periodStart: newAdjacentStart,
+          isStartDateModified: true,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+    } else {
+      // Current statement is after adjacent - adjust adjacent's end date
+      const newAdjacentEnd = format(
+        subDays(parseISO(currentStmt.periodStart.replace(/\//g, '-')), 1),
+        'yyyy/MM/dd'
+      );
+      dispatch(
+        updateStatementNormalized({
+          ...adjacentStmt,
+          periodEnd: newAdjacentEnd,
+          isEndDateModified: true,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+    }
+  };
+
+/**
+ * Auto-generates statements for an account (current + backfill)
+ * This is the main entry point for auto-generation
  * @param {string} accountId - Account ID
  * @returns {Array} - Array of created statements
  */
-export const backfillStatements = (accountId) => (dispatch, getState) => {
+export const autoGenerateStatements = (accountId) => (dispatch, getState) => {
   const state = getState();
   const account = state.accounts.data.find((a) => a.id === accountId);
 
@@ -273,7 +288,7 @@ export const backfillStatements = (accountId) => (dispatch, getState) => {
     (t) => t.accountId === accountId
   );
 
-  // Get all missing periods
+  // Get all missing periods (includes current)
   const missingPeriods = getMissingStatementPeriods(
     account,
     statements,
@@ -291,41 +306,4 @@ export const backfillStatements = (accountId) => (dispatch, getState) => {
   });
 
   return createdStatements;
-};
-
-/**
- * Auto-generates statements for an account (current + backfill)
- * This is the main entry point for auto-generation
- * @param {string} accountId - Account ID
- * @returns {Object} - { current, backfilled }
- */
-export const autoGenerateStatements = (accountId) => (dispatch) => {
-  // First ensure current statement exists
-  const current = dispatch(ensureCurrentStatement(accountId));
-
-  // Then backfill any missing historical statements
-  const backfilled = dispatch(backfillStatements(accountId));
-
-  return {
-    current,
-    backfilled,
-  };
-};
-
-/**
- * Auto-generates statements for all credit card accounts
- * @returns {Object} - Map of accountId to generation results
- */
-export const autoGenerateAllStatements = () => (dispatch, getState) => {
-  const state = getState();
-  const creditCardAccounts = state.accounts.data.filter(
-    (a) => a.type === 'Credit Card' && a.statementDay
-  );
-
-  const results = {};
-  creditCardAccounts.forEach((account) => {
-    results[account.id] = dispatch(autoGenerateStatements(account.id));
-  });
-
-  return results;
 };

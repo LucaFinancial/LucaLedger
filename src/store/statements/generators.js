@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import config from '@/config';
 import { StatementStatusEnum } from './constants';
 import { validateStatementSync } from '@/validation/validator';
+import { calculateStatementPeriod } from './utils';
 
 /**
  * Generates a new statement with default values
@@ -20,11 +21,16 @@ import { validateStatementSync } from '@/validation/validator';
 export const generateStatement = (initialData = {}) => {
   const now = new Date().toISOString();
 
+  const closingDate =
+    initialData.closingDate || dayjs().format(config.dateFormatString);
+
+  // Calculate statementPeriod from closingDate to ensure consistency
+  const statementPeriod = calculateStatementPeriod(closingDate);
+
   const statement = {
     id: uuid(),
     accountId: initialData.accountId || null,
-    closingDate:
-      initialData.closingDate || dayjs().format(config.dateFormatString),
+    closingDate,
     periodStart:
       initialData.periodStart ||
       dayjs().subtract(1, 'month').format(config.dateFormatString),
@@ -40,7 +46,9 @@ export const generateStatement = (initialData = {}) => {
     createdAt: now,
     updatedAt: now,
     lockedAt: initialData.lockedAt || null,
+    // Spread initialData but ensure statementPeriod is never overwritten
     ...initialData,
+    statementPeriod, // Always use calculated value from closingDate
   };
 
   try {

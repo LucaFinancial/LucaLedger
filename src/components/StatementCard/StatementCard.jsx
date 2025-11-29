@@ -5,11 +5,20 @@ import {
   Box,
   IconButton,
   Tooltip,
+  Chip,
 } from '@mui/material';
-import { Lock, LockOpen, Visibility } from '@mui/icons-material';
+import {
+  Lock,
+  LockOpen,
+  Visibility,
+  Warning,
+  Error,
+} from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
+import { selectors as statementSelectors } from '@/store/statements';
 
 function formatCurrency(cents) {
   const dollars = Math.abs(cents) / 100;
@@ -26,6 +35,10 @@ export default function StatementCard({
   onLock,
   compact = false,
 }) {
+  const issues = useSelector(
+    statementSelectors.selectStatementIssues(statement.id)
+  );
+
   const periodStartFormatted = format(
     parseISO(statement.periodStart.replace(/\//g, '-')),
     'MMM d, yyyy'
@@ -34,6 +47,11 @@ export default function StatementCard({
     parseISO(statement.periodEnd.replace(/\//g, '-')),
     'MMM d, yyyy'
   );
+
+  // Format statement period as "Month YYYY" (e.g., "November 2025")
+  const statementPeriodFormatted = statement.statementPeriod
+    ? format(parseISO(`${statement.statementPeriod}-01`), 'MMMM yyyy')
+    : null;
 
   return (
     <Card
@@ -62,16 +80,63 @@ export default function StatementCard({
               gap={1}
               mb={0.5}
             >
-              <Typography
-                variant={compact ? 'body2' : 'h6'}
-                fontWeight='bold'
-              >
-                {periodStartFormatted} - {periodEndFormatted}
-              </Typography>
+              <Box>
+                <Typography
+                  variant={compact ? 'body2' : 'h6'}
+                  fontWeight='bold'
+                >
+                  {statementPeriodFormatted ||
+                    `${periodStartFormatted} - ${periodEndFormatted}`}
+                </Typography>
+                {statementPeriodFormatted && (
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                  >
+                    {periodStartFormatted} - {periodEndFormatted}
+                  </Typography>
+                )}
+              </Box>
               <StatementStatusBadge
                 status={statement.status}
                 size={compact ? 'small' : 'medium'}
               />
+              {issues?.hasDuplicate && (
+                <Tooltip title='Duplicate statement period detected'>
+                  <Chip
+                    icon={<Error />}
+                    label='Duplicate'
+                    size='small'
+                    color='error'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasOverlap && !issues.hasDuplicate && (
+                <Tooltip
+                  title={`Overlaps with another statement by ${
+                    issues.overlapDays
+                  } day${issues.overlapDays !== 1 ? 's' : ''}`}
+                >
+                  <Chip
+                    icon={<Warning />}
+                    label='Overlap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasGap && !issues.hasDuplicate && !issues.hasOverlap && (
+                <Tooltip
+                  title={`${issues.gapDays} day gap with adjacent statement`}
+                >
+                  <Chip
+                    icon={<Warning />}
+                    label='Gap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
             </Box>
 
             <Typography

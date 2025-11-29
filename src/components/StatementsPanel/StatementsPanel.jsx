@@ -45,6 +45,12 @@ export default function StatementsPanel({ accountId }) {
     dispatch(statementActions.updateStatementProperty(statementId, updates));
   };
 
+  const handleDelete = (statementId) => {
+    dispatch(statementActions.deleteStatement(statementId));
+    setModalOpen(false);
+    setSelectedStatement(null);
+  };
+
   const handleModalClose = () => {
     setModalOpen(false);
     setSelectedStatement(null);
@@ -96,6 +102,7 @@ export default function StatementsPanel({ accountId }) {
           onSave={handleSave}
           onLock={handleLock}
           onUnlock={handleUnlock}
+          onDelete={handleDelete}
           readOnly={selectedStatement.status === 'locked'}
         />
       )}

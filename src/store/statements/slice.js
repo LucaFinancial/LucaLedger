@@ -1,13 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { validateStatementSync } from '@/validation/validator';
+import { calculateStatementPeriod } from './utils';
 
 /**
  * Validates and cleans a statement object
  * Removes any properties not defined in the schema
+ * Ensures statementPeriod is always set
  */
 const cleanStatement = (statement) => {
   try {
-    return validateStatementSync(statement);
+    const validated = validateStatementSync(statement);
+
+    if (validated.closingDate) {
+      validated.statementPeriod = calculateStatementPeriod(
+        validated.closingDate
+      );
+    }
+
+    return validated;
   } catch (error) {
     console.error('Invalid statement data:', error);
     // Return the original statement even if validation fails
@@ -26,7 +36,21 @@ const statements = createSlice({
       return action.payload.map(cleanStatement);
     },
     addStatement: (state, action) => {
-      state.push(cleanStatement(action.payload));
+      const newStatement = cleanStatement(action.payload);
+
+      // Prevent duplicate statements for the same account and period
+      const isDuplicate = state.some(
+        (s) =>
+          s.accountId === newStatement.accountId &&
+          s.statementPeriod === newStatement.statementPeriod &&
+          s.id !== newStatement.id
+      );
+
+      if (isDuplicate) {
+        return;
+      }
+
+      state.push(newStatement);
     },
     updateStatement: (state, action) => {
       const updatedStatement = cleanStatement(action.payload);
@@ -34,6 +58,14 @@ const statements = createSlice({
       if (index !== -1) {
         // Update timestamp
         updatedStatement.updatedAt = new Date().toISOString();
+
+        // Recalculate statementPeriod based on current closingDate to ensure consistency
+        if (updatedStatement.closingDate) {
+          updatedStatement.statementPeriod = calculateStatementPeriod(
+            updatedStatement.closingDate
+          );
+        }
+
         state[index] = { ...state[index], ...updatedStatement };
       }
     },

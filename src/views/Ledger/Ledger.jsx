@@ -28,7 +28,7 @@ import {
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
 import dayjs from 'dayjs';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
@@ -170,15 +170,23 @@ export default function Ledger() {
   const [collapsedGroups, setCollapsedGroups] = useState(() =>
     getDefaultCollapsedGroups()
   );
+  const hasGeneratedStatements = useRef(new Set());
 
   useEffect(() => {
     if (!account) {
       navigate('/accounts');
     } else if (account.type === 'Credit Card' && account.statementDay) {
-      // Auto-generate statements for credit card accounts
+      // Check if we've already generated for this account
+      if (hasGeneratedStatements.current.has(accountId)) {
+        return;
+      }
+
+      // Mark as generated BEFORE dispatching to prevent race conditions
+      hasGeneratedStatements.current.add(accountId);
       dispatch(statementActions.autoGenerateStatements(accountId));
     }
-  }, [account, navigate, dispatch, accountId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]); // Only re-run if accountId changes (navigating to different account)
 
   if (!account) {
     return null;

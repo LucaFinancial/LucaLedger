@@ -330,11 +330,8 @@ export default function EncryptionProvider() {
     dispatch(setCategories(categoriesToLoad));
     dispatch(setStatements(encryptedStatements || []));
 
-    // Auto-generate missing statements for all credit card accounts
-    // Run this after data is loaded into Redux
-    setTimeout(() => {
-      dispatch(statementActions.autoGenerateAllStatements());
-    }, 0);
+    // Note: Statement auto-generation happens in the Ledger view when you view an account
+    // This ensures statements are only generated when needed, not on every app load
   };
 
   const handleUnlock = async (password, stayLoggedIn) => {

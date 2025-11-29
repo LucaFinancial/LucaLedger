@@ -1,4 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
+import { parseISO, differenceInDays } from 'date-fns';
 
 /**
  * Memoized Redux Selectors for Statements
@@ -111,3 +112,113 @@ export const selectNextStatement = (accountId, periodEnd) =>
       });
     }
   );
+
+/**
+ * Detect issues with a statement (duplicates, overlaps, gaps)
+ * Returns an object with issue details or null if no issues
+ */
+export const selectStatementIssues = (statementId) =>
+  createSelector([selectStatements, () => statementId], (statements, id) => {
+    const statement = statements.find((s) => s.id === id);
+    if (!statement) return null;
+
+    const accountStatements = statements
+      .filter((s) => s.accountId === statement.accountId && s.id !== id)
+      .sort((a, b) => a.periodStart.localeCompare(b.periodStart));
+
+    const issues = {
+      hasDuplicate: false,
+      hasOverlap: false,
+      hasGap: false,
+      duplicateStatement: null,
+      duplicateStatements: [],
+      overlapStatement: null,
+      gapStatement: null,
+      overlapDays: 0,
+      gapDays: 0,
+    };
+
+    // Check for duplicate period - find ALL duplicates
+    const duplicates = accountStatements.filter(
+      (s) => s.statementPeriod === statement.statementPeriod
+    );
+    if (duplicates.length > 0) {
+      issues.hasDuplicate = true;
+      issues.duplicateStatement = duplicates[0]; // Keep for backwards compatibility
+      issues.duplicateStatements = duplicates;
+    }
+
+    // Parse dates for this statement
+    const thisStart = parseISO(statement.periodStart.replace(/\//g, '-'));
+    const thisEnd = parseISO(statement.periodEnd.replace(/\//g, '-'));
+
+    let previousStatement = null;
+    let nextStatement = null;
+
+    accountStatements.forEach((otherStmt) => {
+      const otherStartDate = parseISO(
+        otherStmt.periodStart.replace(/\//g, '-')
+      );
+
+      if (otherStartDate < thisStart) {
+        previousStatement = otherStmt;
+        return;
+      }
+
+      if (!nextStatement && otherStartDate > thisStart) {
+        nextStatement = otherStmt;
+      }
+    });
+
+    const analyzeNeighbor = (neighbor, position) => {
+      if (!neighbor) return;
+
+      const neighborStart = parseISO(neighbor.periodStart.replace(/\//g, '-'));
+      const neighborEnd = parseISO(neighbor.periodEnd.replace(/\//g, '-'));
+
+      const overlaps =
+        thisStart <= neighborEnd &&
+        thisEnd >= neighborStart &&
+        !issues.hasDuplicate;
+
+      if (overlaps) {
+        const overlapStart =
+          thisStart > neighborStart ? thisStart : neighborStart;
+        const overlapEnd = thisEnd < neighborEnd ? thisEnd : neighborEnd;
+        const days = differenceInDays(overlapEnd, overlapStart) + 1;
+
+        if (days > 0) {
+          issues.hasOverlap = true;
+          issues.overlapStatement = neighbor;
+          issues.overlapDays = days;
+          return;
+        }
+      }
+
+      if (position === 'previous' && neighborEnd < thisStart) {
+        const daysBetween = differenceInDays(thisStart, neighborEnd);
+        if (daysBetween > 1 && !issues.hasGap) {
+          issues.hasGap = true;
+          issues.gapStatement = neighbor;
+          issues.gapDays = daysBetween - 1;
+        }
+      } else if (position === 'next' && thisEnd < neighborStart) {
+        const daysBetween = differenceInDays(neighborStart, thisEnd);
+        if (daysBetween > 1 && !issues.hasGap) {
+          issues.hasGap = true;
+          issues.gapStatement = neighbor;
+          issues.gapDays = daysBetween - 1;
+        }
+      }
+    };
+
+    analyzeNeighbor(previousStatement, 'previous');
+    analyzeNeighbor(nextStatement, 'next');
+
+    // Return null if no issues found
+    if (!issues.hasDuplicate && !issues.hasOverlap && !issues.hasGap) {
+      return null;
+    }
+
+    return issues;
+  });

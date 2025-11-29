@@ -38,6 +38,12 @@ const statementSchema = {
       pattern: '^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$',
       description: 'Period end date (inclusive) in YYYY/MM/DD format',
     },
+    statementPeriod: {
+      type: 'string',
+      pattern: '^\\d{4}-(0[1-9]|1[0-2])$',
+      description:
+        'Statement period in YYYY-MM format for tracking billing cycles',
+    },
     transactionIds: {
       type: 'array',
       items: {
@@ -89,6 +95,7 @@ const statementSchema = {
     'closingDate',
     'periodStart',
     'periodEnd',
+    'statementPeriod',
     'transactionIds',
     'total',
     'status',

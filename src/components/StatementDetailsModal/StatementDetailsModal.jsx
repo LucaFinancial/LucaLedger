@@ -13,11 +13,16 @@ import {
   ListItemText,
   Divider,
   Alert,
+  AlertTitle,
 } from '@mui/material';
 import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import {
+  selectors as statementSelectors,
+  actions as statementActions,
+} from '@/store/statements';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
 
 function formatCurrency(cents) {
@@ -40,8 +45,10 @@ export default function StatementDetailsModal({
   onSave,
   onLock,
   onUnlock,
+  onDelete,
   readOnly = false,
 }) {
+  const dispatch = useDispatch();
   const [periodStart, setPeriodStart] = useState(statement?.periodStart || '');
   const [periodEnd, setPeriodEnd] = useState(statement?.periodEnd || '');
   const [total, setTotal] = useState(
@@ -50,6 +57,9 @@ export default function StatementDetailsModal({
   const [hasChanges, setHasChanges] = useState(false);
 
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  const issues = useSelector(
+    statementSelectors.selectStatementIssues(statement?.id)
+  );
 
   if (!statement) return null;
 
@@ -64,9 +74,14 @@ export default function StatementDetailsModal({
   const handleSave = () => {
     if (!canEdit) return;
 
+    // Calculate statementPeriod from periodStart (YYYY-MM format)
+    const periodStartDate = parseISO(periodStart.replace(/\//g, '-'));
+    const statementPeriod = format(periodStartDate, 'yyyy-MM');
+
     const updates = {
       periodStart,
       periodEnd,
+      statementPeriod,
       total: Math.round(parseFloat(total) * 100),
       isStartDateModified: periodStart !== statement.periodStart,
       isEndDateModified: periodEnd !== statement.periodEnd,
@@ -92,6 +107,37 @@ export default function StatementDetailsModal({
   const handleUnlock = () => {
     if (onUnlock) {
       onUnlock(statement.id);
+    }
+  };
+
+  const handleFixIssue = () => {
+    if (!issues) return;
+
+    if (issues.hasDuplicate || issues.hasOverlap || issues.hasGap) {
+      const adjacentId =
+        issues.duplicateStatement?.id ||
+        issues.overlapStatement?.id ||
+        issues.gapStatement?.id;
+      if (adjacentId) {
+        dispatch(statementActions.fixStatementIssue(statement.id, adjacentId));
+      }
+    }
+  };
+
+  const handleRemoveDuplicate = () => {
+    if (issues?.duplicateStatements && onDelete) {
+      // Delete all duplicate statements
+      issues.duplicateStatements.forEach((duplicate) => {
+        onDelete(duplicate.id);
+      });
+      onClose();
+    }
+  };
+
+  const handleRemoveCurrent = () => {
+    if (onDelete) {
+      onDelete(statement.id);
+      onClose();
     }
   };
 
@@ -136,6 +182,79 @@ export default function StatementDetailsModal({
             }
           >
             This statement is locked and cannot be edited.
+          </Alert>
+        )}
+
+        {issues?.hasDuplicate && (
+          <Alert
+            severity='error'
+            sx={{ mb: 2 }}
+            action={
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  color='inherit'
+                  size='small'
+                  onClick={handleRemoveDuplicate}
+                >
+                  Remove Duplicate
+                  {issues.duplicateStatements?.length > 1 ? 's' : ''}
+                </Button>
+                <Button
+                  color='inherit'
+                  size='small'
+                  onClick={handleRemoveCurrent}
+                >
+                  Remove Current
+                </Button>
+              </Box>
+            }
+          >
+            <AlertTitle>Duplicate Statement Period</AlertTitle>
+            This statement has the same period ({statement.statementPeriod}) as{' '}
+            {issues.duplicateStatements?.length || 1} other statement
+            {(issues.duplicateStatements?.length || 1) !== 1 ? 's' : ''}. This
+            should not happen and duplicates must be removed.
+          </Alert>
+        )}
+
+        {issues?.hasOverlap && !issues.hasDuplicate && (
+          <Alert
+            severity='warning'
+            sx={{ mb: 2 }}
+            action={
+              <Button
+                color='inherit'
+                size='small'
+                onClick={handleFixIssue}
+              >
+                Fix Overlap
+              </Button>
+            }
+          >
+            <AlertTitle>Date Overlap Detected</AlertTitle>
+            This statement overlaps with another statement by{' '}
+            {issues.overlapDays} day{issues.overlapDays !== 1 ? 's' : ''}. Click
+            &quot;Fix Overlap&quot; to adjust the adjacent statement.
+          </Alert>
+        )}
+
+        {issues?.hasGap && !issues.hasDuplicate && !issues.hasOverlap && (
+          <Alert
+            severity='warning'
+            sx={{ mb: 2 }}
+            action={
+              <Button
+                color='inherit'
+                size='small'
+                onClick={handleFixIssue}
+              >
+                Fix Gap
+              </Button>
+            }
+          >
+            <AlertTitle>Date Gap Detected</AlertTitle>
+            There is a {issues.gapDays} day gap between this statement and an
+            adjacent statement. Click &quot;Fix Gap&quot; to adjust dates.
           </Alert>
         )}
 
@@ -288,6 +407,7 @@ StatementDetailsModal.propTypes = {
     closingDate: PropTypes.string.isRequired,
     periodStart: PropTypes.string.isRequired,
     periodEnd: PropTypes.string.isRequired,
+    statementPeriod: PropTypes.string,
     transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     total: PropTypes.number.isRequired,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
@@ -298,5 +418,6 @@ StatementDetailsModal.propTypes = {
   onSave: PropTypes.func,
   onLock: PropTypes.func,
   onUnlock: PropTypes.func,
+  onDelete: PropTypes.func,
   readOnly: PropTypes.bool,
 };
