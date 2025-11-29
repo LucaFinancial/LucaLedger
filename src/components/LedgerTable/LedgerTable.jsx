@@ -308,8 +308,7 @@ export default function LedgerTable({
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
-                  (isAfter(itemDate, closingDate) ||
-                    isSameDay(itemDate, closingDate))
+                  isAfter(itemDate, periodEndDate)
                 ) {
                   insertIndex = i;
                   break;
@@ -408,8 +407,7 @@ export default function LedgerTable({
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
-                  (isAfter(itemDate, statementDate) ||
-                    isSameDay(itemDate, statementDate))
+                  isAfter(itemDate, periodEnd)
                 ) {
                   insertIndex = i;
                   break;
