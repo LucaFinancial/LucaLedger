@@ -71,3 +71,43 @@ export const selectStatementByAccountIdAndClosingDate = (
           statement.accountId === id && statement.closingDate === date
       )
   );
+
+/**
+ * Helper function to find the statement that ends just before the given statement starts
+ * Returns the previous statement or null if not found
+ */
+export const selectPreviousStatement = (accountId, periodStart) =>
+  createSelector(
+    [selectStatements, () => accountId, () => periodStart],
+    (statements, id, startDate) => {
+      const accountStatements = statements.filter((s) => s.accountId === id);
+      // Find statement where periodEnd is one day before this periodStart
+      return accountStatements.find((s) => {
+        // Parse dates and compare
+        const endDate = new Date(s.periodEnd.replace(/\//g, '-'));
+        const checkDate = new Date(startDate.replace(/\//g, '-'));
+        checkDate.setDate(checkDate.getDate() - 1);
+        return endDate.getTime() === checkDate.getTime();
+      });
+    }
+  );
+
+/**
+ * Helper function to find the statement that starts just after the given statement ends
+ * Returns the next statement or null if not found
+ */
+export const selectNextStatement = (accountId, periodEnd) =>
+  createSelector(
+    [selectStatements, () => accountId, () => periodEnd],
+    (statements, id, endDate) => {
+      const accountStatements = statements.filter((s) => s.accountId === id);
+      // Find statement where periodStart is one day after this periodEnd
+      return accountStatements.find((s) => {
+        // Parse dates and compare
+        const startDate = new Date(s.periodStart.replace(/\//g, '-'));
+        const checkDate = new Date(endDate.replace(/\//g, '-'));
+        checkDate.setDate(checkDate.getDate() + 1);
+        return startDate.getTime() === checkDate.getTime();
+      });
+    }
+  );

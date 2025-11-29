@@ -41,14 +41,6 @@ export default function StatementSeparatorRow({
     )
   );
 
-  // Debug logging
-  console.log('StatementSeparatorRow:', {
-    accountId,
-    statementDate,
-    closingDateWithSlashes,
-    statement,
-  });
-
   // Calculate charges by status
   const allCharges = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
   const pendingCharges = transactions
@@ -66,10 +58,16 @@ export default function StatementSeparatorRow({
     });
   };
 
-  // Format date range
-  const startDate = format(parseISO(periodStart.replace(/\//g, '-')), 'MMM d');
+  // Format date range - use statement dates if available, otherwise use calculated dates
+  const displayPeriodStart = statement?.periodStart || periodStart;
+  const displayPeriodEnd = statement?.periodEnd || periodEnd;
+
+  const startDate = format(
+    parseISO(displayPeriodStart.replace(/\//g, '-')),
+    'MMM d'
+  );
   const endDate = format(
-    parseISO(periodEnd.replace(/\//g, '-')),
+    parseISO(displayPeriodEnd.replace(/\//g, '-')),
     'MMM d, yyyy'
   );
   const dateRange = `${startDate} - ${endDate}`;
@@ -84,6 +82,12 @@ export default function StatementSeparatorRow({
     }
   };
 
+  const handleUnlock = () => {
+    if (statement) {
+      dispatch(statementActions.unlockStatement(statement.id));
+    }
+  };
+
   const handleSave = (statementId, updates) => {
     dispatch(statementActions.updateStatementProperty(statementId, updates));
   };
@@ -95,7 +99,7 @@ export default function StatementSeparatorRow({
   const handleCreateStatement = () => {
     // Create a new statement for this period
     dispatch(
-      statementActions.createStatement({
+      statementActions.createNewStatement({
         accountId,
         closingDate: closingDateWithSlashes,
         periodStart,
@@ -127,6 +131,16 @@ export default function StatementSeparatorRow({
                 sx={{ fontWeight: 'bold' }}
               >
                 Statement {statementDate} ({dateRange})
+                {statement &&
+                  (statement.isStartDateModified ||
+                    statement.isEndDateModified) && (
+                    <Typography
+                      component='span'
+                      sx={{ color: 'warning.main', ml: 1, fontSize: '0.9em' }}
+                    >
+                      ⚠️
+                    </Typography>
+                  )}
               </Typography>
               <StatementStatusBadge status={statement?.status || 'draft'} />
             </Box>
@@ -208,6 +222,7 @@ export default function StatementSeparatorRow({
           statement={statement}
           onSave={handleSave}
           onLock={handleLock}
+          onUnlock={handleUnlock}
           readOnly={statement.status === 'locked'}
         />
       )}

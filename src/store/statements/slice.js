@@ -50,6 +50,16 @@ const statements = createSlice({
         state[index].updatedAt = new Date().toISOString();
       }
     },
+    unlockStatement: (state, action) => {
+      const statementId = action.payload;
+      const index = state.findIndex((s) => s.id === statementId);
+      if (index !== -1) {
+        // Restore to 'past' status when unlocking
+        state[index].status = 'past';
+        state[index].lockedAt = null;
+        state[index].updatedAt = new Date().toISOString();
+      }
+    },
   },
 });
 
@@ -61,4 +71,5 @@ export const {
   updateStatement,
   removeStatement,
   lockStatement,
+  unlockStatement,
 } = statements.actions;

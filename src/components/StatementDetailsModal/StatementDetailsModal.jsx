@@ -39,6 +39,7 @@ export default function StatementDetailsModal({
   statement,
   onSave,
   onLock,
+  onUnlock,
   readOnly = false,
 }) {
   const [periodStart, setPeriodStart] = useState(statement?.periodStart || '');
@@ -85,7 +86,12 @@ export default function StatementDetailsModal({
   const handleLock = () => {
     if (onLock) {
       onLock(statement.id);
-      onClose();
+    }
+  };
+
+  const handleUnlock = () => {
+    if (onUnlock) {
+      onUnlock(statement.id);
     }
   };
 
@@ -117,6 +123,17 @@ export default function StatementDetailsModal({
           <Alert
             severity='info'
             sx={{ mb: 2 }}
+            action={
+              onUnlock && (
+                <Button
+                  color='inherit'
+                  size='small'
+                  onClick={handleUnlock}
+                >
+                  Unlock
+                </Button>
+              )
+            }
           >
             This statement is locked and cannot be edited.
           </Alert>
@@ -280,5 +297,6 @@ StatementDetailsModal.propTypes = {
   }),
   onSave: PropTypes.func,
   onLock: PropTypes.func,
+  onUnlock: PropTypes.func,
   readOnly: PropTypes.bool,
 };

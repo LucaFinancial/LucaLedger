@@ -6,7 +6,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { Lock, Edit, Visibility } from '@mui/icons-material';
+import { Lock, LockOpen, Visibility } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
@@ -23,12 +23,9 @@ function formatCurrency(cents) {
 export default function StatementCard({
   statement,
   onView,
-  onEdit,
   onLock,
   compact = false,
 }) {
-  const canEdit = statement.status !== 'locked';
-
   const periodStartFormatted = format(
     parseISO(statement.periodStart.replace(/\//g, '-')),
     'MMM d, yyyy'
@@ -122,23 +119,23 @@ export default function StatementCard({
               </Tooltip>
             )}
 
-            {onEdit && canEdit && (
-              <Tooltip title='Edit Statement'>
-                <IconButton
-                  size='small'
-                  onClick={() => onEdit(statement)}
-                >
-                  <Edit fontSize='small' />
-                </IconButton>
-              </Tooltip>
-            )}
-
-            {onLock && canEdit && statement.status !== 'draft' && (
+            {onLock && statement.status === 'past' && (
               <Tooltip title='Lock Statement'>
                 <IconButton
                   size='small'
                   onClick={() => onLock(statement)}
                   color='error'
+                >
+                  <LockOpen fontSize='small' />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {statement.status === 'locked' && (
+              <Tooltip title='Locked'>
+                <IconButton
+                  size='small'
+                  disabled
                 >
                   <Lock fontSize='small' />
                 </IconButton>
@@ -166,7 +163,6 @@ StatementCard.propTypes = {
     isTotalModified: PropTypes.bool.isRequired,
   }).isRequired,
   onView: PropTypes.func,
-  onEdit: PropTypes.func,
   onLock: PropTypes.func,
   compact: PropTypes.bool,
 };

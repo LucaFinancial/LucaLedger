@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, Typography, Button, Paper } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Box, Typography, Paper } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -34,13 +33,12 @@ export default function StatementsPanel({ accountId }) {
     setModalOpen(true);
   };
 
-  const handleEdit = (statement) => {
-    setSelectedStatement(statement);
-    setModalOpen(true);
-  };
-
   const handleLock = (statement) => {
     dispatch(statementActions.lockStatement(statement.id));
+  };
+
+  const handleUnlock = (statementId) => {
+    dispatch(statementActions.unlockStatement(statementId));
   };
 
   const handleSave = (statementId, updates) => {
@@ -50,11 +48,6 @@ export default function StatementsPanel({ accountId }) {
   const handleModalClose = () => {
     setModalOpen(false);
     setSelectedStatement(null);
-  };
-
-  const handleCreateDraft = () => {
-    // TODO: Implement draft creation logic
-    console.log('Create draft statement');
   };
 
   if (statements.length === 0) {
@@ -79,21 +72,8 @@ export default function StatementsPanel({ accountId }) {
 
   return (
     <Box>
-      <Box
-        display='flex'
-        justifyContent='space-between'
-        alignItems='center'
-        mb={2}
-      >
+      <Box mb={2}>
         <Typography variant='h6'>Statements</Typography>
-        <Button
-          startIcon={<Add />}
-          variant='outlined'
-          size='small'
-          onClick={handleCreateDraft}
-        >
-          Create Draft
-        </Button>
       </Box>
 
       <Box>
@@ -102,7 +82,6 @@ export default function StatementsPanel({ accountId }) {
             key={statement.id}
             statement={statement}
             onView={handleView}
-            onEdit={handleEdit}
             onLock={handleLock}
             compact
           />
@@ -116,6 +95,7 @@ export default function StatementsPanel({ accountId }) {
           statement={selectedStatement}
           onSave={handleSave}
           onLock={handleLock}
+          onUnlock={handleUnlock}
           readOnly={selectedStatement.status === 'locked'}
         />
       )}

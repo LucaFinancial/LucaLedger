@@ -4,12 +4,14 @@ import {
   updateStatement as updateStatementNormalized,
   removeStatement,
   lockStatement as lockStatementNormalized,
+  unlockStatement as unlockStatementNormalized,
 } from './slice';
 import {
   getMissingStatementPeriods,
   getCurrentPeriod,
   statementExistsForPeriod,
 } from './utils';
+import { addDays, subDays, parseISO, format } from 'date-fns';
 
 /**
  * Creates a new statement for an account
@@ -25,6 +27,7 @@ export const createNewStatement = (statementData) => (dispatch) => {
 
 /**
  * Updates a statement property
+ * If periodStart or periodEnd changes, automatically adjusts adjacent statements to prevent overlaps
  * @param {string} statementId - Statement ID
  * @param {Object} updates - Object with properties to update
  */
@@ -42,6 +45,116 @@ export const updateStatementProperty =
     if (statement.status === 'locked') {
       console.error('Cannot update locked statement:', statementId);
       return;
+    }
+
+    // Check if periodStart changed
+    if (updates.periodStart && updates.periodStart !== statement.periodStart) {
+      // Find the previous statement (chronologically before this one by year/month)
+      const accountStatements = state.statements.filter(
+        (s) => s.accountId === statement.accountId && s.id !== statementId
+      );
+
+      // Get year/month of the original statement
+      const originalStartDate = parseISO(
+        statement.periodStart.replace(/\//g, '-')
+      );
+      const originalYear = originalStartDate.getFullYear();
+      const originalMonth = originalStartDate.getMonth();
+
+      // Find the statement from the previous month
+      const prevStatement = accountStatements.find((s) => {
+        const sStart = parseISO(s.periodStart.replace(/\//g, '-'));
+        const sYear = sStart.getFullYear();
+        const sMonth = sStart.getMonth();
+
+        // Check if this statement is from the month before
+        if (originalMonth === 0) {
+          // Original is January, look for December of previous year
+          return sYear === originalYear - 1 && sMonth === 11;
+        } else {
+          // Look for previous month in same year
+          return sYear === originalYear && sMonth === originalMonth - 1;
+        }
+      });
+
+      if (prevStatement) {
+        // Check if previous statement is locked
+        if (prevStatement.status === 'locked') {
+          console.error(
+            'Cannot update statement: previous statement is locked',
+            prevStatement.id
+          );
+          return;
+        }
+
+        // Calculate the new end date for previous statement (one day before new start)
+        const newStartDate = parseISO(updates.periodStart.replace(/\//g, '-'));
+        const newPrevEndDate = format(subDays(newStartDate, 1), 'yyyy/MM/dd');
+
+        // Update previous statement's end date
+        dispatch(
+          updateStatementNormalized({
+            ...prevStatement,
+            periodEnd: newPrevEndDate,
+            isEndDateModified: true,
+            updatedAt: new Date().toISOString(),
+          })
+        );
+      }
+    }
+
+    // Check if periodEnd changed
+    if (updates.periodEnd && updates.periodEnd !== statement.periodEnd) {
+      // Find the next statement (chronologically after this one by year/month)
+      const accountStatements = state.statements.filter(
+        (s) => s.accountId === statement.accountId && s.id !== statementId
+      );
+
+      // Get year/month of the original statement
+      const originalEndDate = parseISO(statement.periodEnd.replace(/\//g, '-'));
+      const originalYear = originalEndDate.getFullYear();
+      const originalMonth = originalEndDate.getMonth();
+
+      // Find the statement from the next month
+      const nextStatement = accountStatements.find((s) => {
+        const sStart = parseISO(s.periodStart.replace(/\//g, '-'));
+        const sYear = sStart.getFullYear();
+        const sMonth = sStart.getMonth();
+
+        // Check if this statement is from the month after
+        if (originalMonth === 11) {
+          // Original is December, look for January of next year
+          return sYear === originalYear + 1 && sMonth === 0;
+        } else {
+          // Look for next month in same year
+          return sYear === originalYear && sMonth === originalMonth + 1;
+        }
+      });
+
+      if (nextStatement) {
+        // Check if next statement is locked
+        if (nextStatement.status === 'locked') {
+          console.error(
+            'Cannot update statement: next statement is locked',
+            nextStatement.id
+          );
+          return;
+        }
+
+        // Calculate the new start date for next statement (one day after new end)
+        const newEndDate = parseISO(updates.periodEnd.replace(/\//g, '-'));
+        const newNextStartDate = format(addDays(newEndDate, 1), 'yyyy/MM/dd');
+
+        // Update next statement's start date
+        dispatch(
+          updateStatementNormalized({
+            ...nextStatement,
+            periodStart: newNextStartDate,
+            isStartDateModified: true,
+            updatedAt: new Date().toISOString(),
+          })
+        );
+      }
     }
 
     const updatedStatement = {
@@ -81,6 +194,14 @@ export const removeStatementById =
  */
 export const lockStatement = (statementId) => (dispatch) => {
   dispatch(lockStatementNormalized(statementId));
+};
+
+/**
+ * Unlocks a statement
+ * @param {string} statementId - Statement ID
+ */
+export const unlockStatement = (statementId) => (dispatch) => {
+  dispatch(unlockStatementNormalized(statementId));
 };
 
 /**
