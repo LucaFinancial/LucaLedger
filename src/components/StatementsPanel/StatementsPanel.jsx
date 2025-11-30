@@ -37,8 +37,8 @@ export default function StatementsPanel({ accountId }) {
     dispatch(statementActions.lockStatement(statement.id));
   };
 
-  const handleUnlock = (statementId) => {
-    dispatch(statementActions.unlockStatement(statementId));
+  const handleUnlock = (statement) => {
+    dispatch(statementActions.unlockStatement(statement.id));
   };
 
   const handleSave = (statementId, updates) => {

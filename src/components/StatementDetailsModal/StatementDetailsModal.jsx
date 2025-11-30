@@ -100,13 +100,13 @@ export default function StatementDetailsModal({
 
   const handleLock = () => {
     if (onLock) {
-      onLock(statement.id);
+      onLock(statement);
     }
   };
 
   const handleUnlock = () => {
     if (onUnlock) {
-      onUnlock(statement.id);
+      onUnlock(statement);
     }
   };
 
