@@ -14,9 +14,10 @@ import dayjs from 'dayjs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
-import { SettingsPanelItem } from './SettingsPanelItem';
-import { selectors as transactionSelectors } from '@/store/transactions';
-import { constants as transactionConstants } from '@/store/transactions';
+import {
+  selectors as transactionSelectors,
+  constants as transactionConstants,
+} from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { constants as accountConstants } from '@/store/accounts';
 import { centsToDollars } from '@/utils';
@@ -89,40 +90,6 @@ export default function SettingsPanel({ account, selectedYear }) {
   const scheduledBalance = useMemo(() => {
     return pendingBalance + scheduledAmount;
   }, [pendingBalance, scheduledAmount]);
-
-  // Calculate income and expenses (completed transactions only)
-  const { totalIncome, totalExpenses } = useMemo(() => {
-    const completed = yearFilteredTransactions.filter(
-      (t) => t.status === transactionConstants.TransactionStatusEnum.COMPLETE
-    );
-
-    let income = 0;
-    let expenses = 0;
-
-    const isCreditCard =
-      account.type === accountConstants.AccountType.CREDIT_CARD;
-
-    completed.forEach((t) => {
-      const amount = Number(t.amount);
-      if (isCreditCard) {
-        // Credit cards: positive = expenses, negative = payments
-        if (amount > 0) {
-          expenses += amount;
-        } else {
-          income += Math.abs(amount);
-        }
-      } else {
-        // Checking/Savings: positive = income, negative = expenses
-        if (amount > 0) {
-          income += amount;
-        } else {
-          expenses += Math.abs(amount);
-        }
-      }
-    });
-
-    return { totalIncome: income, totalExpenses: expenses };
-  }, [yearFilteredTransactions, account.type]);
 
   // Calculate top spending categories based on selected view and month
   const topCategories = useMemo(() => {
@@ -228,20 +195,6 @@ export default function SettingsPanel({ account, selectedYear }) {
       months.add(dayjs(t.date).format('YYYY-MM'));
     });
     return Array.from(months).sort().reverse();
-  }, [yearFilteredTransactions]);
-
-  // Calculate date range
-  const dateRange = useMemo(() => {
-    if (yearFilteredTransactions.length === 0) return null;
-
-    const dates = yearFilteredTransactions.map((t) => dayjs(t.date));
-    const earliest = dates.reduce((min, d) => (d.isBefore(min) ? d : min));
-    const latest = dates.reduce((max, d) => (d.isAfter(max) ? d : max));
-
-    return {
-      earliest: earliest.format('MMM D, YYYY'),
-      latest: latest.format('MMM D, YYYY'),
-    };
   }, [yearFilteredTransactions]);
 
   return (

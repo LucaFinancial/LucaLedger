@@ -4,12 +4,14 @@ import BulkEditModal from '@/components/BulkEditModal';
 import SettingsPanel from '@/components/SettingsPanel';
 import LedgerSettingsMenu from '@/components/LedgerSettingsMenu';
 import AccountSettingsModal from '@/components/AccountSettingsModal';
+import StatementsPanel from '@/components/StatementsPanel';
 import { selectors as accountSelectors } from '@/store/accounts';
 import {
   actions as transactionActions,
   selectors as transactionSelectors,
 } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { actions as statementActions } from '@/store/statements';
 import {
   Box,
   Button,
@@ -22,10 +24,11 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Drawer,
 } from '@mui/material';
-import { Clear, MoreVert, Edit, Menu } from '@mui/icons-material';
+import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
 import dayjs from 'dayjs';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountName from './AccountName';
@@ -45,6 +48,7 @@ export default function Ledger() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
+  const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(dayjs().format('YYYY'));
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
@@ -166,12 +170,23 @@ export default function Ledger() {
   const [collapsedGroups, setCollapsedGroups] = useState(() =>
     getDefaultCollapsedGroups()
   );
+  const hasGeneratedStatements = useRef(new Set());
 
   useEffect(() => {
     if (!account) {
       navigate('/accounts');
+    } else if (account.type === 'Credit Card' && account.statementDay) {
+      // Check if we've already generated for this account
+      if (hasGeneratedStatements.current.has(accountId)) {
+        return;
+      }
+
+      // Mark as generated BEFORE dispatching to prevent race conditions
+      hasGeneratedStatements.current.add(accountId);
+      dispatch(statementActions.autoGenerateStatements(accountId));
     }
-  }, [account, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]); // Only re-run if accountId changes (navigating to different account)
 
   if (!account) {
     return null;
@@ -457,6 +472,20 @@ export default function Ledger() {
 
           {/* Right Section: Action Buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Statements Button - Only for credit cards */}
+            {account.type === 'Credit Card' && account.statementDay && (
+              <Tooltip title='View Statements'>
+                <IconButton
+                  onClick={() => setStatementsDrawerOpen(true)}
+                  size='medium'
+                  aria-label='view statements'
+                  color='primary'
+                >
+                  <Receipt />
+                </IconButton>
+              </Tooltip>
+            )}
+
             <NewTransactionButton compact />
 
             {/* Bulk Edit Button - More prominent when items selected */}
@@ -562,6 +591,15 @@ export default function Ledger() {
           onClose={handleAccountSettingsClose}
           account={account}
         />
+        <Drawer
+          anchor='right'
+          open={statementsDrawerOpen}
+          onClose={() => setStatementsDrawerOpen(false)}
+        >
+          <Box sx={{ width: 500, p: 3, mt: 8 }}>
+            <StatementsPanel accountId={accountId} />
+          </Box>
+        </Drawer>
       </Box>
     </Box>
   );

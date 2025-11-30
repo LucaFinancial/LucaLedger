@@ -4,7 +4,6 @@ import {
   Typography,
   Paper,
   Container,
-  Link as MuiLink,
   Accordion,
   AccordionSummary,
   AccordionDetails,

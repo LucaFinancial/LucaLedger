@@ -5,6 +5,7 @@ import {
 } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { selectors as statementSelectors } from '@/store/statements';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import {
   format,
@@ -39,6 +40,9 @@ export default function LedgerTable({
     transactionSelectors.selectTransactionsByAccountId(accountId)
   );
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const accountStatements = useSelector(
+    statementSelectors.selectStatementsByAccountId(accountId)
+  );
 
   const sortedTransactions = useMemo(
     () => [...transactions].sort(dateCompareFn),
@@ -61,7 +65,6 @@ export default function LedgerTable({
     if (selectedYear !== 'all') {
       filtered = filtered.filter((t) => {
         if (!t.date) return false;
-        console.log('Filtering transaction date:', t.date);
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
@@ -231,8 +234,105 @@ export default function LedgerTable({
       });
     });
 
-    // For credit cards, insert statement dividers at their chronological positions
-    if (isCreditCard) {
+    // For credit cards, insert statement dividers using actual statement data
+    if (isCreditCard && accountStatements.length > 0) {
+      // Sort statements by closing date
+      const sortedStatements = [...accountStatements].sort((a, b) =>
+        a.closingDate.localeCompare(b.closingDate)
+      );
+
+      sortedStatements.forEach((statement) => {
+        try {
+          const closingDate = parseISO(
+            statement.closingDate.replace(/\//g, '-')
+          );
+          const periodStartDate = parseISO(
+            statement.periodStart.replace(/\//g, '-')
+          );
+          const periodEndDate = parseISO(
+            statement.periodEnd.replace(/\//g, '-')
+          );
+
+          if (
+            isNaN(closingDate.getTime()) ||
+            isNaN(periodStartDate.getTime()) ||
+            isNaN(periodEndDate.getTime())
+          ) {
+            return;
+          }
+
+          // Get transactions in this statement period
+          const statementTransactions = transactionsWithBalance.filter((t) => {
+            if (!t.date) return false;
+            try {
+              const tDate = parseISO(t.date.replace(/\//g, '-'));
+              if (isNaN(tDate.getTime())) return false;
+              return (
+                (isAfter(tDate, periodStartDate) ||
+                  isSameDay(tDate, periodStartDate)) &&
+                (isBefore(tDate, periodEndDate) ||
+                  isSameDay(tDate, periodEndDate)) &&
+                !t.description.toLowerCase().includes('payment')
+              );
+            } catch {
+              return false;
+            }
+          });
+
+          // Determine which month group this statement belongs to
+          const year = format(closingDate, 'yyyy');
+          const month = format(closingDate, 'MMMM');
+          const yearMonthKey = `${year}-${month}`;
+
+          // Ensure the group exists
+          if (!groups[year]) {
+            groups[year] = {};
+          }
+          if (!groups[year][yearMonthKey]) {
+            groups[year][yearMonthKey] = {
+              month,
+              firstTransactionDate: statement.closingDate,
+              items: [],
+            };
+          }
+
+          // Find correct insertion point for statement divider
+          const items = groups[year][yearMonthKey].items;
+          let insertIndex = items.length;
+
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type === 'transaction') {
+              try {
+                const itemDate = parseISO(
+                  items[i].data.date.replace(/\//g, '-')
+                );
+                if (
+                  !isNaN(itemDate.getTime()) &&
+                  isAfter(itemDate, periodEndDate)
+                ) {
+                  insertIndex = i;
+                  break;
+                }
+              } catch {
+                // Skip invalid dates
+              }
+            }
+          }
+
+          // Insert statement divider using actual statement dates
+          items.splice(insertIndex, 0, {
+            type: 'statement-divider',
+            date: format(closingDate, 'yyyy-MM-dd'),
+            statementClosingDay,
+            periodStart: format(periodStartDate, 'yyyy-MM-dd'),
+            periodEnd: format(periodEndDate, 'yyyy-MM-dd'),
+            transactions: statementTransactions,
+          });
+        } catch (error) {
+          console.error('Error processing statement:', statement, error);
+        }
+      });
+    } else if (isCreditCard) {
       const monthNames = [
         'January',
         'February',
@@ -307,8 +407,7 @@ export default function LedgerTable({
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
-                  (isAfter(itemDate, statementDate) ||
-                    isSameDay(itemDate, statementDate))
+                  isAfter(itemDate, periodEnd)
                 ) {
                   insertIndex = i;
                   break;
@@ -338,6 +437,7 @@ export default function LedgerTable({
     transactionsWithBalance,
     account.statementDay,
     account.type,
+    accountStatements,
     getYearIdentifier,
     getMonthIdentifier,
     getYearMonthKey,
@@ -409,13 +509,11 @@ export default function LedgerTable({
                                 <StatementSeparatorRow
                                   key={`statement-${item.date}`}
                                   statementDay={item.statementClosingDay}
-                                  statementDate={format(
-                                    parseISO(item.date.replace(/\//g, '-')),
-                                    'MMMM dd yyyy'
-                                  )}
+                                  statementDate={item.date}
                                   periodStart={item.periodStart}
                                   periodEnd={item.periodEnd}
                                   transactions={item.transactions}
+                                  accountId={account.id}
                                 />
                               );
                             }

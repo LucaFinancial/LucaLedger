@@ -14,7 +14,7 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
@@ -24,6 +24,7 @@ db.version(DB_VERSION).stores({
   accounts: 'id', // id as primary key
   transactions: 'id', // id as primary key
   categories: 'id', // id as primary key
+  statements: 'id', // id as primary key
   metadata: 'key', // key-value store for encryption metadata
 });
 
