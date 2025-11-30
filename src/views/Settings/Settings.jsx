@@ -9,163 +9,21 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import {
-  Lock as LockIcon,
-  LockOpen as LockOpenIcon,
-} from '@mui/icons-material';
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { PasswordSetupDialog } from '@/components/EncryptionSetup';
-import {
-  EncryptionStatus as EncryptionStatusEnum,
-  selectors as encryptionSelectors,
-  setEncryptionStatus,
-  setAuthStatus,
-  setSessionExpiresAt,
-  setError,
-  AuthStatus,
-} from '@/store/encryption';
-import { selectors as categorySelectors } from '@/store/categories';
-import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
-import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
+import { Lock as LockIcon } from '@mui/icons-material';
+import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
-import categoriesData from '@/config/categories.json';
 
 export default function Settings() {
-  const dispatch = useDispatch();
-  const status = useSelector(encryptionSelectors.selectEncryptionStatus);
-  const isAuthenticated = useSelector(
-    encryptionSelectors.selectIsAuthenticated
-  );
+  const { currentUser } = useAuth();
 
-  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
-  const [migrating, setMigrating] = useState(false);
-
-  // Get Redux state for migration
-  const selectAccounts = (state) => state.accounts;
-  const selectTransactions = (state) => state.transactions;
-  const accounts = useSelector(selectAccounts);
-  const transactions = useSelector(selectTransactions);
-  const categories = useSelector(categorySelectors.selectAllCategories);
-
-  const getEncryptionStatusDisplay = () => {
-    switch (status) {
-      case EncryptionStatusEnum.ENCRYPTED:
-        return {
-          label: 'Encrypted',
-          icon: <LockIcon />,
-          color: 'success',
-          description: isAuthenticated
-            ? 'Your data is encrypted and you are logged in'
-            : 'Your data is encrypted',
-        };
-      case EncryptionStatusEnum.ENCRYPTING:
-        return {
-          label: 'Encrypting...',
-          icon: <LockIcon />,
-          color: 'warning',
-          description: 'Encryption in progress',
-        };
-      case EncryptionStatusEnum.UNENCRYPTED:
-      default:
-        return {
-          label: 'Unencrypted',
-          icon: <LockOpenIcon />,
-          color: 'default',
-          description: 'Your data is not encrypted',
-        };
-    }
-  };
-
-  const encryptionConfig = getEncryptionStatusDisplay();
-
-  const handleEncryptClick = () => {
-    setShowPasswordSetup(true);
-  };
-
-  const handlePasswordSetupComplete = async (password, stayLoggedIn) => {
-    setShowPasswordSetup(false);
-    setMigrating(true);
-
-    try {
-      dispatch(setEncryptionStatus(EncryptionStatusEnum.ENCRYPTING));
-
-      // Initialize encryption and get DEK
-      const { dek, expiresAt } = await initializeEncryption(
-        password,
-        stayLoggedIn
-      );
-
-      // Migrate data from localStorage to IndexedDB
-      await migrateDataToEncrypted(dek);
-
-      // Set schema version for encrypted storage
-      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
-
-      // Clear localStorage
-      localStorage.removeItem('reduxState');
-
-      // Update encryption status
-      dispatch(setEncryptionStatus(EncryptionStatusEnum.ENCRYPTED));
-      dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
-      localStorage.setItem('encryptionActive', 'true');
-      if (expiresAt) {
-        dispatch(setSessionExpiresAt(expiresAt));
-      }
-
-      setMigrating(false);
-    } catch (error) {
-      console.error('Encryption setup failed:', error);
-      dispatch(setError('Failed to set up encryption: ' + error.message));
-      setMigrating(false);
-
-      // Rollback
-      await clearAllData();
-      clearActiveDEK();
-      localStorage.removeItem('encryptionActive');
-      dispatch(setEncryptionStatus(EncryptionStatusEnum.UNENCRYPTED));
-      dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
-    }
-  };
-
-  const handlePasswordSetupCancel = () => {
-    setShowPasswordSetup(false);
-  };
-
-  const migrateDataToEncrypted = async (dek) => {
-    // Ensure accounts, transactions, and categories are arrays (defensive check)
-    const accountsArray = Array.isArray(accounts) ? accounts : [];
-    const transactionsArray = Array.isArray(transactions) ? transactions : [];
-    const categoriesToMigrate =
-      Array.isArray(categories) && categories.length > 0
-        ? categories
-        : categoriesData.categories;
-
-    // Prepare accounts, transactions, and categories for batch encryption
-    const accountRecords = accountsArray.map((account) => ({
-      id: account.id,
-      data: account,
-    }));
-
-    const transactionRecords = transactionsArray.map((transaction) => ({
-      id: transaction.id,
-      data: transaction,
-    }));
-
-    const categoryRecords = categoriesToMigrate.map((category) => ({
-      id: category.id,
-      data: category,
-    }));
-
-    // Batch encrypt and store
-    await batchStoreEncryptedRecords('accounts', accountRecords, dek);
-    await batchStoreEncryptedRecords('transactions', transactionRecords, dek);
-    await batchStoreEncryptedRecords('categories', categoryRecords, dek);
-
-    console.log(
-      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesToMigrate.length} categories to encrypted storage`
-    );
+  const encryptionConfig = {
+    label: 'Encrypted',
+    icon: <LockIcon />,
+    color: 'success',
+    description: currentUser
+      ? `Your data is encrypted for user: ${currentUser.username}`
+      : 'Your data is encrypted',
   };
 
   return (
@@ -184,7 +42,7 @@ export default function Settings() {
             variant='h5'
             sx={{ mb: 3 }}
           >
-            Encryption
+            Encryption & Security
           </Typography>
 
           <Box sx={{ mb: 3 }}>
@@ -210,32 +68,13 @@ export default function Settings() {
             </Box>
           </Box>
 
-          <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-            {status === EncryptionStatusEnum.UNENCRYPTED ? (
-              <Button
-                variant='contained'
-                color='warning'
-                startIcon={<LockIcon />}
-                onClick={handleEncryptClick}
-                disabled={migrating}
-                aria-label='Encrypt your data'
-              >
-                {migrating ? 'Encrypting...' : 'Encrypt Data'}
-              </Button>
-            ) : (
-              <Tooltip title='This feature is not yet implemented'>
-                <span>
-                  <Button
-                    variant='outlined'
-                    disabled
-                    aria-label='Change encryption password (not yet implemented)'
-                  >
-                    Change Encryption Password
-                  </Button>
-                </span>
-              </Tooltip>
-            )}
-          </Box>
+          <Typography
+            variant='body2'
+            sx={{ color: 'text.secondary', mt: 2 }}
+          >
+            All data is encrypted with AES-256 encryption. Your data is stored
+            locally and protected by your password.
+          </Typography>
         </CardContent>
       </Card>
 
@@ -358,12 +197,6 @@ export default function Settings() {
           </Box>
         </CardContent>
       </Card>
-
-      <PasswordSetupDialog
-        open={showPasswordSetup}
-        onComplete={handlePasswordSetupComplete}
-        onCancel={handlePasswordSetupCancel}
-      />
     </Box>
   );
 }
