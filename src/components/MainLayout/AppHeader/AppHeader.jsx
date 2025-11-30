@@ -9,14 +9,24 @@ import {
 import { Link } from 'react-router-dom';
 
 import NavItem from './NavItem';
+import { useAuth } from '@/auth';
 
 import {
   Home as HomeIcon,
   HelpOutline as HelpIcon,
   Settings as SettingsIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 
 export default function AppHeader() {
+  const { logout, currentUser } = useAuth();
+
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    }
+  };
+
   return (
     <AppBar
       position='fixed'
@@ -56,7 +66,15 @@ export default function AppHeader() {
         >
           Luca Ledger
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {currentUser && (
+            <Typography
+              variant='body2'
+              sx={{ color: 'white', mr: 1 }}
+            >
+              {currentUser.username}
+            </Typography>
+          )}
           <Tooltip title='Help'>
             <IconButton
               component={Link}
@@ -75,6 +93,15 @@ export default function AppHeader() {
               sx={{ color: 'white' }}
             >
               <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title='Logout'>
+            <IconButton
+              onClick={handleLogout}
+              aria-label='Logout'
+              sx={{ color: 'white' }}
+            >
+              <LogoutIcon />
             </IconButton>
           </Tooltip>
         </Box>

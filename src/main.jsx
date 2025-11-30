@@ -1,4 +1,5 @@
-import './migrateLocalStorage';
+// Note: Legacy localStorage migration is now handled in the auth flow
+// See LegacyDataMigrationDialog for the new migration workflow
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';

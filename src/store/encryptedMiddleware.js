@@ -1,19 +1,37 @@
 /**
  * Middleware to persist Redux state to IndexedDB when encryption is enabled
  * Falls back to localStorage when encryption is disabled
+ * Updated for multi-user support
  */
 
-import { getActiveDEK } from '@/crypto/keyManager';
-import {
-  storeEncryptedRecord,
-  getAllEncryptedRecords,
-  db,
-} from '@/crypto/database';
+import { storeUserEncryptedRecord, db } from '@/crypto/database';
 import { EncryptionStatus } from './encryption';
 
 let writeQueue = [];
 let writeTimeout = null;
 const WRITE_DELAY = 1000; // 1 second throttle
+
+// Store for current user info - set by AuthContext
+let currentUserId = null;
+let currentDEK = null;
+
+/**
+ * Set the current user for middleware operations
+ * @param {string} userId - Current user ID
+ * @param {CryptoKey} dek - Data Encryption Key
+ */
+export function setCurrentUserForMiddleware(userId, dek) {
+  currentUserId = userId;
+  currentDEK = dek;
+}
+
+/**
+ * Clear current user info (on logout)
+ */
+export function clearCurrentUserFromMiddleware() {
+  currentUserId = null;
+  currentDEK = null;
+}
 
 /**
  * Flush the write queue to IndexedDB
@@ -21,8 +39,7 @@ const WRITE_DELAY = 1000; // 1 second throttle
 async function flushWriteQueue() {
   if (writeQueue.length === 0) return;
 
-  const dek = getActiveDEK();
-  if (!dek) return;
+  if (!currentDEK || !currentUserId) return;
 
   const queue = [...writeQueue];
   writeQueue = [];
@@ -30,7 +47,13 @@ async function flushWriteQueue() {
   try {
     // Process all queued writes
     for (const { storeName, id, data } of queue) {
-      await storeEncryptedRecord(storeName, id, data, dek);
+      await storeUserEncryptedRecord(
+        storeName,
+        id,
+        data,
+        currentDEK,
+        currentUserId
+      );
     }
   } catch (error) {
     console.error('Failed to persist encrypted data:', error);
@@ -74,28 +97,11 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
   const isEncrypted = state.encryption.status === EncryptionStatus.ENCRYPTED;
   const isAuthenticated = state.encryption.authStatus === 'authenticated';
 
-  if (isEncrypted && isAuthenticated) {
+  if (isEncrypted && isAuthenticated && currentUserId && currentDEK) {
     // Handle encrypted persistence
     handleEncryptedPersistence(action, state);
-  } else if (!isEncrypted) {
-    // Fall back to localStorage persistence
-    // Exclude encryption from persistence
-    // Ensure accounts is in the correct object format before saving
-    // eslint-disable-next-line no-unused-vars
-    const { encryption, ...stateWithoutEncryption } = state;
-    const stateToSave = {
-      ...stateWithoutEncryption,
-      accounts: Array.isArray(stateWithoutEncryption.accounts)
-        ? {
-            data: stateWithoutEncryption.accounts,
-            loading: false,
-            error: null,
-            loadingAccountIds: [],
-          }
-        : stateWithoutEncryption.accounts,
-    };
-    localStorage.setItem('reduxState', JSON.stringify(stateToSave));
   }
+  // Note: localStorage persistence is now disabled - all data must be encrypted
 
   return result;
 };
@@ -104,8 +110,7 @@ export const encryptedPersistenceMiddleware = (store) => (next) => (action) => {
  * Handle persistence for encrypted data
  */
 function handleEncryptedPersistence(action, state) {
-  const dek = getActiveDEK();
-  if (!dek) return;
+  if (!currentDEK || !currentUserId) return;
 
   // Handle account actions
   if (action.type === 'accounts/addAccount') {
@@ -114,19 +119,20 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('accounts', action.payload.id, action.payload);
   } else if (action.type === 'accounts/setAccounts') {
     // When setting all accounts (e.g., during import), persist all to IndexedDB
-    const dek = getActiveDEK();
-    if (dek) {
-      // Import batchStoreEncryptedRecords for bulk operations
-      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
         const accountRecords = action.payload.map((account) => ({
           id: account.id,
           data: account,
         }));
-        batchStoreEncryptedRecords('accounts', accountRecords, dek).catch(
-          (error) => {
-            console.error('Failed to persist accounts to IndexedDB:', error);
-          }
-        );
+        batchStoreUserEncryptedRecords(
+          'accounts',
+          accountRecords,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error('Failed to persist accounts to IndexedDB:', error);
+        });
       });
     }
   } else if (action.type === 'accounts/removeAccount') {
@@ -144,18 +150,17 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('transactions', action.payload.id, action.payload);
   } else if (action.type === 'transactions/setTransactions') {
     // When setting all transactions (e.g., during import), persist all to IndexedDB
-    const dek = getActiveDEK();
-    if (dek) {
-      // Import batchStoreEncryptedRecords for bulk operations
-      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
         const transactionRecords = action.payload.map((transaction) => ({
           id: transaction.id,
           data: transaction,
         }));
-        batchStoreEncryptedRecords(
+        batchStoreUserEncryptedRecords(
           'transactions',
           transactionRecords,
-          dek
+          currentDEK,
+          currentUserId
         ).catch((error) => {
           console.error('Failed to persist transactions to IndexedDB:', error);
         });
@@ -200,25 +205,24 @@ function handleEncryptedPersistence(action, state) {
       });
     });
   } else if (action.type === 'categories/setCategories') {
-    // When setting all categories, clear existing and add new ones
-    const dek = getActiveDEK();
-    if (dek) {
-      // Clear existing categories and add new ones
-      db.categories
-        .clear()
-        .then(() => {
-          // Store each category directly instead of queuing
-          const promises = action.payload.map((category) =>
-            storeEncryptedRecord('categories', category.id, category, dek)
-          );
-          return Promise.all(promises);
-        })
-        .catch((error) => {
-          console.error('Failed to reset categories in IndexedDB:', error);
+    // When setting all categories, persist all to IndexedDB
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        // Note: Don't clear all user data, just update categories
+        const categoryRecords = action.payload.map((category) => ({
+          id: category.id,
+          data: category,
+        }));
+        batchStoreUserEncryptedRecords(
+          'categories',
+          categoryRecords,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error('Failed to persist categories to IndexedDB:', error);
         });
+      });
     }
-    // For unencrypted mode, let the regular persistence handle it via the state update
-    // No special localStorage handling needed here - it will be handled by the main middleware logic
   }
 
   // Handle statement actions
@@ -230,19 +234,20 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('statements', action.payload.id, action.payload);
   } else if (action.type === 'statements/setStatements') {
     // When setting all statements (e.g., during import/load), persist all to IndexedDB
-    const dek = getActiveDEK();
-    if (dek) {
-      // Import batchStoreEncryptedRecords for bulk operations
-      import('@/crypto/database').then(({ batchStoreEncryptedRecords }) => {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
         const statementRecords = action.payload.map((statement) => ({
           id: statement.id,
           data: statement,
         }));
-        batchStoreEncryptedRecords('statements', statementRecords, dek).catch(
-          (error) => {
-            console.error('Failed to persist statements to IndexedDB:', error);
-          }
-        );
+        batchStoreUserEncryptedRecords(
+          'statements',
+          statementRecords,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error('Failed to persist statements to IndexedDB:', error);
+        });
       });
     }
   } else if (action.type === 'statements/removeStatement') {
@@ -251,27 +256,5 @@ function handleEncryptedPersistence(action, state) {
     db.statements.delete(statementId).catch((error) => {
       console.error('Failed to delete statement from IndexedDB:', error);
     });
-  }
-}
-
-/**
- * Load initial state from IndexedDB if encrypted
- */
-export async function loadEncryptedState(dek) {
-  try {
-    const accounts = await getAllEncryptedRecords('accounts', dek);
-    const transactions = await getAllEncryptedRecords('transactions', dek);
-    const categories = await getAllEncryptedRecords('categories', dek);
-    const statements = await getAllEncryptedRecords('statements', dek);
-
-    return {
-      accounts: accounts || [],
-      transactions: transactions || [],
-      categories: categories || [],
-      statements: statements || [],
-    };
-  } catch (error) {
-    console.error('Failed to load encrypted state:', error);
-    return null;
   }
 }
