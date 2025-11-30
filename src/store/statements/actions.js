@@ -6,7 +6,11 @@ import {
   lockStatement as lockStatementNormalized,
   unlockStatement as unlockStatementNormalized,
 } from './slice';
-import { getMissingStatementPeriods } from './utils';
+import {
+  getMissingStatementPeriods,
+  getTransactionsInPeriod,
+  summarizeStatementTransactions,
+} from './utils';
 import { addDays, subDays, parseISO, format } from 'date-fns';
 
 const parseDateSafe = (dateStr) => {
@@ -42,12 +46,75 @@ const stripSortMetadata = (statement) => {
   return rest;
 };
 
+const getStatementEndingBalance = (statement) => {
+  if (!statement) return 0;
+  if (typeof statement.endingBalance === 'number') {
+    return statement.endingBalance;
+  }
+  if (typeof statement.total === 'number') {
+    return statement.total;
+  }
+  return 0;
+};
+
+const getPreviousEndingBalance = (statements, closingDate) => {
+  if (!closingDate) return 0;
+  const closing = parseDateSafe(closingDate);
+  if (!closing) return 0;
+
+  let balance = 0;
+  statements.forEach((stmt) => {
+    const stmtClosing = parseDateSafe(stmt.closingDate);
+    if (stmtClosing && stmtClosing < closing) {
+      balance = getStatementEndingBalance(stmt);
+    }
+  });
+  return balance;
+};
+
 /**
  * Creates a new statement for an account
  * @param {Object} statementData - Statement data (accountId, closingDate, periodStart, periodEnd, etc.)
  */
-export const createNewStatement = (statementData) => (dispatch) => {
-  const newStatement = generateStatement(statementData);
+export const createNewStatement = (statementData) => (dispatch, getState) => {
+  const state = getState();
+  const transactions = state.transactions;
+  const accountStatements = state.statements.filter(
+    (s) => s.accountId === statementData.accountId
+  );
+
+  const transactionIds =
+    statementData.transactionIds && statementData.transactionIds.length > 0
+      ? statementData.transactionIds
+      : getTransactionsInPeriod(
+          transactions,
+          statementData.accountId,
+          statementData.periodStart,
+          statementData.periodEnd
+        );
+
+  const { totalCharges, totalPayments } = summarizeStatementTransactions(
+    transactions,
+    transactionIds
+  );
+
+  const startingBalance = getPreviousEndingBalance(
+    accountStatements,
+    statementData.closingDate
+  );
+
+  const endingBalance = startingBalance + totalCharges - totalPayments;
+
+  const enrichedStatement = {
+    ...statementData,
+    transactionIds,
+    totalCharges,
+    totalPayments,
+    startingBalance,
+    endingBalance,
+  };
+
+  const newStatement = generateStatement(enrichedStatement);
   if (newStatement) {
     dispatch(addStatement(newStatement));
   }

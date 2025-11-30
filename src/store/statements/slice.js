@@ -9,12 +9,36 @@ import { calculateStatementPeriod } from './utils';
  */
 const cleanStatement = (statement) => {
   try {
-    const validated = validateStatementSync(statement);
+    const normalized = { ...statement };
+
+    if (
+      typeof normalized.total === 'number' &&
+      typeof normalized.endingBalance !== 'number'
+    ) {
+      normalized.endingBalance = normalized.total;
+    }
+    delete normalized.total;
+
+    const validated = validateStatementSync(normalized);
 
     if (validated.closingDate) {
       validated.statementPeriod = calculateStatementPeriod(
         validated.closingDate
       );
+    }
+
+    if (typeof validated.endingBalance !== 'number') {
+      validated.endingBalance = 0;
+    }
+
+    if (typeof validated.startingBalance !== 'number') {
+      validated.startingBalance = 0;
+    }
+    if (typeof validated.totalCharges !== 'number') {
+      validated.totalCharges = 0;
+    }
+    if (typeof validated.totalPayments !== 'number') {
+      validated.totalPayments = 0;
     }
 
     return validated;

@@ -178,17 +178,30 @@ export function getTransactionsInPeriod(
 }
 
 /**
- * Calculate total amount for transactions in a period
+ * Summarize transactions for a statement period
  * @param {Array} transactions - Array of all transactions
  * @param {Array} transactionIds - Array of transaction IDs to sum
- * @returns {number} - Total amount in cents
+ * @returns {{totalCharges: number, totalPayments: number}}
  */
-export function calculatePeriodTotal(transactions, transactionIds) {
-  return transactionIds.reduce((sum, id) => {
-    const transaction = transactions.find((t) => t.id === id);
-    if (!transaction) return sum;
-    return sum + transaction.amount;
-  }, 0);
+export function summarizeStatementTransactions(transactions, transactionIds) {
+  return transactionIds.reduce(
+    (acc, id) => {
+      const transaction = transactions.find((t) => t.id === id);
+      if (!transaction) return acc;
+      const amount = Number(transaction.amount);
+      if (Number.isNaN(amount)) {
+        return acc;
+      }
+
+      if (amount >= 0) {
+        acc.totalCharges += amount;
+      } else {
+        acc.totalPayments += Math.abs(amount);
+      }
+      return acc;
+    },
+    { totalCharges: 0, totalPayments: 0 }
+  );
 }
 
 /**
@@ -270,9 +283,24 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   const missingPeriods = [];
   const earliestDate = getEarliestStatementDate(account, transactions);
   const currentPeriod = getCurrentPeriod(statementDay);
+  const accountStatements = statements
+    .filter((s) => s.accountId === account.id)
+    .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+
+  const existingStatementsByPeriod = new Map();
+  accountStatements.forEach((stmt) => {
+    const key =
+      stmt.statementPeriod || calculateStatementPeriod(stmt.closingDate);
+    existingStatementsByPeriod.set(key, stmt);
+  });
 
   // Start from the earliest date and walk forward
   let period = calculateStatementDates(earliestDate, statementDay);
+  const firstPeriodStartDate = parseISO(period.periodStart.replace(/\//g, '-'));
+  let lastKnownEndingBalance = getEndingBalanceBeforeDate(
+    accountStatements,
+    firstPeriodStartDate
+  );
   const currentClosing = parseISO(
     currentPeriod.closingDate.replace(/\//g, '-')
   );
@@ -286,8 +314,12 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       break;
     }
 
-    // Check if statement exists for this period
-    if (!statementExistsForPeriod(statements, account.id, period.closingDate)) {
+    const statementPeriod = calculateStatementPeriod(period.closingDate);
+    const existingStatement = existingStatementsByPeriod.get(statementPeriod);
+
+    if (existingStatement) {
+      lastKnownEndingBalance = getStatementEndingBalance(existingStatement);
+    } else {
       // Get transactions for this period
       const transactionIds = getTransactionsInPeriod(
         transactions,
@@ -296,17 +328,22 @@ export function getMissingStatementPeriods(account, statements, transactions) {
         period.periodEnd
       );
 
-      // Calculate total
-      const total = calculatePeriodTotal(transactions, transactionIds);
+      const { totalCharges, totalPayments } = summarizeStatementTransactions(
+        transactions,
+        transactionIds
+      );
+
+      let startingBalance = 0;
+      if (typeof lastKnownEndingBalance === 'number') {
+        startingBalance = lastKnownEndingBalance;
+      }
+      const endingBalance = startingBalance + totalCharges - totalPayments;
 
       // Determine status based on whether today falls in this period
       const status = determineStatementStatus(
         period.periodStart,
         period.periodEnd
       );
-
-      // Calculate statement period from closing date for consistent duplicate detection
-      const statementPeriod = calculateStatementPeriod(period.closingDate);
 
       missingPeriods.push({
         accountId: account.id,
@@ -315,9 +352,14 @@ export function getMissingStatementPeriods(account, statements, transactions) {
         periodEnd: period.periodEnd,
         statementPeriod,
         transactionIds,
-        total,
+        startingBalance,
+        endingBalance,
+        totalCharges,
+        totalPayments,
         status,
       });
+
+      lastKnownEndingBalance = endingBalance;
     }
 
     // Move to next period - go forward one day from closing date
@@ -325,4 +367,25 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   }
 
   return missingPeriods;
+}
+
+function getStatementEndingBalance(statement) {
+  if (typeof statement.endingBalance === 'number') {
+    return statement.endingBalance;
+  }
+  if (typeof statement.total === 'number') {
+    return statement.total;
+  }
+  return 0;
+}
+
+function getEndingBalanceBeforeDate(statements, targetDate) {
+  let balance = 0;
+  statements.forEach((stmt) => {
+    const closingDate = parseISO(stmt.closingDate.replace(/\//g, '-'));
+    if (closingDate < targetDate) {
+      balance = getStatementEndingBalance(stmt);
+    }
+  });
+  return balance;
 }

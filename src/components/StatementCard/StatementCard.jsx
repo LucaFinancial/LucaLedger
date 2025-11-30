@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -38,6 +39,20 @@ export default function StatementCard({
   const issues = useSelector(
     statementSelectors.selectStatementIssues(statement.id)
   );
+
+  const summarySelector = useMemo(
+    () => statementSelectors.selectStatementSummary(statement.id),
+    [statement.id]
+  );
+  const summary = useSelector(summarySelector);
+
+  const { startingBalance, endingBalance, totalCharges, totalPayments } =
+    summary;
+  const summaryText = [
+    `Start ${formatCurrency(startingBalance)}`,
+    `+${formatCurrency(totalCharges)} charges`,
+    `-${formatCurrency(totalPayments)} payments`,
+  ].join(' · ');
 
   const periodStartFormatted = format(
     parseISO(statement.periodStart.replace(/\//g, '-')),
@@ -150,15 +165,19 @@ export default function StatementCard({
 
             <Typography
               variant={compact ? 'body1' : 'h6'}
-              color={statement.total < 0 ? 'error.main' : 'success.main'}
               fontWeight='bold'
             >
-              Total: {formatCurrency(statement.total)}
+              Ending Balance: {formatCurrency(endingBalance)}
+            </Typography>
+            <Typography
+              variant='body2'
+              color='text.secondary'
+              sx={{ mt: 0.5 }}
+            >
+              {summaryText}
             </Typography>
 
-            {(statement.isStartDateModified ||
-              statement.isEndDateModified ||
-              statement.isTotalModified) && (
+            {(statement.isStartDateModified || statement.isEndDateModified) && (
               <Typography
                 variant='caption'
                 color='warning.main'
@@ -221,11 +240,14 @@ StatementCard.propTypes = {
     periodStart: PropTypes.string.isRequired,
     periodEnd: PropTypes.string.isRequired,
     transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-    total: PropTypes.number.isRequired,
+    startingBalance: PropTypes.number,
+    endingBalance: PropTypes.number,
+    totalCharges: PropTypes.number,
+    totalPayments: PropTypes.number,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
     isStartDateModified: PropTypes.bool.isRequired,
     isEndDateModified: PropTypes.bool.isRequired,
-    isTotalModified: PropTypes.bool.isRequired,
+    isTotalModified: PropTypes.bool,
     statementPeriod: PropTypes.string,
   }).isRequired,
   onView: PropTypes.func,

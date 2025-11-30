@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -38,6 +38,13 @@ function formatDate(dateStr) {
   return format(parseISO(dateStr.replace(/\//g, '-')), 'MMM d, yyyy');
 }
 
+const EMPTY_SUMMARY = Object.freeze({
+  startingBalance: 0,
+  endingBalance: 0,
+  totalCharges: 0,
+  totalPayments: 0,
+});
+
 export default function StatementDetailsModal({
   open,
   onClose,
@@ -51,17 +58,24 @@ export default function StatementDetailsModal({
   const dispatch = useDispatch();
   const [periodStart, setPeriodStart] = useState(statement?.periodStart || '');
   const [periodEnd, setPeriodEnd] = useState(statement?.periodEnd || '');
-  const [total, setTotal] = useState(
-    statement ? (statement.total / 100).toFixed(2) : '0.00'
-  );
   const [hasChanges, setHasChanges] = useState(false);
 
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const issues = useSelector(
     statementSelectors.selectStatementIssues(statement?.id)
   );
+  const summarySelector = useMemo(() => {
+    if (!statement) {
+      return () => EMPTY_SUMMARY;
+    }
+    return statementSelectors.selectStatementSummary(statement.id);
+  }, [statement]);
+  const summary = useSelector(summarySelector);
 
   if (!statement) return null;
+
+  const { startingBalance, totalCharges, totalPayments, endingBalance } =
+    summary;
 
   const isLocked = statement.status === 'locked';
   const canEdit = !isLocked && !readOnly;
@@ -82,10 +96,8 @@ export default function StatementDetailsModal({
       periodStart,
       periodEnd,
       statementPeriod,
-      total: Math.round(parseFloat(total) * 100),
       isStartDateModified: periodStart !== statement.periodStart,
       isEndDateModified: periodEnd !== statement.periodEnd,
-      isTotalModified: Math.round(parseFloat(total) * 100) !== statement.total,
     };
 
     onSave(statement.id, updates);
@@ -299,18 +311,41 @@ export default function StatementDetailsModal({
             variant='subtitle2'
             gutterBottom
           >
-            Statement Total
+            Statement Summary
           </Typography>
-          <TextField
-            label='Total Amount'
-            value={total}
-            onChange={(e) => handleFieldChange(setTotal)(e.target.value)}
-            disabled={!canEdit}
-            size='small'
-            type='number'
-            inputProps={{ step: '0.01' }}
-            helperText='Enter amount in dollars (e.g., 123.45)'
-          />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography color='text.secondary'>Starting Balance</Typography>
+              <Typography fontWeight='bold'>
+                {formatCurrency(startingBalance)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography color='text.secondary'>Total Charges</Typography>
+              <Typography
+                fontWeight='bold'
+                color='success.main'
+              >
+                +{formatCurrency(totalCharges)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography color='text.secondary'>Payments / Credits</Typography>
+              <Typography
+                fontWeight='bold'
+                color='error.main'
+              >
+                -{formatCurrency(totalPayments)}
+              </Typography>
+            </Box>
+            <Divider sx={{ my: 1 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography fontWeight='bold'>Ending Balance</Typography>
+              <Typography fontWeight='bold'>
+                {formatCurrency(endingBalance)}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
 
         <Box sx={{ mb: 2 }}>
@@ -360,9 +395,7 @@ export default function StatementDetailsModal({
           )}
         </Box>
 
-        {(statement.isStartDateModified ||
-          statement.isEndDateModified ||
-          statement.isTotalModified) && (
+        {(statement.isStartDateModified || statement.isEndDateModified) && (
           <Alert
             severity='warning'
             sx={{ mt: 2 }}
@@ -409,11 +442,14 @@ StatementDetailsModal.propTypes = {
     periodEnd: PropTypes.string.isRequired,
     statementPeriod: PropTypes.string,
     transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-    total: PropTypes.number.isRequired,
+    startingBalance: PropTypes.number,
+    endingBalance: PropTypes.number,
+    totalCharges: PropTypes.number,
+    totalPayments: PropTypes.number,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
     isStartDateModified: PropTypes.bool.isRequired,
     isEndDateModified: PropTypes.bool.isRequired,
-    isTotalModified: PropTypes.bool.isRequired,
+    isTotalModified: PropTypes.bool,
   }),
   onSave: PropTypes.func,
   onLock: PropTypes.func,

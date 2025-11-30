@@ -52,9 +52,26 @@ const statementSchema = {
       },
       description: 'Array of transaction IDs included in this statement',
     },
-    total: {
+    startingBalance: {
       type: 'number',
-      description: 'Statement total in cents',
+      description: 'Balance carried into this statement period in cents',
+      default: 0,
+    },
+    endingBalance: {
+      type: 'number',
+      description: 'Balance at the end of this statement period in cents',
+      default: 0,
+    },
+    totalCharges: {
+      type: 'number',
+      description: 'Sum of all charges during the statement period in cents',
+      default: 0,
+    },
+    totalPayments: {
+      type: 'number',
+      description:
+        'Sum of all payments/credits during the statement period in cents',
+      default: 0,
     },
     status: {
       type: 'string',
@@ -97,7 +114,10 @@ const statementSchema = {
     'periodEnd',
     'statementPeriod',
     'transactionIds',
-    'total',
+    'startingBalance',
+    'endingBalance',
+    'totalCharges',
+    'totalPayments',
     'status',
     'isStartDateModified',
     'isEndDateModified',

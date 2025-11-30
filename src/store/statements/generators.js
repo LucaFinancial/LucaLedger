@@ -14,7 +14,7 @@ import { calculateStatementPeriod } from './utils';
  * @param {string} initialData.periodStart - Required: Period start date
  * @param {string} initialData.periodEnd - Required: Period end date
  * @param {Array<string>} initialData.transactionIds - Optional: Transaction IDs
- * @param {number} initialData.total - Optional: Statement total in cents
+ * @param {number} initialData.total - Optional legacy total (falls back to endingBalance)
  * @param {string} initialData.status - Optional: Statement status
  * @returns {Object|null} The generated statement or null if validation fails
  */
@@ -38,7 +38,24 @@ export const generateStatement = (initialData = {}) => {
       initialData.periodEnd ||
       dayjs().subtract(1, 'day').format(config.dateFormatString),
     transactionIds: initialData.transactionIds || [],
-    total: initialData.total || 0,
+    startingBalance:
+      typeof initialData.startingBalance === 'number'
+        ? initialData.startingBalance
+        : 0,
+    endingBalance:
+      typeof initialData.endingBalance === 'number'
+        ? initialData.endingBalance
+        : typeof initialData.total === 'number'
+        ? initialData.total
+        : 0,
+    totalCharges:
+      typeof initialData.totalCharges === 'number'
+        ? initialData.totalCharges
+        : 0,
+    totalPayments:
+      typeof initialData.totalPayments === 'number'
+        ? initialData.totalPayments
+        : 0,
     status: initialData.status || StatementStatusEnum.DRAFT,
     isStartDateModified: initialData.isStartDateModified || false,
     isEndDateModified: initialData.isEndDateModified || false,
@@ -50,6 +67,16 @@ export const generateStatement = (initialData = {}) => {
     ...initialData,
     statementPeriod, // Always use calculated value from closingDate
   };
+
+  if (typeof statement.startingBalance !== 'number') {
+    statement.startingBalance = 0;
+  }
+  if (typeof statement.totalCharges !== 'number') {
+    statement.totalCharges = 0;
+  }
+  if (typeof statement.totalPayments !== 'number') {
+    statement.totalPayments = 0;
+  }
 
   try {
     validateStatementSync(statement);

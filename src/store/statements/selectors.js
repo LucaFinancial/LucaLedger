@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { parseISO, differenceInDays } from 'date-fns';
+import { selectTransactions } from '../transactions/selectors';
 
 /**
  * Memoized Redux Selectors for Statements
@@ -222,3 +223,84 @@ export const selectStatementIssues = (statementId) =>
 
     return issues;
   });
+
+const EMPTY_SUMMARY = {
+  startingBalance: 0,
+  endingBalance: 0,
+  totalCharges: 0,
+  totalPayments: 0,
+};
+
+const summarizeTransactions = (transactions, transactionIds) => {
+  if (!transactionIds || transactionIds.length === 0) {
+    return { totalCharges: 0, totalPayments: 0 };
+  }
+
+  const lookup = new Map();
+  transactions.forEach((tx) => {
+    lookup.set(tx.id, tx);
+  });
+
+  return transactionIds.reduce(
+    (acc, id) => {
+      const transaction = lookup.get(id);
+      if (!transaction || typeof transaction.amount !== 'number') {
+        return acc;
+      }
+
+      if (transaction.amount >= 0) {
+        acc.totalCharges += transaction.amount;
+      } else {
+        acc.totalPayments += Math.abs(transaction.amount);
+      }
+
+      return acc;
+    },
+    { totalCharges: 0, totalPayments: 0 }
+  );
+};
+
+export const selectStatementSummary = (statementId) =>
+  createSelector(
+    [selectStatements, selectTransactions, () => statementId],
+    (statements, transactions, id) => {
+      const statement = statements.find((s) => s.id === id);
+      if (!statement) {
+        return EMPTY_SUMMARY;
+      }
+
+      const endingBalance =
+        typeof statement.endingBalance === 'number'
+          ? statement.endingBalance
+          : typeof statement.total === 'number'
+          ? statement.total
+          : 0;
+
+      const derivedTotals = summarizeTransactions(
+        transactions,
+        statement.transactionIds
+      );
+
+      const totalCharges =
+        typeof statement.totalCharges === 'number'
+          ? statement.totalCharges
+          : derivedTotals.totalCharges;
+
+      const totalPayments =
+        typeof statement.totalPayments === 'number'
+          ? statement.totalPayments
+          : derivedTotals.totalPayments;
+
+      const startingBalance =
+        typeof statement.startingBalance === 'number'
+          ? statement.startingBalance
+          : endingBalance - totalCharges + totalPayments;
+
+      return {
+        startingBalance,
+        endingBalance,
+        totalCharges,
+        totalPayments,
+      };
+    }
+  );
