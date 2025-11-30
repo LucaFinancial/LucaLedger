@@ -12,7 +12,8 @@ import LegacyDataMigrationDialog from './LegacyDataMigrationDialog';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 export default function AuthScreen() {
-  const { authState, hasLegacyData, setAuthState } = useAuth();
+  const { authState, hasLegacyData, setAuthState, clearLegacyDataFlag } =
+    useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,7 +61,8 @@ export default function AuthScreen() {
     return (
       <LegacyDataMigrationDialog
         onComplete={() => {
-          // After migration handling, continue to normal auth flow
+          // Clear legacy data flag and continue to registration
+          clearLegacyDataFlag();
         }}
       />
     );

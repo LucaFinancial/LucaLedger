@@ -346,6 +346,13 @@ export function AuthProvider({ children }) {
     return !user;
   }, []);
 
+  /**
+   * Clear legacy data flag after migration
+   */
+  const clearLegacyDataFlag = useCallback(() => {
+    setHasLegacyData(false);
+  }, []);
+
   const value = {
     currentUser,
     activeDEK,
@@ -360,6 +367,7 @@ export function AuthProvider({ children }) {
     getUsers,
     isUsernameAvailable,
     setAuthState,
+    clearLegacyDataFlag,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
