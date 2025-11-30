@@ -3,14 +3,23 @@
  * Redirects to login if user is not authenticated
  */
 
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 export default function ProtectedRoute({ children }) {
   const { authState, isInitialized } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Redirect to login when not authenticated
+  useEffect(() => {
+    if (isInitialized && authState !== 'authenticated') {
+      navigate('/login', { state: { from: location }, replace: true });
+    }
+  }, [authState, isInitialized, navigate, location]);
 
   // Show loading while initializing
   if (!isInitialized) {
@@ -35,15 +44,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // Redirect to login if not authenticated
+  // Don't render children if not authenticated
   if (authState !== 'authenticated') {
-    return (
-      <Navigate
-        to='/login'
-        state={{ from: location }}
-        replace
-      />
-    );
+    return null;
   }
 
   return children;

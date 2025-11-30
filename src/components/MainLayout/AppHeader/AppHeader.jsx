@@ -21,6 +21,12 @@ import {
 export default function AppHeader() {
   const { logout, currentUser } = useAuth();
 
+  const handleLogout = () => {
+    if (logout) {
+      logout();
+    }
+  };
+
   return (
     <AppBar
       position='fixed'
@@ -91,7 +97,7 @@ export default function AppHeader() {
           </Tooltip>
           <Tooltip title='Logout'>
             <IconButton
-              onClick={logout}
+              onClick={handleLogout}
               aria-label='Logout'
               sx={{ color: 'white' }}
             >
