@@ -269,9 +269,9 @@ describe('Statement Utils', () => {
 
   describe('determineStatementStatus', () => {
     beforeEach(() => {
-      // Mock current date for consistent testing
+      // Mock current date for consistent testing - use UTC noon to avoid timezone issues
       vi.useFakeTimers();
-      vi.setSystemTime(new Date('2024-01-20'));
+      vi.setSystemTime(new Date('2024-01-20T12:00:00.000Z'));
     });
 
     afterEach(() => {
@@ -294,12 +294,13 @@ describe('Statement Utils', () => {
     });
 
     it('should return "current" when today equals period start', () => {
-      const result = determineStatementStatus('2024/01/20', '2024/02/20');
+      const result = determineStatementStatus('2024/01/20', '2024/02/19');
       expect(result).toBe('current');
     });
 
     it('should return "past" when today equals period end + 1', () => {
-      vi.setSystemTime(new Date('2024-01-16'));
+      // Reset system time within this test - use noon UTC to avoid timezone issues
+      vi.setSystemTime(new Date('2024-01-16T12:00:00.000Z'));
       const result = determineStatementStatus('2023/12/16', '2024/01/15');
       expect(result).toBe('past');
     });

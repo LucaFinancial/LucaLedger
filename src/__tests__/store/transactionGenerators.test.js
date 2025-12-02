@@ -11,7 +11,7 @@ describe('Transaction Generators', () => {
   describe('generateTransaction', () => {
     beforeEach(() => {
       vi.useFakeTimers();
-      vi.setSystemTime(new Date('2024-06-15'));
+      vi.setSystemTime(new Date('2024-06-15T12:00:00.000Z'));
     });
 
     afterEach(() => {
