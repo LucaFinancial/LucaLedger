@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
+import RecurringTransactionsPanel from '@/components/RecurringTransactionsPanel';
 import {
   selectors as transactionSelectors,
   constants as transactionConstants,
@@ -206,10 +207,18 @@ export default function SettingsPanel({ account, selectedYear }) {
         flexDirection: 'column',
         py: 2,
         px: 0.5,
+        overflow: 'hidden',
       }}
     >
+      {/* Recurring Transactions Panel */}
+      <Box sx={{ px: 1.5, flexShrink: 0, mb: 2 }}>
+        <RecurringTransactionsPanel accountId={account.id} />
+      </Box>
+
+      <Divider sx={{ flexShrink: 0 }} />
+
       {/* Balances */}
-      <Box sx={{ px: 1.5, flexShrink: 0 }}>
+      <Box sx={{ px: 1.5, flexShrink: 0, mt: 2 }}>
         <BalanceDisplay
           label='Current Balance'
           balance={currentBalance}
