@@ -230,8 +230,16 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('statements', action.payload.id, action.payload);
   } else if (action.type === 'statements/updateStatement') {
     queueWrite('statements', action.payload.id, action.payload);
-  } else if (action.type === 'statements/lockStatement') {
-    queueWrite('statements', action.payload.id, action.payload);
+  } else if (
+    action.type === 'statements/lockStatement' ||
+    action.type === 'statements/unlockStatement'
+  ) {
+    // lockStatement and unlockStatement actions have statementId as the payload
+    const statementId = action.payload;
+    const statement = state.statements.find((s) => s.id === statementId);
+    if (statement) {
+      queueWrite('statements', statementId, statement);
+    }
   } else if (action.type === 'statements/setStatements') {
     // When setting all statements (e.g., during import/load), persist all to IndexedDB
     if (currentDEK && currentUserId) {
