@@ -44,7 +44,7 @@ export default function CategoryCell({ transaction, isSelected }) {
   };
 
   return (
-        <>
+    <>
       <TableCell sx={{ minWidth: 220 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flex: 1 }}>
