@@ -1,4 +1,4 @@
-import { TableRow } from '@mui/material';
+import { TableCell, TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactions';
@@ -95,9 +95,7 @@ export default function LedgerRow({
         occurrenceDate={occurrenceDate}
       />
       {!isVirtual && <DeleteButtonCell transaction={row} />}
-      {isVirtual && (
-        <td style={{ width: '48px' }} /> // Empty cell for virtual transactions
-      )}
+      {isVirtual && <TableCell sx={{ width: '48px' }} />}
     </TableRow>
   );
 }
