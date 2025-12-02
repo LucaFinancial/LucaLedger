@@ -3,7 +3,17 @@ import { TableCell, TableHead, TableRow } from '@mui/material';
 export default function LedgerHeader() {
   return (
     <TableHead>
-      <TableRow sx={{ border: '2px solid black' }}>
+      <TableRow
+        sx={{
+          '& .MuiTableCell-root': {
+            fontWeight: 600,
+            backgroundColor: 'background.paper',
+            borderBottom: '2px solid',
+            borderColor: 'divider',
+            padding: '12px',
+          },
+        }}
+      >
         <TableCell sx={{ width: '48px' }}></TableCell>
         <TableCell>Status</TableCell>
         <TableCell>Date</TableCell>

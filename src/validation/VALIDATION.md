@@ -19,7 +19,8 @@ src/validation/
 ├── index.js                  # Main export file
 ├── validator.js              # AJV configuration and validation functions
 ├── accountSchemas.js         # JSON Schema definitions for accounts
-└── transactionSchemas.js     # JSON Schema definitions for transactions
+├── transactionSchemas.js     # JSON Schema definitions for transactions
+└── statementSchemas.js       # JSON Schema definitions for credit card statements
 ```
 
 ## AJV Configuration
@@ -28,10 +29,10 @@ The AJV validator is configured with the following settings:
 
 ```javascript
 const ajv = new Ajv({
-  strict: true,        // Enforces strict schema validation
-  allErrors: true,     // Collects all validation errors, not just the first
-  useDefaults: true,   // Applies default values from schemas
-  coerceTypes: false,  // No automatic type coercion for better type safety
+  strict: true, // Enforces strict schema validation
+  allErrors: true, // Collects all validation errors, not just the first
+  useDefaults: true, // Applies default values from schemas
+  coerceTypes: false, // No automatic type coercion for better type safety
 });
 ```
 
@@ -111,10 +112,10 @@ Credit Card accounts extend the common schema with a `statementDay` field:
     "id": { "type": "string", "minLength": 1 },
     "name": { "type": "string", "minLength": 1 },
     "type": { "type": "string", "minLength": 1 },
-    "statementDay": { 
-      "type": "integer", 
-      "minimum": 1, 
-      "maximum": 31 
+    "statementDay": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
     }
   },
   "required": ["id", "name", "type", "statementDay"],
@@ -130,13 +131,13 @@ Credit Card accounts extend the common schema with a `statementDay` field:
   "properties": {
     "id": { "type": "string", "minLength": 1 },
     "accountId": { "type": "string", "minLength": 1 },
-    "status": { 
-      "type": "string", 
+    "status": {
+      "type": "string",
       "enum": ["pending ", "complete ", "scheduled ", "planned "]
     },
-    "date": { 
-      "type": "string", 
-      "pattern": "^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$" 
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$"
     },
     "amount": { "type": "number" },
     "description": { "type": "string", "minLength": 1 }
@@ -146,24 +147,92 @@ Credit Card accounts extend the common schema with a `statementDay` field:
 }
 ```
 
-**Note**: 
+**Note**:
+
 - Transaction dates use the format `YYYY/MM/DD` (e.g., `2025/10/26`) as defined in the application config.
 - Status values have trailing spaces (this is the existing implementation in `TransactionStatusEnum`).
+
+### Statement Schema
+
+Statements now track rich financial data so balances always match the way credit-card statements are published. Required numeric fields default to `0`, which keeps legacy data compatible while ensuring every statement carries a full breakdown. The legacy `total` field has been removed—`endingBalance` is the canonical amount.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "accountId": { "type": "string", "minLength": 1 },
+    "closingDate": {
+      "type": "string",
+      "pattern": "^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "periodStart": {
+      "type": "string",
+      "pattern": "^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "periodEnd": {
+      "type": "string",
+      "pattern": "^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "statementPeriod": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+    },
+    "transactionIds": { "type": "array", "items": { "type": "string" } },
+    "startingBalance": { "type": "number", "default": 0 },
+    "endingBalance": { "type": "number", "default": 0 },
+    "totalCharges": { "type": "number", "default": 0 },
+    "totalPayments": { "type": "number", "default": 0 },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "current", "past", "locked"]
+    },
+    "isStartDateModified": { "type": "boolean" },
+    "isEndDateModified": { "type": "boolean" },
+    "isTotalModified": { "type": "boolean" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "lockedAt": { "type": ["string", "null"], "format": "date-time" }
+  },
+  "required": [
+    "id",
+    "accountId",
+    "closingDate",
+    "periodStart",
+    "periodEnd",
+    "statementPeriod",
+    "transactionIds",
+    "startingBalance",
+    "endingBalance",
+    "totalCharges",
+    "totalPayments",
+    "status",
+    "isStartDateModified",
+    "isEndDateModified",
+    "isTotalModified",
+    "createdAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}
+```
+
+The validator automatically injects the zero defaults when older statements are missing these properties, so migrations are unnecessary.
 
 ## Error Messages
 
 The validation system formats AJV errors into user-friendly messages:
 
-| Error Type | Example Message |
-|------------|----------------|
-| `required` | "name is required" |
-| `type` | "amount must be a number" |
-| `minLength` | "description must not be empty" |
-| `minimum` | "statementDay must be at least 1" |
-| `maximum` | "statementDay must be at most 31" |
-| `enum` | "status must be one of: pending, complete, scheduled, planned" |
-| `pattern` | "date must match the required format" |
-| `additionalProperties` | "Unknown property: invalidField" |
+| Error Type             | Example Message                                                |
+| ---------------------- | -------------------------------------------------------------- |
+| `required`             | "name is required"                                             |
+| `type`                 | "amount must be a number"                                      |
+| `minLength`            | "description must not be empty"                                |
+| `minimum`              | "statementDay must be at least 1"                              |
+| `maximum`              | "statementDay must be at most 31"                              |
+| `enum`                 | "status must be one of: pending, complete, scheduled, planned" |
+| `pattern`              | "date must match the required format"                          |
+| `additionalProperties` | "Unknown property: invalidField"                               |
 
 ## Migration from Yup
 
@@ -210,11 +279,11 @@ export const categorySchemas = {
     properties: {
       id: { type: 'string', minLength: 1 },
       name: { type: 'string', minLength: 1 },
-      color: { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$' }
+      color: { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$' },
     },
     required: ['id', 'name'],
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 ```
 

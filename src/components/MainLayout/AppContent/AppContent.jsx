@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Accounts from '@/views/Accounts';
 import Categories from '@/views/Categories';
 import Dashboard from '@/views/Dashboard';
+import Help from '@/views/Help';
 import Landing from '@/views/Landing';
 import Ledger from '@/views/Ledger';
 import Settings from '@/views/Settings';
@@ -33,6 +34,10 @@ export default function AppContent() {
       <Route
         path='/settings'
         element={<Settings />}
+      />
+      <Route
+        path='/help'
+        element={<Help />}
       />
       <Route
         path='*'

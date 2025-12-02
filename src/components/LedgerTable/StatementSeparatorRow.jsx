@@ -1,56 +1,68 @@
-import { TableCell, TableRow, Typography } from '@mui/material';
+import {
+  TableCell,
+  TableRow,
+  Typography,
+  IconButton,
+  Box,
+  Button,
+  Chip,
+  Tooltip,
+} from '@mui/material';
 import PropTypes from 'prop-types';
-import dayjs from 'dayjs';
+import { format, parseISO } from 'date-fns';
+import {
+  Visibility,
+  Lock,
+  LockOpen,
+  Add,
+  Warning,
+  Error,
+} from '@mui/icons-material';
+import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
-import { computeStatementMonth } from './utils';
 import { centsToDollars } from '@/utils';
+import StatementStatusBadge from '@/components/StatementStatusBadge';
+import StatementDetailsModal from '@/components/StatementDetailsModal';
+import {
+  selectors as statementSelectors,
+  actions as statementActions,
+} from '@/store/statements';
 
 export default function StatementSeparatorRow({
-  statementDay,
-  transaction,
-  previousTransaction,
+  statementDate,
+  periodStart,
+  periodEnd,
   transactions,
+  accountId,
 }) {
-  if (!previousTransaction) {
-    return null;
-  }
+  const dispatch = useDispatch();
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const currentStatementMonth = computeStatementMonth(
-    transaction,
-    statementDay
+  // Convert date format from YYYY-MM-DD to YYYY/MM/DD for matching with Redux
+  const closingDateWithSlashes = statementDate.replace(/-/g, '/');
+
+  // Find the actual statement from Redux
+  const statement = useSelector(
+    statementSelectors.selectStatementByAccountIdAndClosingDate(
+      accountId,
+      closingDateWithSlashes
+    )
   );
-  const previousStatementMonth = computeStatementMonth(
-    previousTransaction,
-    statementDay
+
+  // Get issue information for this statement
+  const issues = useSelector(
+    statement
+      ? statementSelectors.selectStatementIssues(statement.id)
+      : () => null
   );
-  const isStatementMonthDifferent =
-    currentStatementMonth !== previousStatementMonth;
-
-  const statementDate = dayjs(
-    `${statementDay} ${previousStatementMonth}`,
-    'D MMMM YYYY'
-  ).format('MMMM DD YYYY');
-
-  // Get all transactions for the previous statement period
-  const statementTransactions = transactions
-    .filter((t) => {
-      const tStatementMonth = computeStatementMonth(t, statementDay);
-      return tStatementMonth === previousStatementMonth;
-    })
-    .filter((t) => {
-      // Filter out payments - case insensitive check for "payment" in description
-      return !t.description.toLowerCase().includes('payment');
-    });
 
   // Calculate charges by status
-  const allCharges = statementTransactions.reduce(
-    (sum, t) => sum + Number(t.amount),
-    0
-  );
-  const pendingCharges = statementTransactions
+  const allCharges = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  const pendingCharges = transactions
     .filter((t) => t.status?.trim() === 'pending')
     .reduce((sum, t) => sum + Number(t.amount), 0);
-  const scheduledCharges = statementTransactions
+  const scheduledCharges = transactions
     .filter((t) => t.status?.trim() === 'scheduled')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -62,54 +74,223 @@ export default function StatementSeparatorRow({
     });
   };
 
+  // Format date range - use statement dates if available, otherwise use calculated dates
+  const displayPeriodStart = statement?.periodStart || periodStart;
+  const displayPeriodEnd = statement?.periodEnd || periodEnd;
+
+  const startDate = format(
+    parseISO(displayPeriodStart.replace(/\//g, '-')),
+    'MMM d'
+  );
+  const endDate = format(
+    parseISO(displayPeriodEnd.replace(/\//g, '-')),
+    'MMM d, yyyy'
+  );
+  const dateRange = `${startDate} - ${endDate}`;
+
+  const handleView = () => {
+    setModalOpen(true);
+  };
+
+  const handleLock = () => {
+    if (statement) {
+      dispatch(statementActions.lockStatement(statement.id));
+    }
+  };
+
+  const handleUnlock = () => {
+    if (statement) {
+      dispatch(statementActions.unlockStatement(statement.id));
+    }
+  };
+
+  const handleSave = (statementId, updates) => {
+    dispatch(statementActions.updateStatementProperty(statementId, updates));
+  };
+
+  const handleDelete = (statementId) => {
+    dispatch(statementActions.deleteStatement(statementId));
+    setModalOpen(false);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+  };
+
+  const handleCreateStatement = () => {
+    // Create a new statement for this period
+    dispatch(
+      statementActions.createNewStatement({
+        accountId,
+        closingDate: closingDateWithSlashes,
+        periodStart,
+        periodEnd,
+        transactionIds: transactions.map((t) => t.id),
+        total: allCharges,
+        status: 'draft',
+      })
+    );
+  };
+
   return (
-    isStatementMonthDifferent && (
+    <>
       <TableRow>
         <TableCell
           colSpan={8}
           style={{ backgroundColor: '#f5f5f5', padding: '8px 16px' }}
         >
-          <Typography
-            component='div'
-            style={{
+          <Box
+            sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              fontWeight: 'bold',
             }}
           >
-            <span>Statement {statementDate}</span>
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography
+                component='span'
+                sx={{ fontWeight: 'bold' }}
+              >
+                Statement {statementDate} ({dateRange})
+                {statement &&
+                  (statement.isStartDateModified ||
+                    statement.isEndDateModified) && (
+                    <Typography
+                      component='span'
+                      sx={{ color: 'warning.main', ml: 1, fontSize: '0.9em' }}
+                    >
+                      ⚠️
+                    </Typography>
+                  )}
+              </Typography>
+              <StatementStatusBadge status={statement?.status || 'draft'} />
+              {issues?.hasDuplicate && (
+                <Tooltip title='Duplicate statement period detected'>
+                  <Chip
+                    icon={<Error />}
+                    label='Duplicate'
+                    size='small'
+                    color='error'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasOverlap && !issues.hasDuplicate && (
+                <Tooltip
+                  title={`Overlaps by ${issues.overlapDays} day${
+                    issues.overlapDays !== 1 ? 's' : ''
+                  }`}
+                >
+                  <Chip
+                    icon={<Warning />}
+                    label='Overlap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
+              {issues?.hasGap && !issues.hasDuplicate && !issues.hasOverlap && (
+                <Tooltip title={`${issues.gapDays} day gap`}>
+                  <Chip
+                    icon={<Warning />}
+                    label='Gap'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {pendingCharges > 0 && (
-                <span style={{ color: '#cc8800' }}>
+                <Typography
+                  component='span'
+                  sx={{ color: '#cc8800' }}
+                >
                   Pending: ${formatAmount(pendingCharges)}
-                </span>
+                </Typography>
               )}
               {scheduledCharges > 0 && (
-                <span style={{ color: '#0066cc' }}>
+                <Typography
+                  component='span'
+                  sx={{ color: '#0066cc' }}
+                >
                   Scheduled: ${formatAmount(scheduledCharges)}
-                </span>
+                </Typography>
               )}
-              <span style={{ color: 'black' }}>
+              <Typography
+                component='span'
+                sx={{ color: 'black', fontWeight: 'bold' }}
+              >
                 ${formatAmount(allCharges)}
-              </span>
-            </div>
-          </Typography>
+              </Typography>
+
+              {statement ? (
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <IconButton
+                    size='small'
+                    onClick={handleView}
+                    title='View Statement Details'
+                  >
+                    <Visibility fontSize='small' />
+                  </IconButton>
+                  {statement.status === 'past' && (
+                    <IconButton
+                      size='small'
+                      onClick={handleLock}
+                      title={
+                        statement.status === 'locked'
+                          ? 'Statement Locked'
+                          : 'Lock Statement'
+                      }
+                      color={
+                        statement.status === 'locked' ? 'default' : 'error'
+                      }
+                      disabled={statement.status === 'locked'}
+                    >
+                      {statement.status === 'locked' ? (
+                        <Lock fontSize='small' />
+                      ) : (
+                        <LockOpen fontSize='small' />
+                      )}
+                    </IconButton>
+                  )}
+                </Box>
+              ) : (
+                <Button
+                  size='small'
+                  variant='outlined'
+                  startIcon={<Add />}
+                  onClick={handleCreateStatement}
+                >
+                  Create Statement
+                </Button>
+              )}
+            </Box>
+          </Box>
         </TableCell>
       </TableRow>
-    )
+
+      {statement && (
+        <StatementDetailsModal
+          open={modalOpen}
+          onClose={handleModalClose}
+          statement={statement}
+          onSave={handleSave}
+          onLock={handleLock}
+          onUnlock={handleUnlock}
+          onDelete={handleDelete}
+          readOnly={statement.status === 'locked'}
+        />
+      )}
+    </>
   );
 }
 
 StatementSeparatorRow.propTypes = {
-  statementDay: PropTypes.number.isRequired,
-  transaction: PropTypes.shape({
-    date: PropTypes.string.isRequired,
-  }).isRequired,
-  previousTransaction: PropTypes.shape({
-    date: PropTypes.string.isRequired,
-    balance: PropTypes.number.isRequired,
-  }),
+  statementDate: PropTypes.string.isRequired,
+  periodStart: PropTypes.string.isRequired,
+  periodEnd: PropTypes.string.isRequired,
+  accountId: PropTypes.string.isRequired,
   transactions: PropTypes.arrayOf(
     PropTypes.shape({
       date: PropTypes.string.isRequired,

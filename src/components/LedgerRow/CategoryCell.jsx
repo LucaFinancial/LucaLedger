@@ -10,7 +10,7 @@ import {
 import CategorySelect from '@/components/CategorySelect';
 import SplitEditorModal from '@/components/SplitEditorModal';
 
-export default function CategoryCell({ transaction }) {
+export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -44,7 +44,7 @@ export default function CategoryCell({ transaction }) {
   };
 
   return (
-    <>
+        <>
       <TableCell sx={{ minWidth: 220 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flex: 1 }}>
@@ -56,6 +56,7 @@ export default function CategoryCell({ transaction }) {
               fullWidth
               label=''
               placeholder='Category'
+              isSelected={isSelected}
             />
           </Box>
           <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
@@ -87,4 +88,5 @@ export default function CategoryCell({ transaction }) {
 
 CategoryCell.propTypes = {
   transaction: PropTypes.object.isRequired,
+  isSelected: PropTypes.bool,
 };

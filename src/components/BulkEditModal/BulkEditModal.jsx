@@ -1,8 +1,10 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
   InputLabel,
@@ -21,10 +23,12 @@ export default function BulkEditModal({
   onClose,
   selectedCount,
   onApplyChanges,
+  onDeleteTransactions,
 }) {
   const [selectedState, setSelectedState] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleClose = () => {
     setSelectedState('');
@@ -61,81 +65,132 @@ export default function BulkEditModal({
     setSelectedCategory(null);
   };
 
+  const handleDeleteClick = () => {
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteConfirmOpen(false);
+    onDeleteTransactions();
+    handleClose();
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth='sm'
-      fullWidth
-    >
-      <DialogTitle>
-        Edit {selectedCount} Transaction{selectedCount !== 1 ? 's' : ''}
-      </DialogTitle>
-      <DialogContent>
-        <FormControl
-          fullWidth
-          sx={{ mt: 2 }}
-        >
-          <InputLabel id='bulk-edit-state-label'>Select new state</InputLabel>
-          <Select
-            labelId='bulk-edit-state-label'
-            id='bulk-edit-state-select'
-            value={selectedState}
-            label='Select new state'
-            onChange={(e) => setSelectedState(e.target.value)}
-          >
-            {Object.keys(constants.TransactionStatusEnum).map((key) => (
-              <MenuItem
-                key={key}
-                value={constants.TransactionStatusEnum[key]}
-              >
-                {constants.TransactionStatusEnum[key]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          fullWidth
-          sx={{ mt: 3 }}
-        >
-          <Typography sx={{ mb: 1 }}>Select new date</Typography>
-          <DatePicker
-            value={selectedDate}
-            onChange={(newValue) => setSelectedDate(newValue)}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-              },
-            }}
-          />
-        </FormControl>
-        <FormControl
-          fullWidth
-          sx={{ mt: 3 }}
-        >
-          <Typography sx={{ mb: 1 }}>Select new category</Typography>
-          <CategorySelect
-            value={selectedCategory}
-            onChange={setSelectedCategory}
+    <>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth='sm'
+        fullWidth
+      >
+        <DialogTitle>
+          Edit {selectedCount} Transaction{selectedCount !== 1 ? 's' : ''}
+        </DialogTitle>
+        <DialogContent>
+          <FormControl
             fullWidth
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button
-          onClick={handleApply}
-          variant='contained'
-          disabled={
-            !selectedState &&
-            (!selectedDate || !selectedDate.isValid()) &&
-            !selectedCategory
-          }
-        >
-          Change All
-        </Button>
-      </DialogActions>
-    </Dialog>
+            sx={{ mt: 2 }}
+          >
+            <InputLabel id='bulk-edit-state-label'>Select new state</InputLabel>
+            <Select
+              labelId='bulk-edit-state-label'
+              id='bulk-edit-state-select'
+              value={selectedState}
+              label='Select new state'
+              onChange={(e) => setSelectedState(e.target.value)}
+            >
+              {Object.keys(constants.TransactionStatusEnum).map((key) => (
+                <MenuItem
+                  key={key}
+                  value={constants.TransactionStatusEnum[key]}
+                >
+                  {constants.TransactionStatusEnum[key]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+          >
+            <Typography sx={{ mb: 1 }}>Select new date</Typography>
+            <DatePicker
+              value={selectedDate}
+              onChange={(newValue) => setSelectedDate(newValue)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                },
+              }}
+            />
+          </FormControl>
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+          >
+            <Typography sx={{ mb: 1 }}>Select new category</Typography>
+            <CategorySelect
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              fullWidth
+            />
+          </FormControl>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
+          <Button
+            onClick={handleDeleteClick}
+            color='error'
+            variant='outlined'
+          >
+            Delete Selected
+          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              onClick={handleApply}
+              variant='contained'
+              disabled={
+                !selectedState &&
+                (!selectedDate || !selectedDate.isValid()) &&
+                !selectedCategory
+              }
+            >
+              Change All
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleDeleteCancel}
+        maxWidth='xs'
+        fullWidth
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {selectedCount} transaction
+            {selectedCount !== 1 ? 's' : ''}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color='error'
+            variant='contained'
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
@@ -144,4 +199,5 @@ BulkEditModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   selectedCount: PropTypes.number.isRequired,
   onApplyChanges: PropTypes.func.isRequired,
+  onDeleteTransactions: PropTypes.func.isRequired,
 };

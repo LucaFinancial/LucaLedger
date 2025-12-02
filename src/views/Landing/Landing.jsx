@@ -4,7 +4,6 @@ import {
   Typography,
   Paper,
   Container,
-  Link as MuiLink,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -52,7 +51,9 @@ function Section({ title, children, defaultExpanded = true }) {
       </AccordionSummary>
       <AccordionDetails
         sx={{
-          p: 4,
+          pt: 2,
+          px: 4,
+          pb: 4,
           background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
         }}
       >
@@ -97,17 +98,25 @@ export default function Landing() {
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Typography
+            variant='body1'
+            sx={{ mb: 2, color: 'text.secondary' }}
+          >
+            Version 2 brings powerful new capabilities and architectural
+            improvements to help you manage your finances more effectively and
+            securely.
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {/* Transaction Categories */}
             <Paper
               elevation={1}
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'success.main',
-                backgroundColor: 'success.50',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: 'success.100',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -115,7 +124,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'success.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 📊 Transaction Categories
               </Typography>
@@ -135,10 +144,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'primary.main',
-                backgroundColor: 'primary.50',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
                 '&:hover': {
-                  backgroundColor: 'primary.100',
+                  backgroundColor: '#e1bee7',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -146,7 +155,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'primary.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
               >
                 ✏️ Bulk Edit for Transactions
               </Typography>
@@ -165,10 +174,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'warning.main',
-                backgroundColor: 'warning.50',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: 'warning.100',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -176,7 +185,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'warning.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🔒 Enhanced Security
               </Typography>
@@ -190,16 +199,16 @@ export default function Landing() {
               </Typography>
             </Paper>
 
-            {/* Improved File Handling */}
+            {/* Unified File Format */}
             <Paper
               elevation={1}
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'info.main',
-                backgroundColor: 'info.50',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: 'info.100',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -207,7 +216,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'info.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 📁 Unified File Format
               </Typography>
@@ -227,10 +236,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: 'secondary.main',
-                backgroundColor: 'secondary.50',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
                 '&:hover': {
-                  backgroundColor: 'secondary.100',
+                  backgroundColor: '#b2ebf2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -238,7 +247,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: 'secondary.dark', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
               >
                 💰 Improved Precision
               </Typography>
@@ -251,63 +260,37 @@ export default function Landing() {
               </Typography>
             </Paper>
 
-            {/* Additional Features */}
-            <Box sx={{ mt: 1 }}>
+            {/* Refreshed Ledger View */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#009688',
+                backgroundColor: '#e0f2f1',
+                '&:hover': {
+                  backgroundColor: '#b2dfdb',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
               <Typography
                 variant='h6'
-                sx={{ mb: 2, color: 'text.primary', fontWeight: 500 }}
+                sx={{ fontWeight: 600, color: '#00695c', mb: 1 }}
               >
-                Plus many more improvements:
+                🎨 Refreshed Ledger View
               </Typography>
-              <Box
-                component='ul'
-                sx={{
-                  listStyle: 'none',
-                  pl: 0,
-                  m: 0,
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                  gap: 1.5,
-                }}
+              <Typography
+                variant='body1'
+                color='text.secondary'
               >
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Clear filter button in ledger view
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    User settings page for personalization
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Account-specific settings page
-                  </Typography>
-                </Box>
-                <Box
-                  component='li'
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box sx={{ color: 'primary.main', mt: 0.5 }}>✓</Box>
-                  <Typography variant='body2'>
-                    Unified store architecture
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
+                Modern, intuitive ledger interface with enhanced balance cards,
+                interactive spending visualizations by category with pie charts,
+                and smart filtering by month and transaction status for better
+                financial insights.
+              </Typography>
+            </Paper>
           </Box>
         </Section>
 
@@ -321,6 +304,37 @@ export default function Landing() {
             Ledger even more powerful for managing your finances:
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Split Categories */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
+                '&:hover': {
+                  backgroundColor: '#bbdefb',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+              >
+                🔀 Split Categories for Transactions
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Allocate a single transaction across multiple categories with
+                custom split amounts. Perfect for purchases covering different
+                expense types like groceries and household items in one trip.
+              </Typography>
+            </Paper>
+
             {/* Double-entry Accounting */}
             <Paper
               elevation={1}
@@ -348,7 +362,9 @@ export default function Landing() {
               >
                 Professional-grade double-entry bookkeeping system for accurate
                 financial tracking with debits, credits, and automatic balance
-                reconciliation.
+                reconciliation. Link transactions across accounts to track
+                transfers, payments, and movements between your checking,
+                savings, and credit card accounts seamlessly.
               </Typography>
             </Paper>
 
@@ -358,10 +374,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#00bcd4',
-                backgroundColor: '#e0f7fa',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: '#b2ebf2',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -369,7 +385,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🔄 Recurring Transactions
               </Typography>
@@ -389,10 +405,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff5722',
-                backgroundColor: '#fbe9e7',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: '#ffccbc',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -400,7 +416,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#d84315', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 📈 Advanced Reporting & Analytics
               </Typography>
@@ -420,10 +436,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#4caf50',
-                backgroundColor: '#e8f5e9',
+                borderColor: '#00bcd4',
+                backgroundColor: '#e0f7fa',
                 '&:hover': {
-                  backgroundColor: '#c8e6c9',
+                  backgroundColor: '#b2ebf2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -431,7 +447,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#0097a7', mb: 1 }}
               >
                 🎯 Smart Budget Management
               </Typography>
@@ -451,10 +467,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#673ab7',
-                backgroundColor: '#ede7f6',
+                borderColor: '#009688',
+                backgroundColor: '#e0f2f1',
                 '&:hover': {
-                  backgroundColor: '#d1c4e9',
+                  backgroundColor: '#b2dfdb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -462,7 +478,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#512da8', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#00695c', mb: 1 }}
               >
                 📊 Investment Account Tracking
               </Typography>
@@ -495,10 +511,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#4caf50',
-                backgroundColor: '#e8f5e9',
+                borderColor: '#2196f3',
+                backgroundColor: '#e3f2fd',
                 '&:hover': {
-                  backgroundColor: '#c8e6c9',
+                  backgroundColor: '#bbdefb',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -506,7 +522,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
               >
                 🔐 Complete Privacy
               </Typography>
@@ -527,10 +543,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#2196f3',
-                backgroundColor: '#e3f2fd',
+                borderColor: '#9c27b0',
+                backgroundColor: '#f3e5f5',
                 '&:hover': {
-                  backgroundColor: '#bbdefb',
+                  backgroundColor: '#e1bee7',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -538,7 +554,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#1565c0', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
               >
                 ✈️ Works Completely Offline
               </Typography>
@@ -558,10 +574,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#ff9800',
-                backgroundColor: '#fff3e0',
+                borderColor: '#4caf50',
+                backgroundColor: '#e8f5e9',
                 '&:hover': {
-                  backgroundColor: '#ffe0b2',
+                  backgroundColor: '#c8e6c9',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -569,7 +585,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}
               >
                 🛡️ Industry-Standard Encryption
               </Typography>
@@ -590,10 +606,10 @@ export default function Landing() {
               sx={{
                 p: 2.5,
                 borderLeft: '4px solid',
-                borderColor: '#9c27b0',
-                backgroundColor: '#f3e5f5',
+                borderColor: '#ff9800',
+                backgroundColor: '#fff3e0',
                 '&:hover': {
-                  backgroundColor: '#e1bee7',
+                  backgroundColor: '#ffe0b2',
                   transform: 'translateX(4px)',
                 },
                 transition: 'all 0.2s ease-in-out',
@@ -601,7 +617,7 @@ export default function Landing() {
             >
               <Typography
                 variant='h6'
-                sx={{ fontWeight: 600, color: '#7b1fa2', mb: 1 }}
+                sx={{ fontWeight: 600, color: '#e65100', mb: 1 }}
               >
                 🚀 Modern Storage Architecture
               </Typography>
@@ -646,354 +662,6 @@ export default function Landing() {
                 or keep archives for your records—all in a standard,
                 human-readable JSON format.
               </Typography>
-            </Paper>
-          </Box>
-        </Section>
-
-        {/* How to Use Section */}
-        <Section title='How to Use the App'>
-          <Typography
-            variant='body1'
-            sx={{ mb: 3, color: 'text.secondary' }}
-          >
-            Luca Ledger is designed to be intuitive and easy to use. Follow
-            these steps to get started managing your finances effectively.
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Step 1 */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                alignItems: 'flex-start',
-                p: 2.5,
-                borderRadius: 2,
-                backgroundColor: '#f5f5f5',
-                '&:hover': {
-                  backgroundColor: '#eeeeee',
-                },
-                transition: 'background-color 0.2s ease-in-out',
-              }}
-            >
-              <Box
-                sx={{
-                  minWidth: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '1.25rem',
-                }}
-              >
-                1
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
-                  Create Your First Account
-                </Typography>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
-                  Navigate to the{' '}
-                  <MuiLink
-                    href='/accounts'
-                    underline='hover'
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Accounts
-                  </MuiLink>{' '}
-                  page and click &quot;Create New Account&quot; to set up a
-                  checking, savings, or credit card account. Give it a
-                  meaningful name and set the initial balance to get started.
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Step 2 */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                alignItems: 'flex-start',
-                p: 2.5,
-                borderRadius: 2,
-                backgroundColor: '#f5f5f5',
-                '&:hover': {
-                  backgroundColor: '#eeeeee',
-                },
-                transition: 'background-color 0.2s ease-in-out',
-              }}
-            >
-              <Box
-                sx={{
-                  minWidth: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '1.25rem',
-                }}
-              >
-                2
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
-                  Add and Manage Transactions
-                </Typography>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
-                  Click on any account card to open its ledger. Add new
-                  transactions with descriptions, amounts, dates, and
-                  categories. Edit or delete existing transactions as needed.
-                  Use transaction statuses (Complete, Scheduled, Planned) to
-                  track future expenses.
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Step 3 */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                alignItems: 'flex-start',
-                p: 2.5,
-                borderRadius: 2,
-                backgroundColor: '#f5f5f5',
-                '&:hover': {
-                  backgroundColor: '#eeeeee',
-                },
-                transition: 'background-color 0.2s ease-in-out',
-              }}
-            >
-              <Box
-                sx={{
-                  minWidth: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '1.25rem',
-                }}
-              >
-                3
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
-                  Organize with Categories
-                </Typography>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
-                  Visit the{' '}
-                  <MuiLink
-                    href='/categories'
-                    underline='hover'
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Categories
-                  </MuiLink>{' '}
-                  page to create custom categories and subcategories for your
-                  transactions. Organize expenses by type (groceries, utilities,
-                  entertainment) to gain insights into your spending patterns.
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Step 4 */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                alignItems: 'flex-start',
-                p: 2.5,
-                borderRadius: 2,
-                backgroundColor: '#f5f5f5',
-                '&:hover': {
-                  backgroundColor: '#eeeeee',
-                },
-                transition: 'background-color 0.2s ease-in-out',
-              }}
-            >
-              <Box
-                sx={{
-                  minWidth: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '1.25rem',
-                }}
-              >
-                4
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
-                  Monitor Your Financial Dashboard
-                </Typography>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
-                  Check the{' '}
-                  <MuiLink
-                    href='/dashboard'
-                    underline='hover'
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Dashboard
-                  </MuiLink>{' '}
-                  regularly to see an overview of all your accounts, current
-                  balances, recent activity, and spending breakdowns by
-                  category. Track your financial health at a glance.
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Step 5 */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 2,
-                alignItems: 'flex-start',
-                p: 2.5,
-                borderRadius: 2,
-                backgroundColor: '#f5f5f5',
-                '&:hover': {
-                  backgroundColor: '#eeeeee',
-                },
-                transition: 'background-color 0.2s ease-in-out',
-              }}
-            >
-              <Box
-                sx={{
-                  minWidth: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '1.25rem',
-                }}
-              >
-                5
-              </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
-                  Backup and Restore Your Data
-                </Typography>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
-                  Use the save/load functionality in the navigation menu to
-                  export your data as a backup file. Keep regular backups to
-                  protect your financial records and enable easy transfer
-                  between devices or browsers.
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Pro Tips */}
-            <Paper
-              elevation={2}
-              sx={{
-                p: 3,
-                mt: 2,
-                backgroundColor: '#e3f2fd',
-                borderLeft: '4px solid #2196f3',
-              }}
-            >
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, color: '#1565c0', mb: 2 }}
-              >
-                💡 Pro Tips
-              </Typography>
-              <Box
-                component='ul'
-                sx={{
-                  m: 0,
-                  pl: 3,
-                  '& li': { mb: 1.5, color: 'text.secondary' },
-                }}
-              >
-                <li>
-                  <Typography variant='body2'>
-                    Use the bulk edit feature to quickly categorize multiple
-                    transactions at once
-                  </Typography>
-                </li>
-                <li>
-                  <Typography variant='body2'>
-                    Set transaction statuses to &quot;Scheduled&quot; for
-                    upcoming bills to plan ahead
-                  </Typography>
-                </li>
-                <li>
-                  <Typography variant='body2'>
-                    Enable encryption in{' '}
-                    <MuiLink
-                      href='/settings'
-                      underline='hover'
-                      sx={{ fontWeight: 600 }}
-                    >
-                      Settings
-                    </MuiLink>{' '}
-                    for an extra layer of security
-                  </Typography>
-                </li>
-                <li>
-                  <Typography variant='body2'>
-                    Create subcategories to track specific spending areas within
-                    broader categories
-                  </Typography>
-                </li>
-                <li>
-                  <Typography variant='body2'>
-                    Review your dashboard weekly to stay on top of your
-                    financial health
-                  </Typography>
-                </li>
-              </Box>
             </Paper>
           </Box>
         </Section>

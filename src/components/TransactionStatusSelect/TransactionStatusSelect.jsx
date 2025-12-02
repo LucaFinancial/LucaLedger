@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 
-export default function TransactionStatusSelect({ transaction }) {
+export default function TransactionStatusSelect({ transaction, isSelected }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   const [status, setStatus] = useState(transaction.status);
@@ -50,6 +50,10 @@ export default function TransactionStatusSelect({ transaction }) {
         onChange={handleChange}
         sx={{
           textTransform: 'capitalize',
+          color: isSelected ? 'white' : 'inherit',
+          '& .MuiSvgIcon-root': {
+            color: isSelected ? 'white' : 'inherit',
+          },
         }}
       >
         {Object.keys(constants.TransactionStatusEnum).map((key) => {
@@ -72,4 +76,5 @@ export default function TransactionStatusSelect({ transaction }) {
 
 TransactionStatusSelect.propTypes = {
   transaction: PropTypes.object.isRequired,
+  isSelected: PropTypes.bool,
 };

@@ -1,31 +1,28 @@
 import { useState } from 'react';
-import OpenModalButton from './OpenModalButton';
+import PropTypes from 'prop-types';
 import ModalDialog from './ModalDialog';
 
-export default function RepeatedTransactionsModal() {
-  const [open, setOpen] = useState(false);
+export default function RepeatedTransactionsModal({ open, onClose }) {
   const [reset, setReset] = useState(false);
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
-    setOpen(false);
+    onClose();
     setTimeout(() => {
       setReset(true);
     }, 300);
   };
 
   return (
-    <>
-      <OpenModalButton handleOpen={handleOpen} />
-      <ModalDialog
-        open={open}
-        handleClose={handleClose}
-        reset={reset}
-        setReset={setReset}
-      />
-    </>
+    <ModalDialog
+      open={open}
+      handleClose={handleClose}
+      reset={reset}
+      setReset={setReset}
+    />
   );
 }
+
+RepeatedTransactionsModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

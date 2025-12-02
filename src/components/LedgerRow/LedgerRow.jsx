@@ -11,16 +11,20 @@ import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 
-const setBgColor = (status) => {
+const getStatusBackground = (status, isSelected) => {
+  if (isSelected) {
+    return '#f57c00'; // chart orange
+  }
+
   switch (status) {
     case constants.TransactionStatusEnum.COMPLETE:
-      return 'lightgray';
+      return '#e0e0e0'; // lightgray
     case constants.TransactionStatusEnum.PENDING:
-      return 'yellow';
+      return '#fff9c4'; // light yellow
     case constants.TransactionStatusEnum.PLANNED:
-      return 'lightgreen';
+      return '#c8e6c9'; // light green
     case constants.TransactionStatusEnum.SCHEDULED:
-      return 'lightblue';
+      return '#b3e5fc'; // light blue
     default:
       return 'white';
   }
@@ -32,20 +36,38 @@ export default function LedgerRow({
   isSelected,
   onSelectionChange,
 }) {
-  const bgColor = isSelected ? '#ffe6f0' : setBgColor(row.status);
+  const bgColor = getStatusBackground(row.status, isSelected);
 
   return (
     <TableRow
-      sx={{ background: bgColor, '& .MuiTableCell-root': { padding: '4px' } }}
+      sx={{
+        backgroundColor: bgColor,
+        color: isSelected ? 'white' : 'inherit',
+        '&:hover': {
+          filter: 'brightness(0.95)',
+        },
+        '& .MuiTableCell-root': {
+          padding: '2px 4px',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          color: isSelected ? 'white' : 'inherit',
+        },
+      }}
     >
       <SelectionCell
         transaction={row}
         isSelected={isSelected}
         onSelectionChange={onSelectionChange}
       />
-      <StatusCell transaction={row} />
+      <StatusCell
+        transaction={row}
+        isSelected={isSelected}
+      />
       <DateCell transaction={row} />
-      <CategoryCell transaction={row} />
+      <CategoryCell
+        transaction={row}
+        isSelected={isSelected}
+      />
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
