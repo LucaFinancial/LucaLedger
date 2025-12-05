@@ -62,7 +62,7 @@ export default function DateCell({ transaction }) {
         />
       ) : (
         <Typography onClick={handleEdit}>
-          {dateValue.format('MMM DD YYYY')}
+          {format(dateValue, 'MMM dd yyyy')}
         </Typography>
       )}
     </TableCell>
