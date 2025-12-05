@@ -17,8 +17,9 @@ import {
   Add,
   Warning,
   Error,
+  Sync,
 } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { centsToDollars } from '@/utils';
@@ -57,7 +58,32 @@ export default function StatementSeparatorRow({
       : () => null
   );
 
-  // Calculate charges by status
+  // Use centralized calculation via selector
+  const summarySelector = useMemo(() => {
+    if (!statement) {
+      return () => ({
+        startingBalance: 0,
+        endingBalance: 0,
+        totalCharges: 0,
+        totalPayments: 0,
+      });
+    }
+    return statementSelectors.selectStatementSummary(statement.id);
+  }, [statement]);
+
+  const summary = useSelector(summarySelector);
+
+  // Check if statement is out of sync
+  const isOutOfSyncSelector = useMemo(() => {
+    if (!statement) {
+      return () => false;
+    }
+    return statementSelectors.selectIsStatementOutOfSync(statement.id);
+  }, [statement]);
+
+  const isOutOfSync = useSelector(isOutOfSyncSelector);
+
+  // Calculate charges by status from passed transactions (for display of pending/scheduled)
   const allCharges = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
   const pendingCharges = transactions
     .filter((t) => t.status?.trim() === 'pending')
@@ -101,6 +127,12 @@ export default function StatementSeparatorRow({
   const handleUnlock = () => {
     if (statement) {
       dispatch(statementActions.unlockStatement(statement.id));
+    }
+  };
+
+  const handleSync = () => {
+    if (statement) {
+      dispatch(statementActions.syncStatement(statement.id));
     }
   };
 
@@ -221,11 +253,23 @@ export default function StatementSeparatorRow({
                 component='span'
                 sx={{ color: 'black', fontWeight: 'bold' }}
               >
-                ${formatAmount(allCharges)}
+                ${formatAmount(statement ? summary.totalCharges : allCharges)}
               </Typography>
 
               {statement ? (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  {isOutOfSync && (
+                    <Tooltip title='Statement data is out of sync with transactions. Click to sync.'>
+                      <IconButton
+                        size='small'
+                        onClick={handleSync}
+                        color='warning'
+                        title='Sync Statement'
+                      >
+                        <Sync fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <IconButton
                     size='small'
                     onClick={handleView}

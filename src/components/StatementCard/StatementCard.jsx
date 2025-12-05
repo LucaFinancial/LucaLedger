@@ -14,6 +14,7 @@ import {
   Visibility,
   Warning,
   Error,
+  Sync,
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
@@ -45,6 +46,13 @@ export default function StatementCard({
     [statement.id]
   );
   const summary = useSelector(summarySelector);
+
+  // Check if statement is out of sync
+  const isOutOfSyncSelector = useMemo(
+    () => statementSelectors.selectIsStatementOutOfSync(statement.id),
+    [statement.id]
+  );
+  const isOutOfSync = useSelector(isOutOfSyncSelector);
 
   const { startingBalance, endingBalance, totalCharges, totalPayments } =
     summary;
@@ -116,6 +124,16 @@ export default function StatementCard({
                 status={statement.status}
                 size={compact ? 'small' : 'medium'}
               />
+              {isOutOfSync && statement.status === 'locked' && (
+                <Tooltip title='Statement data is out of sync with transactions'>
+                  <Chip
+                    icon={<Sync />}
+                    label='Out of Sync'
+                    size='small'
+                    color='warning'
+                  />
+                </Tooltip>
+              )}
               {issues?.hasDuplicate && (
                 <Tooltip title='Duplicate statement period detected'>
                   <Chip

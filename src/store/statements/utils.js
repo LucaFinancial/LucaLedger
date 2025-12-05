@@ -205,6 +205,145 @@ export function summarizeStatementTransactions(transactions, transactionIds) {
 }
 
 /**
+ * Calculate statement balances dynamically from transactions
+ * This is the centralized calculation that respects locked state
+ *
+ * @param {Object} statement - Statement object
+ * @param {Array} transactions - All transactions
+ * @param {Array} allStatements - All statements (for determining starting balance)
+ * @param {boolean} forceRecalculate - Force recalculation even for locked statements
+ * @returns {{startingBalance: number, endingBalance: number, totalCharges: number, totalPayments: number, isCalculated: boolean}}
+ */
+export function calculateStatementBalances(
+  statement,
+  transactions,
+  allStatements = [],
+  forceRecalculate = false
+) {
+  if (!statement) {
+    return {
+      startingBalance: 0,
+      endingBalance: 0,
+      totalCharges: 0,
+      totalPayments: 0,
+      isCalculated: false,
+    };
+  }
+
+  // For locked statements, use stored values unless forced to recalculate
+  if (statement.status === 'locked' && !forceRecalculate) {
+    const startingBalance =
+      typeof statement.startingBalance === 'number'
+        ? statement.startingBalance
+        : 0;
+    const totalCharges =
+      typeof statement.totalCharges === 'number' ? statement.totalCharges : 0;
+    const totalPayments =
+      typeof statement.totalPayments === 'number' ? statement.totalPayments : 0;
+    const endingBalance =
+      typeof statement.endingBalance === 'number'
+        ? statement.endingBalance
+        : typeof statement.total === 'number'
+        ? statement.total
+        : startingBalance + totalCharges - totalPayments;
+
+    return {
+      startingBalance,
+      endingBalance,
+      totalCharges,
+      totalPayments,
+      isCalculated: false,
+    };
+  }
+
+  // For unlocked statements or forced recalculation, calculate from transactions
+  const { totalCharges, totalPayments } = summarizeStatementTransactions(
+    transactions,
+    statement.transactionIds || []
+  );
+
+  // Calculate starting balance from previous statements
+  let startingBalance = 0;
+  if (statement.closingDate && allStatements.length > 0) {
+    const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
+    const accountStatements = allStatements
+      .filter((s) => s.accountId === statement.accountId)
+      .filter((s) => {
+        const sClosingDate = parseISO(s.closingDate.replace(/\//g, '-'));
+        return sClosingDate < closingDate;
+      })
+      .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+
+    if (accountStatements.length > 0) {
+      const prevStatement = accountStatements[accountStatements.length - 1];
+      startingBalance =
+        typeof prevStatement.endingBalance === 'number'
+          ? prevStatement.endingBalance
+          : typeof prevStatement.total === 'number'
+          ? prevStatement.total
+          : 0;
+    }
+  }
+
+  const endingBalance = startingBalance + totalCharges - totalPayments;
+
+  return {
+    startingBalance,
+    endingBalance,
+    totalCharges,
+    totalPayments,
+    isCalculated: true,
+  };
+}
+
+/**
+ * Check if a locked statement is out of sync with current transaction data
+ *
+ * @param {Object} statement - Statement object
+ * @param {Array} transactions - All transactions
+ * @param {Array} allStatements - All statements
+ * @returns {boolean} - True if statement is out of sync
+ */
+export function isStatementOutOfSync(statement, transactions, allStatements) {
+  if (!statement || statement.status !== 'locked') {
+    return false;
+  }
+
+  // Calculate what the values should be based on current transactions
+  const calculated = calculateStatementBalances(
+    statement,
+    transactions,
+    allStatements,
+    true // Force recalculation
+  );
+
+  // Compare with stored values
+  const storedStarting =
+    typeof statement.startingBalance === 'number'
+      ? statement.startingBalance
+      : 0;
+  const storedEnding =
+    typeof statement.endingBalance === 'number'
+      ? statement.endingBalance
+      : typeof statement.total === 'number'
+      ? statement.total
+      : 0;
+  const storedCharges =
+    typeof statement.totalCharges === 'number' ? statement.totalCharges : 0;
+  const storedPayments =
+    typeof statement.totalPayments === 'number' ? statement.totalPayments : 0;
+
+  // Check if any values differ (allowing small floating point differences)
+  const threshold = 0.01; // 1 cent
+  return (
+    Math.abs(storedStarting - calculated.startingBalance) > threshold ||
+    Math.abs(storedEnding - calculated.endingBalance) > threshold ||
+    Math.abs(storedCharges - calculated.totalCharges) > threshold ||
+    Math.abs(storedPayments - calculated.totalPayments) > threshold
+  );
+}
+
+/**
  * Determine the earliest date we should generate statements for an account
  * @param {object} account - Account object with createdAt timestamp
  * @param {Array} transactions - Array of transactions for this account

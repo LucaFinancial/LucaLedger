@@ -72,6 +72,15 @@ export default function StatementDetailsModal({
   }, [statement]);
   const summary = useSelector(summarySelector);
 
+  // Check if statement is out of sync
+  const isOutOfSyncSelector = useMemo(() => {
+    if (!statement) {
+      return () => false;
+    }
+    return statementSelectors.selectIsStatementOutOfSync(statement.id);
+  }, [statement]);
+  const isOutOfSync = useSelector(isOutOfSyncSelector);
+
   if (!statement) return null;
 
   const { startingBalance, totalCharges, totalPayments, endingBalance } =
@@ -120,6 +129,10 @@ export default function StatementDetailsModal({
     if (onUnlock) {
       onUnlock(statement);
     }
+  };
+
+  const handleSync = () => {
+    dispatch(statementActions.syncStatement(statement.id));
   };
 
   const handleFixIssue = () => {
@@ -194,6 +207,26 @@ export default function StatementDetailsModal({
             }
           >
             This statement is locked and cannot be edited.
+          </Alert>
+        )}
+
+        {isOutOfSync && statement.status === 'locked' && (
+          <Alert
+            severity='warning'
+            sx={{ mb: 2 }}
+            action={
+              <Button
+                color='inherit'
+                size='small'
+                onClick={handleSync}
+              >
+                Sync Statement
+              </Button>
+            }
+          >
+            <AlertTitle>Statement Out of Sync</AlertTitle>
+            The stored statement values differ from current transaction data.
+            Click &quot;Sync Statement&quot; to update with calculated values.
           </Alert>
         )}
 
