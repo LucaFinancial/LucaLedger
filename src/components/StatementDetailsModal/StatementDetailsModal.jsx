@@ -88,10 +88,14 @@ export default function StatementDetailsModal({
   const isLocked = statement.status === 'locked';
   const canEdit = !isLocked && !readOnly;
 
-  // Get transactions for this statement from calculated data
-  const statementTransactions = allTransactions.filter((t) =>
-    calculated.transactionIds.includes(t.id)
-  );
+  // Get transactions for this statement from calculated data, sorted by date
+  const statementTransactions = allTransactions
+    .filter((t) => calculated.transactionIds.includes(t.id))
+    .sort((a, b) => {
+      const dateA = parseISO(a.date.replace(/\//g, '-'));
+      const dateB = parseISO(b.date.replace(/\//g, '-'));
+      return dateA - dateB;
+    });
 
   const handleSave = () => {
     if (!canEdit) return;
