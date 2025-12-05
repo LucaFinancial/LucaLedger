@@ -9,7 +9,6 @@ import {
   AccordionDetails,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import BetaBanner from '@/components/BetaBanner';
 
 // Reusable Section Component (now an Accordion)
 function Section({ title, children, defaultExpanded = true }) {
@@ -72,9 +71,6 @@ Section.propTypes = {
 export default function Landing() {
   return (
     <Box>
-      <Box sx={{ px: 3, pt: 3 }}>
-        <BetaBanner />
-      </Box>
       <Container
         maxWidth='lg'
         sx={{ py: 4 }}
@@ -291,6 +287,100 @@ export default function Landing() {
                 financial insights.
               </Typography>
             </Paper>
+
+            {/* Statements Feature */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#673ab7',
+                backgroundColor: '#ede7f6',
+                '&:hover': {
+                  backgroundColor: '#d1c4e9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#4527a0', mb: 1 }}
+              >
+                📄 Statements Feature
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Generate comprehensive financial statements for your accounts.
+                View detailed transaction histories, account summaries, and
+                export statements for record-keeping and tax purposes.
+              </Typography>
+            </Paper>
+
+            {/* Improved Dashboard */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#3f51b5',
+                backgroundColor: '#e8eaf6',
+                '&:hover': {
+                  backgroundColor: '#c5cae9',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#283593', mb: 1 }}
+              >
+                📊 Improved Dashboard
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Enhanced dashboard with comprehensive financial overview, visual
+                spending trends, account balance summaries, and quick access to
+                recent transactions for better financial management at a glance.
+              </Typography>
+            </Paper>
+
+            {/* Analytics for Spending by Categories */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#ff5722',
+                backgroundColor: '#fbe9e7',
+                '&:hover': {
+                  backgroundColor: '#ffccbc',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#d84315', mb: 1 }}
+              >
+                📈 Analytics for Spending by Categories
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Powerful analytics tools to track spending patterns across
+                categories. Visualize your expenses with interactive charts,
+                identify spending trends, and make data-driven financial
+                decisions.
+              </Typography>
+            </Paper>
           </Box>
         </Section>
 
@@ -489,6 +579,70 @@ export default function Landing() {
                 Monitor your investment portfolios alongside traditional
                 accounts. Track stocks, bonds, mutual funds, and other assets
                 with performance metrics and portfolio allocation insights.
+              </Typography>
+            </Paper>
+
+            {/* Rolling Year Option for Continuous Date Range */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#795548',
+                backgroundColor: '#efebe9',
+                '&:hover': {
+                  backgroundColor: '#d7ccc8',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#4e342e', mb: 1 }}
+              >
+                📅 &quot;Rolling&quot; Year Option for Continuous Date Range
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Track your finances with a rolling 12-month window that
+                continuously updates to show the last year of activity. Perfect
+                for monitoring annual spending trends and year-over-year
+                comparisons without manual date adjustments.
+              </Typography>
+            </Paper>
+
+            {/* Enhanced Monthly Grouping and Separator */}
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2.5,
+                borderLeft: '4px solid',
+                borderColor: '#607d8b',
+                backgroundColor: '#eceff1',
+                '&:hover': {
+                  backgroundColor: '#cfd8dc',
+                  transform: 'translateX(4px)',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{ fontWeight: 600, color: '#37474f', mb: 1 }}
+              >
+                📋 Enhanced Monthly Grouping and Separator
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+              >
+                Improved transaction organization with clear monthly separators
+                and groupings. Navigate through your transaction history more
+                easily with visual month boundaries and summary totals for each
+                period.
               </Typography>
             </Paper>
           </Box>
