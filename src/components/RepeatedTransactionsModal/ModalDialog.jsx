@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -22,7 +21,7 @@ import StartDatePicker from './StartDatePicker';
 export default function ModalDialog({ open, handleClose, reset, setReset }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
-  const [startDate, setStartDate] = useState(dayjs());
+  const [startDate, setStartDate] = useState(new Date());
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [frequency, setFrequency] = useState(null);
@@ -53,7 +52,7 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
   useEffect(() => {
     if (reset) {
       setTimeout(() => {
-        setStartDate(dayjs());
+        setStartDate(new Date());
         setDescription('');
         setAmount('');
         setFrequency(null);

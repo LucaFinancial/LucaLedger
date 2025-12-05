@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo, useState } from 'react';
-import dayjs from 'dayjs';
+import { format, parseISO, endOfYear, isBefore, isSameDay } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
@@ -29,7 +29,9 @@ export default function SettingsPanel({ account, selectedYear }) {
   const categories = useSelector(categorySelectors.selectAllCategories);
 
   // Month selector state for category spending
-  const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
+  const [selectedMonth, setSelectedMonth] = useState(
+    format(new Date(), 'yyyy-MM')
+  );
 
   // View selector state for category spending (current, pending, scheduled)
   const [selectedView, setSelectedView] = useState('current');
@@ -38,17 +40,20 @@ export default function SettingsPanel({ account, selectedYear }) {
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
     return transactions.filter(
-      (t) => dayjs(t.date).format('YYYY') === selectedYear
+      (t) =>
+        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
     );
   }, [transactions, selectedYear]);
 
   // For balances, use ALL transactions up to the end of the selected year
   const balanceTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
-    const endOfYear = dayjs(`${selectedYear}-12-31`);
+    const endOfYearDate = endOfYear(new Date(`${selectedYear}-01-01`));
     return transactions.filter((t) => {
-      const txDate = dayjs(t.date);
-      return txDate.isBefore(endOfYear) || txDate.isSame(endOfYear, 'day');
+      const txDate = parseISO(t.date.replace(/\//g, '-'));
+      return (
+        isBefore(txDate, endOfYearDate) || isSameDay(txDate, endOfYearDate)
+      );
     });
   }, [transactions, selectedYear]);
 
@@ -104,7 +109,10 @@ export default function SettingsPanel({ account, selectedYear }) {
     // Apply month filter first
     if (selectedMonth !== 'all') {
       expenses = expenses.filter((t) => {
-        return dayjs(t.date).format('YYYY-MM') === selectedMonth;
+        return (
+          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy-MM') ===
+          selectedMonth
+        );
       });
     }
 
@@ -192,7 +200,7 @@ export default function SettingsPanel({ account, selectedYear }) {
   const availableMonths = useMemo(() => {
     const months = new Set();
     yearFilteredTransactions.forEach((t) => {
-      months.add(dayjs(t.date).format('YYYY-MM'));
+      months.add(format(parseISO(t.date.replace(/\//g, '-')), 'yyyy-MM'));
     });
     return Array.from(months).sort().reverse();
   }, [yearFilteredTransactions]);
@@ -277,7 +285,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                   key={month}
                   value={month}
                 >
-                  {dayjs(month).format('MMMM YYYY')}
+                  {format(parseISO(month + '-01'), 'MMMM yyyy')}
                 </MenuItem>
               ))}
             </Select>

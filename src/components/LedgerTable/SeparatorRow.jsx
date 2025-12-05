@@ -1,6 +1,6 @@
 import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 import { IconButton, TableCell, TableRow } from '@mui/material';
-import dayjs from 'dayjs';
+import { format, getYear, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
 import YearControls from './YearControls';
 
@@ -14,16 +14,19 @@ export default function SeparatorRow({
   onCollapseYear,
   selectedCount,
 }) {
-  const date = dayjs(transaction.date);
-  const format = isYear ? 'YYYY' : 'MMMM YYYY';
+  const date = parseISO(transaction.date.replace(/\//g, '-'));
+  const formatStr = isYear ? 'yyyy' : 'MMMM yyyy';
 
   if (
     previousTransaction &&
     (isYear
-      ? dayjs(transaction.date).year() ===
-        dayjs(previousTransaction.date).year()
-      : dayjs(transaction.date).format('MMYYYY') ===
-        dayjs(previousTransaction.date).format('MMYYYY'))
+      ? getYear(parseISO(transaction.date.replace(/\//g, '-'))) ===
+        getYear(parseISO(previousTransaction.date.replace(/\//g, '-')))
+      : format(parseISO(transaction.date.replace(/\//g, '-')), 'MMyyyy') ===
+        format(
+          parseISO(previousTransaction.date.replace(/\//g, '-')),
+          'MMyyyy'
+        ))
   ) {
     return null;
   }
@@ -62,7 +65,7 @@ export default function SeparatorRow({
               <KeyboardArrowDown fontSize='small' />
             )}
           </IconButton>
-          {date.format(format)}
+          {format(date, formatStr)}
           {selectedCount > 0 && (
             <span style={{ color: '#1976d2', fontWeight: 'bold' }}>
               ({selectedCount} selected)
@@ -70,7 +73,7 @@ export default function SeparatorRow({
           )}
           {isYear && onExpandYear && onCollapseYear && (
             <YearControls
-              yearId={date.format('YYYY')}
+              yearId={format(date, 'yyyy')}
               onExpandYear={onExpandYear}
               onCollapseYear={onCollapseYear}
             />

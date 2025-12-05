@@ -1,5 +1,12 @@
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
+import {
+  startOfDay,
+  endOfDay,
+  startOfMonth,
+  endOfMonth,
+  subDays,
+  addDays,
+} from 'date-fns';
 
 /**
  * Custom hook to calculate date ranges for dashboard filtering
@@ -7,14 +14,14 @@ import dayjs from 'dayjs';
  */
 export function useDateRanges() {
   return useMemo(() => {
-    const today = dayjs();
+    const today = new Date();
     return {
-      today,
-      todayEnd: today.endOf('day'),
-      currentMonthStart: today.startOf('month'),
-      currentMonthEnd: today.endOf('month'),
-      recentStart: today.subtract(14, 'day'),
-      futureEnd: today.add(30, 'day'),
+      today: startOfDay(today),
+      todayEnd: endOfDay(today),
+      currentMonthStart: startOfMonth(today),
+      currentMonthEnd: endOfMonth(today),
+      recentStart: subDays(today, 14),
+      futureEnd: addDays(today, 30),
     };
   }, []);
 }
