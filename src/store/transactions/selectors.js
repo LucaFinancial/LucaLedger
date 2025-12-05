@@ -70,3 +70,51 @@ export const selectTransactionsByAccountIds = (accountIds) =>
       );
     }
   );
+
+/**
+ * Memoized selector factory for transactions within a date range
+ * Returns transactions where the date falls between periodStart and periodEnd (inclusive)
+ *
+ * @param {string} periodStart - Start date in YYYY/MM/DD or YYYY-MM-DD format
+ * @param {string} periodEnd - End date in YYYY/MM/DD or YYYY-MM-DD format
+ */
+export const selectTransactionsInPeriod = (periodStart, periodEnd) =>
+  createSelector(
+    [selectTransactions, () => periodStart, () => periodEnd],
+    (transactions, start, end) => {
+      const startDate = new Date(start.replace(/\//g, '-'));
+      const endDate = new Date(end.replace(/\//g, '-'));
+
+      return transactions.filter((t) => {
+        const txDate = new Date(t.date.replace(/\//g, '-'));
+        return txDate >= startDate && txDate <= endDate;
+      });
+    }
+  );
+
+/**
+ * Memoized selector factory for a single account's transactions within a date range
+ * Returns transactions for a specific account where the date falls between periodStart and periodEnd (inclusive)
+ *
+ * @param {string} accountId - The account ID to filter by
+ * @param {string} periodStart - Start date in YYYY/MM/DD or YYYY-MM-DD format
+ * @param {string} periodEnd - End date in YYYY/MM/DD or YYYY-MM-DD format
+ */
+export const selectAccountTransactionsInPeriod = (
+  accountId,
+  periodStart,
+  periodEnd
+) =>
+  createSelector(
+    [selectTransactions, () => accountId, () => periodStart, () => periodEnd],
+    (transactions, accId, start, end) => {
+      const startDate = new Date(start.replace(/\//g, '-'));
+      const endDate = new Date(end.replace(/\//g, '-'));
+
+      return transactions.filter((t) => {
+        if (t.accountId !== accId) return false;
+        const txDate = new Date(t.date.replace(/\//g, '-'));
+        return txDate >= startDate && txDate <= endDate;
+      });
+    }
+  );

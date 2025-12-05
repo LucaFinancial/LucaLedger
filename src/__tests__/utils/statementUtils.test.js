@@ -169,28 +169,27 @@ describe('Statement Utils', () => {
 
   describe('getTransactionsInPeriod', () => {
     const transactions = [
-      { id: 'tx-1', accountId: 'acc-1', date: '2024/01/10' },
-      { id: 'tx-2', accountId: 'acc-1', date: '2024/01/15' },
-      { id: 'tx-3', accountId: 'acc-1', date: '2024/01/20' },
-      { id: 'tx-4', accountId: 'acc-2', date: '2024/01/12' },
+      { id: 'tx-1', date: '2024/01/10' },
+      { id: 'tx-2', date: '2024/01/15' },
+      { id: 'tx-3', date: '2024/01/20' },
+      { id: 'tx-4', date: '2024/02/12' },
     ];
 
     it('should return transaction IDs within period', () => {
       const result = getTransactionsInPeriod(
         transactions,
-        'acc-1',
         '2024/01/08',
         '2024/01/16'
       );
       expect(result).toContain('tx-1');
       expect(result).toContain('tx-2');
       expect(result).not.toContain('tx-3');
+      expect(result).not.toContain('tx-4');
     });
 
     it('should include transactions on boundary dates', () => {
       const result = getTransactionsInPeriod(
         transactions,
-        'acc-1',
         '2024/01/10',
         '2024/01/15'
       );
@@ -198,24 +197,31 @@ describe('Statement Utils', () => {
       expect(result).toContain('tx-2'); // On end
     });
 
-    it('should only return transactions for specified account', () => {
+    it('should return empty array if no transactions in range', () => {
       const result = getTransactionsInPeriod(
         transactions,
-        'acc-1',
-        '2024/01/01',
-        '2024/01/31'
-      );
-      expect(result).not.toContain('tx-4');
-    });
-
-    it('should return empty array if no transactions match', () => {
-      const result = getTransactionsInPeriod(
-        transactions,
-        'acc-3',
-        '2024/01/01',
-        '2024/01/31'
+        '2024/03/01',
+        '2024/03/31'
       );
       expect(result).toHaveLength(0);
+    });
+
+    it('should work with pre-filtered transactions', () => {
+      // Simulate how callers would pre-filter by account
+      const allTransactions = [
+        { id: 'tx-1', accountId: 'acc-1', date: '2024/01/10' },
+        { id: 'tx-2', accountId: 'acc-2', date: '2024/01/10' },
+      ];
+      const acc1Transactions = allTransactions.filter(
+        (t) => t.accountId === 'acc-1'
+      );
+      const result = getTransactionsInPeriod(
+        acc1Transactions,
+        '2024/01/01',
+        '2024/01/31'
+      );
+      expect(result).toContain('tx-1');
+      expect(result).not.toContain('tx-2');
     });
   });
 

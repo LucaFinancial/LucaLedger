@@ -10,6 +10,7 @@ import {
   getMissingStatementPeriods,
   getTransactionsInPeriod,
   summarizeStatementTransactions,
+  calculateStatementBalances,
 } from './utils';
 import { addDays, subDays, parseISO, format } from 'date-fns';
 
@@ -83,12 +84,14 @@ export const createNewStatement = (statementData) => (dispatch, getState) => {
     (s) => s.accountId === statementData.accountId
   );
 
+  const accountTransactions = transactions.filter(
+    (t) => t.accountId === statementData.accountId
+  );
   const transactionIds =
     statementData.transactionIds && statementData.transactionIds.length > 0
       ? statementData.transactionIds
       : getTransactionsInPeriod(
-          transactions,
-          statementData.accountId,
+          accountTransactions,
           statementData.periodStart,
           statementData.periodEnd
         );
@@ -390,4 +393,38 @@ export const autoGenerateStatements = (accountId) => (dispatch, getState) => {
   });
 
   return createdStatements;
+};
+
+/**
+ * Synchronize a locked statement with current transaction data
+ * Recalculates balances and updates the statement
+ * @param {string} statementId - Statement ID
+ */
+export const syncStatement = (statementId) => (dispatch, getState) => {
+  const state = getState();
+  const statement = state.statements.find((s) => s.id === statementId);
+
+  if (!statement) {
+    console.error('Statement not found:', statementId);
+    return;
+  }
+
+  // Calculate fresh values from current transactions
+  const freshBalances = calculateStatementBalances(
+    statement,
+    state.transactions,
+    state.statements,
+    true // Force recalculation even if locked
+  );
+
+  // Update the statement with fresh calculated values
+  const updates = {
+    startingBalance: freshBalances.startingBalance,
+    endingBalance: freshBalances.endingBalance,
+    totalCharges: freshBalances.totalCharges,
+    totalPayments: freshBalances.totalPayments,
+    updatedAt: new Date().toISOString(),
+  };
+
+  dispatch(updateStatementNormalized({ ...statement, ...updates }));
 };

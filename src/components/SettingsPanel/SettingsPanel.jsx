@@ -48,7 +48,8 @@ export default function SettingsPanel({ account, selectedYear }) {
   // For balances, use ALL transactions up to the end of the selected year
   const balanceTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
-    const endOfYearDate = endOfYear(new Date(`${selectedYear}-01-01`));
+    // Use parseISO to properly parse the date string and avoid timezone issues
+    const endOfYearDate = endOfYear(parseISO(`${selectedYear}-01-01`));
     return transactions.filter((t) => {
       const txDate = parseISO(t.date.replace(/\//g, '-'));
       return (

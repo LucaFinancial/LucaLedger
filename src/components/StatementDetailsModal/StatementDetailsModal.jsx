@@ -38,13 +38,6 @@ function formatDate(dateStr) {
   return format(parseISO(dateStr.replace(/\//g, '-')), 'MMM d, yyyy');
 }
 
-const EMPTY_SUMMARY = Object.freeze({
-  startingBalance: 0,
-  endingBalance: 0,
-  totalCharges: 0,
-  totalPayments: 0,
-});
-
 export default function StatementDetailsModal({
   open,
   onClose,
@@ -64,26 +57,45 @@ export default function StatementDetailsModal({
   const issues = useSelector(
     statementSelectors.selectStatementIssues(statement?.id)
   );
-  const summarySelector = useMemo(() => {
+
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(() => {
     if (!statement) {
-      return () => EMPTY_SUMMARY;
+      return () => ({
+        stored: null,
+        calculated: {
+          startingBalance: 0,
+          endingBalance: 0,
+          totalCharges: 0,
+          totalPayments: 0,
+          total: 0,
+          transactionIds: [],
+        },
+        isOutOfSync: false,
+      });
     }
-    return statementSelectors.selectStatementSummary(statement.id);
+    return statementSelectors.selectStatementWithCalculations(statement.id);
   }, [statement]);
-  const summary = useSelector(summarySelector);
+  const statementData = useSelector(statementDataSelector);
+  const { stored, calculated, isOutOfSync } = statementData;
 
   if (!statement) return null;
 
+  // Display stored values
   const { startingBalance, totalCharges, totalPayments, endingBalance } =
-    summary;
+    stored || {};
 
   const isLocked = statement.status === 'locked';
   const canEdit = !isLocked && !readOnly;
 
-  // Get transactions for this statement
-  const statementTransactions = allTransactions.filter((t) =>
-    statement.transactionIds.includes(t.id)
-  );
+  // Get transactions for this statement from calculated data, sorted by date
+  const statementTransactions = allTransactions
+    .filter((t) => calculated.transactionIds.includes(t.id))
+    .sort((a, b) => {
+      const dateA = parseISO(a.date.replace(/\//g, '-'));
+      const dateB = parseISO(b.date.replace(/\//g, '-'));
+      return dateA - dateB;
+    });
 
   const handleSave = () => {
     if (!canEdit) return;
@@ -120,6 +132,10 @@ export default function StatementDetailsModal({
     if (onUnlock) {
       onUnlock(statement);
     }
+  };
+
+  const handleSync = () => {
+    dispatch(statementActions.syncStatement(statement.id));
   };
 
   const handleFixIssue = () => {
@@ -194,6 +210,26 @@ export default function StatementDetailsModal({
             }
           >
             This statement is locked and cannot be edited.
+          </Alert>
+        )}
+
+        {isOutOfSync && statement.status === 'locked' && (
+          <Alert
+            severity='warning'
+            sx={{ mb: 2 }}
+            action={
+              <Button
+                color='inherit'
+                size='small'
+                onClick={handleSync}
+              >
+                Sync Statement
+              </Button>
+            }
+          >
+            <AlertTitle>Statement Out of Sync</AlertTitle>
+            The stored statement values differ from current transaction data.
+            Click &quot;Sync Statement&quot; to update with calculated values.
           </Alert>
         )}
 

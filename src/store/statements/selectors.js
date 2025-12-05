@@ -224,83 +224,198 @@ export const selectStatementIssues = (statementId) =>
     return issues;
   });
 
-const EMPTY_SUMMARY = {
+/**
+ * Empty objects for when statement is not found
+ */
+const EMPTY_STORED = Object.freeze({
   startingBalance: 0,
   endingBalance: 0,
   totalCharges: 0,
   totalPayments: 0,
-};
+});
 
-const summarizeTransactions = (transactions, transactionIds) => {
-  if (!transactionIds || transactionIds.length === 0) {
-    return { totalCharges: 0, totalPayments: 0 };
-  }
+const EMPTY_CALCULATED = Object.freeze({
+  startingBalance: 0,
+  endingBalance: 0,
+  totalCharges: 0,
+  totalPayments: 0,
+  total: 0,
+  transactionIds: [],
+});
 
-  const lookup = new Map();
-  transactions.forEach((tx) => {
-    lookup.set(tx.id, tx);
-  });
+/**
+ * Calculate statement balances from transactions
+ * This is the single source of truth for balance calculations
+ *
+ * @param {Array} transactions - Transactions for this statement's period
+ * @param {number} startingBalance - Starting balance from previous statement
+ * @returns {Object} Calculated balances
+ */
+function calculateBalancesFromTransactions(transactions, startingBalance = 0) {
+  const totalCharges = transactions
+    .filter((t) => Number(t.amount) >= 0)
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  return transactionIds.reduce(
-    (acc, id) => {
-      const transaction = lookup.get(id);
-      if (!transaction || typeof transaction.amount !== 'number') {
-        return acc;
-      }
+  const totalPayments = transactions
+    .filter((t) => Number(t.amount) < 0)
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
-      if (transaction.amount >= 0) {
-        acc.totalCharges += transaction.amount;
-      } else {
-        acc.totalPayments += Math.abs(transaction.amount);
-      }
+  // Total is the net sum (charges - payments, same as sum of all amounts)
+  const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
-      return acc;
-    },
-    { totalCharges: 0, totalPayments: 0 }
+  const endingBalance = startingBalance + total;
+
+  return {
+    startingBalance,
+    endingBalance,
+    totalCharges,
+    totalPayments,
+    total,
+    transactionIds: transactions.map((t) => t.id),
+  };
+}
+
+/**
+ * Get stored balance values from a statement object
+ * Returns whatever is stored, with fallbacks to 0
+ */
+function getStoredBalances(statement) {
+  return {
+    startingBalance:
+      typeof statement.startingBalance === 'number'
+        ? statement.startingBalance
+        : 0,
+    endingBalance:
+      typeof statement.endingBalance === 'number'
+        ? statement.endingBalance
+        : typeof statement.total === 'number'
+        ? statement.total
+        : 0,
+    totalCharges:
+      typeof statement.totalCharges === 'number' ? statement.totalCharges : 0,
+    totalPayments:
+      typeof statement.totalPayments === 'number' ? statement.totalPayments : 0,
+  };
+}
+
+/**
+ * Compare stored and calculated values to determine if out of sync
+ * Uses a small threshold to handle floating point differences
+ */
+function areBalancesOutOfSync(stored, calculated) {
+  const threshold = 0.01;
+  return (
+    Math.abs(stored.startingBalance - calculated.startingBalance) > threshold ||
+    Math.abs(stored.endingBalance - calculated.endingBalance) > threshold ||
+    Math.abs(stored.totalCharges - calculated.totalCharges) > threshold ||
+    Math.abs(stored.totalPayments - calculated.totalPayments) > threshold
   );
-};
+}
 
-export const selectStatementSummary = (statementId) =>
+/**
+ * Memoized selector for statement with both stored and calculated values
+ *
+ * Returns:
+ * {
+ *   stored: { startingBalance, endingBalance, totalCharges, totalPayments, ...statement },
+ *   calculated: { startingBalance, endingBalance, totalCharges, totalPayments, total, transactionIds },
+ *   isOutOfSync: boolean
+ * }
+ *
+ * UI components should:
+ * - Display values from `stored`
+ * - Show "Sync" button when `isOutOfSync` is true
+ */
+export const selectStatementWithCalculations = (statementId) =>
   createSelector(
     [selectStatements, selectTransactions, () => statementId],
-    (statements, transactions, id) => {
+    (statements, allTransactions, id) => {
       const statement = statements.find((s) => s.id === id);
       if (!statement) {
-        return EMPTY_SUMMARY;
+        return {
+          stored: null,
+          calculated: EMPTY_CALCULATED,
+          isOutOfSync: false,
+        };
       }
 
-      const endingBalance =
-        typeof statement.endingBalance === 'number'
-          ? statement.endingBalance
-          : typeof statement.total === 'number'
-          ? statement.total
-          : 0;
+      // Get stored values from statement
+      const storedBalances = getStoredBalances(statement);
 
-      const derivedTotals = summarizeTransactions(
-        transactions,
-        statement.transactionIds
+      // Get transactions for this statement's period
+      const periodTransactions = allTransactions.filter((t) => {
+        if (t.accountId !== statement.accountId) return false;
+        const txDate = new Date(t.date.replace(/\//g, '-'));
+        const startDate = new Date(statement.periodStart.replace(/\//g, '-'));
+        const endDate = new Date(statement.periodEnd.replace(/\//g, '-'));
+        return txDate >= startDate && txDate <= endDate;
+      });
+
+      // Calculate starting balance from previous statement
+      let calculatedStartingBalance = 0;
+      if (statement.closingDate) {
+        const closingDate = new Date(statement.closingDate.replace(/\//g, '-'));
+        const previousStatements = statements
+          .filter((s) => s.accountId === statement.accountId && s.closingDate)
+          .filter((s) => {
+            const sClosingDate = new Date(s.closingDate.replace(/\//g, '-'));
+            return sClosingDate < closingDate;
+          })
+          .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+
+        if (previousStatements.length > 0) {
+          const prevStatement =
+            previousStatements[previousStatements.length - 1];
+          calculatedStartingBalance =
+            typeof prevStatement.endingBalance === 'number'
+              ? prevStatement.endingBalance
+              : typeof prevStatement.total === 'number'
+              ? prevStatement.total
+              : 0;
+        }
+      }
+
+      // Calculate balances from transactions
+      const calculated = calculateBalancesFromTransactions(
+        periodTransactions,
+        calculatedStartingBalance
       );
 
-      const totalCharges =
-        typeof statement.totalCharges === 'number'
-          ? statement.totalCharges
-          : derivedTotals.totalCharges;
-
-      const totalPayments =
-        typeof statement.totalPayments === 'number'
-          ? statement.totalPayments
-          : derivedTotals.totalPayments;
-
-      const startingBalance =
-        typeof statement.startingBalance === 'number'
-          ? statement.startingBalance
-          : endingBalance - totalCharges + totalPayments;
+      // Check if out of sync
+      const isOutOfSync = areBalancesOutOfSync(storedBalances, calculated);
 
       return {
-        startingBalance,
-        endingBalance,
-        totalCharges,
-        totalPayments,
+        stored: { ...statement, ...storedBalances },
+        calculated,
+        isOutOfSync,
       };
     }
+  );
+
+/**
+ * @deprecated Use selectStatementWithCalculations instead
+ * Kept for backward compatibility during migration
+ */
+export const selectStatementSummary = (statementId) =>
+  createSelector([selectStatementWithCalculations(statementId)], (result) => {
+    if (!result.stored) {
+      return EMPTY_STORED;
+    }
+    // Return stored values for display
+    return {
+      startingBalance: result.stored.startingBalance,
+      endingBalance: result.stored.endingBalance,
+      totalCharges: result.stored.totalCharges,
+      totalPayments: result.stored.totalPayments,
+    };
+  });
+
+/**
+ * @deprecated Use selectStatementWithCalculations instead
+ * Kept for backward compatibility during migration
+ */
+export const selectIsStatementOutOfSync = (statementId) =>
+  createSelector(
+    [selectStatementWithCalculations(statementId)],
+    (result) => result.isOutOfSync
   );
