@@ -1,23 +1,9 @@
-import { format, parseISO, getDate, addMonths } from 'date-fns';
-
-import config from '@/config';
+import { format, parseISO, getDate, addMonths, compareAsc } from 'date-fns';
 
 export const dateCompareFn = (a, b) => {
-  const aDate = format(
-    parseISO(a.date.replace(/\//g, '-')),
-    config.compareDateFormatString.replace(/\//g, '-')
-  );
-  const bDate = format(
-    parseISO(b.date.replace(/\//g, '-')),
-    config.compareDateFormatString.replace(/\//g, '-')
-  );
-  if (aDate < bDate) {
-    return -1;
-  }
-  if (aDate > bDate) {
-    return 1;
-  }
-  return 0;
+  const aDate = parseISO(a.date.replace(/\//g, '-'));
+  const bDate = parseISO(b.date.replace(/\//g, '-'));
+  return compareAsc(aDate, bDate);
 };
 
 export const computeStatementMonth = (transaction, statementDay) => {

@@ -285,7 +285,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                   key={month}
                   value={month}
                 >
-                  {format(parseISO(month.replace(/\//g, '-')), 'MMMM yyyy')}
+                  {format(parseISO(month + '-01'), 'MMMM yyyy')}
                 </MenuItem>
               ))}
             </Select>

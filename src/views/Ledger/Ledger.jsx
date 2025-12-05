@@ -27,7 +27,7 @@ import {
   Drawer,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
-import { format, parseISO, addMonths } from 'date-fns';
+import { format, parseISO, addMonths, compareDesc } from 'date-fns';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -146,11 +146,9 @@ export default function Ledger() {
           })
         ),
       ].sort((a, b) => {
-        const [aYear, aMonth] = a.split('-');
-        const [bYear, bMonth] = b.split('-');
-        const aDate = new Date(`${aMonth} 1, ${aYear}`);
-        const bDate = new Date(`${bMonth} 1, ${bYear}`);
-        return bDate.getTime() - aDate.getTime();
+        const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
+        const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
+        return compareDesc(aDate, bDate);
       })
     : [];
 
