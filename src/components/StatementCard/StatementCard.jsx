@@ -41,25 +41,21 @@ export default function StatementCard({
     statementSelectors.selectStatementIssues(statement.id)
   );
 
-  const summarySelector = useMemo(
-    () => statementSelectors.selectStatementSummary(statement.id),
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(
+    () => statementSelectors.selectStatementWithCalculations(statement.id),
     [statement.id]
   );
-  const summary = useSelector(summarySelector);
+  const statementData = useSelector(statementDataSelector);
+  const { stored, isOutOfSync } = statementData;
 
-  // Check if statement is out of sync
-  const isOutOfSyncSelector = useMemo(
-    () => statementSelectors.selectIsStatementOutOfSync(statement.id),
-    [statement.id]
-  );
-  const isOutOfSync = useSelector(isOutOfSyncSelector);
-
+  // Display stored values
   const { startingBalance, endingBalance, totalCharges, totalPayments } =
-    summary;
+    stored || {};
   const summaryText = [
-    `Start ${formatCurrency(startingBalance)}`,
-    `+${formatCurrency(totalCharges)} charges`,
-    `-${formatCurrency(totalPayments)} payments`,
+    `Start ${formatCurrency(startingBalance || 0)}`,
+    `+${formatCurrency(totalCharges || 0)} charges`,
+    `-${formatCurrency(totalPayments || 0)} payments`,
   ].join(' · ');
 
   const periodStartFormatted = format(

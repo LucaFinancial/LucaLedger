@@ -84,12 +84,14 @@ export const createNewStatement = (statementData) => (dispatch, getState) => {
     (s) => s.accountId === statementData.accountId
   );
 
+  const accountTransactions = transactions.filter(
+    (t) => t.accountId === statementData.accountId
+  );
   const transactionIds =
     statementData.transactionIds && statementData.transactionIds.length > 0
       ? statementData.transactionIds
       : getTransactionsInPeriod(
-          transactions,
-          statementData.accountId,
+          accountTransactions,
           statementData.periodStart,
           statementData.periodEnd
         );

@@ -152,25 +152,18 @@ export function statementExistsForPeriod(statements, accountId, closingDate) {
 }
 
 /**
- * Calculate transactions that fall within a statement period
- * @param {Array} transactions - Array of all transactions
- * @param {string} accountId - Account ID
+ * Get transactions that fall within a date range
+ * @param {Array} transactions - Array of transactions (caller should pre-filter by account if needed)
  * @param {string} periodStart - Period start date in YYYY/MM/DD format
  * @param {string} periodEnd - Period end date in YYYY/MM/DD format
  * @returns {Array} - Array of transaction IDs that fall in the period
  */
-export function getTransactionsInPeriod(
-  transactions,
-  accountId,
-  periodStart,
-  periodEnd
-) {
+export function getTransactionsInPeriod(transactions, periodStart, periodEnd) {
   const startDate = parseISO(periodStart.replace(/\//g, '-'));
   const endDate = parseISO(periodEnd.replace(/\//g, '-'));
 
   return transactions
     .filter((t) => {
-      if (t.accountId !== accountId) return false;
       const txDate = parseISO(t.date.replace(/\//g, '-'));
       return !isBefore(txDate, startDate) && !isAfter(txDate, endDate);
     })
@@ -208,8 +201,10 @@ export function summarizeStatementTransactions(transactions, transactionIds) {
 const BALANCE_COMPARISON_THRESHOLD = 0.01;
 
 /**
- * Calculate statement balances dynamically from transactions
- * This is the centralized calculation that respects locked state
+ * Calculate statement balances from transactions in the statement period
+ *
+ * - Unlocked statements: ALWAYS calculate from transactions using date range
+ * - Locked statements: Use stored values (unless forceRecalculate is true)
  *
  * @param {Object} statement - Statement object
  * @param {Array} transactions - All transactions
@@ -233,43 +228,64 @@ export function calculateStatementBalances(
     };
   }
 
-  // For locked statements, use stored values unless forced to recalculate
-  if (statement.status === 'locked' && !forceRecalculate) {
-    const startingBalance =
-      typeof statement.startingBalance === 'number'
-        ? statement.startingBalance
-        : 0;
-    const totalCharges =
-      typeof statement.totalCharges === 'number' ? statement.totalCharges : 0;
-    const totalPayments =
-      typeof statement.totalPayments === 'number' ? statement.totalPayments : 0;
-    const endingBalance =
-      typeof statement.endingBalance === 'number'
-        ? statement.endingBalance
-        : typeof statement.total === 'number'
-        ? statement.total
-        : startingBalance + totalCharges - totalPayments;
+  const isLocked = statement.status === 'locked';
 
+  // For locked statements (and not forcing recalculation), use stored values
+  if (isLocked && !forceRecalculate) {
     return {
-      startingBalance,
-      endingBalance,
-      totalCharges,
-      totalPayments,
+      startingBalance:
+        typeof statement.startingBalance === 'number'
+          ? statement.startingBalance
+          : 0,
+      endingBalance:
+        typeof statement.endingBalance === 'number'
+          ? statement.endingBalance
+          : typeof statement.total === 'number'
+          ? statement.total
+          : 0,
+      totalCharges:
+        typeof statement.totalCharges === 'number' ? statement.totalCharges : 0,
+      totalPayments:
+        typeof statement.totalPayments === 'number'
+          ? statement.totalPayments
+          : 0,
       isCalculated: false,
     };
   }
 
-  // For unlocked statements or forced recalculation, calculate from transactions
-  const { totalCharges, totalPayments } = summarizeStatementTransactions(
-    transactions,
-    statement.transactionIds || []
+  // For unlocked statements (or forced recalculation), calculate from transactions
+  // Get transactions in the statement's date range (pre-filter by account)
+  const accountTransactions = transactions.filter(
+    (t) => t.accountId === statement.accountId
+  );
+  const transactionIds = getTransactionsInPeriod(
+    accountTransactions,
+    statement.periodStart,
+    statement.periodEnd
   );
 
-  // Calculate starting balance from previous statements
+  // Calculate total by summing all transaction amounts (same as StatementSeparatorRow)
+  const statementTransactions = transactions.filter((t) =>
+    transactionIds.includes(t.id)
+  );
+  const total = statementTransactions.reduce(
+    (sum, t) => sum + Number(t.amount),
+    0
+  );
+
+  // For the breakdown, separate charges (positive) and payments (negative)
+  const totalCharges = statementTransactions
+    .filter((t) => Number(t.amount) >= 0)
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalPayments = statementTransactions
+    .filter((t) => Number(t.amount) < 0)
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+  // Calculate starting balance from previous statement's ending balance
   let startingBalance = 0;
   if (statement.closingDate && allStatements.length > 0) {
     const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
-    const accountStatements = allStatements
+    const previousStatements = allStatements
       .filter((s) => s.accountId === statement.accountId && s.closingDate)
       .filter((s) => {
         const sClosingDate = parseISO(s.closingDate.replace(/\//g, '-'));
@@ -277,8 +293,8 @@ export function calculateStatementBalances(
       })
       .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
 
-    if (accountStatements.length > 0) {
-      const prevStatement = accountStatements[accountStatements.length - 1];
+    if (previousStatements.length > 0) {
+      const prevStatement = previousStatements[previousStatements.length - 1];
       startingBalance =
         typeof prevStatement.endingBalance === 'number'
           ? prevStatement.endingBalance
@@ -288,7 +304,8 @@ export function calculateStatementBalances(
     }
   }
 
-  const endingBalance = startingBalance + totalCharges - totalPayments;
+  // endingBalance = startingBalance + total (which is charges - payments)
+  const endingBalance = startingBalance + total;
 
   return {
     startingBalance,
@@ -465,10 +482,9 @@ export function getMissingStatementPeriods(account, statements, transactions) {
     if (existingStatement) {
       lastKnownEndingBalance = getStatementEndingBalance(existingStatement);
     } else {
-      // Get transactions for this period
+      // Get transactions for this period (transactions already filtered to this account)
       const transactionIds = getTransactionsInPeriod(
         transactions,
-        account.id,
         period.periodStart,
         period.periodEnd
       );

@@ -38,13 +38,6 @@ function formatDate(dateStr) {
   return format(parseISO(dateStr.replace(/\//g, '-')), 'MMM d, yyyy');
 }
 
-const EMPTY_SUMMARY = Object.freeze({
-  startingBalance: 0,
-  endingBalance: 0,
-  totalCharges: 0,
-  totalPayments: 0,
-});
-
 export default function StatementDetailsModal({
   open,
   onClose,
@@ -64,34 +57,40 @@ export default function StatementDetailsModal({
   const issues = useSelector(
     statementSelectors.selectStatementIssues(statement?.id)
   );
-  const summarySelector = useMemo(() => {
-    if (!statement) {
-      return () => EMPTY_SUMMARY;
-    }
-    return statementSelectors.selectStatementSummary(statement.id);
-  }, [statement]);
-  const summary = useSelector(summarySelector);
 
-  // Check if statement is out of sync
-  const isOutOfSyncSelector = useMemo(() => {
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(() => {
     if (!statement) {
-      return () => false;
+      return () => ({
+        stored: null,
+        calculated: {
+          startingBalance: 0,
+          endingBalance: 0,
+          totalCharges: 0,
+          totalPayments: 0,
+          total: 0,
+          transactionIds: [],
+        },
+        isOutOfSync: false,
+      });
     }
-    return statementSelectors.selectIsStatementOutOfSync(statement.id);
+    return statementSelectors.selectStatementWithCalculations(statement.id);
   }, [statement]);
-  const isOutOfSync = useSelector(isOutOfSyncSelector);
+  const statementData = useSelector(statementDataSelector);
+  const { stored, calculated, isOutOfSync } = statementData;
 
   if (!statement) return null;
 
+  // Display stored values
   const { startingBalance, totalCharges, totalPayments, endingBalance } =
-    summary;
+    stored || {};
 
   const isLocked = statement.status === 'locked';
   const canEdit = !isLocked && !readOnly;
 
-  // Get transactions for this statement
+  // Get transactions for this statement from calculated data
   const statementTransactions = allTransactions.filter((t) =>
-    statement.transactionIds.includes(t.id)
+    calculated.transactionIds.includes(t.id)
   );
 
   const handleSave = () => {

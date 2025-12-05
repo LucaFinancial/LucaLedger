@@ -58,39 +58,40 @@ export default function StatementSeparatorRow({
       : () => null
   );
 
-  // Use centralized calculation via selector
-  const summarySelector = useMemo(() => {
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(() => {
     if (!statement) {
       return () => ({
-        startingBalance: 0,
-        endingBalance: 0,
-        totalCharges: 0,
-        totalPayments: 0,
+        stored: null,
+        calculated: {
+          startingBalance: 0,
+          endingBalance: 0,
+          totalCharges: 0,
+          totalPayments: 0,
+          total: 0,
+        },
+        isOutOfSync: false,
       });
     }
-    return statementSelectors.selectStatementSummary(statement.id);
+    return statementSelectors.selectStatementWithCalculations(statement.id);
   }, [statement]);
 
-  const summary = useSelector(summarySelector);
+  const statementData = useSelector(statementDataSelector);
+  const { stored, isOutOfSync } = statementData;
 
-  // Check if statement is out of sync
-  const isOutOfSyncSelector = useMemo(() => {
-    if (!statement) {
-      return () => false;
-    }
-    return statementSelectors.selectIsStatementOutOfSync(statement.id);
-  }, [statement]);
-
-  const isOutOfSync = useSelector(isOutOfSyncSelector);
-
-  // Calculate charges by status from passed transactions (for display of pending/scheduled)
-  const allCharges = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  // For pending/scheduled display, calculate from passed transactions
   const pendingCharges = transactions
     .filter((t) => t.status?.trim() === 'pending')
     .reduce((sum, t) => sum + Number(t.amount), 0);
   const scheduledCharges = transactions
     .filter((t) => t.status?.trim() === 'scheduled')
     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  // Display the stored ending balance
+  // For draft periods without a statement: fall back to inline calculation from transactions
+  const displayTotal = stored
+    ? stored.endingBalance
+    : transactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
   const formatAmount = (amountInCents) => {
     const amountInDollars = centsToDollars(amountInCents);
@@ -158,7 +159,7 @@ export default function StatementSeparatorRow({
         periodStart,
         periodEnd,
         transactionIds: transactions.map((t) => t.id),
-        total: allCharges,
+        total: displayTotal,
         status: 'draft',
       })
     );
@@ -253,10 +254,7 @@ export default function StatementSeparatorRow({
                 component='span'
                 sx={{ color: 'black', fontWeight: 'bold' }}
               >
-                $
-                {
-                  formatAmount(statement ? summary.totalCharges : allCharges) // Use centralized calculation for statements, fallback to transaction sum for drafts
-                }
+                ${formatAmount(displayTotal)}
               </Typography>
 
               {statement ? (
