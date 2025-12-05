@@ -1,6 +1,6 @@
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
-import dayjs from 'dayjs';
+import { format } from 'date-fns';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
@@ -25,7 +25,7 @@ export default function SaveButton() {
     const saveBlob = new Blob([saveString], { type: 'application/json' });
     const url = URL.createObjectURL(saveBlob);
     const link = document.createElement('a');
-    link.download = `${dayjs().format('YYYY-MM-DD')}.json`;
+    link.download = `${format(new Date(), 'yyyy-MM-dd')}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);

@@ -19,7 +19,16 @@ import {
 } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
-import dayjs from 'dayjs';
+import {
+  format,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+  endOfMonth,
+  isBefore,
+  isAfter,
+  isSameDay,
+} from 'date-fns';
 import {
   PieChart,
   Pie,
@@ -61,8 +70,8 @@ export default function CategoryBreakdown() {
 
   // Calculate category breakdown for current month
   const categoryData = useMemo(() => {
-    const now = dayjs();
-    const today = now.startOf('day');
+    const now = new Date();
+    const today = startOfDay(now);
 
     // Find the Transfers and Income category IDs
     const transfersCategory = allCategories.find(
@@ -94,16 +103,16 @@ export default function CategoryBreakdown() {
     });
 
     // Current month date range
-    const startDate = now.startOf('month');
-    const endDate = now.endOf('month');
-    const periodLabel = now.format('MMMM YYYY');
+    const startDate = startOfMonth(now);
+    const endDate = endOfMonth(now);
+    const periodLabel = format(now, 'MMMM yyyy');
 
     // Filter transactions for the current month
     const periodTransactions = allTransactions.filter((tx) => {
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
+      const txDate = startOfDay(parseISO(tx.date.replace(/\//g, '-')));
 
       // Check date range
-      if (txDate.isBefore(startDate, 'day') || txDate.isAfter(endDate, 'day')) {
+      if (isBefore(txDate, startDate) || isAfter(txDate, endDate)) {
         return false;
       }
 
@@ -130,9 +139,9 @@ export default function CategoryBreakdown() {
       // All remaining transactions are expenses (we already filtered out income and transfers)
       const expenseAmount = Math.abs(tx.amount);
 
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD').startOf('day');
+      const txDate = startOfDay(parseISO(tx.date.replace(/\//g, '-')));
       const isCurrent =
-        (txDate.isBefore(today) || txDate.isSame(today, 'day')) &&
+        (isBefore(txDate, today) || isSameDay(txDate, today)) &&
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE;
 
       if (isCurrent) {
