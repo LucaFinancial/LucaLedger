@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { format, subMonths, subDays } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
@@ -22,7 +22,7 @@ export const generateStatement = (initialData = {}) => {
   const now = new Date().toISOString();
 
   const closingDate =
-    initialData.closingDate || dayjs().format(config.dateFormatString);
+    initialData.closingDate || format(new Date(), config.dateFormatString);
 
   // Calculate statementPeriod from closingDate to ensure consistency
   const statementPeriod = calculateStatementPeriod(closingDate);
@@ -33,10 +33,10 @@ export const generateStatement = (initialData = {}) => {
     closingDate,
     periodStart:
       initialData.periodStart ||
-      dayjs().subtract(1, 'month').format(config.dateFormatString),
+      format(subMonths(new Date(), 1), config.dateFormatString),
     periodEnd:
       initialData.periodEnd ||
-      dayjs().subtract(1, 'day').format(config.dateFormatString),
+      format(subDays(new Date(), 1), config.dateFormatString),
     transactionIds: initialData.transactionIds || [],
     startingBalance:
       typeof initialData.startingBalance === 'number'

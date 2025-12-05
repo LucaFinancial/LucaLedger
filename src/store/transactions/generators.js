@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
@@ -10,7 +10,7 @@ export const generateTransaction = (initialData = {}) => {
     id: uuid(),
     accountId: initialData.accountId || null,
     status: TransactionStatusEnum.PLANNED,
-    date: dayjs().format(config.dateFormatString),
+    date: format(new Date(), config.dateFormatString),
     amount: 0,
     description: 'Enter transaction description',
     ...initialData,
