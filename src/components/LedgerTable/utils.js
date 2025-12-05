@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 
 import config from '@/config';
+import { generators as recurringTransactionGenerators } from '@/store/recurringTransactions';
 
 export const dateCompareFn = (a, b) => {
   const aDate = dayjs(a.date).format(config.compareDateFormatString);
@@ -19,4 +20,54 @@ export const computeStatementMonth = (transaction, statementDay) => {
   return transactionDate.date() >= statementDay
     ? transactionDate.add(1, 'month').format('MMMM YYYY')
     : transactionDate.format('MMMM YYYY');
+};
+
+/**
+ * Generates virtual transactions from recurring transaction rules
+ * @param {Array} recurringTransactions - Array of recurring transaction rules
+ * @param {Map} realizedDatesMap - Map of "ruleId:date" -> realizedTransactionId
+ * @param {number} monthsAhead - Number of months to forecast (default 15)
+ * @returns {Array} Array of virtual transaction objects
+ */
+export const generateVirtualTransactions = (
+  recurringTransactions,
+  realizedDatesMap,
+  monthsAhead = 15
+) => {
+  const virtualTransactions = [];
+  const today = dayjs();
+  const endDate = today.add(monthsAhead, 'month');
+
+  recurringTransactions.forEach((rule) => {
+    const occurrenceDates =
+      recurringTransactionGenerators.generateOccurrenceDates(
+        rule,
+        today.toDate(),
+        endDate.toDate()
+      );
+
+    occurrenceDates.forEach((dateStr) => {
+      // Check if this occurrence has been realized
+      const key = `${rule.id}:${dateStr}`;
+      if (realizedDatesMap.has(key)) {
+        return; // Skip realized occurrences
+      }
+
+      // Create a virtual transaction
+      virtualTransactions.push({
+        id: `virtual-${rule.id}-${dateStr}`,
+        accountId: rule.accountId,
+        date: dateStr,
+        amount: rule.amount,
+        description: rule.description,
+        categoryId: rule.categoryId,
+        status: 'recurring',
+        isVirtual: true,
+        recurringTransactionId: rule.id,
+        recurringTransaction: rule,
+      });
+    });
+  });
+
+  return virtualTransactions;
 };
