@@ -131,6 +131,7 @@ export default function StatementCard({
                     label='Out of Sync'
                     size='small'
                     color='warning'
+                    aria-label='Statement is out of sync with current transaction data'
                   />
                 </Tooltip>
               )}

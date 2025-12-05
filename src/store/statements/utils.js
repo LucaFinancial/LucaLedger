@@ -204,6 +204,9 @@ export function summarizeStatementTransactions(transactions, transactionIds) {
   );
 }
 
+// Threshold for comparing statement balance values (in cents)
+const BALANCE_COMPARISON_THRESHOLD = 0.01;
+
 /**
  * Calculate statement balances dynamically from transactions
  * This is the centralized calculation that respects locked state
@@ -267,7 +270,7 @@ export function calculateStatementBalances(
   if (statement.closingDate && allStatements.length > 0) {
     const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
     const accountStatements = allStatements
-      .filter((s) => s.accountId === statement.accountId)
+      .filter((s) => s.accountId === statement.accountId && s.closingDate)
       .filter((s) => {
         const sClosingDate = parseISO(s.closingDate.replace(/\//g, '-'));
         return sClosingDate < closingDate;
@@ -334,12 +337,15 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
     typeof statement.totalPayments === 'number' ? statement.totalPayments : 0;
 
   // Check if any values differ (allowing small floating point differences)
-  const threshold = 0.01; // 1 cent
   return (
-    Math.abs(storedStarting - calculated.startingBalance) > threshold ||
-    Math.abs(storedEnding - calculated.endingBalance) > threshold ||
-    Math.abs(storedCharges - calculated.totalCharges) > threshold ||
-    Math.abs(storedPayments - calculated.totalPayments) > threshold
+    Math.abs(storedStarting - calculated.startingBalance) >
+      BALANCE_COMPARISON_THRESHOLD ||
+    Math.abs(storedEnding - calculated.endingBalance) >
+      BALANCE_COMPARISON_THRESHOLD ||
+    Math.abs(storedCharges - calculated.totalCharges) >
+      BALANCE_COMPARISON_THRESHOLD ||
+    Math.abs(storedPayments - calculated.totalPayments) >
+      BALANCE_COMPARISON_THRESHOLD
   );
 }
 

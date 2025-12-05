@@ -253,7 +253,10 @@ export default function StatementSeparatorRow({
                 component='span'
                 sx={{ color: 'black', fontWeight: 'bold' }}
               >
-                ${formatAmount(statement ? summary.totalCharges : allCharges)}
+                $
+                {
+                  formatAmount(statement ? summary.totalCharges : allCharges) // Use centralized calculation for statements, fallback to transaction sum for drafts
+                }
               </Typography>
 
               {statement ? (
