@@ -9,4 +9,11 @@ export const AccountFields = Object.freeze({
   NAME: 'name',
   TYPE: 'type',
   STATEMENT_DAY: 'statementDay',
+  STATEMENT_LOCKED_TO_MONTH: 'statementLockedToMonth',
+  GROUP_BY: 'groupBy',
+});
+
+export const GroupByMode = Object.freeze({
+  MONTH: 'month',
+  STATEMENT: 'statement',
 });

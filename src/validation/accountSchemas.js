@@ -22,6 +22,23 @@ const commonAccountProperties = {
     minLength: 1,
     description: 'Account type (Checking, Savings, or Credit Card)',
   },
+  statementDay: {
+    type: 'integer',
+    minimum: 1,
+    maximum: 31,
+    description: 'Day of month when statement is generated',
+  },
+  statementLockedToMonth: {
+    type: 'boolean',
+    description:
+      'When true, statements align with calendar months regardless of statement day',
+  },
+  groupBy: {
+    type: 'string',
+    enum: ['month', 'statement'],
+    description:
+      'Grouping mode: "month" for monthly collapsible groups with statement dividers, "statement" for statement period collapsible groups with month dividers',
+  },
 };
 
 // Schema for Checking and Savings accounts
@@ -33,19 +50,11 @@ const commonAccountSchema = {
   additionalProperties: false,
 };
 
-// Schema for Credit Card accounts (extends common schema with statementDay)
+// Schema for Credit Card accounts (same as common schema but requires statementDay)
 const creditCardSchema = {
   $id: 'creditCardAccount',
   type: 'object',
-  properties: {
-    ...commonAccountProperties,
-    statementDay: {
-      type: 'integer',
-      minimum: 1,
-      maximum: 31,
-      description: 'Day of month when credit card statement is generated',
-    },
-  },
+  properties: commonAccountProperties,
   required: ['id', 'name', 'type', 'statementDay'],
   additionalProperties: false,
 };

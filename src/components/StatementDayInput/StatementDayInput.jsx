@@ -14,10 +14,6 @@ export default function StatementDayInput({ account }) {
     setStatementDay(account.statementDay || 1);
   }, [account.statementDay]);
 
-  if (account.type !== constants.AccountType.CREDIT_CARD) {
-    return null;
-  }
-
   const handleChange = (event) => {
     const { value } = event.target;
     let newValue = null;
