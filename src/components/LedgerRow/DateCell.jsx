@@ -1,6 +1,6 @@
 import { TableCell, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs';
+import { parseISO, format, isValid } from 'date-fns';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -14,22 +14,22 @@ export default function DateCell({ transaction }) {
   const { accountId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [dateValue, setDateValue] = useState(
-    dayjs(transaction.date, config.dateFormatString)
+    parseISO(transaction.date.replace(/\//g, '-'))
   );
 
   // Sync local state when transaction.date changes (e.g., from bulk edit)
   useEffect(() => {
-    setDateValue(dayjs(transaction.date, config.dateFormatString));
+    setDateValue(parseISO(transaction.date.replace(/\//g, '-')));
   }, [transaction.date]);
 
   const handleSave = (value) => {
-    if (value && value.isValid()) {
+    if (value && isValid(value)) {
       dispatch(
         actions.updateTransactionProperty(
           accountId,
           transaction,
           constants.TransactionFields.DATE,
-          value.format(config.dateFormatString)
+          format(value, config.dateFormatString)
         )
       );
     }
@@ -37,7 +37,7 @@ export default function DateCell({ transaction }) {
 
   const handleClose = () => {
     // Reset to original value if closed without selecting
-    setDateValue(dayjs(transaction.date, config.dateFormatString));
+    setDateValue(parseISO(transaction.date.replace(/\//g, '-')));
     setIsOpen(false);
   };
 
@@ -62,7 +62,7 @@ export default function DateCell({ transaction }) {
         />
       ) : (
         <Typography onClick={handleEdit}>
-          {dateValue.format('MMM DD YYYY')}
+          {format(dateValue, 'MMM dd yyyy')}
         </Typography>
       )}
     </TableCell>

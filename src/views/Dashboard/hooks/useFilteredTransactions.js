@@ -1,5 +1,11 @@
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
+import {
+  parseISO,
+  differenceInMilliseconds,
+  isAfter,
+  isBefore,
+  isSameDay,
+} from 'date-fns';
 import { constants as accountConstants } from '@/store/accounts';
 import { constants as transactionConstants } from '@/store/transactions';
 
@@ -21,7 +27,7 @@ export function useFilteredTransactions(
   const recentTransactions = useMemo(() => {
     return allTransactions
       .filter((tx) => {
-        const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+        const txDate = parseISO(tx.date.replace(/\//g, '-'));
         const account = accountMap[tx.accountId];
 
         // Exclude transfers
@@ -35,25 +41,25 @@ export function useFilteredTransactions(
         }
 
         return (
-          (txDate.isAfter(dateRanges.recentStart) ||
-            txDate.isSame(dateRanges.recentStart, 'day')) &&
-          (txDate.isBefore(dateRanges.todayEnd) ||
-            txDate.isSame(dateRanges.todayEnd, 'day')) &&
+          (isAfter(txDate, dateRanges.recentStart) ||
+            isSameDay(txDate, dateRanges.recentStart)) &&
+          (isBefore(txDate, dateRanges.todayEnd) ||
+            isSameDay(txDate, dateRanges.todayEnd)) &&
           (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
             tx.status === transactionConstants.TransactionStatusEnum.PENDING)
         );
       })
       .sort((a, b) => {
-        const dateA = dayjs(a.date, 'YYYY/MM/DD');
-        const dateB = dayjs(b.date, 'YYYY/MM/DD');
-        return dateB.diff(dateA);
+        const dateA = parseISO(a.date.replace(/\//g, '-'));
+        const dateB = parseISO(b.date.replace(/\//g, '-'));
+        return differenceInMilliseconds(dateB, dateA);
       });
   }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 
   // Current month transactions (completed only)
   const currentMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+      const txDate = parseISO(tx.date.replace(/\//g, '-'));
 
       // Exclude transfers
       if (isTransferTransaction(tx)) {
@@ -61,10 +67,10 @@ export function useFilteredTransactions(
       }
 
       return (
-        (txDate.isAfter(dateRanges.currentMonthStart) ||
-          txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
-        (txDate.isBefore(dateRanges.currentMonthEnd) ||
-          txDate.isSame(dateRanges.currentMonthEnd, 'day')) &&
+        (isAfter(txDate, dateRanges.currentMonthStart) ||
+          isSameDay(txDate, dateRanges.currentMonthStart)) &&
+        (isBefore(txDate, dateRanges.currentMonthEnd) ||
+          isSameDay(txDate, dateRanges.currentMonthEnd)) &&
         tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
       );
     });
@@ -73,7 +79,7 @@ export function useFilteredTransactions(
   // All current month transactions (for projections)
   const allMonthTransactions = useMemo(() => {
     return allTransactions.filter((tx) => {
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+      const txDate = parseISO(tx.date.replace(/\//g, '-'));
 
       // Exclude transfers
       if (isTransferTransaction(tx)) {
@@ -81,10 +87,10 @@ export function useFilteredTransactions(
       }
 
       return (
-        (txDate.isAfter(dateRanges.currentMonthStart) ||
-          txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
-        (txDate.isBefore(dateRanges.currentMonthEnd) ||
-          txDate.isSame(dateRanges.currentMonthEnd, 'day'))
+        (isAfter(txDate, dateRanges.currentMonthStart) ||
+          isSameDay(txDate, dateRanges.currentMonthStart)) &&
+        (isBefore(txDate, dateRanges.currentMonthEnd) ||
+          isSameDay(txDate, dateRanges.currentMonthEnd))
       );
     });
   }, [allTransactions, dateRanges, isTransferTransaction]);
@@ -93,7 +99,7 @@ export function useFilteredTransactions(
   const futureTransactions = useMemo(() => {
     return allTransactions
       .filter((tx) => {
-        const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+        const txDate = parseISO(tx.date.replace(/\//g, '-'));
         const account = accountMap[tx.accountId];
 
         // Exclude transfers
@@ -107,17 +113,17 @@ export function useFilteredTransactions(
         }
 
         return (
-          txDate.isAfter(dateRanges.today) &&
-          (txDate.isBefore(dateRanges.futureEnd) ||
-            txDate.isSame(dateRanges.futureEnd, 'day')) &&
+          isAfter(txDate, dateRanges.today) &&
+          (isBefore(txDate, dateRanges.futureEnd) ||
+            isSameDay(txDate, dateRanges.futureEnd)) &&
           (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
             tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
         );
       })
       .sort((a, b) => {
-        const dateA = dayjs(a.date, 'YYYY/MM/DD');
-        const dateB = dayjs(b.date, 'YYYY/MM/DD');
-        return dateA.diff(dateB);
+        const dateA = parseISO(a.date.replace(/\//g, '-'));
+        const dateB = parseISO(b.date.replace(/\//g, '-'));
+        return differenceInMilliseconds(dateA, dateB);
       });
   }, [allTransactions, dateRanges, accountMap, isTransferTransaction]);
 

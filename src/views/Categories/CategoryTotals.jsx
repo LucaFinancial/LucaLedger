@@ -15,7 +15,17 @@ import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
-import dayjs from 'dayjs';
+import {
+  parseISO,
+  startOfDay,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  isBefore,
+  isAfter,
+  isSameDay,
+} from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 // Colors for pie chart segments
@@ -42,8 +52,8 @@ export default function CategoryTotals({ category }) {
 
   // Calculate totals for this category and all its subcategories
   const { totals, subcategoryTotals } = useMemo(() => {
-    const now = dayjs();
-    const today = now.startOf('day');
+    const now = new Date();
+    const today = startOfDay(now);
 
     // Determine date range based on selected time period
     let startDate;
@@ -51,12 +61,12 @@ export default function CategoryTotals({ category }) {
 
     switch (timePeriod) {
       case 'month':
-        startDate = now.startOf('month');
-        endDate = now.endOf('month');
+        startDate = startOfMonth(now);
+        endDate = endOfMonth(now);
         break;
       case 'year':
-        startDate = now.startOf('year');
-        endDate = now.endOf('year');
+        startDate = startOfYear(now);
+        endDate = endOfYear(now);
         break;
       case 'all':
       default:
@@ -96,10 +106,12 @@ export default function CategoryTotals({ category }) {
         if (hasCategoryInSplits) {
           // Still need to check date range
           if (startDate && endDate) {
-            const transactionDate = dayjs(transaction.date);
+            const transactionDate = startOfDay(
+              parseISO(transaction.date.replace(/\//g, '-'))
+            );
             if (
-              transactionDate.isBefore(startDate, 'day') ||
-              transactionDate.isAfter(endDate, 'day')
+              isBefore(transactionDate, startDate) ||
+              isAfter(transactionDate, endDate)
             ) {
               return false;
             }
@@ -113,10 +125,12 @@ export default function CategoryTotals({ category }) {
 
       // For date filtering, only include transactions within the time period
       if (startDate && endDate) {
-        const transactionDate = dayjs(transaction.date);
+        const transactionDate = startOfDay(
+          parseISO(transaction.date.replace(/\//g, '-'))
+        );
         if (
-          transactionDate.isBefore(startDate, 'day') ||
-          transactionDate.isAfter(endDate, 'day')
+          isBefore(transactionDate, startDate) ||
+          isAfter(transactionDate, endDate)
         ) {
           return false;
         }
@@ -127,12 +141,14 @@ export default function CategoryTotals({ category }) {
 
     // Split transactions into past and future
     const pastTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = dayjs(t.date).startOf('day');
-      return transactionDate.isBefore(today) || transactionDate.isSame(today);
+      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
+      return (
+        isBefore(transactionDate, today) || isSameDay(transactionDate, today)
+      );
     });
     const futureTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = dayjs(t.date).startOf('day');
-      return transactionDate.isAfter(today);
+      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
+      return isAfter(transactionDate, today);
     });
 
     // Calculate totals - sum amounts from all category IDs in this category

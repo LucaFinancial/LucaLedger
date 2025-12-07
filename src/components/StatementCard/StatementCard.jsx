@@ -14,6 +14,7 @@ import {
   Visibility,
   Warning,
   Error,
+  Sync,
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
@@ -40,18 +41,21 @@ export default function StatementCard({
     statementSelectors.selectStatementIssues(statement.id)
   );
 
-  const summarySelector = useMemo(
-    () => statementSelectors.selectStatementSummary(statement.id),
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(
+    () => statementSelectors.selectStatementWithCalculations(statement.id),
     [statement.id]
   );
-  const summary = useSelector(summarySelector);
+  const statementData = useSelector(statementDataSelector);
+  const { stored, isOutOfSync } = statementData;
 
+  // Display stored values
   const { startingBalance, endingBalance, totalCharges, totalPayments } =
-    summary;
+    stored || {};
   const summaryText = [
-    `Start ${formatCurrency(startingBalance)}`,
-    `+${formatCurrency(totalCharges)} charges`,
-    `-${formatCurrency(totalPayments)} payments`,
+    `Start ${formatCurrency(startingBalance || 0)}`,
+    `+${formatCurrency(totalCharges || 0)} charges`,
+    `-${formatCurrency(totalPayments || 0)} payments`,
   ].join(' · ');
 
   const periodStartFormatted = format(
@@ -116,6 +120,17 @@ export default function StatementCard({
                 status={statement.status}
                 size={compact ? 'small' : 'medium'}
               />
+              {isOutOfSync && statement.status === 'locked' && (
+                <Tooltip title='Statement data is out of sync with transactions'>
+                  <Chip
+                    icon={<Sync />}
+                    label='Out of Sync'
+                    size='small'
+                    color='warning'
+                    aria-label='Statement is out of sync with current transaction data'
+                  />
+                </Tooltip>
+              )}
               {issues?.hasDuplicate && (
                 <Tooltip title='Duplicate statement period detected'>
                   <Chip

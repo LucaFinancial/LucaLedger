@@ -17,8 +17,9 @@ import {
   Add,
   Warning,
   Error,
+  Sync,
 } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { centsToDollars } from '@/utils';
@@ -57,14 +58,40 @@ export default function StatementSeparatorRow({
       : () => null
   );
 
-  // Calculate charges by status
-  const allCharges = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  // Get statement with both stored and calculated values
+  const statementDataSelector = useMemo(() => {
+    if (!statement) {
+      return () => ({
+        stored: null,
+        calculated: {
+          startingBalance: 0,
+          endingBalance: 0,
+          totalCharges: 0,
+          totalPayments: 0,
+          total: 0,
+        },
+        isOutOfSync: false,
+      });
+    }
+    return statementSelectors.selectStatementWithCalculations(statement.id);
+  }, [statement]);
+
+  const statementData = useSelector(statementDataSelector);
+  const { stored, isOutOfSync } = statementData;
+
+  // For pending/scheduled display, calculate from passed transactions
   const pendingCharges = transactions
     .filter((t) => t.status?.trim() === 'pending')
     .reduce((sum, t) => sum + Number(t.amount), 0);
   const scheduledCharges = transactions
     .filter((t) => t.status?.trim() === 'scheduled')
     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  // Display the stored ending balance
+  // For draft periods without a statement: fall back to inline calculation from transactions
+  const displayTotal = stored
+    ? stored.endingBalance
+    : transactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
   const formatAmount = (amountInCents) => {
     const amountInDollars = centsToDollars(amountInCents);
@@ -104,6 +131,12 @@ export default function StatementSeparatorRow({
     }
   };
 
+  const handleSync = () => {
+    if (statement) {
+      dispatch(statementActions.syncStatement(statement.id));
+    }
+  };
+
   const handleSave = (statementId, updates) => {
     dispatch(statementActions.updateStatementProperty(statementId, updates));
   };
@@ -126,7 +159,7 @@ export default function StatementSeparatorRow({
         periodStart,
         periodEnd,
         transactionIds: transactions.map((t) => t.id),
-        total: allCharges,
+        total: displayTotal,
         status: 'draft',
       })
     );
@@ -221,11 +254,23 @@ export default function StatementSeparatorRow({
                 component='span'
                 sx={{ color: 'black', fontWeight: 'bold' }}
               >
-                ${formatAmount(allCharges)}
+                ${formatAmount(displayTotal)}
               </Typography>
 
               {statement ? (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  {isOutOfSync && (
+                    <Tooltip title='Statement data is out of sync with transactions. Click to sync.'>
+                      <IconButton
+                        size='small'
+                        onClick={handleSync}
+                        color='warning'
+                        title='Sync Statement'
+                      >
+                        <Sync fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <IconButton
                     size='small'
                     onClick={handleView}
