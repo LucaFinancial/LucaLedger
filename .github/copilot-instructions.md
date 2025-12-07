@@ -34,7 +34,7 @@ Luca Ledger is a React-based personal finance management application for trackin
 
 After making changes, ALWAYS test these user scenarios:
 
-1. **Navigation**: Test navigation between Dashboard (/) and Accounts (/accounts)
+1. **Navigation**: Test navigation between Dashboard (/dashboard) and Accounts (/accounts)
 2. **Account Creation**: Click "Create New Account" button to verify account creation works
 3. **UI Responsiveness**: Verify Material-UI components render correctly
 4. **Version Display**: Check that version number appears in top-right (format: vX.Y.Z)
@@ -42,9 +42,9 @@ After making changes, ALWAYS test these user scenarios:
 ### Code Quality Requirements
 
 - **ALWAYS** run `yarn lint` before completing changes - CI will fail otherwise
+- **Run tests**: `yarn test` runs Vitest test suite
 - ESLint configuration enforces React, accessibility, and import standards
 - Prettier formatting is integrated with ESLint
-- No test suite exists - manual validation required
 
 ### CI/CD Validation
 
@@ -63,23 +63,63 @@ After making changes, ALWAYS test these user scenarios:
 - **React Router 6.17**: Client-side routing
 - **Day.js**: Date manipulation library
 
+### Security Architecture
+
+Luca Ledger uses client-side encryption for all financial data:
+
+- **Encryption**: AES-GCM 256-bit with unique IVs per record
+- **Key Derivation**: PBKDF2 with 100,000 iterations (SHA-256)
+- **Key Management**: Data Encryption Key (DEK) wrapped by password-derived Key Wrapping Key (KWK)
+- **Storage**: IndexedDB via Dexie library (not localStorage)
+- **Sessions**: 3-day session tokens with wrapped DEK
+- **No server-side storage**: All data stays on the user's device
+- **File exports are NOT encrypted**: Users must secure exported files separately
+
+See `ENCRYPTION.md` for full implementation details and `src/crypto/` for the encryption utilities.
+
+### Authentication System
+
+Multi-user authentication with password-based encryption:
+
+- **Auth states**: `loading`, `no-users`, `login`, `authenticated`, `legacy-migration`
+- **User creation**: Username + password, password derives encryption keys
+- **Session management**: 3-day sessions stored in sessionStorage
+- **No password recovery**: By design (client-side encryption means lost password = lost data)
+- **Legacy migration**: Handles migration from older unencrypted data formats
+
+See `src/auth/AuthContext.jsx` for the auth provider and `src/components/Auth/` for login/registration components.
+
 ### Project Structure
 
 ```
 src/
 ├── components/           # Reusable UI components
 │   ├── MainLayout/      # App header, navigation, layout
-│   ├── VersionDisplay/  # Version number display
-│   └── [11 other components]
+│   ├── Auth/            # Authentication components (LoginForm, RegistrationForm)
+│   ├── EncryptionProvider/ # Encryption context and setup
+│   └── ...              # Many more - explore as needed
 ├── views/               # Main application pages
-│   ├── Dashboard/       # Financial overview (home page)
+│   ├── Dashboard/       # Financial overview
 │   ├── Accounts/        # Account management
-│   └── Ledger/          # Transaction ledger
-├── store/                  # Redux store and slices
-│   ├── accountsLegacy/     # Account state management
-│   └── transactionsLegacy/ # Transaction state management
-├── hooks/              # Custom React hooks
-└── main.jsx           # Application entry point
+│   ├── Ledger/          # Transaction ledger
+│   ├── Categories/      # Category management
+│   ├── Settings/        # App settings
+│   ├── Help/            # User help
+│   └── Landing/         # Welcome/info page
+├── store/               # Redux store and slices
+│   ├── accounts/        # Account state management
+│   ├── transactions/    # Transaction state management
+│   ├── categories/      # Category state management
+│   ├── statements/      # Statement state management
+│   └── encryption/      # Encryption state
+├── auth/                # Authentication context
+├── crypto/              # Encryption utilities (AES-256, key management)
+├── validation/          # Zod schemas for data validation (see src/validation/VALIDATION.md)
+├── config/              # Application configuration
+├── constants/           # Schema constants and enums
+├── hooks/               # Custom React hooks
+├── __tests__/           # Vitest test suites
+└── main.jsx             # Application entry point
 ```
 
 ### Important Files
@@ -88,7 +128,8 @@ src/
 - `vite.config.js`: Build configuration with @ alias for src/
 - `.eslintrc`: Code quality rules and React-specific linting
 - `Dockerfile`: Multi-stage build (note: fails in sandboxed environments due to cert issues)
-- `UserGuide.pdf`: 2.4MB user documentation
+- `ENCRYPTION.md`: Documentation for encryption implementation
+- `CHANGELOG.md`: Version history and release notes
 
 ## Common Tasks
 
@@ -124,13 +165,15 @@ src/
 Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the format MAJOR.MINOR.PATCH:
 
 **MAJOR version** (X.0.0) - Increment when making incompatible changes:
+
 - Breaking changes to data structure (e.g., account schema changes that require migration)
 - Removing features or components
 - Changing APIs that affect saved account files
-- Changes that require users to take action (e.g., clear localStorage)
+- Changes that require users to take action (e.g., clear IndexedDB data)
 - **Command**: `npm version major`
 
 **MINOR version** (1.X.0) - Increment when adding functionality in a backward-compatible manner:
+
 - New features (e.g., new account types, new views, new components)
 - New UI components or pages
 - Enhanced functionality to existing features
@@ -139,6 +182,7 @@ Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the fo
 - **Command**: `npm version minor`
 
 **PATCH version** (1.8.X) - Increment when making backward-compatible bug fixes:
+
 - Bug fixes that don't add new features
 - UI/UX improvements and styling changes
 - Documentation updates
@@ -171,16 +215,19 @@ Luca Ledger follows [Semantic Versioning 2.0.0](https://semver.org/) with the fo
 When working on GitHub issues, use release candidate (RC) versioning to track development progress:
 
 **On First Commit for a New Issue:**
+
 1. Determine the appropriate version increment (major, minor, or patch) based on the issue type
 2. Update package.json version with `-rc.1` suffix
 3. Commit with message: `chore: bump to X.Y.Z-rc.1`
 
 **On Subsequent Commits on the Same Branch:**
+
 1. Increment only the RC number (e.g., `-rc.1` → `-rc.2` → `-rc.3`)
 2. Keep the base version unchanged
 3. Commit with message: `chore: bump to X.Y.Z-rc.N`
 
 **Manual Update Commands:**
+
 ```bash
 # First commit on new issue (adds -rc.1):
 # Determine version type, then manually update package.json
@@ -193,16 +240,17 @@ When working on GitHub issues, use release candidate (RC) versioning to track de
 ```
 
 **RC Versioning Examples:**
+
 - Working on issue to add new feature:
   - First commit: `1.8.8` → `1.9.0-rc.1` (minor bump + RC)
   - Second commit: `1.9.0-rc.1` → `1.9.0-rc.2` (increment RC only)
   - Third commit: `1.9.0-rc.2` → `1.9.0-rc.3` (increment RC only)
-  
 - Working on issue to fix a bug:
   - First commit: `1.8.8` → `1.8.9-rc.1` (patch bump + RC)
   - Second commit: `1.8.9-rc.1` → `1.8.9-rc.2` (increment RC only)
 
 **Important Notes:**
+
 - RC versions are development versions and should be used during issue work
 - When issue is complete and merged to main, the final version should remove the `-rc.X` suffix
 - Always commit version changes alongside code changes
@@ -217,11 +265,13 @@ When working on GitHub issues and creating pull requests, follow these practices
 **ALWAYS** include a closing keyword in the PR description to automatically close the associated issue when the PR is merged. GitHub recognizes several keywords that will trigger automatic issue closure:
 
 **Closing Keywords:**
+
 - `Closes #123`
 - `Fixes #123`
 - `Resolves #123`
 
 **Best Practices:**
+
 1. **Include the closing keyword at the beginning of the PR description** for visibility
 2. Use `Closes #123` format where `123` is the issue number you are working on
 3. If working on multiple issues, include multiple closing keywords (e.g., `Closes #123, Closes #456`)
@@ -229,6 +279,7 @@ When working on GitHub issues and creating pull requests, follow these practices
 5. Ensure the issue number is correct before submitting the PR
 
 **Example PR Description:**
+
 ```
 Closes #42
 
@@ -254,8 +305,7 @@ This will automatically close issue #42 when the PR is merged to the default bra
 ### Environment Limitations
 
 - Docker builds fail in sandboxed environments due to certificate chain issues
-- No automated test suite exists - rely on manual validation
-- Application data stored in browser localStorage (no backend database)
+- Application data stored in IndexedDB with client-side encryption (no backend database)
 
 ### Performance Notes
 
@@ -269,6 +319,7 @@ This will automatically close issue #42 when the PR is merged to the default bra
 | ------- | -------------- | ------- | ------- |
 | Install | `yarn install` | 40s     | 90s+    |
 | Lint    | `yarn lint`    | 2s      | 30s     |
+| Test    | `yarn test`    | 5s      | 30s     |
 | Build   | `yarn build`   | 15s     | 60s+    |
 | Dev     | `yarn dev`     | instant | N/A     |
 | Preview | `yarn preview` | instant | N/A     |
