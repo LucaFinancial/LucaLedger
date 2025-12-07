@@ -1,4 +1,13 @@
-import dayjs from 'dayjs';
+import {
+  format,
+  parseISO,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  isBefore,
+  isSameDay,
+} from 'date-fns';
 import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
@@ -20,7 +29,8 @@ export const generateRecurringTransaction = (initialData = {}) => {
     amount: initialData.amount ?? 0,
     categoryId: initialData.categoryId || null,
     frequency: initialData.frequency || RecurringFrequencyEnum.MONTHLY,
-    startDate: initialData.startDate || dayjs().format(config.dateFormatString),
+    startDate:
+      initialData.startDate || format(new Date(), config.dateFormatString),
     endDate: initialData.endDate || null,
     createdAt: now,
     updatedAt: now,
@@ -51,22 +61,22 @@ export const generateOccurrenceDates = (
   const { frequency, startDate, endDate } = recurringTransaction;
   const dates = [];
 
-  let current = dayjs(startDate.replace(/\//g, '-'));
-  const from = dayjs(fromDate);
-  const to = dayjs(toDate);
-  const end = endDate ? dayjs(endDate.replace(/\//g, '-')) : null;
+  let current = parseISO(startDate.replace(/\//g, '-'));
+  const from = fromDate instanceof Date ? fromDate : parseISO(fromDate);
+  const to = toDate instanceof Date ? toDate : parseISO(toDate);
+  const end = endDate ? parseISO(endDate.replace(/\//g, '-')) : null;
 
   // Skip to the first occurrence on or after fromDate
-  while (current.isBefore(from)) {
+  while (isBefore(current, from)) {
     current = advanceDate(current, frequency);
   }
 
   // Generate dates up to toDate
   while (
-    (current.isBefore(to) || current.isSame(to, 'day')) &&
-    (!end || current.isBefore(end) || current.isSame(end, 'day'))
+    (isBefore(current, to) || isSameDay(current, to)) &&
+    (!end || isBefore(current, end) || isSameDay(current, end))
   ) {
-    dates.push(current.format(config.dateFormatString));
+    dates.push(format(current, config.dateFormatString));
     current = advanceDate(current, frequency);
   }
 
@@ -75,23 +85,23 @@ export const generateOccurrenceDates = (
 
 /**
  * Advances a date by the specified frequency
- * @param {dayjs} date - The current date
+ * @param {Date} date - The current date
  * @param {string} frequency - The frequency to advance by
- * @returns {dayjs} The advanced date
+ * @returns {Date} The advanced date
  */
 const advanceDate = (date, frequency) => {
   switch (frequency) {
     case RecurringFrequencyEnum.DAILY:
-      return date.add(1, 'day');
+      return addDays(date, 1);
     case RecurringFrequencyEnum.WEEKLY:
-      return date.add(1, 'week');
+      return addWeeks(date, 1);
     case RecurringFrequencyEnum.BI_WEEKLY:
-      return date.add(2, 'week');
+      return addWeeks(date, 2);
     case RecurringFrequencyEnum.MONTHLY:
-      return date.add(1, 'month');
+      return addMonths(date, 1);
     case RecurringFrequencyEnum.YEARLY:
-      return date.add(1, 'year');
+      return addYears(date, 1);
     default:
-      return date.add(1, 'month');
+      return addMonths(date, 1);
   }
 };

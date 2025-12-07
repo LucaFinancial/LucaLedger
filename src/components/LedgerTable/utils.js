@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { format, parseISO, getDate, addMonths, compareAsc } from 'date-fns';
 
 import { generators as recurringTransactionGenerators } from '@/store/recurringTransactions';
@@ -29,15 +28,15 @@ export const generateVirtualTransactions = (
   monthsAhead = 15
 ) => {
   const virtualTransactions = [];
-  const today = dayjs();
-  const endDate = today.add(monthsAhead, 'month');
+  const today = new Date();
+  const endDate = addMonths(today, monthsAhead);
 
   recurringTransactions.forEach((rule) => {
     const occurrenceDates =
       recurringTransactionGenerators.generateOccurrenceDates(
         rule,
-        today.toDate(),
-        endDate.toDate()
+        today,
+        endDate
       );
 
     occurrenceDates.forEach((dateStr) => {

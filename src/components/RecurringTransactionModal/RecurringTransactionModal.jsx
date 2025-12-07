@@ -13,9 +13,8 @@ import {
   Box,
   InputAdornment,
 } from '@mui/material';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers';
+import { format, parseISO, addYears } from 'date-fns';
 import PropTypes from 'prop-types';
 import CategorySelect from '@/components/CategorySelect';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
@@ -58,7 +57,7 @@ export default function RecurringTransactionModal({
   const [frequency, setFrequency] = useState(
     recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY
   );
-  const [startDate, setStartDate] = useState(dayjs());
+  const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
   const [hasEndDate, setHasEndDate] = useState(false);
 
@@ -78,11 +77,11 @@ export default function RecurringTransactionModal({
       );
       setStartDate(
         transaction.startDate
-          ? dayjs(transaction.startDate.replace(/\//g, '-'))
-          : dayjs()
+          ? parseISO(transaction.startDate.replace(/\//g, '-'))
+          : new Date()
       );
       if (transaction.endDate) {
-        setEndDate(dayjs(transaction.endDate.replace(/\//g, '-')));
+        setEndDate(parseISO(transaction.endDate.replace(/\//g, '-')));
         setHasEndDate(true);
       } else {
         setEndDate(null);
@@ -96,7 +95,7 @@ export default function RecurringTransactionModal({
       setFrequency(
         recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY
       );
-      setStartDate(dayjs());
+      setStartDate(new Date());
       setEndDate(null);
       setHasEndDate(false);
     }
@@ -111,9 +110,9 @@ export default function RecurringTransactionModal({
       amount: amountInCents,
       categoryId,
       frequency,
-      startDate: startDate.format(config.dateFormatString),
+      startDate: format(startDate, config.dateFormatString),
       endDate:
-        hasEndDate && endDate ? endDate.format(config.dateFormatString) : null,
+        hasEndDate && endDate ? format(endDate, config.dateFormatString) : null,
     };
 
     onSave(data);
@@ -183,38 +182,36 @@ export default function RecurringTransactionModal({
             </Select>
           </FormControl>
 
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label='Start Date'
-              value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
+          <DatePicker
+            label='Start Date'
+            value={startDate}
+            onChange={(newValue) => setStartDate(newValue)}
+            slotProps={{ textField: { fullWidth: true } }}
+          />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Button
-                variant={hasEndDate ? 'contained' : 'outlined'}
-                size='small'
-                onClick={() => {
-                  setHasEndDate(!hasEndDate);
-                  if (!hasEndDate) {
-                    setEndDate(startDate.add(1, 'year'));
-                  }
-                }}
-              >
-                {hasEndDate ? 'Has End Date' : 'No End Date'}
-              </Button>
-              {hasEndDate && (
-                <DatePicker
-                  label='End Date'
-                  value={endDate}
-                  onChange={(newValue) => setEndDate(newValue)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                  minDate={startDate}
-                />
-              )}
-            </Box>
-          </LocalizationProvider>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant={hasEndDate ? 'contained' : 'outlined'}
+              size='small'
+              onClick={() => {
+                setHasEndDate(!hasEndDate);
+                if (!hasEndDate) {
+                  setEndDate(addYears(startDate, 1));
+                }
+              }}
+            >
+              {hasEndDate ? 'Has End Date' : 'No End Date'}
+            </Button>
+            {hasEndDate && (
+              <DatePicker
+                label='End Date'
+                value={endDate}
+                onChange={(newValue) => setEndDate(newValue)}
+                slotProps={{ textField: { fullWidth: true } }}
+                minDate={startDate}
+              />
+            )}
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>
