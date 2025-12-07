@@ -27,7 +27,16 @@ import {
   Drawer,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
-import { format, parseISO, addMonths, compareDesc } from 'date-fns';
+import {
+  format,
+  parseISO,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  compareDesc,
+  isWithinInterval,
+} from 'date-fns';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -49,7 +58,8 @@ export default function Ledger() {
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(format(new Date(), 'yyyy'));
+  const [selectedYear, setSelectedYear] = useState('rolling');
+  const scrollContainerRef = useRef(null);
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
@@ -81,14 +91,36 @@ export default function Ledger() {
     return years.sort((a, b) => b.localeCompare(a)); // Sort descending
   }, [transactions]);
 
+  // Calculate rolling date range (3 months ago to 3 months ahead)
+  const rollingDateRange = useMemo(() => {
+    const today = new Date();
+    const startDate = startOfMonth(subMonths(today, 3));
+    const endDate = endOfMonth(addMonths(today, 3));
+    return { startDate, endDate };
+  }, []);
+
   // Filter transactions by selected year
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
+    if (selectedYear === 'rolling') {
+      // Filter transactions within the rolling date range
+      return transactions.filter((t) => {
+        try {
+          const transactionDate = parseISO(t.date.replace(/\//g, '-'));
+          return isWithinInterval(transactionDate, {
+            start: rollingDateRange.startDate,
+            end: rollingDateRange.endDate,
+          });
+        } catch {
+          return false;
+        }
+      });
+    }
     return transactions.filter(
       (t) =>
         format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
     );
-  }, [transactions, selectedYear]);
+  }, [transactions, selectedYear, rollingDateRange]);
 
   // Calculate filtered transactions for "Select All (Filtered)" button
   // Only include transactions that match the filter (not already-selected ones)
@@ -154,7 +186,13 @@ export default function Ledger() {
 
   const getDefaultCollapsedGroups = () => {
     const current = new Date();
+    const previous = subMonths(current, 1);
     const next = addMonths(current, 1);
+
+    const previousMonthStr = `${format(previous, 'yyyy')}-${format(
+      previous,
+      'MMMM'
+    )}`;
     const currentMonthStr = `${format(current, 'yyyy')}-${format(
       current,
       'MMMM'
@@ -162,7 +200,30 @@ export default function Ledger() {
     const nextMonthStr = `${format(next, 'yyyy')}-${format(next, 'MMMM')}`;
     const currentYear = format(current, 'yyyy');
 
-    // Return both year identifiers and month identifiers for collapsing
+    // For rolling view, expand previous, current, and next months
+    if (selectedYear === 'rolling') {
+      return [
+        ...allMonths.filter((month) => {
+          return (
+            month !== previousMonthStr &&
+            month !== currentMonthStr &&
+            month !== nextMonthStr
+          );
+        }),
+        // Also collapse years that don't contain the expanded months
+        ...allMonths
+          .map((month) => month.split('-')[0])
+          .filter((year) => {
+            const prevYear = format(previous, 'yyyy');
+            const nextYear = format(next, 'yyyy');
+            return (
+              year !== currentYear && year !== prevYear && year !== nextYear
+            );
+          }),
+      ];
+    }
+
+    // Default behavior for non-rolling views
     return [
       ...allMonths.filter((month) => {
         const [year] = month.split('-');
@@ -182,6 +243,12 @@ export default function Ledger() {
   );
   const hasGeneratedStatements = useRef(new Set());
 
+  // Update collapsed groups when selectedYear changes
+  useEffect(() => {
+    setCollapsedGroups(getDefaultCollapsedGroups());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, allMonths]);
+
   useEffect(() => {
     if (!account) {
       navigate('/accounts');
@@ -197,6 +264,29 @@ export default function Ledger() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId]); // Only re-run if accountId changes (navigating to different account)
+
+  // Auto-scroll to current month when Rolling is selected
+  useEffect(() => {
+    if (selectedYear === 'rolling' && scrollContainerRef.current) {
+      // Delay to ensure DOM is rendered
+      setTimeout(() => {
+        const currentMonthStr = `${format(new Date(), 'yyyy')}-${format(
+          new Date(),
+          'MMMM'
+        )}`;
+        // Find the month separator row for current month
+        const monthElement = document.querySelector(
+          `[data-month-key="${currentMonthStr}"]`
+        );
+        if (monthElement) {
+          monthElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }, 100);
+    }
+  }, [selectedYear]);
 
   if (!account) {
     return null;
@@ -409,6 +499,7 @@ export default function Ledger() {
                 label='Year'
                 onChange={(e) => setSelectedYear(e.target.value)}
               >
+                <MenuItem value='rolling'>Rolling</MenuItem>
                 <MenuItem value='all'>All Years</MenuItem>
                 {availableYears.map((year) => (
                   <MenuItem

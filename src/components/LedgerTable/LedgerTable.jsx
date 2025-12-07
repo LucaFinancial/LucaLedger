@@ -487,6 +487,7 @@ export default function LedgerTable({
                             yearMonthKey,
                             false
                           )}
+                          monthKey={yearMonthKey}
                         />
 
                         {!isMonthCollapsed &&
