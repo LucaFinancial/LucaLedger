@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HistoryIcon from '@mui/icons-material/History';
-import dayjs from 'dayjs';
+import { format, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
 import { constants as transactionConstants } from '@/store/transactions';
 
@@ -156,7 +156,10 @@ export default function RecentActivitySection({
                     sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}
                   >
                     <TableCell>
-                      {dayjs(tx.date, 'YYYY/MM/DD').format('MMM D, YYYY')}
+                      {format(
+                        parseISO(tx.date.replace(/\//g, '-')),
+                        'MMM d, yyyy'
+                      )}
                     </TableCell>
                     <TableCell>{getAccountName(tx.accountId)}</TableCell>
                     <TableCell>{tx.description}</TableCell>

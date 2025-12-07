@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
+import { parseISO, getDate, getDaysInMonth } from 'date-fns';
 import { constants as transactionConstants } from '@/store/transactions';
 
 /**
@@ -107,7 +107,7 @@ export function useTransactionTotals({
     let expenses = 0;
 
     const remainingMonthTransactions = allTransactions.filter((tx) => {
-      const txDate = dayjs(tx.date, 'YYYY/MM/DD');
+      const txDate = parseISO(tx.date.replace(/\//g, '-'));
 
       // Exclude transfers
       if (isTransferTransaction(tx)) {
@@ -115,10 +115,8 @@ export function useTransactionTotals({
       }
 
       return (
-        (txDate.isAfter(dateRanges.currentMonthStart) ||
-          txDate.isSame(dateRanges.currentMonthStart, 'day')) &&
-        (txDate.isBefore(dateRanges.currentMonthEnd) ||
-          txDate.isSame(dateRanges.currentMonthEnd, 'day')) &&
+        txDate >= dateRanges.currentMonthStart &&
+        txDate <= dateRanges.currentMonthEnd &&
         (tx.status === transactionConstants.TransactionStatusEnum.PENDING ||
           tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
           tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
@@ -146,8 +144,8 @@ export function useTransactionTotals({
     const projectedExpenses = projectedMonthTotals.expenses;
     const projectedNetFlow = projectedMonthTotals.netFlow;
 
-    const daysInMonth = dateRanges.currentMonthEnd.date();
-    const currentDay = dateRanges.today.date();
+    const daysInMonth = getDaysInMonth(dateRanges.currentMonthEnd);
+    const currentDay = getDate(dateRanges.today);
     const daysRemaining = daysInMonth - currentDay;
     const monthProgress = (currentDay / daysInMonth) * 100;
 

@@ -1,6 +1,7 @@
 import { AccordionSummary, Box, Chip, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { format } from 'date-fns';
 import PropTypes from 'prop-types';
 
 export default function MonthOverviewHeader({
@@ -37,7 +38,7 @@ export default function MonthOverviewHeader({
             Current Month Overview
           </Typography>
           <Chip
-            label={dateRanges.today.format('MMMM YYYY')}
+            label={format(dateRanges.today, 'MMMM yyyy')}
             size='small'
             sx={{ backgroundColor: '#2196f3', color: 'white' }}
           />

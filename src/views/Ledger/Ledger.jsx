@@ -27,7 +27,7 @@ import {
   Drawer,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
-import dayjs from 'dayjs';
+import { format, parseISO, addMonths, compareDesc } from 'date-fns';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -49,7 +49,7 @@ export default function Ledger() {
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(dayjs().format('YYYY'));
+  const [selectedYear, setSelectedYear] = useState(format(new Date(), 'yyyy'));
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
@@ -72,7 +72,11 @@ export default function Ledger() {
   // Get available years from transactions
   const availableYears = useMemo(() => {
     const years = [
-      ...new Set(transactions.map((t) => dayjs(t.date).format('YYYY'))),
+      ...new Set(
+        transactions.map((t) =>
+          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy')
+        )
+      ),
     ];
     return years.sort((a, b) => b.localeCompare(a)); // Sort descending
   }, [transactions]);
@@ -81,7 +85,8 @@ export default function Ledger() {
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
     return transactions.filter(
-      (t) => dayjs(t.date).format('YYYY') === selectedYear
+      (t) =>
+        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
     );
   }, [transactions, selectedYear]);
 
@@ -136,21 +141,26 @@ export default function Ledger() {
     ? [
         ...new Set(
           transactions.map((t) => {
-            const date = dayjs(t.date);
-            return `${date.format('YYYY')}-${date.format('MMMM')}`;
+            const date = parseISO(t.date.replace(/\//g, '-'));
+            return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
           })
         ),
-      ].sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? -1 : 1))
+      ].sort((a, b) => {
+        const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
+        const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
+        return compareDesc(aDate, bDate);
+      })
     : [];
 
   const getDefaultCollapsedGroups = () => {
-    const current = dayjs();
-    const next = current.add(1, 'month');
-    const currentMonthStr = `${current.format('YYYY')}-${current.format(
+    const current = new Date();
+    const next = addMonths(current, 1);
+    const currentMonthStr = `${format(current, 'yyyy')}-${format(
+      current,
       'MMMM'
     )}`;
-    const nextMonthStr = `${next.format('YYYY')}-${next.format('MMMM')}`;
-    const currentYear = current.format('YYYY');
+    const nextMonthStr = `${format(next, 'yyyy')}-${format(next, 'MMMM')}`;
+    const currentYear = format(current, 'yyyy');
 
     // Return both year identifiers and month identifiers for collapsing
     return [

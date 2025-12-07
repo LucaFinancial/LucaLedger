@@ -1,5 +1,14 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import dayjs from 'dayjs';
+import {
+  format,
+  getDate,
+  setDate,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  getDaysInMonth,
+} from 'date-fns';
 
 import config from '@/config';
 import { generateTransaction } from './generators';
@@ -30,16 +39,16 @@ export const createRepeatTransaction = createAsyncThunk(
     },
     { dispatch }
   ) => {
-    const startDay = dayjs(startDate).date();
-    let nextDate = dayjs(startDate);
+    const startDay = getDate(startDate);
+    let nextDate = startDate;
 
     for (let i = 0; i < occurrences; i++) {
       if (frequency === 'Bi-Monthly') {
         // Create transaction for the 1st of the month
-        let firstTransactionDate = nextDate.date(1);
+        let firstTransactionDate = setDate(nextDate, 1);
         let firstTransaction = generateTransaction({
           accountId,
-          date: firstTransactionDate.format(config.dateFormatString),
+          date: format(firstTransactionDate, config.dateFormatString),
         });
         firstTransaction.amount = amount;
         firstTransaction.description = description;
@@ -47,10 +56,10 @@ export const createRepeatTransaction = createAsyncThunk(
         dispatch(addTransaction(firstTransaction));
 
         // Create transaction for the 15th of the month
-        let secondTransactionDate = nextDate.date(15);
+        let secondTransactionDate = setDate(nextDate, 15);
         let secondTransaction = generateTransaction({
           accountId,
-          date: secondTransactionDate.format(config.dateFormatString),
+          date: format(secondTransactionDate, config.dateFormatString),
         });
         secondTransaction.amount = amount;
         secondTransaction.description = description;
@@ -58,11 +67,11 @@ export const createRepeatTransaction = createAsyncThunk(
         dispatch(addTransaction(secondTransaction));
 
         // Advance to the next month
-        nextDate = nextDate.add(1, 'month');
+        nextDate = addMonths(nextDate, 1);
       } else {
         const initialData = {
           accountId,
-          date: nextDate.format(config.dateFormatString),
+          date: format(nextDate, config.dateFormatString),
           amount: amount,
           description,
         };
@@ -71,19 +80,19 @@ export const createRepeatTransaction = createAsyncThunk(
         dispatch(addTransaction(newTransaction));
 
         if (frequency === 'Days') {
-          nextDate = nextDate.add(frequencyCount, 'day');
+          nextDate = addDays(nextDate, frequencyCount);
         } else if (frequency === 'Weeks') {
-          nextDate = nextDate.add(frequencyCount, 'week');
+          nextDate = addWeeks(nextDate, frequencyCount);
         } else if (frequency === 'Months') {
-          const nextMonth = nextDate.add(frequencyCount, 'month');
-          const nextMonthDays = nextMonth.daysInMonth();
+          const nextMonth = addMonths(nextDate, frequencyCount);
+          const nextMonthDays = getDaysInMonth(nextMonth);
           let nextDay = startDay;
           if (startDay > nextMonthDays) {
             nextDay = nextMonthDays;
           }
-          nextDate = nextMonth.date(nextDay);
+          nextDate = setDate(nextMonth, nextDay);
         } else if (frequency === 'Years') {
-          nextDate = nextDate.add(frequencyCount, 'year');
+          nextDate = addYears(nextDate, frequencyCount);
         }
       }
     }
@@ -132,14 +141,14 @@ export const updateMultipleTransactionsStatus =
 
 export const updateMultipleTransactionsFields =
   (transactionIds, updates) => (dispatch) => {
-    // Process date if present - convert dayjs to string format
+    // Process date if present - convert Date object to string format
     const processedUpdates = { ...updates };
     if (
       updates.date &&
       typeof updates.date === 'object' &&
-      updates.date.format
+      updates.date instanceof Date
     ) {
-      processedUpdates.date = updates.date.format(config.dateFormatString);
+      processedUpdates.date = format(updates.date, config.dateFormatString);
     }
 
     dispatch(
