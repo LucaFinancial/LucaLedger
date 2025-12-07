@@ -5,7 +5,13 @@ export default function SelectionCell({
   transaction,
   isSelected,
   onSelectionChange,
+  isVirtual,
 }) {
+  // Don't show checkbox for virtual transactions
+  if (isVirtual) {
+    return <TableCell sx={{ width: '48px', paddingLeft: '16px' }} />;
+  }
+
   return (
     <TableCell sx={{ width: '48px', paddingLeft: '16px' }}>
       <Checkbox
@@ -27,4 +33,5 @@ SelectionCell.propTypes = {
   transaction: PropTypes.object.isRequired,
   isSelected: PropTypes.bool,
   onSelectionChange: PropTypes.func,
+  isVirtual: PropTypes.bool,
 };

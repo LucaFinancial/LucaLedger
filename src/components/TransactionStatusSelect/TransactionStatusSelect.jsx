@@ -1,4 +1,5 @@
-import { FormControl, MenuItem, Select } from '@mui/material';
+import { FormControl, MenuItem, Select, Chip } from '@mui/material';
+import { Repeat } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -6,7 +7,11 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 
-export default function TransactionStatusSelect({ transaction, isSelected }) {
+export default function TransactionStatusSelect({
+  transaction,
+  isSelected,
+  isVirtual,
+}) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   const [status, setStatus] = useState(transaction.status);
@@ -27,6 +32,25 @@ export default function TransactionStatusSelect({ transaction, isSelected }) {
     );
     setStatus(value);
   };
+
+  // For virtual/recurring transactions, show a chip instead of a select
+  if (isVirtual || status === 'recurring') {
+    return (
+      <Chip
+        icon={<Repeat fontSize='small' />}
+        label='Recurring'
+        size='small'
+        sx={{
+          backgroundColor: 'secondary.light',
+          color: 'secondary.contrastText',
+          fontStyle: 'italic',
+          '& .MuiChip-icon': {
+            color: 'inherit',
+          },
+        }}
+      />
+    );
+  }
 
   return (
     <FormControl
@@ -77,4 +101,5 @@ export default function TransactionStatusSelect({ transaction, isSelected }) {
 TransactionStatusSelect.propTypes = {
   transaction: PropTypes.object.isRequired,
   isSelected: PropTypes.bool,
+  isVirtual: PropTypes.bool,
 };

@@ -1,4 +1,4 @@
-import { TableRow } from '@mui/material';
+import { TableCell, TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactions';
@@ -10,10 +10,17 @@ import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
+import ActionCell from './ActionCell';
 
-const getStatusBackground = (status, isSelected) => {
+const VIRTUAL_STATUS = 'recurring';
+
+const getStatusBackground = (status, isSelected, isVirtual) => {
   if (isSelected) {
     return '#f57c00'; // chart orange
+  }
+
+  if (isVirtual) {
+    return '#e1bee7'; // light purple for virtual/recurring
   }
 
   switch (status) {
@@ -35,14 +42,18 @@ export default function LedgerRow({
   balance,
   isSelected,
   onSelectionChange,
+  isVirtual,
+  recurringTransaction,
+  occurrenceDate,
 }) {
-  const bgColor = getStatusBackground(row.status, isSelected);
+  const bgColor = getStatusBackground(row.status, isSelected, isVirtual);
 
   return (
     <TableRow
       sx={{
         backgroundColor: bgColor,
         color: isSelected ? 'white' : 'inherit',
+        opacity: isVirtual ? 0.85 : 1,
         '&:hover': {
           filter: 'brightness(0.95)',
         },
@@ -51,6 +62,7 @@ export default function LedgerRow({
           borderBottom: '1px solid',
           borderColor: 'divider',
           color: isSelected ? 'white' : 'inherit',
+          fontStyle: isVirtual ? 'italic' : 'normal',
         },
       }}
     >
@@ -58,10 +70,15 @@ export default function LedgerRow({
         transaction={row}
         isSelected={isSelected}
         onSelectionChange={onSelectionChange}
+        isVirtual={isVirtual}
       />
       <StatusCell
-        transaction={row}
+        transaction={{
+          ...row,
+          status: isVirtual ? VIRTUAL_STATUS : row.status,
+        }}
         isSelected={isSelected}
+        isVirtual={isVirtual}
       />
       <DateCell transaction={row} />
       <CategoryCell
@@ -71,7 +88,14 @@ export default function LedgerRow({
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
-      <DeleteButtonCell transaction={row} />
+      <ActionCell
+        transaction={row}
+        isVirtual={isVirtual}
+        recurringTransaction={recurringTransaction}
+        occurrenceDate={occurrenceDate}
+      />
+      {!isVirtual && <DeleteButtonCell transaction={row} />}
+      {isVirtual && <TableCell sx={{ width: '48px' }} />}
     </TableRow>
   );
 }
@@ -81,4 +105,13 @@ LedgerRow.propTypes = {
   balance: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
   onSelectionChange: PropTypes.func,
+  isVirtual: PropTypes.bool,
+  recurringTransaction: PropTypes.object,
+  occurrenceDate: PropTypes.string,
+};
+
+LedgerRow.defaultProps = {
+  isVirtual: false,
+  recurringTransaction: null,
+  occurrenceDate: null,
 };
