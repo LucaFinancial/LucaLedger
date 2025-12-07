@@ -5,7 +5,6 @@ import { selectors as categorySelectors } from '@/store/categories';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
-import BetaBanner from '@/components/BetaBanner';
 import RecentActivitySection from './components/RecentActivitySection';
 import UpcomingActivitySection from './components/UpcomingActivitySection';
 import CurrentMonthOverviewSection from './components/CurrentMonthOverview';
@@ -72,7 +71,6 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <BetaBanner />
       <Typography
         variant='h4'
         sx={{ mb: 4, fontWeight: 'bold' }}
