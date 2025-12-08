@@ -1,4 +1,5 @@
 import CssBaseline from '@mui/material/CssBaseline';
+import { Box, CircularProgress } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Provider } from 'react-redux';
@@ -38,7 +39,22 @@ function RootRedirect() {
 
   // Show Welcome page for unauthenticated users
   if (!isInitialized || authState === 'loading') {
-    return null; // Could add a loading spinner here
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+        }}
+      >
+        <CircularProgress
+          size={60}
+          sx={{ color: 'white' }}
+        />
+      </Box>
+    );
   }
 
   if (authState === 'authenticated') {
@@ -60,7 +76,22 @@ function PublicRoute({ children }) {
   }, [authState, isInitialized, navigate]);
 
   if (!isInitialized || authState === 'loading') {
-    return null;
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+        }}
+      >
+        <CircularProgress
+          size={60}
+          sx={{ color: 'white' }}
+        />
+      </Box>
+    );
   }
 
   if (authState === 'authenticated') {
