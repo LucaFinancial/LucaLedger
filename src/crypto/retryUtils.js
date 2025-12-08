@@ -113,10 +113,7 @@ export function calculateBackoffDelay(attemptNumber) {
   const jitter = exponentialDelay * 0.1 * (Math.random() * 2 - 1);
 
   // Cap at max delay
-  const delay = Math.min(
-    exponentialDelay + jitter,
-    RETRY_CONFIG.MAX_DELAY_MS
-  );
+  const delay = Math.min(exponentialDelay + jitter, RETRY_CONFIG.MAX_DELAY_MS);
 
   return Math.round(delay);
 }
@@ -192,7 +189,9 @@ export async function retryOperation(
       // Log success if there were retries
       if (attempt > 0) {
         console.info(
-          `[IndexedDB Retry] ${operationName} succeeded after ${attempt + 1} attempt(s)`,
+          `[IndexedDB Retry] ${operationName} succeeded after ${
+            attempt + 1
+          } attempt(s)`,
           stats.toLogObject()
         );
       }
@@ -220,7 +219,9 @@ export async function retryOperation(
 
       // Log retry attempt
       console.warn(
-        `[IndexedDB Retry] ${operationName} failed (attempt ${attempt + 1}/${maxAttempts}), retrying in ${delay}ms...`,
+        `[IndexedDB Retry] ${operationName} failed (attempt ${
+          attempt + 1
+        }/${maxAttempts}), retrying in ${delay}ms...`,
         { error: error.message, errorType }
       );
 

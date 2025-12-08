@@ -268,20 +268,16 @@ describe('Retry Utils', () => {
       expect(onError).toHaveBeenCalledWith(error, ErrorType.TRANSIENT);
     });
 
-    it(
-      'should respect custom maxAttempts',
-      { timeout: 15000 },
-      async () => {
-        const error = new Error('Error');
-        const operation = vi.fn().mockRejectedValue(error);
+    it('should respect custom maxAttempts', { timeout: 15000 }, async () => {
+      const error = new Error('Error');
+      const operation = vi.fn().mockRejectedValue(error);
 
-        await expect(
-          retryOperation(operation, 'test-op', { maxAttempts: 5 })
-        ).rejects.toThrow();
+      await expect(
+        retryOperation(operation, 'test-op', { maxAttempts: 5 })
+      ).rejects.toThrow();
 
-        expect(operation).toHaveBeenCalledTimes(5);
-      }
-    );
+      expect(operation).toHaveBeenCalledTimes(5);
+    });
 
     it('should not sleep after last attempt', async () => {
       const error = new Error('Error');
