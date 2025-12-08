@@ -13,6 +13,7 @@ import {
   uint8ArrayToBase64,
   base64ToUint8Array,
 } from './encryption';
+import { retryOperation } from './retryUtils';
 
 const DB_NAME = 'LucaLedgerEncrypted';
 const DB_VERSION = 3;
@@ -49,15 +50,17 @@ db.version(2).stores({
  * @returns {Promise<void>}
  */
 export async function storeEncryptedRecord(storeName, id, data, dek) {
-  const { ciphertext, iv } = await encrypt(data, dek);
+  return retryOperation(async () => {
+    const { ciphertext, iv } = await encrypt(data, dek);
 
-  const record = {
-    id,
-    iv: uint8ArrayToBase64(iv),
-    ciphertext: arrayBufferToBase64(ciphertext),
-  };
+    const record = {
+      id,
+      iv: uint8ArrayToBase64(iv),
+      ciphertext: arrayBufferToBase64(ciphertext),
+    };
 
-  await db[storeName].put(record);
+    await db[storeName].put(record);
+  }, `storeEncryptedRecord(${storeName}, ${id})`);
 }
 
 /**
@@ -107,7 +110,9 @@ export async function getAllEncryptedRecords(storeName, dek) {
  * @returns {Promise<void>}
  */
 export async function deleteEncryptedRecord(storeName, id) {
-  await db[storeName].delete(id);
+  return retryOperation(async () => {
+    await db[storeName].delete(id);
+  }, `deleteEncryptedRecord(${storeName}, ${id})`);
 }
 
 /**
@@ -117,7 +122,9 @@ export async function deleteEncryptedRecord(storeName, id) {
  * @returns {Promise<void>}
  */
 export async function storeMetadata(key, value) {
-  await db.metadata.put({ key, value });
+  return retryOperation(async () => {
+    await db.metadata.put({ key, value });
+  }, `storeMetadata(${key})`);
 }
 
 /**
@@ -167,18 +174,20 @@ export async function clearAllData() {
  * @returns {Promise<void>}
  */
 export async function batchStoreEncryptedRecords(storeName, records, dek) {
-  const encryptedRecords = await Promise.all(
-    records.map(async ({ id, data }) => {
-      const { ciphertext, iv } = await encrypt(data, dek);
-      return {
-        id,
-        iv: uint8ArrayToBase64(iv),
-        ciphertext: arrayBufferToBase64(ciphertext),
-      };
-    })
-  );
+  return retryOperation(async () => {
+    const encryptedRecords = await Promise.all(
+      records.map(async ({ id, data }) => {
+        const { ciphertext, iv } = await encrypt(data, dek);
+        return {
+          id,
+          iv: uint8ArrayToBase64(iv),
+          ciphertext: arrayBufferToBase64(ciphertext),
+        };
+      })
+    );
 
-  await db[storeName].bulkPut(encryptedRecords);
+    await db[storeName].bulkPut(encryptedRecords);
+  }, `batchStoreEncryptedRecords(${storeName}, ${records.length} records)`);
 }
 
 // ============================================
@@ -205,25 +214,27 @@ export async function createUser(
   sentinel,
   sentinelIV
 ) {
-  // Check if username already exists
-  const existingUser = await db.users
-    .where('username')
-    .equals(username)
-    .first();
-  if (existingUser) {
-    throw new Error('Username already in use');
-  }
+  return retryOperation(async () => {
+    // Check if username already exists
+    const existingUser = await db.users
+      .where('username')
+      .equals(username)
+      .first();
+    if (existingUser) {
+      throw new Error('Username already in use');
+    }
 
-  await db.users.add({
-    id,
-    username,
-    salt,
-    wrappedDEK,
-    wrappedDEKIV,
-    sentinel,
-    sentinelIV,
-    createdAt: new Date().toISOString(),
-  });
+    await db.users.add({
+      id,
+      username,
+      salt,
+      wrappedDEK,
+      wrappedDEKIV,
+      sentinel,
+      sentinelIV,
+      createdAt: new Date().toISOString(),
+    });
+  }, `createUser(${username})`);
 }
 
 /**
@@ -271,14 +282,16 @@ export async function hasUsers() {
  * @returns {Promise<void>}
  */
 export async function deleteUser(userId) {
-  // Delete all user-specific data
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  return retryOperation(async () => {
+    // Delete all user-specific data
+    await db.accounts.where('userId').equals(userId).delete();
+    await db.transactions.where('userId').equals(userId).delete();
+    await db.categories.where('userId').equals(userId).delete();
+    await db.statements.where('userId').equals(userId).delete();
 
-  // Delete the user record
-  await db.users.delete(userId);
+    // Delete the user record
+    await db.users.delete(userId);
+  }, `deleteUser(${userId})`);
 }
 
 /**
@@ -297,16 +310,18 @@ export async function storeUserEncryptedRecord(
   dek,
   userId
 ) {
-  const { ciphertext, iv } = await encrypt(data, dek);
+  return retryOperation(async () => {
+    const { ciphertext, iv } = await encrypt(data, dek);
 
-  const record = {
-    id,
-    userId,
-    iv: uint8ArrayToBase64(iv),
-    ciphertext: arrayBufferToBase64(ciphertext),
-  };
+    const record = {
+      id,
+      userId,
+      iv: uint8ArrayToBase64(iv),
+      ciphertext: arrayBufferToBase64(ciphertext),
+    };
 
-  await db[storeName].put(record);
+    await db[storeName].put(record);
+  }, `storeUserEncryptedRecord(${storeName}, ${id})`);
 }
 
 /**
@@ -344,19 +359,21 @@ export async function batchStoreUserEncryptedRecords(
   dek,
   userId
 ) {
-  const encryptedRecords = await Promise.all(
-    records.map(async ({ id, data }) => {
-      const { ciphertext, iv } = await encrypt(data, dek);
-      return {
-        id,
-        userId,
-        iv: uint8ArrayToBase64(iv),
-        ciphertext: arrayBufferToBase64(ciphertext),
-      };
-    })
-  );
+  return retryOperation(async () => {
+    const encryptedRecords = await Promise.all(
+      records.map(async ({ id, data }) => {
+        const { ciphertext, iv } = await encrypt(data, dek);
+        return {
+          id,
+          userId,
+          iv: uint8ArrayToBase64(iv),
+          ciphertext: arrayBufferToBase64(ciphertext),
+        };
+      })
+    );
 
-  await db[storeName].bulkPut(encryptedRecords);
+    await db[storeName].bulkPut(encryptedRecords);
+  }, `batchStoreUserEncryptedRecords(${storeName}, ${records.length} records)`);
 }
 
 /**
@@ -367,11 +384,13 @@ export async function batchStoreUserEncryptedRecords(
  * @returns {Promise<void>}
  */
 export async function deleteUserEncryptedRecord(storeName, id, userId) {
-  // First verify the record belongs to the user
-  const record = await db[storeName].get(id);
-  if (record && record.userId === userId) {
-    await db[storeName].delete(id);
-  }
+  return retryOperation(async () => {
+    // First verify the record belongs to the user
+    const record = await db[storeName].get(id);
+    if (record && record.userId === userId) {
+      await db[storeName].delete(id);
+    }
+  }, `deleteUserEncryptedRecord(${storeName}, ${id})`);
 }
 
 /**
@@ -380,10 +399,12 @@ export async function deleteUserEncryptedRecord(storeName, id, userId) {
  * @returns {Promise<void>}
  */
 export async function clearUserData(userId) {
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  return retryOperation(async () => {
+    await db.accounts.where('userId').equals(userId).delete();
+    await db.transactions.where('userId').equals(userId).delete();
+    await db.categories.where('userId').equals(userId).delete();
+    await db.statements.where('userId').equals(userId).delete();
+  }, `clearUserData(${userId})`);
 }
 
 /**
@@ -407,15 +428,17 @@ export async function hasLegacyEncryptedData() {
  * @returns {Promise<void>}
  */
 export async function migrateLegacyDataToUser(userId) {
-  // Update all records without userId to have the specified userId
-  const stores = ['accounts', 'transactions', 'categories', 'statements'];
+  return retryOperation(async () => {
+    // Update all records without userId to have the specified userId
+    const stores = ['accounts', 'transactions', 'categories', 'statements'];
 
-  for (const storeName of stores) {
-    const records = await db[storeName].filter((r) => !r.userId).toArray();
-    for (const record of records) {
-      await db[storeName].update(record.id, { userId });
+    for (const storeName of stores) {
+      const records = await db[storeName].filter((r) => !r.userId).toArray();
+      for (const record of records) {
+        await db[storeName].update(record.id, { userId });
+      }
     }
-  }
+  }, `migrateLegacyDataToUser(${userId})`);
 }
 
 /**
