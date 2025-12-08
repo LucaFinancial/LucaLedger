@@ -13,6 +13,8 @@ import { Lock as LockIcon } from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import ExportDataButton from '@/components/ExportDataButton';
+import ImportDataButton from '@/components/ImportDataButton';
 
 export default function Settings() {
   const { currentUser } = useAuth();
@@ -107,6 +109,60 @@ export default function Settings() {
                 Data Schema Version
               </Typography>
               <Typography variant='body1'>{CURRENT_SCHEMA_VERSION}</Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Data Backup & Restore Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography
+            variant='h5'
+            sx={{ mb: 1 }}
+          >
+            Data Backup &amp; Restore
+          </Typography>
+          <Typography
+            variant='body2'
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            Export and import encrypted backups of your financial data
+          </Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box>
+              <Typography
+                variant='subtitle2'
+                sx={{ mb: 1, color: 'text.secondary' }}
+              >
+                Export Backup
+              </Typography>
+              <Typography
+                variant='body2'
+                sx={{ mb: 2, color: 'text.secondary' }}
+              >
+                Create an encrypted backup of all your data. The backup will be
+                protected with your current encryption key.
+              </Typography>
+              <ExportDataButton />
+            </Box>
+
+            <Box>
+              <Typography
+                variant='subtitle2'
+                sx={{ mb: 1, color: 'text.secondary' }}
+              >
+                Import Backup
+              </Typography>
+              <Typography
+                variant='body2'
+                sx={{ mb: 2, color: 'text.secondary' }}
+              >
+                Restore your data from an encrypted backup file. This will
+                replace all current data.
+              </Typography>
+              <ImportDataButton />
             </Box>
           </Box>
         </CardContent>
