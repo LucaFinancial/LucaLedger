@@ -51,9 +51,9 @@ describe('Retry Utils', () => {
       expect(classifyError(error3)).toBe(ErrorType.TRANSIENT);
     });
 
-    it('should classify unknown errors as transient', () => {
+    it('should classify unknown errors as unknown type', () => {
       const error = new Error('Some random error');
-      expect(classifyError(error)).toBe(ErrorType.TRANSIENT);
+      expect(classifyError(error)).toBe(ErrorType.UNKNOWN);
     });
 
     it('should handle null or undefined errors', () => {
@@ -83,6 +83,12 @@ describe('Retry Utils', () => {
       error.name = 'InvalidStateError';
       const message = getUserFriendlyErrorMessage(error);
       expect(message).toContain('Unable to save');
+    });
+
+    it('should return unknown message for unknown errors', () => {
+      const error = new Error('Some random error');
+      const message = getUserFriendlyErrorMessage(error);
+      expect(message).toContain('unexpected error');
     });
 
     it('should return retry message for transient errors', () => {
@@ -255,7 +261,8 @@ describe('Retry Utils', () => {
     });
 
     it('should call onError callback after exhausting retries', async () => {
-      const error = new Error('Transient error');
+      const error = new Error('Transaction aborted');
+      error.name = 'AbortError';
       const operation = vi.fn().mockRejectedValue(error);
 
       const onError = vi.fn();
@@ -266,6 +273,20 @@ describe('Retry Utils', () => {
 
       expect(onError).toHaveBeenCalledTimes(1);
       expect(onError).toHaveBeenCalledWith(error, ErrorType.TRANSIENT);
+    });
+
+    it('should call onError callback with UNKNOWN for unclassified errors', async () => {
+      const error = new Error('Some unexpected error');
+      const operation = vi.fn().mockRejectedValue(error);
+
+      const onError = vi.fn();
+
+      await expect(
+        retryOperation(operation, 'test-op', { maxAttempts: 2, onError })
+      ).rejects.toThrow();
+
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledWith(error, ErrorType.UNKNOWN);
     });
 
     it('should respect custom maxAttempts', { timeout: 15000 }, async () => {

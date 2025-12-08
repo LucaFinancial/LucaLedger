@@ -66,15 +66,17 @@ describe('Database Operations with Retry Logic', () => {
       // Mock db.put to fail once with a transient error, then succeed
       let callCount = 0;
       const originalPut = db[storeName].put.bind(db[storeName]);
-      const putSpy = vi.spyOn(db[storeName], 'put').mockImplementation((record) => {
-        callCount++;
-        if (callCount === 1) {
-          const error = new Error('Transaction was aborted');
-          error.name = 'AbortError';
-          throw error;
-        }
-        return originalPut(record);
-      });
+      const putSpy = vi
+        .spyOn(db[storeName], 'put')
+        .mockImplementation((record) => {
+          callCount++;
+          if (callCount === 1) {
+            const error = new Error('Transaction was aborted');
+            error.name = 'AbortError';
+            throw error;
+          }
+          return originalPut(record);
+        });
 
       // Should succeed after retry
       await storeUserEncryptedRecord(storeName, recordId, data, dek, userId);
@@ -119,15 +121,30 @@ describe('Database Operations with Retry Logic', () => {
       const records = [
         {
           id: 'account-1',
-          data: { id: 'account-1', name: 'Account 1', type: 'checking', balance: 100 },
+          data: {
+            id: 'account-1',
+            name: 'Account 1',
+            type: 'checking',
+            balance: 100,
+          },
         },
         {
           id: 'account-2',
-          data: { id: 'account-2', name: 'Account 2', type: 'savings', balance: 200 },
+          data: {
+            id: 'account-2',
+            name: 'Account 2',
+            type: 'savings',
+            balance: 200,
+          },
         },
         {
           id: 'account-3',
-          data: { id: 'account-3', name: 'Account 3', type: 'credit', balance: -50 },
+          data: {
+            id: 'account-3',
+            name: 'Account 3',
+            type: 'credit',
+            balance: -50,
+          },
         },
       ];
 
@@ -149,22 +166,29 @@ describe('Database Operations with Retry Logic', () => {
       const records = [
         {
           id: 'account-1',
-          data: { id: 'account-1', name: 'Account 1', type: 'checking', balance: 100 },
+          data: {
+            id: 'account-1',
+            name: 'Account 1',
+            type: 'checking',
+            balance: 100,
+          },
         },
       ];
 
       // Mock bulkPut to fail once, then succeed
       let callCount = 0;
       const originalBulkPut = db[storeName].bulkPut.bind(db[storeName]);
-      const bulkPutSpy = vi.spyOn(db[storeName], 'bulkPut').mockImplementation((data) => {
-        callCount++;
-        if (callCount === 1) {
-          const error = new Error('Timeout');
-          error.name = 'TimeoutError';
-          throw error;
-        }
-        return originalBulkPut(data);
-      });
+      const bulkPutSpy = vi
+        .spyOn(db[storeName], 'bulkPut')
+        .mockImplementation((data) => {
+          callCount++;
+          if (callCount === 1) {
+            const error = new Error('Timeout');
+            error.name = 'TimeoutError';
+            throw error;
+          }
+          return originalBulkPut(data);
+        });
 
       await batchStoreUserEncryptedRecords(storeName, records, dek, userId);
 
@@ -180,8 +204,19 @@ describe('Database Operations with Retry Logic', () => {
   describe('deleteUserEncryptedRecord with retry', () => {
     beforeEach(async () => {
       // Store a record to delete
-      const data = { id: 'test-account', name: 'Test', type: 'checking', balance: 100 };
-      await storeUserEncryptedRecord(storeName, 'test-account', data, dek, userId);
+      const data = {
+        id: 'test-account',
+        name: 'Test',
+        type: 'checking',
+        balance: 100,
+      };
+      await storeUserEncryptedRecord(
+        storeName,
+        'test-account',
+        data,
+        dek,
+        userId
+      );
     });
 
     it('should successfully delete a record', async () => {
@@ -200,14 +235,16 @@ describe('Database Operations with Retry Logic', () => {
     it('should retry delete operation on transient error', async () => {
       let callCount = 0;
       const originalDelete = db[storeName].delete.bind(db[storeName]);
-      const deleteSpy = vi.spyOn(db[storeName], 'delete').mockImplementation((id) => {
-        callCount++;
-        if (callCount === 1) {
-          const error = new Error('Transaction blocked');
-          throw error;
-        }
-        return originalDelete(id);
-      });
+      const deleteSpy = vi
+        .spyOn(db[storeName], 'delete')
+        .mockImplementation((id) => {
+          callCount++;
+          if (callCount === 1) {
+            const error = new Error('Transaction blocked');
+            throw error;
+          }
+          return originalDelete(id);
+        });
 
       await deleteUserEncryptedRecord(storeName, 'test-account', userId);
 
@@ -274,7 +311,10 @@ describe('Database Operations with Retry Logic', () => {
       await storeUserEncryptedRecord(storeName, recordId, data, dek, userId);
 
       // Verify only one record exists
-      const records = await db[storeName].where('id').equals(recordId).toArray();
+      const records = await db[storeName]
+        .where('id')
+        .equals(recordId)
+        .toArray();
       expect(records).toHaveLength(1);
       expect(records[0].id).toBe(recordId);
     });
@@ -295,13 +335,28 @@ describe('Database Operations with Retry Logic', () => {
       };
 
       // Store initial record
-      await storeUserEncryptedRecord(storeName, recordId, initialData, dek, userId);
+      await storeUserEncryptedRecord(
+        storeName,
+        recordId,
+        initialData,
+        dek,
+        userId
+      );
 
       // Store updated record (simulating a retry with new data)
-      await storeUserEncryptedRecord(storeName, recordId, updatedData, dek, userId);
+      await storeUserEncryptedRecord(
+        storeName,
+        recordId,
+        updatedData,
+        dek,
+        userId
+      );
 
       // Verify only one record exists with updated data
-      const records = await db[storeName].where('id').equals(recordId).toArray();
+      const records = await db[storeName]
+        .where('id')
+        .equals(recordId)
+        .toArray();
       expect(records).toHaveLength(1);
 
       // Decrypt and verify the data was updated (we can't decrypt in tests without proper setup,

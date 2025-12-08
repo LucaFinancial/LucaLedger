@@ -63,8 +63,8 @@ export function classifyError(error) {
     return ErrorType.TRANSIENT;
   }
 
-  // Unknown errors - treat as transient and retry
-  return ErrorType.TRANSIENT;
+  // Unknown errors - default to unknown type
+  return ErrorType.UNKNOWN;
 }
 
 /**
@@ -96,7 +96,12 @@ export function getUserFriendlyErrorMessage(error) {
     return 'Unable to save data. Please try again or contact support.';
   }
 
-  return 'Failed to save data after multiple attempts. Please try again.';
+  if (errorType === ErrorType.TRANSIENT) {
+    return 'Failed to save data after multiple attempts. Please try again.';
+  }
+
+  // ErrorType.UNKNOWN
+  return 'An unexpected error occurred while saving data. Please try again.';
 }
 
 /**
@@ -244,7 +249,8 @@ export async function retryOperation(
   );
 
   if (onError) {
-    onError(lastError, ErrorType.TRANSIENT);
+    const errorType = classifyError(lastError);
+    onError(lastError, errorType);
   }
 
   throw lastError;
