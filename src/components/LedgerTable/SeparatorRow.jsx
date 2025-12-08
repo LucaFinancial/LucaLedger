@@ -13,6 +13,7 @@ export default function SeparatorRow({
   onExpandYear,
   onCollapseYear,
   selectedCount,
+  monthKey,
 }) {
   const date = parseISO(transaction.date.replace(/\//g, '-'));
   const formatStr = isYear ? 'yyyy' : 'MMMM yyyy';
@@ -33,6 +34,7 @@ export default function SeparatorRow({
 
   return (
     <TableRow
+      data-month-key={monthKey}
       sx={{
         '& td': {
           borderBottom: 'unset',
@@ -93,6 +95,7 @@ SeparatorRow.propTypes = {
   onExpandYear: PropTypes.func,
   onCollapseYear: PropTypes.func,
   selectedCount: PropTypes.number,
+  monthKey: PropTypes.string,
 };
 
 SeparatorRow.defaultProps = {
