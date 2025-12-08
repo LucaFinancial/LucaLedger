@@ -481,24 +481,23 @@ export default function LedgerTable({
                         .filter((item) => item.type === 'transaction')
                         .map((item) => item.data);
 
-                      const pendingCharges = monthTransactions
-                        .filter((t) => t.status?.trim() === 'pending')
-                        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-                      const scheduledCharges = monthTransactions
-                        .filter((t) => t.status?.trim() === 'scheduled')
-                        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-                      const total = monthTransactions.reduce(
-                        (sum, t) => sum + Number(t.amount),
-                        0
+                      // Combine all calculations in a single reduce operation
+                      const stats = monthTransactions.reduce(
+                        (acc, t) => {
+                          const amount = Number(t.amount);
+                          const status = t.status?.trim();
+                          if (status === 'pending') {
+                            acc.pendingCharges += amount;
+                          } else if (status === 'scheduled') {
+                            acc.scheduledCharges += amount;
+                          }
+                          acc.total += amount;
+                          return acc;
+                        },
+                        { pendingCharges: 0, scheduledCharges: 0, total: 0 }
                       );
 
-                      statementInfo = {
-                        pendingCharges,
-                        scheduledCharges,
-                        total,
-                      };
+                      statementInfo = stats;
                     }
 
                     return (
