@@ -1,8 +1,5 @@
 import LedgerRow from '@/components/LedgerRow';
-import {
-  constants as accountConstants,
-  selectors as accountSelectors,
-} from '@/store/accounts';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
@@ -208,8 +205,9 @@ export default function LedgerTable({
   const groupedData = useMemo(() => {
     const groups = {};
     const statementClosingDay = account.statementDay || 1;
-    const isCreditCard =
-      account.type === accountConstants.AccountType.CREDIT_CARD;
+    const hasStatements = account.statementDay !== undefined;
+    // Note: statementLockedToMonth and groupBy will be used in future enhancements
+    // for implementing statement-based grouping modes
 
     // First, group all transactions by year and month
     filteredTransactions.forEach((transaction) => {
@@ -234,8 +232,8 @@ export default function LedgerTable({
       });
     });
 
-    // For credit cards, insert statement dividers using actual statement data
-    if (isCreditCard && accountStatements.length > 0) {
+    // Insert statement dividers using actual statement data if available
+    if (hasStatements && accountStatements.length > 0) {
       // Sort statements by closing date
       const sortedStatements = [...accountStatements].sort((a, b) =>
         a.closingDate.localeCompare(b.closingDate)
@@ -332,7 +330,7 @@ export default function LedgerTable({
           console.error('Error processing statement:', statement, error);
         }
       });
-    } else if (isCreditCard) {
+    } else if (hasStatements) {
       const monthNames = [
         'January',
         'February',
@@ -436,7 +434,6 @@ export default function LedgerTable({
     filteredTransactions,
     transactionsWithBalance,
     account.statementDay,
-    account.type,
     accountStatements,
     getYearIdentifier,
     getMonthIdentifier,
@@ -474,6 +471,36 @@ export default function LedgerTable({
                     const isMonthCollapsed =
                       collapsedGroups.includes(yearMonthKey);
 
+                    // Calculate statement info for month separator if locked to month
+                    let statementInfo = null;
+                    if (
+                      account.statementLockedToMonth &&
+                      account.statementDay
+                    ) {
+                      const monthTransactions = monthData.items
+                        .filter((item) => item.type === 'transaction')
+                        .map((item) => item.data);
+
+                      const pendingCharges = monthTransactions
+                        .filter((t) => t.status?.trim() === 'pending')
+                        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+                      const scheduledCharges = monthTransactions
+                        .filter((t) => t.status?.trim() === 'scheduled')
+                        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+                      const total = monthTransactions.reduce(
+                        (sum, t) => sum + Number(t.amount),
+                        0
+                      );
+
+                      statementInfo = {
+                        pendingCharges,
+                        scheduledCharges,
+                        total,
+                      };
+                    }
+
                     return (
                       <Fragment key={yearMonthKey}>
                         <SeparatorRow
@@ -487,6 +514,7 @@ export default function LedgerTable({
                             yearMonthKey,
                             false
                           )}
+                          statementInfo={statementInfo}
                         />
 
                         {!isMonthCollapsed &&
