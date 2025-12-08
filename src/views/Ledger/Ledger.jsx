@@ -59,7 +59,6 @@ export default function Ledger() {
     useState(false);
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState('rolling');
-  const scrollContainerRef = useRef(null);
   const account = useSelector(accountSelectors.selectAccountById(accountId));
   const transactions = useSelector(
     transactionSelectors.selectTransactionsByAccountId(accountId)
@@ -267,7 +266,7 @@ export default function Ledger() {
 
   // Auto-scroll to current month when Rolling is selected
   useEffect(() => {
-    if (selectedYear === 'rolling' && scrollContainerRef.current) {
+    if (selectedYear === 'rolling') {
       // Delay to ensure DOM is rendered
       setTimeout(() => {
         const currentMonthStr = `${format(new Date(), 'yyyy')}-${format(
