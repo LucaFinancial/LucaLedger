@@ -295,15 +295,15 @@ export function validateImportedData(data) {
   const errors = [];
 
   // Check for required top-level properties
-  if (!data.accounts && !Array.isArray(data.accounts)) {
+  if (!data.accounts || !Array.isArray(data.accounts)) {
     errors.push('Missing or invalid accounts array');
   }
 
-  if (!data.transactions && !Array.isArray(data.transactions)) {
+  if (!data.transactions || !Array.isArray(data.transactions)) {
     errors.push('Missing or invalid transactions array');
   }
 
-  if (!data.categories && typeof data.categories !== 'object') {
+  if (!data.categories || typeof data.categories !== 'object') {
     errors.push('Missing or invalid categories object');
   }
 

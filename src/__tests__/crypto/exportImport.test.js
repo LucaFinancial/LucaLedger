@@ -217,9 +217,9 @@ describe('Encrypted Export/Import', () => {
       // Try to import with different key
       const wrongDEK = await generateDataEncryptionKey();
 
-      await expect(
-        importEncryptedData(text, wrongDEK)
-      ).rejects.toThrow('Decryption failed');
+      await expect(importEncryptedData(text, wrongDEK)).rejects.toThrow(
+        'Decryption failed'
+      );
     });
 
     it('should throw error for corrupted data', async () => {
@@ -438,7 +438,11 @@ describe('Encrypted Export/Import', () => {
           expectedError: /Failed to import/,
         },
         {
-          data: JSON.stringify({ version: '99.0', iv: 'test', ciphertext: 'test' }),
+          data: JSON.stringify({
+            version: '99.0',
+            iv: 'test',
+            ciphertext: 'test',
+          }),
           expectedError: /Unsupported export format version/,
         },
         {
