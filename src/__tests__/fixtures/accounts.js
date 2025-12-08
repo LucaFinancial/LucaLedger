@@ -42,6 +42,26 @@ export const creditCardStatementDay31 = {
   statementDay: 31,
 };
 
+// Account with statement locked to month
+export const accountWithStatementLockedToMonth = {
+  id: 'acc-checking-002',
+  name: 'Checking with Statements',
+  type: AccountType.CHECKING,
+  statementDay: 15,
+  statementLockedToMonth: true,
+  groupBy: 'month',
+};
+
+// Account with statement grouping
+export const accountWithStatementGrouping = {
+  id: 'acc-checking-003',
+  name: 'Checking with Statement Grouping',
+  type: AccountType.CHECKING,
+  statementDay: 10,
+  statementLockedToMonth: false,
+  groupBy: 'statement',
+};
+
 // Collection of all valid accounts
 export const validAccounts = [
   validCheckingAccount,
@@ -49,6 +69,8 @@ export const validAccounts = [
   validCreditCardAccount,
   creditCardStatementDay1,
   creditCardStatementDay31,
+  accountWithStatementLockedToMonth,
+  accountWithStatementGrouping,
 ];
 
 // Invalid Account Fixtures (for failure tests)

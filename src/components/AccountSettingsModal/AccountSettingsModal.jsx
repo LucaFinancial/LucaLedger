@@ -12,6 +12,10 @@ import {
   Switch,
   TextField,
   Typography,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
@@ -24,12 +28,23 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [name, setName] = useState(account.name);
   const [type, setType] = useState(account.type);
   const [statementDay, setStatementDay] = useState(account.statementDay || 1);
+  const [statementLockedToMonth, setStatementLockedToMonth] = useState(
+    account.statementLockedToMonth || false
+  );
+  const [groupBy, setGroupBy] = useState(
+    account.groupBy || constants.GroupByMode.MONTH
+  );
   const [isDirty, setIsDirty] = useState(false);
   // Store initial values to compare against
   const [initialName, setInitialName] = useState(account.name);
   const [initialType, setInitialType] = useState(account.type);
   const [initialStatementDay, setInitialStatementDay] = useState(
     account.statementDay || 1
+  );
+  const [initialStatementLockedToMonth, setInitialStatementLockedToMonth] =
+    useState(account.statementLockedToMonth || false);
+  const [initialGroupBy, setInitialGroupBy] = useState(
+    account.groupBy || constants.GroupByMode.MONTH
   );
 
   // Reset state when modal opens with new account
@@ -38,9 +53,13 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       setName(account.name);
       setType(account.type);
       setStatementDay(account.statementDay || 1);
+      setStatementLockedToMonth(account.statementLockedToMonth || false);
+      setGroupBy(account.groupBy || constants.GroupByMode.MONTH);
       setInitialName(account.name);
       setInitialType(account.type);
       setInitialStatementDay(account.statementDay || 1);
+      setInitialStatementLockedToMonth(account.statementLockedToMonth || false);
+      setInitialGroupBy(account.groupBy || constants.GroupByMode.MONTH);
       setIsDirty(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -51,10 +70,22 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     const hasChanges =
       name !== initialName ||
       type !== initialType ||
-      (type === constants.AccountType.CREDIT_CARD &&
-        statementDay !== initialStatementDay);
+      statementDay !== initialStatementDay ||
+      statementLockedToMonth !== initialStatementLockedToMonth ||
+      groupBy !== initialGroupBy;
     setIsDirty(hasChanges);
-  }, [name, type, statementDay, initialName, initialType, initialStatementDay]);
+  }, [
+    name,
+    type,
+    statementDay,
+    statementLockedToMonth,
+    groupBy,
+    initialName,
+    initialType,
+    initialStatementDay,
+    initialStatementLockedToMonth,
+    initialGroupBy,
+  ]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -85,6 +116,14 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     setStatementDay(newValue);
   };
 
+  const handleStatementLockedToMonthChange = (event) => {
+    setStatementLockedToMonth(event.target.checked);
+  };
+
+  const handleGroupByChange = (event) => {
+    setGroupBy(event.target.value);
+  };
+
   const handleSaveChanges = () => {
     // Collect all changes into a single update object
     const updates = {};
@@ -99,12 +138,19 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       if (type === constants.AccountType.CREDIT_CARD) {
         updates.statementDay = statementDay;
       }
-    } else if (
-      type === constants.AccountType.CREDIT_CARD &&
-      statementDay !== initialStatementDay
-    ) {
-      // Save statement day if changed for existing credit card
+    }
+
+    // Save statement day if changed (for any account type now)
+    if (statementDay !== initialStatementDay) {
       updates.statementDay = statementDay;
+    }
+
+    if (statementLockedToMonth !== initialStatementLockedToMonth) {
+      updates.statementLockedToMonth = statementLockedToMonth;
+    }
+
+    if (groupBy !== initialGroupBy) {
+      updates.groupBy = groupBy;
     }
 
     // Apply all updates in a single dispatch
@@ -127,6 +173,8 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     setName(initialName);
     setType(initialType);
     setStatementDay(initialStatementDay);
+    setStatementLockedToMonth(initialStatementLockedToMonth);
+    setGroupBy(initialGroupBy);
     setIsDirty(false);
     onClose();
   };
@@ -182,59 +230,56 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               ))}
             </Select>
           </Box>
-          {type === constants.AccountType.CREDIT_CARD && (
-            <TextField
-              label='Statement Closing Date'
-              type='number'
-              value={statementDay}
-              onChange={handleStatementDayChange}
-              fullWidth
-              helperText='Day of month (1-28)'
-              inputProps={{ min: 1, max: 28 }}
-            />
-          )}
         </Box>
 
-        <Box>
+        <Box sx={{ mb: 3 }}>
           <Typography
             variant='subtitle1'
-            sx={{ fontWeight: 'bold', mb: 1, color: 'text.secondary' }}
+            sx={{ fontWeight: 'bold', mb: 2 }}
           >
-            Recommended Settings (Coming Soon)
+            Statement Settings
           </Typography>
-          <Typography
-            variant='body2'
-            sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}
+          <TextField
+            label='Statement Closing Day'
+            type='number'
+            value={statementDay}
+            onChange={handleStatementDayChange}
+            fullWidth
+            helperText='Day of month (1-28)'
+            inputProps={{ min: 1, max: 28 }}
+            sx={{ mb: 2 }}
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={statementLockedToMonth}
+                onChange={handleStatementLockedToMonthChange}
+              />
+            }
+            label='Lock statements to calendar months'
+            sx={{ mb: 2 }}
+          />
+          <FormControl
+            component='fieldset'
+            sx={{ mt: 1 }}
           >
-            These settings are placeholders and will be functional in a future
-            update.
-          </Typography>
-
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable automatic categorization'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Send monthly statement reminders'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Show balance projections'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable spending alerts'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Auto-archive old transactions'
-            sx={{ mb: 1 }}
-          />
+            <FormLabel component='legend'>Group By</FormLabel>
+            <RadioGroup
+              value={groupBy}
+              onChange={handleGroupByChange}
+            >
+              <FormControlLabel
+                value={constants.GroupByMode.MONTH}
+                control={<Radio />}
+                label='Month (months are collapsible, statements are dividers)'
+              />
+              <FormControlLabel
+                value={constants.GroupByMode.STATEMENT}
+                control={<Radio />}
+                label='Statement (statement periods are collapsible, months are dividers)'
+              />
+            </RadioGroup>
+          </FormControl>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -259,5 +304,7 @@ AccountSettingsModal.propTypes = {
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     statementDay: PropTypes.number,
+    statementLockedToMonth: PropTypes.bool,
+    groupBy: PropTypes.string,
   }).isRequired,
 };
