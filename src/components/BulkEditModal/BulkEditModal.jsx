@@ -155,7 +155,7 @@ export default function BulkEditModal({
               variant='contained'
               disabled={
                 !selectedState &&
-                (!selectedDate || !selectedDate.isValid()) &&
+                !(selectedDate && selectedDate.isValid()) &&
                 !selectedCategory
               }
             >
