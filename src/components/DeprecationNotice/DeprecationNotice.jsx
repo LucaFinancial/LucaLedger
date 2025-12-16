@@ -38,14 +38,15 @@ export default function DeprecationNotice() {
           component='div'
           sx={{ mb: 1, fontWeight: 'bold' }}
         >
-          Version 1 is No Longer Maintained
+          Version 1 Retires December 27, 2025
         </Typography>
         <Typography
           variant='body2'
           sx={{ mb: 2 }}
         >
-          Luca Ledger Version 1 has been deprecated and is no longer receiving
-          updates or support. Please migrate to{' '}
+          Luca Ledger Version 1 will be permanently shut down on December 27,
+          2025 and will no longer be accessible after that date. Please migrate
+          to{' '}
           <a
             href='https://lucaledger.app'
             target='_blank'
@@ -54,7 +55,8 @@ export default function DeprecationNotice() {
           >
             Version 2
           </a>{' '}
-          to access the latest features and improvements.
+          before year-end to retain access to your accounts and receive the
+          latest improvements.
         </Typography>
 
         <Button
@@ -143,8 +145,8 @@ export default function DeprecationNotice() {
               color='text.secondary'
               sx={{ fontStyle: 'italic' }}
             >
-              Thank you for using Luca Ledger Version 1. We look forward to
-              seeing you on Version 2!
+              Access to Version 1 ends on December 27, 2025. Thank you for using
+              Luca Ledger Version 1—we look forward to seeing you on Version 2.
             </Typography>
           </Box>
         </Collapse>

@@ -21,7 +21,7 @@ export default function DeprecationBanner() {
         variant='body2'
         sx={{ fontWeight: 'medium' }}
       >
-        v1 is deprecated. Migrate to{' '}
+        Luca Ledger v1 shuts down December 27, 2025. Move to{' '}
         <Link
           href='https://lucaledger.app'
           target='_blank'
@@ -36,7 +36,8 @@ export default function DeprecationBanner() {
           }}
         >
           Version 2
-        </Link>
+        </Link>{' '}
+        now to retain access.
       </Typography>
     </Box>
   );
