@@ -152,6 +152,36 @@ Credit Card accounts extend the common schema with a `statementDay` field:
 - Transaction dates use the format `YYYY/MM/DD` (e.g., `2025/10/26`) as defined in the application config.
 - Status values have trailing spaces (this is the existing implementation in `TransactionStatusEnum`).
 
+### Category Schema
+
+Categories use a flat shape in the application store. Each category is an individual
+object that may reference a `parentId`. A `null` `parentId` indicates a top-level
+category. UI code that needs a hierarchical representation should use selectors
+such as `selectCategoriesHierarchical` to build `subcategories` from the flat
+list of categories.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "parentId": {
+      "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    }
+  },
+  "required": ["id", "slug", "name", "parentId"],
+  "additionalProperties": false
+}
+```
+
+Notes:
+
+- Keep category data flat to make storage, indexing, and merging easier.
+- Use `parentId: null` to indicate top-level categories.
+- Hierarchical views should be derived at runtime from the flat list.
+
 ### Statement Schema
 
 Statements now track rich financial data so balances always match the way credit-card statements are published. Required numeric fields default to `0`, which keeps legacy data compatible while ensuring every statement carries a full breakdown. The legacy `total` field has been removed—`endingBalance` is the canonical amount.
