@@ -91,9 +91,7 @@ describe('LedgerTable Year Filter', () => {
     // Apply the statement filter logic (the fix we added)
     const filteredStatements = accountStatements.filter((statement) => {
       try {
-        const closingDate = parseISO(
-          statement.closingDate.replace(/\//g, '-')
-        );
+        const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
 
         if (isNaN(closingDate.getTime())) {
           return false;
