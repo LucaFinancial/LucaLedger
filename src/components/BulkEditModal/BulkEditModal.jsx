@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { isValid } from 'date-fns';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { constants } from '@/store/transactions';
@@ -46,7 +47,7 @@ export default function BulkEditModal({
     }
 
     // Only include date if it was set and is valid
-    if (selectedDate && selectedDate.isValid()) {
+    if (selectedDate && isValid(selectedDate)) {
       updates.date = selectedDate;
     }
 
@@ -155,7 +156,7 @@ export default function BulkEditModal({
               variant='contained'
               disabled={
                 !selectedState &&
-                (!selectedDate || !selectedDate.isValid()) &&
+                (!selectedDate || !isValid(selectedDate)) &&
                 !selectedCategory
               }
             >
