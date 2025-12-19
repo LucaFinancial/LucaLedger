@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.0.1-rc.1",
+  "version": "2.0.2",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -8,7 +8,6 @@
   "scripts": {
     "build": "vite build",
     "build:pages": "yarn && vite build && cp CNAME dist/CNAME && cp dist/index.html dist/404.html",
-    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
