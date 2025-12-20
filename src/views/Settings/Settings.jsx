@@ -5,9 +5,6 @@ import {
   Card,
   CardContent,
   Chip,
-  FormControlLabel,
-  Switch,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { Lock as LockIcon, Gavel as GavelIcon } from '@mui/icons-material';
@@ -130,92 +127,6 @@ export default function Settings() {
         open={showTosModal}
         onClose={() => setShowTosModal(false)}
       />
-
-      {/* Recommended Settings (Coming Soon) */}
-      <Card>
-        <CardContent>
-          <Typography
-            variant='h5'
-            sx={{ mb: 1 }}
-          >
-            Recommended Settings
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ mb: 3, color: 'text.secondary' }}
-          >
-            Coming Soon
-          </Typography>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Placeholder 1: Auto-backup */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable automatic backups (coming soon)'
-                  />
-                }
-                label='Enable Automatic Backups'
-              />
-            </Tooltip>
-
-            {/* Placeholder 2: Dark mode */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable dark mode (coming soon)'
-                  />
-                }
-                label='Enable Dark Mode'
-              />
-            </Tooltip>
-
-            {/* Placeholder 3: Currency format */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Use international currency format (coming soon)'
-                  />
-                }
-                label='Use International Currency Format'
-              />
-            </Tooltip>
-
-            {/* Placeholder 4: Notifications */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable transaction reminders (coming soon)'
-                  />
-                }
-                label='Enable Transaction Reminders'
-              />
-            </Tooltip>
-
-            {/* Placeholder 5: Export data */}
-            <Tooltip title='This feature is not yet available'>
-              <span>
-                <Button
-                  variant='outlined'
-                  disabled
-                  sx={{ mt: 1 }}
-                  aria-label='Export data to CSV (coming soon)'
-                >
-                  Export Data to CSV
-                </Button>
-              </span>
-            </Tooltip>
-          </Box>
-        </CardContent>
-      </Card>
     </Box>
   );
 }
