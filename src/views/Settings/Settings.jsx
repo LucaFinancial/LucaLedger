@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -9,13 +10,15 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Lock as LockIcon } from '@mui/icons-material';
+import { Lock as LockIcon, Gavel as GavelIcon } from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import TermsOfServiceModal from '@/components/TermsOfServiceModal';
 
 export default function Settings() {
   const { currentUser } = useAuth();
+  const [showTosModal, setShowTosModal] = useState(false);
 
   const encryptionConfig = {
     label: 'Encrypted',
@@ -108,9 +111,25 @@ export default function Settings() {
               </Typography>
               <Typography variant='body1'>{CURRENT_SCHEMA_VERSION}</Typography>
             </Box>
+
+            <Box>
+              <Button
+                startIcon={<GavelIcon />}
+                onClick={() => setShowTosModal(true)}
+                variant='outlined'
+                size='small'
+              >
+                View Terms of Service
+              </Button>
+            </Box>
           </Box>
         </CardContent>
       </Card>
+
+      <TermsOfServiceModal
+        open={showTosModal}
+        onClose={() => setShowTosModal(false)}
+      />
 
       {/* Recommended Settings (Coming Soon) */}
       <Card>
