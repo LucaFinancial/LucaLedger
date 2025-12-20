@@ -265,4 +265,76 @@ function handleEncryptedPersistence(action, state) {
       console.error('Failed to delete statement from IndexedDB:', error);
     });
   }
+
+  // Handle recurring transaction actions
+  if (action.type === 'recurringTransactions/addRecurringTransaction') {
+    queueWrite('recurringTransactions', action.payload.id, action.payload);
+  } else if (
+    action.type === 'recurringTransactions/updateRecurringTransaction'
+  ) {
+    queueWrite('recurringTransactions', action.payload.id, action.payload);
+  } else if (action.type === 'recurringTransactions/setRecurringTransactions') {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((rt) => ({
+          id: rt.id,
+          data: rt,
+        }));
+        batchStoreUserEncryptedRecords(
+          'recurringTransactions',
+          records,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error(
+            'Failed to persist recurring transactions to IndexedDB:',
+            error
+          );
+        });
+      });
+    }
+  } else if (
+    action.type === 'recurringTransactions/removeRecurringTransaction'
+  ) {
+    const id = action.payload;
+    db.recurringTransactions.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete recurring transaction from IndexedDB:',
+        error
+      );
+    });
+  }
+
+  // Handle recurring occurrence actions
+  if (action.type === 'recurringOccurrences/addRecurringOccurrence') {
+    queueWrite('recurringOccurrences', action.payload.id, action.payload);
+  } else if (action.type === 'recurringOccurrences/setRecurringOccurrences') {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((occ) => ({
+          id: occ.id,
+          data: occ,
+        }));
+        batchStoreUserEncryptedRecords(
+          'recurringOccurrences',
+          records,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error(
+            'Failed to persist recurring occurrences to IndexedDB:',
+            error
+          );
+        });
+      });
+    }
+  } else if (action.type === 'recurringOccurrences/removeRecurringOccurrence') {
+    const id = action.payload;
+    db.recurringOccurrences.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete recurring occurrence from IndexedDB:',
+        error
+      );
+    });
+  }
 }
