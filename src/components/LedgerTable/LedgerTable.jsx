@@ -8,6 +8,7 @@ import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as recurringOccurrenceSelectors } from '@/store/recurringOccurrences';
+import { selectors as settingsSelectors } from '@/store/settings';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import {
   format,
@@ -15,6 +16,7 @@ import {
   isBefore,
   isAfter,
   isSameDay,
+  add,
   addDays,
   subMonths,
   isWithinInterval,
@@ -59,13 +61,21 @@ export default function LedgerTable({
   const realizedDatesMap = useSelector(
     recurringOccurrenceSelectors.selectAllRealizedDatesMap
   );
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection
+  );
 
   // Generate virtual transactions from recurring rules
-  const virtualTransactions = useMemo(
-    () =>
-      generateVirtualTransactions(recurringTransactions, realizedDatesMap, 15),
-    [recurringTransactions, realizedDatesMap]
-  );
+  const virtualTransactions = useMemo(() => {
+    const projectionEndDate = add(new Date(), {
+      [recurringProjection.unit]: recurringProjection.amount,
+    });
+    return generateVirtualTransactions(
+      recurringTransactions,
+      realizedDatesMap,
+      projectionEndDate
+    );
+  }, [recurringTransactions, realizedDatesMap, recurringProjection]);
 
   // Combine real and virtual transactions
   const allTransactions = useMemo(

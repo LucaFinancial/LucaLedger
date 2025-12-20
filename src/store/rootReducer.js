@@ -6,6 +6,7 @@ import { reducer as categoriesReducer } from './categories';
 import { reducer as statementsReducer } from './statements';
 import { reducer as recurringTransactionsReducer } from './recurringTransactions';
 import { reducer as recurringOccurrencesReducer } from './recurringOccurrences';
+import { reducer as settingsReducer } from './settings';
 import encryptionReducer from './encryption';
 
 export default combineReducers({
@@ -15,5 +16,6 @@ export default combineReducers({
   statements: statementsReducer,
   recurringTransactions: recurringTransactionsReducer,
   recurringOccurrences: recurringOccurrencesReducer,
+  settings: settingsReducer,
   encryption: encryptionReducer,
 });

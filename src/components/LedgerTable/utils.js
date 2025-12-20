@@ -19,17 +19,18 @@ export const computeStatementMonth = (transaction, statementDay) => {
  * Generates virtual transactions from recurring transaction rules
  * @param {Array} recurringTransactions - Array of recurring transaction rules
  * @param {Map} realizedDatesMap - Map of "ruleId:date" -> realizedTransactionId
- * @param {number} monthsAhead - Number of months to forecast (default 15)
+ * @param {Date} projectionEndDate - Date to forecast until
  * @returns {Array} Array of virtual transaction objects
  */
 export const generateVirtualTransactions = (
   recurringTransactions,
   realizedDatesMap,
-  monthsAhead = 15
+  projectionEndDate
 ) => {
   const virtualTransactions = [];
   const today = new Date();
-  const endDate = addMonths(today, monthsAhead);
+  // Default to 15 months if not provided (legacy support)
+  const endDate = projectionEndDate || addMonths(today, 15);
 
   recurringTransactions.forEach((rule) => {
     const occurrenceDates =
