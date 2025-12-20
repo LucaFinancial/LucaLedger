@@ -64,9 +64,9 @@ export default function CategoryCell({ transaction, isSelected }) {
 
   return (
     <>
-      <TableCell sx={{ minWidth: 170 }}>
+      <TableCell sx={{ width: 130, minWidth: 130 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             {hasSplits ? (
               <Tooltip title={splitCategoryNames}>
                 <Typography

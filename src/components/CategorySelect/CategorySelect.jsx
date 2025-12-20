@@ -17,6 +17,7 @@ export default function CategorySelect({
   helperText = '',
   fullWidth = false,
   isSelected = false,
+  sx = {},
 }) {
   const categories = useSelector(
     categorySelectors.selectCategoriesHierarchical
@@ -307,7 +308,7 @@ export default function CategorySelect({
         }
         size={size}
         fullWidth={fullWidth}
-        sx={{ minWidth: fullWidth ? undefined : 200 }}
+        sx={{ minWidth: fullWidth ? undefined : 200, ...sx }}
       />
 
       <CategoryDialog
@@ -334,4 +335,5 @@ CategorySelect.propTypes = {
   helperText: PropTypes.string,
   fullWidth: PropTypes.bool,
   isSelected: PropTypes.bool,
+  sx: PropTypes.object,
 };
