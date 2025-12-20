@@ -11,6 +11,7 @@ import {
   selectors as transactionSelectors,
 } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { actions as statementActions } from '@/store/statements';
 import {
   Box,
@@ -67,6 +68,15 @@ export default function Ledger() {
   );
   const transactions = useSelector(selectAccountTransactions);
 
+  const selectAccountRecurringTransactions = useMemo(
+    () =>
+      recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
+        accountId
+      ),
+    [accountId]
+  );
+  const recurringTransactions = useSelector(selectAccountRecurringTransactions);
+
   const flatCategories = useSelector(categorySelectors.selectAllCategories);
 
   // Find transactions with invalid categories
@@ -82,17 +92,45 @@ export default function Ledger() {
     return transactions.filter((transaction) => !transaction.categoryId).length;
   }, [transactions]);
 
-  // Get available years from transactions
+  // Get available years from transactions and recurring transactions
   const availableYears = useMemo(() => {
-    const years = [
-      ...new Set(
-        transactions.map((t) =>
-          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy')
-        )
-      ),
-    ];
+    const transactionYears = transactions.map((t) =>
+      format(parseISO(t.date.replace(/\//g, '-')), 'yyyy')
+    );
+
+    const recurringYears = recurringTransactions.flatMap((rt) => {
+      try {
+        const startYear = parseInt(
+          format(parseISO(rt.startDate.replace(/\//g, '-')), 'yyyy'),
+          10
+        );
+        // For ongoing recurring transactions, show up to next year
+        const endYear = rt.endDate
+          ? parseInt(
+              format(parseISO(rt.endDate.replace(/\//g, '-')), 'yyyy'),
+              10
+            )
+          : new Date().getFullYear() + 1;
+
+        const years = [];
+        // Limit to a reasonable range to prevent performance issues with bad data
+        // e.g., if someone puts start date 1900
+        const safeStartYear = Math.max(startYear, 2000);
+        const safeEndYear = Math.min(endYear, new Date().getFullYear() + 5);
+
+        for (let y = safeStartYear; y <= safeEndYear; y++) {
+          years.push(y.toString());
+        }
+        return years;
+      } catch (e) {
+        console.warn('Error parsing recurring transaction dates', e);
+        return [];
+      }
+    });
+
+    const years = [...new Set([...transactionYears, ...recurringYears])];
     return years.sort((a, b) => b.localeCompare(a)); // Sort descending
-  }, [transactions]);
+  }, [transactions, recurringTransactions]);
 
   // Calculate rolling date range (3 months ago to 3 months ahead)
   const rollingDateRange = useMemo(() => {
@@ -247,12 +285,22 @@ export default function Ledger() {
     getDefaultCollapsedGroups()
   );
   const hasGeneratedStatements = useRef(new Set());
+  const prevAllMonthsLength = useRef(allMonths.length);
 
-  // Update collapsed groups when selectedYear changes
+  // Update collapsed groups when selectedYear or accountId changes
   useEffect(() => {
     setCollapsedGroups(getDefaultCollapsedGroups());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedYear, allMonths]);
+  }, [selectedYear, accountId]);
+
+  // Update collapsed groups when data loads (0 -> N months)
+  useEffect(() => {
+    if (prevAllMonthsLength.current === 0 && allMonths.length > 0) {
+      setCollapsedGroups(getDefaultCollapsedGroups());
+    }
+    prevAllMonthsLength.current = allMonths.length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMonths]);
 
   useEffect(() => {
     if (!account) {
