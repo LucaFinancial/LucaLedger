@@ -12,12 +12,12 @@ export default function AppContent() {
   return (
     <Routes>
       <Route
-        path='/'
-        element={<Landing />}
-      />
-      <Route
         path='/dashboard'
         element={<Dashboard />}
+      />
+      <Route
+        path='/home'
+        element={<Landing />}
       />
       <Route
         path='/accounts'
@@ -43,7 +43,7 @@ export default function AppContent() {
         path='*'
         element={
           <Navigate
-            to='/'
+            to='/dashboard'
             replace
           />
         }
