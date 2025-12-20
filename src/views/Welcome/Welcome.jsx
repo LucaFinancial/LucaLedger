@@ -64,7 +64,7 @@ export default function Welcome() {
       <Box
         sx={{
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-          pt: 8,
+          pt: 6,
           pb: 12,
         }}
       >
@@ -74,6 +74,24 @@ export default function Welcome() {
             spacing={4}
             alignItems='center'
           >
+            {/* Header row - in-flow title */}
+            <Grid
+              item
+              xs={12}
+            >
+              <Typography
+                variant={isMobile ? 'h4' : 'h3'}
+                align='center'
+                sx={{
+                  fontWeight: 700,
+                  color: 'white',
+                  fontSize: { xs: '2.4rem', md: '2.8rem', lg: '3.5rem' },
+                  mb: { xs: 0.5, md: 1 },
+                }}
+              >
+                Luca Ledger
+              </Typography>
+            </Grid>
             {/* Left side - Hero Text */}
             <Grid
               item
