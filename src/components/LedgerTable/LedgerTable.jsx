@@ -38,9 +38,13 @@ export default function LedgerTable({
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+
+  const selectAccountTransactions = useMemo(
+    () => transactionSelectors.selectTransactionsByAccountId(accountId),
+    [accountId]
   );
+  const transactions = useSelector(selectAccountTransactions);
+
   const categories = useSelector(categorySelectors.selectAllCategories);
   const accountStatements = useSelector(
     statementSelectors.selectStatementsByAccountId(accountId)
@@ -133,6 +137,7 @@ export default function LedgerTable({
     selectedTransactions,
     selectedYear,
     categories,
+    rollingDateRange,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -559,4 +564,8 @@ LedgerTable.propTypes = {
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
   selectedYear: PropTypes.string.isRequired,
+  rollingDateRange: PropTypes.shape({
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+  }),
 };

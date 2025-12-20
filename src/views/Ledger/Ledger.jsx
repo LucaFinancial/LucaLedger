@@ -60,9 +60,13 @@ export default function Ledger() {
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState('rolling');
   const account = useSelector(accountSelectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+
+  const selectAccountTransactions = useMemo(
+    () => transactionSelectors.selectTransactionsByAccountId(accountId),
+    [accountId]
   );
+  const transactions = useSelector(selectAccountTransactions);
+
   const flatCategories = useSelector(categorySelectors.selectAllCategories);
 
   // Find transactions with invalid categories
@@ -168,20 +172,22 @@ export default function Ledger() {
     flatCategories,
   ]);
 
-  const allMonths = transactions?.length
-    ? [
-        ...new Set(
-          transactions.map((t) => {
-            const date = parseISO(t.date.replace(/\//g, '-'));
-            return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
-          })
-        ),
-      ].sort((a, b) => {
-        const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
-        const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
-        return compareDesc(aDate, bDate);
-      })
-    : [];
+  const allMonths = useMemo(() => {
+    return transactions?.length
+      ? [
+          ...new Set(
+            transactions.map((t) => {
+              const date = parseISO(t.date.replace(/\//g, '-'));
+              return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
+            })
+          ),
+        ].sort((a, b) => {
+          const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
+          const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
+          return compareDesc(aDate, bDate);
+        })
+      : [];
+  }, [transactions]);
 
   const getDefaultCollapsedGroups = () => {
     const current = new Date();
