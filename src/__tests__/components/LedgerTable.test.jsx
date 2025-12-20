@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { format, parseISO } from 'date-fns';
+import {
+  format,
+  parseISO,
+  isWithinInterval,
+  subMonths,
+  addMonths,
+  startOfMonth,
+  endOfMonth,
+} from 'date-fns';
 
 describe('LedgerTable Year Filter', () => {
   it('should filter transactions by selected year', () => {
@@ -117,5 +125,56 @@ describe('LedgerTable Year Filter', () => {
       '2024/01/10',
       '2024/02/10',
     ]);
+  });
+
+  it('should filter transactions by rolling date range', () => {
+    // Setup rolling date range (e.g., centered on Jan 2025)
+    // Let's simulate "today" as Jan 15, 2025
+    // Rolling range: Oct 1, 2024 to Apr 30, 2025 (3 months back, 3 months forward)
+
+    const today = new Date('2025-01-15');
+    const startDate = startOfMonth(subMonths(today, 3)); // Oct 1, 2024
+    const endDate = endOfMonth(addMonths(today, 3)); // Apr 30, 2025
+
+    const rollingDateRange = { startDate, endDate };
+    const selectedYear = 'rolling';
+
+    // Mock transactions
+    const transactionsWithBalance = [
+      { id: '1', date: '2024/09/30', amount: 100 }, // Before range
+      { id: '2', date: '2024/10/01', amount: 100 }, // Start of range
+      { id: '3', date: '2024/12/31', amount: 100 }, // In range
+      { id: '4', date: '2025/01/15', amount: 100 }, // In range (center)
+      { id: '5', date: '2025/04/30', amount: 100 }, // End of range
+      { id: '6', date: '2025/05/01', amount: 100 }, // After range
+    ];
+
+    // Apply the logic from LedgerTable
+    let filtered = transactionsWithBalance;
+
+    if (selectedYear !== 'all') {
+      filtered = filtered.filter((t) => {
+        if (!t.date) return false;
+        try {
+          const parsed = parseISO(t.date.replace(/\//g, '-'));
+          if (isNaN(parsed.getTime())) return false;
+
+          if (selectedYear === 'rolling' && rollingDateRange) {
+            return isWithinInterval(parsed, {
+              start: rollingDateRange.startDate,
+              end: rollingDateRange.endDate,
+            });
+          }
+
+          return format(parsed, 'yyyy') === selectedYear;
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // Should include ids 2, 3, 4, 5
+    expect(filtered).toHaveLength(4);
+    expect(filtered.map((t) => t.id)).toEqual(['2', '3', '4', '5']);
   });
 });

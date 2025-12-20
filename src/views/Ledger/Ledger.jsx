@@ -658,6 +658,7 @@ export default function Ledger() {
             selectedTransactions={selectedTransactions}
             onSelectionChange={handleSelectionChange}
             selectedYear={selectedYear}
+            rollingDateRange={rollingDateRange}
           />
         </Box>
         <RepeatedTransactionsModal

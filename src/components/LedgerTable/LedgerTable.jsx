@@ -15,6 +15,7 @@ import {
   isSameDay,
   addDays,
   subMonths,
+  isWithinInterval,
 } from 'date-fns';
 import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
@@ -33,6 +34,7 @@ export default function LedgerTable({
   selectedTransactions,
   onSelectionChange,
   selectedYear,
+  rollingDateRange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
@@ -68,6 +70,14 @@ export default function LedgerTable({
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
+
+          if (selectedYear === 'rolling' && rollingDateRange) {
+            return isWithinInterval(parsed, {
+              start: rollingDateRange.startDate,
+              end: rollingDateRange.endDate,
+            });
+          }
+
           return format(parsed, 'yyyy') === selectedYear;
         } catch {
           return false;
