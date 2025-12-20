@@ -21,7 +21,10 @@ export default function LedgerHeader() {
         <TableCell>Description</TableCell>
         <TableCell>Amount</TableCell>
         <TableCell>Balance</TableCell>
-        <TableCell>Actions</TableCell>
+        <TableCell sx={{ width: '100px', textAlign: 'center' }}>
+          Action
+        </TableCell>
+        <TableCell>Delete</TableCell>
       </TableRow>
     </TableHead>
   );

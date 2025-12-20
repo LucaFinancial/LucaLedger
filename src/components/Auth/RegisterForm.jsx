@@ -15,6 +15,8 @@ import {
   InputAdornment,
   IconButton,
   Link,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Visibility,
@@ -27,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { generateSecurePassword } from '@/crypto/encryption';
+import TermsOfServiceModal from '../TermsOfServiceModal';
 
 export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
   const { register, isUsernameAvailable } = useAuth();
@@ -39,6 +42,8 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
+  const [showTosModal, setShowTosModal] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef(null);
 
@@ -108,6 +113,7 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
     if (password.length < 8) return false;
     if (password !== confirmPassword) return false;
     if (isGenerated && !passwordCopied) return false;
+    if (!agreedToDisclaimer) return false;
     return true;
   };
 
@@ -250,7 +256,57 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
                 ? 'Passwords do not match'
                 : ''
             }
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={agreedToDisclaimer}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setShowTosModal(true);
+                  } else {
+                    setAgreedToDisclaimer(false);
+                  }
+                }}
+                color='primary'
+                size='small'
+              />
+            }
+            label={
+              <Typography
+                variant='caption'
+                color='text.secondary'
+              >
+                I have read and agree to the{' '}
+                <Link
+                  component='button'
+                  variant='caption'
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowTosModal(true);
+                  }}
+                >
+                  Terms of Service
+                </Link>
+                .
+              </Typography>
+            }
+            sx={{ mb: 2 }}
+          />
+
+          <TermsOfServiceModal
+            open={showTosModal}
+            onClose={() => setShowTosModal(false)}
+            onAgree={
+              !agreedToDisclaimer
+                ? () => {
+                    setAgreedToDisclaimer(true);
+                    setShowTosModal(false);
+                  }
+                : undefined
+            }
           />
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>

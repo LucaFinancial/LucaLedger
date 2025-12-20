@@ -8,6 +8,30 @@
 // Valid transaction status values
 const validStatuses = ['pending', 'complete', 'scheduled', 'planned'];
 
+// Schema for split (category allocation within a transaction)
+const splitSchema = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string',
+      minLength: 1,
+      description: 'Unique identifier for the split',
+    },
+    categoryId: {
+      type: 'string',
+      minLength: 1,
+      description: 'Category UUID for this split',
+    },
+    amount: {
+      type: 'number',
+      exclusiveMinimum: 0,
+      description: 'Split amount in integer minor units (cents), must be > 0',
+    },
+  },
+  required: ['id', 'categoryId', 'amount'],
+  additionalProperties: false,
+};
+
 // Schema for transactions
 const transactionSchema = {
   $id: 'transaction',
@@ -43,9 +67,21 @@ const transactionSchema = {
       description: 'Description of the transaction',
     },
     categoryId: {
-      type: ['string', 'null'],
-      minLength: 1,
+      oneOf: [
+        {
+          type: 'string',
+          minLength: 1,
+        },
+        {
+          type: 'null',
+        },
+      ],
       description: 'Category UUID for this transaction',
+    },
+    splits: {
+      type: 'array',
+      items: splitSchema,
+      description: 'Optional splits for dividing transaction across categories',
     },
   },
   required: ['id', 'accountId', 'status', 'date', 'amount', 'description'],

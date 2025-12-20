@@ -15,20 +15,32 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
 
 // Define schema with multi-user support
-// Version 3 adds users table for multi-user authentication
+// Version 4 adds recurring transactions and occurrences
 db.version(DB_VERSION).stores({
   users: 'id, username', // User table with unique usernames
   accounts: 'id, userId', // Per-user accounts
   transactions: 'id, userId', // Per-user transactions
   categories: 'id, userId', // Per-user categories
   statements: 'id, userId', // Per-user statements
+  recurringTransactions: 'id, userId', // Per-user recurring transactions
+  recurringOccurrences: 'id, userId', // Per-user recurring occurrences
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
+});
+
+// Upgrade from version 2 to 3 - add userId to existing records
+db.version(3).stores({
+  users: 'id, username',
+  accounts: 'id, userId',
+  transactions: 'id, userId',
+  categories: 'id, userId',
+  statements: 'id, userId',
+  metadata: 'key',
 });
 
 // Upgrade from version 2 to 3 - add userId to existing records

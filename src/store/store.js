@@ -28,6 +28,8 @@ const migrateState = (persistedState) => {
       },
       transactions: [],
       categories: isEncryptionActive ? [] : categoriesData.categories,
+      recurringTransactions: [],
+      recurringOccurrences: [],
     };
 
     // Set schema version for new users

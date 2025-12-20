@@ -6,6 +6,9 @@ import {
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
+import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
+import { selectors as recurringOccurrenceSelectors } from '@/store/recurringOccurrences';
+import { selectors as settingsSelectors } from '@/store/settings';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import {
   format,
@@ -13,8 +16,10 @@ import {
   isBefore,
   isAfter,
   isSameDay,
+  add,
   addDays,
   subMonths,
+  isWithinInterval,
 } from 'date-fns';
 import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
@@ -23,7 +28,7 @@ import { useParams } from 'react-router-dom';
 import LedgerHeader from './LedgerHeader';
 import SeparatorRow from './SeparatorRow';
 import StatementSeparatorRow from './StatementSeparatorRow';
-import { dateCompareFn } from './utils';
+import { dateCompareFn, generateVirtualTransactions } from './utils';
 
 export default function LedgerTable({
   filterValue,
@@ -33,29 +38,67 @@ export default function LedgerTable({
   selectedTransactions,
   onSelectionChange,
   selectedYear,
+  rollingDateRange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+
+  const selectAccountTransactions = useMemo(
+    () => transactionSelectors.selectTransactionsByAccountId(accountId),
+    [accountId]
   );
+  const transactions = useSelector(selectAccountTransactions);
+
   const categories = useSelector(categorySelectors.selectAllCategories);
   const accountStatements = useSelector(
     statementSelectors.selectStatementsByAccountId(accountId)
   );
+  const recurringTransactions = useSelector(
+    recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
+      accountId
+    )
+  );
+  const realizedDatesMap = useSelector(
+    recurringOccurrenceSelectors.selectAllRealizedDatesMap
+  );
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection
+  );
+
+  // Generate virtual transactions from recurring rules
+  const virtualTransactions = useMemo(() => {
+    const projectionEndDate = add(new Date(), {
+      [recurringProjection.unit]: recurringProjection.amount,
+    });
+    return generateVirtualTransactions(
+      recurringTransactions,
+      realizedDatesMap,
+      projectionEndDate
+    );
+  }, [recurringTransactions, realizedDatesMap, recurringProjection]);
+
+  // Combine real and virtual transactions
+  const allTransactions = useMemo(
+    () => [...transactions, ...virtualTransactions],
+    [transactions, virtualTransactions]
+  );
 
   const sortedTransactions = useMemo(
-    () => [...transactions].sort(dateCompareFn),
-    [transactions]
+    () => [...allTransactions].sort(dateCompareFn),
+    [allTransactions]
   );
 
   const transactionsWithBalance = useMemo(() => {
     let currentBalance = 0.0;
+    // Add initial balance if it exists (though schema doesn't currently support it)
+    if (account.initialBalance) {
+      currentBalance += account.initialBalance;
+    }
     return sortedTransactions.map((transaction) => {
       currentBalance += transaction.amount;
       return { ...transaction, balance: currentBalance };
     }, []);
-  }, [sortedTransactions]);
+  }, [sortedTransactions, account.initialBalance]);
 
   const filteredTransactions = useMemo(() => {
     // Start with all transactions with balance
@@ -68,6 +111,14 @@ export default function LedgerTable({
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
+
+          if (selectedYear === 'rolling' && rollingDateRange) {
+            return isWithinInterval(parsed, {
+              start: rollingDateRange.startDate,
+              end: rollingDateRange.endDate,
+            });
+          }
+
           return format(parsed, 'yyyy') === selectedYear;
         } catch {
           return false;
@@ -123,6 +174,7 @@ export default function LedgerTable({
     selectedTransactions,
     selectedYear,
     categories,
+    rollingDateRange,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -496,12 +548,14 @@ export default function LedgerTable({
                             yearMonthKey,
                             false
                           )}
+                          monthKey={yearMonthKey}
                         />
 
                         {!isMonthCollapsed &&
                           monthData.items.map((item) => {
                             if (item.type === 'transaction') {
                               const transaction = item.data;
+                              const isVirtual = transaction.isVirtual === true;
                               return (
                                 <LedgerRow
                                   key={transaction.id}
@@ -511,6 +565,15 @@ export default function LedgerTable({
                                     transaction.id
                                   )}
                                   onSelectionChange={onSelectionChange}
+                                  isVirtual={isVirtual}
+                                  recurringTransaction={
+                                    isVirtual
+                                      ? transaction.recurringTransaction
+                                      : null
+                                  }
+                                  occurrenceDate={
+                                    isVirtual ? transaction.date : null
+                                  }
                                 />
                               );
                             } else if (item.type === 'statement-divider') {
@@ -548,4 +611,8 @@ LedgerTable.propTypes = {
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
   selectedYear: PropTypes.string.isRequired,
+  rollingDateRange: PropTypes.shape({
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+  }),
 };

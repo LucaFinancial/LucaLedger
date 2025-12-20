@@ -18,6 +18,8 @@ import { setAccounts } from '@/store/accounts/slice';
 import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
 import { setStatements } from '@/store/statements/slice';
+import { setRecurringTransactions } from '@/store/recurringTransactions/slice';
+import { setRecurringOccurrences } from '@/store/recurringOccurrences/slice';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
 import categoriesData from '@/config/categories.json';
@@ -62,11 +64,23 @@ export default function EncryptionProvider() {
           encryptedTransactions,
           encryptedCategories,
           encryptedStatements,
+          encryptedRecurringTransactions,
+          encryptedRecurringOccurrences,
         ] = await Promise.all([
           getUserEncryptedRecords('accounts', activeDEK, currentUser.id),
           getUserEncryptedRecords('transactions', activeDEK, currentUser.id),
           getUserEncryptedRecords('categories', activeDEK, currentUser.id),
           getUserEncryptedRecords('statements', activeDEK, currentUser.id),
+          getUserEncryptedRecords(
+            'recurringTransactions',
+            activeDEK,
+            currentUser.id
+          ),
+          getUserEncryptedRecords(
+            'recurringOccurrences',
+            activeDEK,
+            currentUser.id
+          ),
         ]);
 
         // Check if we need to migrate from schema 2.0.0 to 2.0.1
@@ -160,6 +174,10 @@ export default function EncryptionProvider() {
         dispatch(setTransactions(encryptedTransactions));
         dispatch(setCategories(categoriesToLoad));
         dispatch(setStatements(encryptedStatements || []));
+        dispatch(
+          setRecurringTransactions(encryptedRecurringTransactions || [])
+        );
+        dispatch(setRecurringOccurrences(encryptedRecurringOccurrences || []));
 
         setDataLoaded(true);
       } catch (error) {
@@ -189,6 +207,8 @@ export default function EncryptionProvider() {
       dispatch(setTransactions([]));
       dispatch(setCategories([]));
       dispatch(setStatements([]));
+      dispatch(setRecurringTransactions([]));
+      dispatch(setRecurringOccurrences([]));
       dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
     }
