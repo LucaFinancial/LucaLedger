@@ -80,11 +80,15 @@ export default function LedgerTable({
 
   const transactionsWithBalance = useMemo(() => {
     let currentBalance = 0.0;
+    // Add initial balance if it exists (though schema doesn't currently support it)
+    if (account.initialBalance) {
+      currentBalance += account.initialBalance;
+    }
     return sortedTransactions.map((transaction) => {
       currentBalance += transaction.amount;
       return { ...transaction, balance: currentBalance };
     }, []);
-  }, [sortedTransactions]);
+  }, [sortedTransactions, account.initialBalance]);
 
   const filteredTransactions = useMemo(() => {
     // Start with all transactions with balance

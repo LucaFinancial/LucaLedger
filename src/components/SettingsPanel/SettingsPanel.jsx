@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo, useState } from 'react';
-import { format, parseISO, endOfYear, isBefore, isSameDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
@@ -40,35 +40,38 @@ export default function SettingsPanel({ account, selectedYear }) {
   // Filter transactions by selected year for income/expense/category stats
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
+    if (selectedYear === 'rolling') {
+      // For rolling view stats, default to current year or handle differently
+      // For now, let's use current year to show relevant stats
+      const currentYear = format(new Date(), 'yyyy');
+      return transactions.filter(
+        (t) =>
+          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === currentYear
+      );
+    }
     return transactions.filter(
       (t) =>
         format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
     );
   }, [transactions, selectedYear]);
 
-  // For balances, use ALL transactions up to the end of the selected year
+  // For balances, use ALL transactions regardless of selected year
   const balanceTransactions = useMemo(() => {
-    if (selectedYear === 'all') return transactions;
-    // Use parseISO to properly parse the date string and avoid timezone issues
-    const endOfYearDate = endOfYear(parseISO(`${selectedYear}-01-01`));
-    return transactions.filter((t) => {
-      const txDate = parseISO(t.date.replace(/\//g, '-'));
-      return (
-        isBefore(txDate, endOfYearDate) || isSameDay(txDate, endOfYearDate)
-      );
-    });
-  }, [transactions, selectedYear]);
+    return transactions;
+  }, [transactions]);
 
   // Calculate balances with correct status values (no trailing spaces)
   const currentBalance = useMemo(() => {
-    return balanceTransactions
+    const initialBalance = account.initialBalance || 0;
+    const transactionSum = balanceTransactions
       .filter(
         (transaction) =>
           transaction.status ===
           transactionConstants.TransactionStatusEnum.COMPLETE
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
-  }, [balanceTransactions]);
+    return initialBalance + transactionSum;
+  }, [balanceTransactions, account.initialBalance]);
 
   const pendingAmount = useMemo(() => {
     return balanceTransactions
