@@ -25,6 +25,7 @@ import { accountSchemas } from './accountSchemas';
 import { transactionSchemas } from './transactionSchemas';
 import { categorySchemas } from './categorySchemas';
 import { statementSchemas } from './statementSchemas';
+import { recurringTransactionSchemas } from './recurringTransactionSchemas';
 
 // Create and configure AJV instance
 const ajv = new Ajv({
@@ -52,6 +53,16 @@ const categoryValidator = ajv.compile(categorySchemas.category);
 
 // Compile schema for statements
 const statementValidator = ajv.compile(statementSchemas.statement);
+
+// Compile schema for recurring transactions
+const recurringTransactionValidator = ajv.compile(
+  recurringTransactionSchemas.recurringTransaction
+);
+
+// Compile schema for recurring occurrences
+const recurringOccurrenceValidator = ajv.compile(
+  recurringTransactionSchemas.recurringOccurrence
+);
 
 /**
  * Formats AJV errors into user-friendly messages
@@ -226,6 +237,68 @@ export function validateStatementSync(statement) {
 }
 
 /**
+ * Validates a recurring transaction against its schema
+ * @param {Object} recurringTransaction - Recurring transaction data to validate
+ * @returns {Object} { valid: boolean, errors: Array }
+ */
+export function validateRecurringTransaction(recurringTransaction) {
+  const valid = recurringTransactionValidator(recurringTransaction);
+
+  return {
+    valid,
+    errors: valid ? [] : formatErrors(recurringTransactionValidator.errors),
+  };
+}
+
+/**
+ * Validates a recurring transaction and throws an error if invalid
+ * @param {Object} recurringTransaction - Recurring transaction data to validate
+ * @throws {Error} Validation error with details
+ */
+export function validateRecurringTransactionSync(recurringTransaction) {
+  const result = validateRecurringTransaction(recurringTransaction);
+
+  if (!result.valid) {
+    const error = new Error(result.errors[0]);
+    error.errors = result.errors;
+    throw error;
+  }
+
+  return recurringTransaction;
+}
+
+/**
+ * Validates a recurring occurrence against its schema
+ * @param {Object} occurrence - Recurring occurrence data to validate
+ * @returns {Object} { valid: boolean, errors: Array }
+ */
+export function validateRecurringOccurrence(occurrence) {
+  const valid = recurringOccurrenceValidator(occurrence);
+
+  return {
+    valid,
+    errors: valid ? [] : formatErrors(recurringOccurrenceValidator.errors),
+  };
+}
+
+/**
+ * Validates a recurring occurrence and throws an error if invalid
+ * @param {Object} occurrence - Recurring occurrence data to validate
+ * @throws {Error} Validation error with details
+ */
+export function validateRecurringOccurrenceSync(occurrence) {
+  const result = validateRecurringOccurrence(occurrence);
+
+  if (!result.valid) {
+    const error = new Error(result.errors[0]);
+    error.errors = result.errors;
+    throw error;
+  }
+
+  return occurrence;
+}
+
+/**
  * Gets the AJV instance for advanced use cases
  * @returns {Ajv} Configured AJV instance
  */
@@ -242,5 +315,9 @@ export default {
   validateCategorySync,
   validateStatement,
   validateStatementSync,
+  validateRecurringTransaction,
+  validateRecurringTransactionSync,
+  validateRecurringOccurrence,
+  validateRecurringOccurrenceSync,
   getAjvInstance,
 };

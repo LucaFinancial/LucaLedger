@@ -1,21 +1,88 @@
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Button,
   Card,
   CardContent,
   Chip,
-  FormControlLabel,
-  Switch,
-  Tooltip,
   Typography,
+  TextField,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Alert,
 } from '@mui/material';
-import { Lock as LockIcon } from '@mui/icons-material';
+import {
+  Lock as LockIcon,
+  Gavel as GavelIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import TermsOfServiceModal from '@/components/TermsOfServiceModal';
+import {
+  actions as settingsActions,
+  selectors as settingsSelectors,
+} from '@/store/settings';
 
 export default function Settings() {
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
+  const [showTosModal, setShowTosModal] = useState(false);
+
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection
+  );
+  const [projectionError, setProjectionError] = useState('');
+
+  const handleProjectionChange = (field, value) => {
+    const newProjection = { ...recurringProjection, [field]: value };
+
+    // Validate max 7 years
+    let years = 0;
+    const amount =
+      field === 'amount' ? parseInt(value, 10) : newProjection.amount;
+    const unit = field === 'unit' ? value : newProjection.unit;
+
+    if (isNaN(amount) || amount <= 0) {
+      setProjectionError('Amount must be a positive number');
+      return;
+    }
+
+    switch (unit) {
+      case 'years':
+        years = amount;
+        break;
+      case 'months':
+        years = amount / 12;
+        break;
+      case 'weeks':
+        years = amount / 52;
+        break;
+      case 'days':
+        years = amount / 365;
+        break;
+      default:
+        years = 0;
+    }
+
+    if (years > 7) {
+      setProjectionError('Projection cannot exceed 7 years');
+      // Still update state but show error? Or block?
+      // Let's block the update if it exceeds limit, or just show error and let them fix it?
+      // Better to block invalid state or clamp it.
+      // Let's show error and not dispatch.
+      return;
+    }
+
+    setProjectionError('');
+    dispatch(
+      settingsActions.setRecurringProjection({ ...newProjection, amount })
+    );
+  };
 
   const encryptionConfig = {
     label: 'Encrypted',
@@ -78,6 +145,70 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Preferences Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography
+            variant='h5'
+            sx={{ mb: 3 }}
+          >
+            Preferences
+          </Typography>
+
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant='subtitle2'
+              sx={{ mb: 2, color: 'text.secondary' }}
+            >
+              Recurring Transactions Projection
+            </Typography>
+            <Typography
+              variant='body2'
+              sx={{ mb: 2, color: 'text.secondary' }}
+            >
+              Determine how far into the future recurring transactions should be
+              generated.
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+              <TextField
+                label='Amount'
+                type='number'
+                value={recurringProjection.amount}
+                onChange={(e) =>
+                  handleProjectionChange('amount', e.target.value)
+                }
+                sx={{ width: 120 }}
+                error={!!projectionError}
+              />
+              <FormControl sx={{ width: 150 }}>
+                <InputLabel>Unit</InputLabel>
+                <Select
+                  value={recurringProjection.unit}
+                  label='Unit'
+                  onChange={(e) =>
+                    handleProjectionChange('unit', e.target.value)
+                  }
+                >
+                  <MenuItem value='years'>Years</MenuItem>
+                  <MenuItem value='months'>Months</MenuItem>
+                  <MenuItem value='weeks'>Weeks</MenuItem>
+                  <MenuItem value='days'>Days</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {projectionError && (
+              <Alert
+                severity='error'
+                sx={{ mt: 2, maxWidth: 400 }}
+              >
+                {projectionError}
+              </Alert>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+
       {/* Version Information */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
@@ -108,95 +239,25 @@ export default function Settings() {
               </Typography>
               <Typography variant='body1'>{CURRENT_SCHEMA_VERSION}</Typography>
             </Box>
+
+            <Box>
+              <Button
+                startIcon={<GavelIcon />}
+                onClick={() => setShowTosModal(true)}
+                variant='outlined'
+                size='small'
+              >
+                View Terms of Service
+              </Button>
+            </Box>
           </Box>
         </CardContent>
       </Card>
 
-      {/* Recommended Settings (Coming Soon) */}
-      <Card>
-        <CardContent>
-          <Typography
-            variant='h5'
-            sx={{ mb: 1 }}
-          >
-            Recommended Settings
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ mb: 3, color: 'text.secondary' }}
-          >
-            Coming Soon
-          </Typography>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Placeholder 1: Auto-backup */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable automatic backups (coming soon)'
-                  />
-                }
-                label='Enable Automatic Backups'
-              />
-            </Tooltip>
-
-            {/* Placeholder 2: Dark mode */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable dark mode (coming soon)'
-                  />
-                }
-                label='Enable Dark Mode'
-              />
-            </Tooltip>
-
-            {/* Placeholder 3: Currency format */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Use international currency format (coming soon)'
-                  />
-                }
-                label='Use International Currency Format'
-              />
-            </Tooltip>
-
-            {/* Placeholder 4: Notifications */}
-            <Tooltip title='This feature is not yet available'>
-              <FormControlLabel
-                control={
-                  <Switch
-                    disabled
-                    aria-label='Enable transaction reminders (coming soon)'
-                  />
-                }
-                label='Enable Transaction Reminders'
-              />
-            </Tooltip>
-
-            {/* Placeholder 5: Export data */}
-            <Tooltip title='This feature is not yet available'>
-              <span>
-                <Button
-                  variant='outlined'
-                  disabled
-                  sx={{ mt: 1 }}
-                  aria-label='Export data to CSV (coming soon)'
-                >
-                  Export Data to CSV
-                </Button>
-              </span>
-            </Tooltip>
-          </Box>
-        </CardContent>
-      </Card>
+      <TermsOfServiceModal
+        open={showTosModal}
+        onClose={() => setShowTosModal(false)}
+      />
     </Box>
   );
 }
