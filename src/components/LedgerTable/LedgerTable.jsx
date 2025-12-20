@@ -261,6 +261,14 @@ export default function LedgerTable({
             return;
           }
 
+          // Skip statement dividers that don't belong to the selected year
+          if (selectedYear !== 'all') {
+            const statementYear = format(closingDate, 'yyyy');
+            if (statementYear !== selectedYear) {
+              return;
+            }
+          }
+
           // Get transactions in this statement period
           const statementTransactions = transactionsWithBalance.filter((t) => {
             if (!t.date) return false;
@@ -441,6 +449,7 @@ export default function LedgerTable({
     getYearIdentifier,
     getMonthIdentifier,
     getYearMonthKey,
+    selectedYear,
   ]);
 
   return (

@@ -11,22 +11,54 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get version from package.json
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
-      
-      - name: Create Tag
+
+      - name: Ensure version is stable (no RC)
         run: |
-          git tag v${{ steps.package-version.outputs.current-version }}
-          git push origin v${{ steps.package-version.outputs.current-version }}
-          
+          if [[ "${VERSION}" == *"-rc."* ]]; then
+            echo "Release tagging is skipped for RC versions: ${VERSION}"
+            exit 1
+          fi
+        env:
+          VERSION: ${{ steps.package-version.outputs.current-version }}
+
+      - name: Check if tag already exists
+        id: tag-check
+        run: |
+          if git rev-parse --quiet "v${VERSION}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          VERSION: ${{ steps.package-version.outputs.current-version }}
+
+      - name: Create Tag
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+        env:
+          VERSION: ${{ steps.package-version.outputs.current-version }}
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        if: steps.tag-check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.package-version.outputs.current-version }}
           name: Release v${{ steps.package-version.outputs.current-version }}
           draft: false
           prerelease: false
           generate_release_notes: true
+
+      - name: Tag already exists
+        if: steps.tag-check.outputs.exists == 'true'
+        run: echo "Tag v${VERSION} already exists. Skipping release creation."
+        env:
+          VERSION: ${{ steps.package-version.outputs.current-version }}
