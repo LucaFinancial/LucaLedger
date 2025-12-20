@@ -104,19 +104,24 @@ export default function Ledger() {
           format(parseISO(rt.startDate.replace(/\//g, '-')), 'yyyy'),
           10
         );
-        // For ongoing recurring transactions, show up to next year
+        // For ongoing recurring transactions, show up to 15 months in the future (matching projection window)
+        const projectionDate = addMonths(new Date(), 15);
+        const projectionYear = parseInt(format(projectionDate, 'yyyy'), 10);
+
         const endYear = rt.endDate
           ? parseInt(
               format(parseISO(rt.endDate.replace(/\//g, '-')), 'yyyy'),
               10
             )
-          : new Date().getFullYear() + 1;
+          : projectionYear;
 
         const years = [];
         // Limit to a reasonable range to prevent performance issues with bad data
         // e.g., if someone puts start date 1900
         const safeStartYear = Math.max(startYear, 2000);
-        const safeEndYear = Math.min(endYear, new Date().getFullYear() + 5);
+        // Allow years up to the actual end date or projection window, but cap extremely far future dates (e.g. 2100)
+        // to prevent rendering issues if someone enters a typo like year 3000
+        const safeEndYear = Math.min(endYear, 2100);
 
         for (let y = safeStartYear; y <= safeEndYear; y++) {
           years.push(y.toString());
