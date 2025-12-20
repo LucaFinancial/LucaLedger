@@ -17,6 +17,7 @@ import {
   isSameDay,
   addDays,
   subMonths,
+  isWithinInterval,
 } from 'date-fns';
 import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
@@ -35,12 +36,17 @@ export default function LedgerTable({
   selectedTransactions,
   onSelectionChange,
   selectedYear,
+  rollingDateRange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+
+  const selectAccountTransactions = useMemo(
+    () => transactionSelectors.selectTransactionsByAccountId(accountId),
+    [accountId]
   );
+  const transactions = useSelector(selectAccountTransactions);
+
   const categories = useSelector(categorySelectors.selectAllCategories);
   const accountStatements = useSelector(
     statementSelectors.selectStatementsByAccountId(accountId)
@@ -91,6 +97,14 @@ export default function LedgerTable({
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
+
+          if (selectedYear === 'rolling' && rollingDateRange) {
+            return isWithinInterval(parsed, {
+              start: rollingDateRange.startDate,
+              end: rollingDateRange.endDate,
+            });
+          }
+
           return format(parsed, 'yyyy') === selectedYear;
         } catch {
           return false;
@@ -146,6 +160,7 @@ export default function LedgerTable({
     selectedTransactions,
     selectedYear,
     categories,
+    rollingDateRange,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -282,6 +297,14 @@ export default function LedgerTable({
             isNaN(periodEndDate.getTime())
           ) {
             return;
+          }
+
+          // Skip statement dividers that don't belong to the selected year
+          if (selectedYear !== 'all') {
+            const statementYear = format(closingDate, 'yyyy');
+            if (statementYear !== selectedYear) {
+              return;
+            }
           }
 
           // Get transactions in this statement period
@@ -464,6 +487,7 @@ export default function LedgerTable({
     getYearIdentifier,
     getMonthIdentifier,
     getYearMonthKey,
+    selectedYear,
   ]);
 
   return (
@@ -510,6 +534,7 @@ export default function LedgerTable({
                             yearMonthKey,
                             false
                           )}
+                          monthKey={yearMonthKey}
                         />
 
                         {!isMonthCollapsed &&
@@ -572,4 +597,8 @@ LedgerTable.propTypes = {
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
   selectedYear: PropTypes.string.isRequired,
+  rollingDateRange: PropTypes.shape({
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+  }),
 };

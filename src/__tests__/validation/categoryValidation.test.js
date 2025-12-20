@@ -11,7 +11,7 @@ import {
   categoryMissingId,
   categoryMissingSlug,
   categoryMissingName,
-  categoryMissingSubcategories,
+  categoryMissingParentId,
   categoryEmptyId,
   categoryEmptyName,
   categoryInvalidSlug,
@@ -21,13 +21,13 @@ import {
 describe('Category Validation', () => {
   describe('validateCategory', () => {
     describe('Valid Categories', () => {
-      it('should validate a parent category with empty subcategories', () => {
+      it('should validate a parent category (parentId null)', () => {
         const result = validateCategory(validParentCategory);
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
       });
 
-      it('should validate a category with subcategories', () => {
+      it('should validate a parent category (flat parent entry)', () => {
         const result = validateCategory(validCategoryWithSubcategories);
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -53,10 +53,10 @@ describe('Category Validation', () => {
         expect(result.errors).toContain('name is required');
       });
 
-      it('should reject category missing subcategories array', () => {
-        const result = validateCategory(categoryMissingSubcategories);
+      it('should reject category missing parentId', () => {
+        const result = validateCategory(categoryMissingParentId);
         expect(result.valid).toBe(false);
-        expect(result.errors).toContain('subcategories is required');
+        expect(result.errors).toContain('parentId is required');
       });
 
       it('should reject category with empty id', () => {
@@ -85,36 +85,43 @@ describe('Category Validation', () => {
     });
 
     describe('Subcategory Validation', () => {
-      it('should validate subcategory within parent category', () => {
-        const category = {
-          id: 'test-parent',
-          slug: 'test-parent',
-          name: 'Test Parent',
-          subcategories: [
-            {
-              id: 'test-child',
-              slug: 'test-child',
-              name: 'Test Child',
-            },
-          ],
+      it('should validate a subcategory object with parentId set', () => {
+        const subcategory = {
+          id: 'test-child',
+          slug: 'test-child',
+          name: 'Test Child',
+          parentId: 'test-parent',
         };
-        const result = validateCategory(category);
+        const result = validateCategory(subcategory);
         expect(result.valid).toBe(true);
       });
 
-      it('should validate multiple subcategories', () => {
-        const category = {
-          id: 'test-parent',
-          slug: 'multi-sub-parent',
-          name: 'Multi Sub Parent',
-          subcategories: [
-            { id: 'sub-1', slug: 'sub-one', name: 'Sub One' },
-            { id: 'sub-2', slug: 'sub-two', name: 'Sub Two' },
-            { id: 'sub-3', slug: 'sub-three', name: 'Sub Three' },
-          ],
-        };
-        const result = validateCategory(category);
-        expect(result.valid).toBe(true);
+      it('should validate multiple subcategory objects individually', () => {
+        const subs = [
+          {
+            id: 'sub-1',
+            slug: 'sub-one',
+            name: 'Sub One',
+            parentId: 'test-parent',
+          },
+          {
+            id: 'sub-2',
+            slug: 'sub-two',
+            name: 'Sub Two',
+            parentId: 'test-parent',
+          },
+          {
+            id: 'sub-3',
+            slug: 'sub-three',
+            name: 'Sub Three',
+            parentId: 'test-parent',
+          },
+        ];
+
+        subs.forEach((s) => {
+          const result = validateCategory(s);
+          expect(result.valid).toBe(true);
+        });
       });
     });
   });
