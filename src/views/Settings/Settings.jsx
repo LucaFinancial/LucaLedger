@@ -14,11 +14,7 @@ import {
   Select,
   Alert,
 } from '@mui/material';
-import {
-  Lock as LockIcon,
-  Gavel as GavelIcon,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+import { Lock as LockIcon, Gavel as GavelIcon } from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
