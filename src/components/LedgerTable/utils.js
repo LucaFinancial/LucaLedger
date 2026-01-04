@@ -55,7 +55,7 @@ export const generateVirtualTransactions = (
         amount: rule.amount,
         description: rule.description,
         categoryId: rule.categoryId,
-        status: 'recurring',
+        transactionState: 'recurring',
         isVirtual: true,
         recurringTransactionId: rule.id,
         recurringTransaction: rule,
