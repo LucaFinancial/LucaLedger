@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateTransaction } from '@/store/transactions/generators';
-import { TransactionStatusEnum } from '@/store/transactions/constants';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 
 describe('Transaction Generators', () => {
   describe('generateTransaction', () => {
@@ -19,41 +19,51 @@ describe('Transaction Generators', () => {
     });
 
     it('should generate a transaction with default values', () => {
-      const transaction = generateTransaction({ accountId: 'acc-001' });
+      const transaction = generateTransaction({
+        accountId: '00000000-0000-0000-0000-000000000001',
+      });
 
       expect(transaction).not.toBeNull();
       expect(transaction.id).toBeDefined();
-      expect(transaction.accountId).toBe('acc-001');
-      expect(transaction.status).toBe(TransactionStatusEnum.PLANNED);
+      expect(transaction.accountId).toBe(
+        '00000000-0000-0000-0000-000000000001'
+      );
+      expect(transaction.transactionState).toBe(TransactionStateEnum.PENDING);
       expect(transaction.amount).toBe(0);
       expect(transaction.description).toBe('Enter transaction description');
     });
 
     it('should use current date by default', () => {
-      const transaction = generateTransaction({ accountId: 'acc-001' });
+      const transaction = generateTransaction({
+        accountId: '00000000-0000-0000-0000-000000000001',
+      });
 
-      expect(transaction.date).toBe('2024/06/15');
+      expect(transaction.date).toBe('2024-06-15');
     });
 
     it('should generate unique IDs', () => {
-      const tx1 = generateTransaction({ accountId: 'acc-001' });
-      const tx2 = generateTransaction({ accountId: 'acc-001' });
+      const tx1 = generateTransaction({
+        accountId: '00000000-0000-0000-0000-000000000001',
+      });
+      const tx2 = generateTransaction({
+        accountId: '00000000-0000-0000-0000-000000000001',
+      });
 
       expect(tx1.id).not.toBe(tx2.id);
     });
 
     it('should accept custom status', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
-        status: TransactionStatusEnum.COMPLETE,
+        accountId: '00000000-0000-0000-0000-000000000001',
+        transactionState: TransactionStateEnum.COMPLETED,
       });
 
-      expect(transaction.status).toBe(TransactionStatusEnum.COMPLETE);
+      expect(transaction.transactionState).toBe(TransactionStateEnum.COMPLETED);
     });
 
     it('should accept custom amount', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
+        accountId: '00000000-0000-0000-0000-000000000001',
         amount: 5000,
       });
 
@@ -62,7 +72,7 @@ describe('Transaction Generators', () => {
 
     it('should accept negative amounts (income)', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
+        accountId: '00000000-0000-0000-0000-000000000001',
         amount: -10000,
       });
 
@@ -71,7 +81,7 @@ describe('Transaction Generators', () => {
 
     it('should accept custom description', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
+        accountId: '00000000-0000-0000-0000-000000000001',
         description: 'Custom Description',
       });
 
@@ -80,20 +90,22 @@ describe('Transaction Generators', () => {
 
     it('should accept custom date', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
-        date: '2024/12/25',
+        accountId: '00000000-0000-0000-0000-000000000001',
+        date: '2024-12-25',
       });
 
-      expect(transaction.date).toBe('2024/12/25');
+      expect(transaction.date).toBe('2024-12-25');
     });
 
     it('should accept categoryId', () => {
       const transaction = generateTransaction({
-        accountId: 'acc-001',
-        categoryId: 'cat-001',
+        accountId: '00000000-0000-0000-0000-000000000001',
+        categoryId: '00000000-0000-0000-0000-000000000002',
       });
 
-      expect(transaction.categoryId).toBe('cat-001');
+      expect(transaction.categoryId).toBe(
+        '00000000-0000-0000-0000-000000000002'
+      );
     });
 
     it('should return null for invalid transaction data', () => {

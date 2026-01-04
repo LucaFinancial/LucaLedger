@@ -51,12 +51,13 @@ describe('Account Generators', () => {
     });
 
     it('should respect provided id', () => {
+      const customId = '123e4567-e89b-12d3-a456-426614174000';
       const account = generateAccount({
-        id: 'custom-id',
+        id: customId,
         name: 'Custom ID Account',
       });
 
-      expect(account.id).toBe('custom-id');
+      expect(account.id).toBe(customId);
     });
 
     it('should throw for invalid account data', () => {

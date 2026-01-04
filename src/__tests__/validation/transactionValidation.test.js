@@ -155,20 +155,20 @@ describe('Transaction Validation', () => {
     });
 
     describe('Date Format Validation', () => {
-      it('should accept valid date format YYYY/MM/DD', () => {
-        const tx = { ...validCompletedTransaction, date: '2024/12/31' };
+      it('should accept valid date format YYYY-MM-DD', () => {
+        const tx = { ...validCompletedTransaction, date: '2024-12-31' };
         const result = validateTransaction(tx);
         expect(result.valid).toBe(true);
       });
 
       it('should accept date with leading zeros in month', () => {
-        const tx = { ...validCompletedTransaction, date: '2024/01/15' };
+        const tx = { ...validCompletedTransaction, date: '2024-01-15' };
         const result = validateTransaction(tx);
         expect(result.valid).toBe(true);
       });
 
       it('should accept date with leading zeros in day', () => {
-        const tx = { ...validCompletedTransaction, date: '2024/12/01' };
+        const tx = { ...validCompletedTransaction, date: '2024-12-01' };
         const result = validateTransaction(tx);
         expect(result.valid).toBe(true);
       });

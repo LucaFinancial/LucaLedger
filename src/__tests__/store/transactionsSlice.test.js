@@ -11,7 +11,7 @@ import transactionsReducer, {
   updateMultipleTransactions,
   removeTransaction,
 } from '@/store/transactions/slice';
-import { TransactionStatusEnum } from '@/store/transactions/constants';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import {
   validCompletedTransaction,
   validPendingTransaction,
@@ -157,7 +157,7 @@ describe('Transactions Slice', () => {
         const nonExistentTransaction = {
           id: 'non-existent',
           accountId: 'acc-001',
-          status: TransactionStatusEnum.COMPLETE,
+          status: TransactionStateEnum.COMPLETED,
           date: '2024/01/01',
           amount: 0,
           description: 'Non Existent',
@@ -186,13 +186,13 @@ describe('Transactions Slice', () => {
               validCompletedTransaction.id,
               validPendingTransaction.id,
             ],
-            updates: { status: TransactionStatusEnum.COMPLETE },
+            updates: { status: TransactionStateEnum.COMPLETED },
           })
         );
 
-        expect(state[0].status).toBe(TransactionStatusEnum.COMPLETE);
-        expect(state[1].status).toBe(TransactionStatusEnum.COMPLETE);
-        expect(state[2].status).toBe(TransactionStatusEnum.SCHEDULED); // Unchanged
+        expect(state[0].status).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[1].status).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[2].status).toBe(TransactionStateEnum.SCHEDULED);
       });
 
       it('should preserve non-updated fields', () => {
