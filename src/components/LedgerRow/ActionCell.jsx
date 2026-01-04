@@ -32,7 +32,7 @@ export default function ActionCell({
         transaction.accountId,
         transaction,
         'status',
-        transactionConstants.TransactionStatusEnum.SCHEDULED
+        transactionConstants.TransactionStateEnum.SCHEDULED
       )
     );
   };
@@ -43,7 +43,7 @@ export default function ActionCell({
         transaction.accountId,
         transaction,
         'status',
-        transactionConstants.TransactionStatusEnum.COMPLETE
+        transactionConstants.TransactionStateEnum.COMPLETED
       )
     );
   };
@@ -64,8 +64,8 @@ export default function ActionCell({
       );
     }
 
-    switch (transaction.status) {
-      case transactionConstants.TransactionStatusEnum.PLANNED:
+    switch (transaction.transactionState) {
+      case transactionConstants.TransactionStateEnum.PLANNED:
         return (
           <Button
             size='small'
@@ -77,8 +77,8 @@ export default function ActionCell({
             Schedule
           </Button>
         );
-      case transactionConstants.TransactionStatusEnum.SCHEDULED:
-      case transactionConstants.TransactionStatusEnum.PENDING:
+      case transactionConstants.TransactionStateEnum.SCHEDULED:
+      case transactionConstants.TransactionStateEnum.PENDING:
         return (
           <Button
             size='small'
@@ -90,7 +90,7 @@ export default function ActionCell({
             Complete
           </Button>
         );
-      case transactionConstants.TransactionStatusEnum.COMPLETE:
+      case transactionConstants.TransactionStateEnum.COMPLETED:
         // No button for complete status
         return null;
       default:

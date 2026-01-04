@@ -104,12 +104,12 @@ export default function BulkEditModal({
               label='Select new state'
               onChange={(e) => setSelectedState(e.target.value)}
             >
-              {Object.keys(constants.TransactionStatusEnum).map((key) => (
+              {Object.keys(constants.TransactionStateEnum).map((key) => (
                 <MenuItem
                   key={key}
-                  value={constants.TransactionStatusEnum[key]}
+                  value={constants.TransactionStateEnum[key]}
                 >
-                  {constants.TransactionStatusEnum[key]}
+                  {constants.TransactionStateEnum[key]}
                 </MenuItem>
               ))}
             </Select>

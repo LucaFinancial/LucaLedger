@@ -12,7 +12,7 @@ import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 import ActionCell from './ActionCell';
 
-const VIRTUAL_STATUS = 'recurring';
+const VIRTUAL_STATE = 'recurring';
 
 const getStatusBackground = (status, isSelected, isVirtual) => {
   if (isSelected) {
@@ -24,14 +24,14 @@ const getStatusBackground = (status, isSelected, isVirtual) => {
   }
 
   switch (status) {
-    case constants.TransactionStatusEnum.COMPLETE:
+    case constants.TransactionStateEnum.COMPLETED:
       return '#e0e0e0'; // lightgray
-    case constants.TransactionStatusEnum.PENDING:
+    case constants.TransactionStateEnum.PENDING:
       return '#fff9c4'; // light yellow
-    case constants.TransactionStatusEnum.PLANNED:
-      return '#c8e6c9'; // light green
-    case constants.TransactionStatusEnum.SCHEDULED:
+    case constants.TransactionStateEnum.SCHEDULED:
       return '#b3e5fc'; // light blue
+    case constants.TransactionStateEnum.PLANNED:
+      return '#c8e6c9'; // light green
     default:
       return 'white';
   }
@@ -46,7 +46,11 @@ export default function LedgerRow({
   recurringTransaction,
   occurrenceDate,
 }) {
-  const bgColor = getStatusBackground(row.status, isSelected, isVirtual);
+  const bgColor = getStatusBackground(
+    row.transactionState,
+    isSelected,
+    isVirtual
+  );
 
   return (
     <TableRow
@@ -75,7 +79,7 @@ export default function LedgerRow({
       <StatusCell
         transaction={{
           ...row,
-          status: isVirtual ? VIRTUAL_STATUS : row.status,
+          transactionState: isVirtual ? VIRTUAL_STATE : row.transactionState,
         }}
         isSelected={isSelected}
         isVirtual={isVirtual}
