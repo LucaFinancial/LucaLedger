@@ -7,13 +7,17 @@ import { StatementStatusEnum } from '@/store/statements/constants';
 
 // Valid current statement
 export const validCurrentStatement = {
-  id: 'stmt-001',
-  accountId: 'acc-credit-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  id: '00000000-0000-0000-0000-000000000001',
+  accountId: '00000000-0000-0000-0000-000000000003',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
-  transactionIds: ['cc-tx-001', 'cc-tx-002', 'cc-tx-003'],
+  transactionIds: [
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000003',
+  ],
   startingBalance: 0,
   endingBalance: 12499, // $124.99
   totalCharges: 17499, // $174.99
@@ -29,11 +33,11 @@ export const validCurrentStatement = {
 
 // Valid past statement
 export const validPastStatement = {
-  id: 'stmt-002',
-  accountId: 'acc-credit-001',
-  closingDate: '2023/12/15',
-  periodStart: '2023/11/16',
-  periodEnd: '2023/12/15',
+  id: '00000000-0000-0000-0000-000000000002',
+  accountId: '00000000-0000-0000-0000-000000000003',
+  closingDate: '2023-12-15',
+  periodStart: '2023-11-16',
+  periodEnd: '2023-12-15',
   statementPeriod: '2023-12',
   transactionIds: [],
   startingBalance: 25000,
@@ -51,13 +55,13 @@ export const validPastStatement = {
 
 // Valid locked statement
 export const validLockedStatement = {
-  id: 'stmt-003',
-  accountId: 'acc-credit-001',
-  closingDate: '2023/11/15',
-  periodStart: '2023/10/16',
-  periodEnd: '2023/11/15',
+  id: '00000000-0000-0000-0000-000000000003',
+  accountId: '00000000-0000-0000-0000-000000000003',
+  closingDate: '2023-11-15',
+  periodStart: '2023-10-16',
+  periodEnd: '2023-11-15',
   statementPeriod: '2023-11',
-  transactionIds: ['cc-tx-old-001'],
+  transactionIds: ['00000000-0000-0000-0000-000000000004'],
   startingBalance: 10000,
   endingBalance: 25000,
   totalCharges: 15000,
@@ -73,11 +77,11 @@ export const validLockedStatement = {
 
 // Valid draft statement
 export const validDraftStatement = {
-  id: 'stmt-004',
-  accountId: 'acc-credit-001',
-  closingDate: '2024/02/15',
-  periodStart: '2024/01/16',
-  periodEnd: '2024/02/15',
+  id: '00000000-0000-0000-0000-000000000004',
+  accountId: '00000000-0000-0000-0000-000000000003',
+  closingDate: '2024-02-15',
+  periodStart: '2024-01-16',
+  periodEnd: '2024-02-15',
   statementPeriod: '2024-02',
   transactionIds: [],
   startingBalance: 12499,
@@ -95,11 +99,11 @@ export const validDraftStatement = {
 
 // Statement with modified dates
 export const validStatementWithModifiedDates = {
-  id: 'stmt-005',
-  accountId: 'acc-credit-001',
-  closingDate: '2023/10/20', // Modified from 15
-  periodStart: '2023/09/20', // Modified
-  periodEnd: '2023/10/20', // Modified
+  id: '00000000-0000-0000-0000-000000000005',
+  accountId: '00000000-0000-0000-0000-000000000003',
+  closingDate: '2023-10-20', // Modified from 15
+  periodStart: '2023-09-20', // Modified
+  periodEnd: '2023-10-20', // Modified
   statementPeriod: '2023-10',
   transactionIds: [],
   startingBalance: 5000,
@@ -127,9 +131,9 @@ export const validStatements = [
 // Invalid Statement Fixtures
 export const statementMissingId = {
   accountId: 'acc-credit-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   transactionIds: [],
   startingBalance: 0,
@@ -146,9 +150,9 @@ export const statementMissingId = {
 
 export const statementMissingAccountId = {
   id: 'stmt-invalid-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   transactionIds: [],
   startingBalance: 0,
@@ -166,8 +170,8 @@ export const statementMissingAccountId = {
 export const statementMissingClosingDate = {
   id: 'stmt-invalid-002',
   accountId: 'acc-credit-001',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   transactionIds: [],
   startingBalance: 0,
@@ -185,9 +189,9 @@ export const statementMissingClosingDate = {
 export const statementInvalidDateFormat = {
   id: 'stmt-invalid-003',
   accountId: 'acc-credit-001',
-  closingDate: '2024-01-15', // Wrong format
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024/01/15', // Wrong format (slashes instead of hyphens)
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   transactionIds: [],
   startingBalance: 0,
@@ -205,9 +209,9 @@ export const statementInvalidDateFormat = {
 export const statementInvalidStatus = {
   id: 'stmt-invalid-004',
   accountId: 'acc-credit-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   transactionIds: [],
   startingBalance: 0,
@@ -225,9 +229,9 @@ export const statementInvalidStatus = {
 export const statementInvalidPeriodFormat = {
   id: 'stmt-invalid-005',
   accountId: 'acc-credit-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024/01', // Wrong format (should be YYYY-MM)
   transactionIds: [],
   startingBalance: 0,
@@ -245,9 +249,9 @@ export const statementInvalidPeriodFormat = {
 export const statementMissingTransactionIds = {
   id: 'stmt-invalid-006',
   accountId: 'acc-credit-001',
-  closingDate: '2024/01/15',
-  periodStart: '2023/12/16',
-  periodEnd: '2024/01/15',
+  closingDate: '2024-01-15',
+  periodStart: '2023-12-16',
+  periodEnd: '2024-01-15',
   statementPeriod: '2024-01',
   // transactionIds missing
   startingBalance: 0,
@@ -284,9 +288,9 @@ export const invalidStatements = [
 export const legacyStatementWithTotal = {
   id: 'stmt-legacy-001',
   accountId: 'acc-credit-001',
-  closingDate: '2023/09/15',
-  periodStart: '2023/08/16',
-  periodEnd: '2023/09/15',
+  closingDate: '2023-09-15',
+  periodStart: '2023-08-16',
+  periodEnd: '2023-09-15',
   statementPeriod: '2023-09',
   transactionIds: [],
   total: 15000, // Legacy field
