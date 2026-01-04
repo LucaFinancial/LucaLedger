@@ -28,10 +28,10 @@ export const generateRecurringTransaction = (initialData = {}) => {
     description: initialData.description || 'New recurring transaction',
     amount: initialData.amount ?? 0,
     categoryId: initialData.categoryId || null,
-    frequency: initialData.frequency || RecurringFrequencyEnum.MONTHLY,
-    startDate:
-      initialData.startDate || format(new Date(), config.dateFormatString),
-    endDate: initialData.endDate || null,
+    frequency: initialData.frequency || RecurringFrequencyEnum.MONTH,
+    interval: initialData.interval || 1,
+    startOn: initialData.startOn || format(new Date(), config.dateFormatString),
+    endOn: initialData.endOn || null,
     createdAt: now,
     updatedAt: now,
     ...initialData,
@@ -58,17 +58,17 @@ export const generateOccurrenceDates = (
   fromDate,
   toDate
 ) => {
-  const { frequency, startDate, endDate } = recurringTransaction;
+  const { frequency, interval, startOn, endOn } = recurringTransaction;
   const dates = [];
 
-  let current = parseISO(startDate.replace(/\//g, '-'));
+  let current = parseISO(startOn.replace(/\//g, '-'));
   const from = fromDate instanceof Date ? fromDate : parseISO(fromDate);
   const to = toDate instanceof Date ? toDate : parseISO(toDate);
-  const end = endDate ? parseISO(endDate.replace(/\//g, '-')) : null;
+  const end = endOn ? parseISO(endOn.replace(/\//g, '-')) : null;
 
   // Skip to the first occurrence on or after fromDate
   while (isBefore(current, from)) {
-    current = advanceDate(current, frequency);
+    current = advanceDate(current, frequency, interval);
   }
 
   // Generate dates up to toDate
@@ -77,7 +77,7 @@ export const generateOccurrenceDates = (
     (!end || isBefore(current, end) || isSameDay(current, end))
   ) {
     dates.push(format(current, config.dateFormatString));
-    current = advanceDate(current, frequency);
+    current = advanceDate(current, frequency, interval);
   }
 
   return dates;
@@ -87,21 +87,20 @@ export const generateOccurrenceDates = (
  * Advances a date by the specified frequency
  * @param {Date} date - The current date
  * @param {string} frequency - The frequency to advance by
+ * @param {number} interval - The interval to advance by
  * @returns {Date} The advanced date
  */
-const advanceDate = (date, frequency) => {
+const advanceDate = (date, frequency, interval = 1) => {
   switch (frequency) {
-    case RecurringFrequencyEnum.DAILY:
-      return addDays(date, 1);
-    case RecurringFrequencyEnum.WEEKLY:
-      return addWeeks(date, 1);
-    case RecurringFrequencyEnum.BI_WEEKLY:
-      return addWeeks(date, 2);
-    case RecurringFrequencyEnum.MONTHLY:
-      return addMonths(date, 1);
-    case RecurringFrequencyEnum.YEARLY:
-      return addYears(date, 1);
+    case RecurringFrequencyEnum.DAY:
+      return addDays(date, interval);
+    case RecurringFrequencyEnum.WEEK:
+      return addWeeks(date, interval);
+    case RecurringFrequencyEnum.MONTH:
+      return addMonths(date, interval);
+    case RecurringFrequencyEnum.YEAR:
+      return addYears(date, interval);
     default:
-      return addMonths(date, 1);
+      return addMonths(date, interval);
   }
 };

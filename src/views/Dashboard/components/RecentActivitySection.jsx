@@ -165,12 +165,12 @@ export default function RecentActivitySection({
                     <TableCell>{tx.description}</TableCell>
                     <TableCell>
                       <Chip
-                        label={tx.status}
+                        label={tx.transactionState}
                         size='small'
                         sx={{
                           backgroundColor:
-                            tx.status ===
-                            transactionConstants.TransactionStatusEnum.COMPLETE
+                            tx.transactionState ===
+                            transactionConstants.TransactionStateEnum.COMPLETED
                               ? '#9e9e9e'
                               : '#ff9800',
                           color: 'white',

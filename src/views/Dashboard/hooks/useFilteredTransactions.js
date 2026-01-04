@@ -45,8 +45,10 @@ export function useFilteredTransactions(
             isSameDay(txDate, dateRanges.recentStart)) &&
           (isBefore(txDate, dateRanges.todayEnd) ||
             isSameDay(txDate, dateRanges.todayEnd)) &&
-          (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
-            tx.status === transactionConstants.TransactionStatusEnum.PENDING)
+          (tx.transactionState ===
+            transactionConstants.TransactionStateEnum.COMPLETED ||
+            tx.transactionState ===
+              transactionConstants.TransactionStateEnum.PENDING)
         );
       })
       .sort((a, b) => {
@@ -71,7 +73,8 @@ export function useFilteredTransactions(
           isSameDay(txDate, dateRanges.currentMonthStart)) &&
         (isBefore(txDate, dateRanges.currentMonthEnd) ||
           isSameDay(txDate, dateRanges.currentMonthEnd)) &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        tx.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED
       );
     });
   }, [allTransactions, dateRanges, isTransferTransaction]);
@@ -116,8 +119,8 @@ export function useFilteredTransactions(
           isAfter(txDate, dateRanges.today) &&
           (isBefore(txDate, dateRanges.futureEnd) ||
             isSameDay(txDate, dateRanges.futureEnd)) &&
-          (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
-            tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
+          tx.transactionState ===
+            transactionConstants.TransactionStateEnum.SCHEDULED
         );
       })
       .sort((a, b) => {

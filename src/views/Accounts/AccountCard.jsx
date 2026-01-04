@@ -67,15 +67,15 @@ export default function AccountCard({ account }) {
           accountId={account.id}
           accountType={account.type}
           balanceType={'Current'}
-          filterArray={[constants.TransactionStatusEnum.COMPLETE]}
+          filterArray={[constants.TransactionStateEnum.COMPLETED]}
         />
         <BalanceRow
           accountId={account.id}
           accountType={account.type}
           balanceType={'Pending'}
           filterArray={[
-            constants.TransactionStatusEnum.COMPLETE,
-            constants.TransactionStatusEnum.PENDING,
+            constants.TransactionStateEnum.COMPLETED,
+            constants.TransactionStateEnum.PENDING,
           ]}
         />
         <BalanceRow
@@ -83,19 +83,19 @@ export default function AccountCard({ account }) {
           accountType={account.type}
           balanceType={'Scheduled'}
           filterArray={[
-            constants.TransactionStatusEnum.COMPLETE,
-            constants.TransactionStatusEnum.PENDING,
-            constants.TransactionStatusEnum.SCHEDULED,
+            constants.TransactionStateEnum.COMPLETED,
+            constants.TransactionStateEnum.PENDING,
+            constants.TransactionStateEnum.SCHEDULED,
           ]}
         />
         {/* <BalanceRow
           account={account}
           balanceType={'Planned'}
           filterArray={[
-            constants.TransactionStatusEnum.COMPLETE,
-            constants.TransactionStatusEnum.PENDING,
-            constants.TransactionStatusEnum.SCHEDULED,
-            constants.TransactionStatusEnum.PLANNED,
+            constants.TransactionStateEnum.COMPLETED,
+            constants.TransactionStateEnum.PENDING,
+            constants.TransactionStateEnum.SCHEDULED,
+            constants.TransactionStateEnum.SCHEDULED,
           ]}
         /> */}
         <ActionsMenu account={account} />

@@ -165,12 +165,12 @@ export default function UpcomingActivitySection({
                     <TableCell>{tx.description}</TableCell>
                     <TableCell>
                       <Chip
-                        label={tx.status}
+                        label={tx.transactionState}
                         size='small'
                         sx={{
                           backgroundColor:
-                            tx.status ===
-                            transactionConstants.TransactionStatusEnum.SCHEDULED
+                            tx.transactionState ===
+                            transactionConstants.TransactionStateEnum.SCHEDULED
                               ? '#2196f3'
                               : '#4caf50',
                           color: 'white',

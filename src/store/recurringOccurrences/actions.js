@@ -2,7 +2,7 @@ import { generateRecurringOccurrence } from './generators';
 import { addRecurringOccurrence, removeRecurringOccurrence } from './slice';
 import { generateTransaction } from '@/store/transactions/generators';
 import { addTransaction } from '@/store/transactions/slice';
-import { TransactionStatusEnum } from '@/store/transactions/constants';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 
 /**
  * Realizes a virtual recurring transaction into a real transaction
@@ -19,7 +19,7 @@ export const realizeRecurringTransaction =
       amount: recurringTransaction.amount,
       description: recurringTransaction.description,
       categoryId: recurringTransaction.categoryId,
-      status: TransactionStatusEnum.PLANNED,
+      transactionState: TransactionStateEnum.SCHEDULED,
     });
 
     if (!newTransaction) {

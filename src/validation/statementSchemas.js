@@ -25,18 +25,18 @@ const statementSchema = {
     },
     closingDate: {
       type: 'string',
-      pattern: '^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$',
-      description: 'Statement closing date in YYYY/MM/DD format',
+      format: 'date',
+      description: 'Statement closing date in YYYY-MM-DD format',
     },
     periodStart: {
       type: 'string',
-      pattern: '^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$',
-      description: 'Period start date (inclusive) in YYYY/MM/DD format',
+      format: 'date',
+      description: 'Period start date (inclusive) in YYYY-MM-DD format',
     },
     periodEnd: {
       type: 'string',
-      pattern: '^\\d{4}/(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])$',
-      description: 'Period end date (inclusive) in YYYY/MM/DD format',
+      format: 'date',
+      description: 'Period end date (inclusive) in YYYY-MM-DD format',
     },
     statementPeriod: {
       type: 'string',

@@ -29,7 +29,7 @@ export const useAccountBalances = (accounts) => {
     };
 
     const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
-      transactionConstants.TransactionStatusEnum;
+      transactionConstants.TransactionStateEnum;
 
     const processedAccounts = accounts.map((account) => {
       // Filter transactions for this specific account
@@ -78,6 +78,6 @@ export const useAccountBalances = (accounts) => {
 
 const calculateBalance = (transactions, statuses) => {
   return transactions
-    .filter((tx) => statuses.includes(tx.status))
+    .filter((tx) => statuses.includes(tx.transactionState))
     .reduce((acc, tx) => acc + Number(tx.amount), 0);
 };

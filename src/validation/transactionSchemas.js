@@ -5,7 +5,7 @@
  * Validated using AJV (Another JSON Schema Validator).
  */
 
-// Valid transaction status values
+// Valid transaction.transactionState values
 const validStatuses = ['pending', 'complete', 'scheduled', 'planned'];
 
 // Schema for split (category allocation within a transaction)

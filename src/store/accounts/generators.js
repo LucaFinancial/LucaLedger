@@ -8,6 +8,8 @@ export const generateAccount = (initialData = {}) => {
   const account = {
     id: uuid(),
     type: accountType,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
     ...initialData,
   };
   validateAccountSync(account, accountType);
@@ -28,4 +30,6 @@ export const generateAccountObject = (id, name, type, statementDay) => ({
   name,
   type,
   statementDay,
+  createdAt: new Date().toISOString(),
+  updatedAt: null,
 });

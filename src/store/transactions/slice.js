@@ -8,9 +8,9 @@ import { validateTransactionSync } from '@/validation/validator';
 const sanitizeTransaction = (transaction) => {
   const sanitized = { ...transaction };
 
-  // Remove trailing spaces from status (legacy data cleanup)
-  if (typeof sanitized.status === 'string') {
-    sanitized.status = sanitized.status.trim();
+  // Remove trailing spaces from transactionState (legacy data cleanup)
+  if (typeof sanitized.transactionState === 'string') {
+    sanitized.transactionState = sanitized.transactionState.trim();
   }
 
   return sanitized;

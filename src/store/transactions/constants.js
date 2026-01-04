@@ -1,14 +1,15 @@
-export const TransactionStatusEnum = Object.freeze({
-  PENDING: 'pending',
-  COMPLETE: 'complete',
-  SCHEDULED: 'scheduled',
-  PLANNED: 'planned',
+export const TransactionStateEnum = Object.freeze({
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  SCHEDULED: 'SCHEDULED',
+  PLANNED: 'PLANNED',
+  VOID: 'VOID',
 });
 
 export const TransactionFields = Object.freeze({
   ID: 'id',
   ACCOUNT_ID: 'accountId',
-  STATUS: 'status',
+  TRANSACTION_STATE: 'transactionState',
   DATE: 'date',
   AMOUNT: 'amount',
   DESCRIPTION: 'description',

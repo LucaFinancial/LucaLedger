@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { constants as accountConstants } from '@/store/accounts';
 import { centsToDollars } from '@/utils';
 
 export default function BalanceDifference({
@@ -19,7 +20,7 @@ export default function BalanceDifference({
   const lastStatus = filterArray[filterArray.length - 1];
   // Amounts are in cents
   const differenceCents = transactions
-    .filter((t) => t.status === lastStatus)
+    .filter((t) => t.transactionState === lastStatus)
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
   // Hide indicator when difference is $0.00
@@ -30,7 +31,7 @@ export default function BalanceDifference({
   // Convert to dollars for display
   const differenceDollars = centsToDollars(differenceCents);
 
-  const isCreditCard = accountType === 'Credit Card';
+  const isCreditCard = accountType === accountConstants.AccountType.CREDIT_CARD;
   const isPositive = differenceCents >= 0;
   const color = isCreditCard
     ? isPositive

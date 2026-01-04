@@ -66,8 +66,8 @@ export default function SettingsPanel({ account, selectedYear }) {
     const transactionSum = balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.COMPLETE
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
     return initialBalance + transactionSum;
@@ -77,8 +77,8 @@ export default function SettingsPanel({ account, selectedYear }) {
     return balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.PENDING
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.PENDING
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
   }, [balanceTransactions]);
@@ -91,8 +91,8 @@ export default function SettingsPanel({ account, selectedYear }) {
     return balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.SCHEDULED
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.SCHEDULED
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
   }, [balanceTransactions]);
@@ -125,20 +125,27 @@ export default function SettingsPanel({ account, selectedYear }) {
     let rankingTransactions = expenses;
     if (selectedView === 'current') {
       rankingTransactions = expenses.filter(
-        (t) => t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        (t) =>
+          t.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED
       );
     } else if (selectedView === 'pending') {
       rankingTransactions = expenses.filter(
         (t) =>
-          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
-          t.status === transactionConstants.TransactionStatusEnum.PENDING
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.COMPLETED ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.PENDING
       );
     } else if (selectedView === 'scheduled') {
       rankingTransactions = expenses.filter(
         (t) =>
-          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
-          t.status === transactionConstants.TransactionStatusEnum.PENDING ||
-          t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.COMPLETED ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.PENDING ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.SCHEDULED
       );
     }
 
@@ -164,20 +171,20 @@ export default function SettingsPanel({ account, selectedYear }) {
       const completedTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+            t.status === transactionConstants.TransactionStateEnum.COMPLETED
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const pendingTotal = categoryTransactions
         .filter(
-          (t) => t.status === transactionConstants.TransactionStatusEnum.PENDING
+          (t) => t.status === transactionConstants.TransactionStateEnum.PENDING
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const scheduledTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+            t.status === transactionConstants.TransactionStateEnum.SCHEDULED
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 

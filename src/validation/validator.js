@@ -19,13 +19,10 @@
  *   }
  */
 
-import Ajv from 'ajv';
+import Ajv from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
-import { accountSchemas } from './accountSchemas';
-import { transactionSchemas } from './transactionSchemas';
-import { categorySchemas } from './categorySchemas';
+import { schemas } from '@luca-financial/luca-schema';
 import { statementSchemas } from './statementSchemas';
-import { recurringTransactionSchemas } from './recurringTransactionSchemas';
 
 // Create and configure AJV instance
 const ajv = new Ajv({
@@ -39,30 +36,18 @@ const ajv = new Ajv({
 // Add support for string formats (date, email, uri, etc.)
 addFormats(ajv);
 
-// Compile schemas for accounts
-const accountValidators = {};
-Object.keys(accountSchemas).forEach((accountType) => {
-  accountValidators[accountType] = ajv.compile(accountSchemas[accountType]);
-});
+// Add common schema which is referenced by others
+ajv.addSchema(schemas.common);
 
-// Compile schema for transactions
-const transactionValidator = ajv.compile(transactionSchemas.transaction);
-
-// Compile schema for categories
-const categoryValidator = ajv.compile(categorySchemas.category);
-
-// Compile schema for statements
-const statementValidator = ajv.compile(statementSchemas.statement);
-
-// Compile schema for recurring transactions
-const recurringTransactionValidator = ajv.compile(
-  recurringTransactionSchemas.recurringTransaction
-);
-
-// Compile schema for recurring occurrences
+// Compile schemas
+const accountValidator = ajv.compile(schemas.account);
+const transactionValidator = ajv.compile(schemas.transaction);
+const categoryValidator = ajv.compile(schemas.category);
+const recurringTransactionValidator = ajv.compile(schemas.recurringTransaction);
 const recurringOccurrenceValidator = ajv.compile(
-  recurringTransactionSchemas.recurringOccurrence
+  schemas.recurringTransactionEvent
 );
+const statementValidator = ajv.compile(statementSchemas.statement);
 
 /**
  * Formats AJV errors into user-friendly messages
@@ -104,24 +89,15 @@ function formatErrors(errors) {
 /**
  * Validates an account against its schema
  * @param {Object} account - Account data to validate
- * @param {string} accountType - Type of account (Checking, Savings, or Credit Card)
+ * @param {string} [accountType] - Deprecated: Type of account (ignored in new schema)
  * @returns {Object} { valid: boolean, errors: Array }
  */
 export function validateAccount(account, accountType) {
-  const validator = accountValidators[accountType];
-
-  if (!validator) {
-    return {
-      valid: false,
-      errors: [`Unknown account type: ${accountType}`],
-    };
-  }
-
-  const valid = validator(account);
+  const valid = accountValidator(account);
 
   return {
     valid,
-    errors: valid ? [] : formatErrors(validator.errors),
+    errors: valid ? [] : formatErrors(accountValidator.errors),
   };
 }
 

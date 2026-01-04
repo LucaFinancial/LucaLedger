@@ -20,15 +20,29 @@ import {
 } from '@/store/recurringTransactions';
 import RecurringTransactionModal from '@/components/RecurringTransactionModal';
 
-const formatFrequency = (frequency) => {
+const formatFrequency = (transaction) => {
+  const { frequency, interval } = transaction;
+
+  if (
+    frequency === recurringTransactionConstants.RecurringFrequencyEnum.WEEK &&
+    interval === 2
+  ) {
+    return 'Bi-Weekly';
+  }
+
   const labels = {
-    [recurringTransactionConstants.RecurringFrequencyEnum.DAILY]: 'Daily',
-    [recurringTransactionConstants.RecurringFrequencyEnum.WEEKLY]: 'Weekly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.BI_WEEKLY]:
-      'Bi-Weekly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY]: 'Monthly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.YEARLY]: 'Yearly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Daily',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weekly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Monthly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Yearly',
   };
+
+  if (interval > 1) {
+    // Simple pluralization logic
+    const label = labels[frequency] || frequency;
+    return `Every ${interval} ${label.replace(/ly$/, '')}s`;
+  }
+
   return labels[frequency] || frequency;
 };
 
@@ -195,7 +209,7 @@ export default function RecurringTransactionsPanel({ accountId }) {
                     </Typography>
                     <Chip
                       size='small'
-                      label={formatFrequency(transaction.frequency)}
+                      label={formatFrequency(transaction)}
                       sx={{ fontSize: '0.7rem', height: 20 }}
                     />
                   </Box>
