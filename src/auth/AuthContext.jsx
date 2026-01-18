@@ -21,7 +21,6 @@ import {
   deleteUser as deleteUserFromDB,
   hasLegacyEncryptedData,
   migrateLegacyDataToUser,
-  hasLegacyLocalStorage,
 } from '@/crypto/database';
 import {
   generateSalt,
@@ -60,16 +59,11 @@ export function AuthProvider({ children }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [authState, setAuthState] = useState('loading'); // 'loading', 'no-users', 'login', 'authenticated'
   const [sessionExpiresAt, setSessionExpiresAt] = useState(null);
-  const [hasLegacyData, setHasLegacyData] = useState(false);
 
   // Initialize auth state on mount
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check for legacy localStorage data
-        const hasLegacyLS = hasLegacyLocalStorage();
-        setHasLegacyData(hasLegacyLS);
-
         // Check if any users exist
         const usersExist = await hasUsers();
 
@@ -346,20 +340,12 @@ export function AuthProvider({ children }) {
     return !user;
   }, []);
 
-  /**
-   * Clear legacy data flag after migration
-   */
-  const clearLegacyDataFlag = useCallback(() => {
-    setHasLegacyData(false);
-  }, []);
-
   const value = {
     currentUser,
     activeDEK,
     isInitialized,
     authState,
     sessionExpiresAt,
-    hasLegacyData,
     register,
     login,
     logout,
@@ -367,7 +353,6 @@ export function AuthProvider({ children }) {
     getUsers,
     isUsernameAvailable,
     setAuthState,
-    clearLegacyDataFlag,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,35 +1,39 @@
 import { v4 as uuid } from 'uuid';
 
-import { AccountType } from './constants';
-import { generateAccountObject } from './generators';
-import { validateSchema } from '@/utils/schemaValidation';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
-import {
-  addAccount,
-  setAccounts,
-  updateAccount as updateAccountNormalized,
-  removeAccount,
-  setLoading,
-  setError,
-  addLoadingAccountId,
-  clearLoadingAccountIds,
-} from './slice';
 import { selectors as accountSelectors } from '@/store/accounts';
+import { setCategories } from '@/store/categories';
+import {
+  setStatements,
+  selectors as statementSelectors,
+} from '@/store/statements';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import {
   addTransaction,
-  setTransactions,
   removeTransaction,
+  setTransactions,
 } from '@/store/transactions/slice';
-import { setCategories } from '@/store/categories';
 import { dollarsToCents } from '@/utils';
+import { validateSchema } from '@/utils/schemaValidation';
+import { AccountType } from './constants';
+import { generateAccountObject } from './generators';
+import {
+  addAccount,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
+  removeAccount,
+  setAccounts,
+  setError,
+  setLoading,
+  updateAccount as updateAccountNormalized,
+} from './slice';
 
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
     uuid(),
     'New Account',
     AccountType.CHECKING,
-    null,
+    null
   );
 
   dispatch(addAccount(account));
@@ -51,13 +55,14 @@ export const loadAccount =
 
       if (!schemaVersion) {
         throw new Error(
-          'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.',
+          'Invalid file format: No schema version found. File must contain either "schemaVersion" or "version" field.'
         );
       }
 
       let accountsToLoad = [];
       let transactionsToLoad = [];
       let categoriesToLoad = null;
+      let statementsToLoad = [];
       let shouldLoadCategories = false;
 
       if (schemaVersion === '2.1.0') {
@@ -65,6 +70,9 @@ export const loadAccount =
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
         categoriesToLoad = data.categories;
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
 
         // Check if user wants to import categories
         if (categoriesToLoad && categoriesToLoad.length > 0) {
@@ -81,7 +89,7 @@ export const loadAccount =
               shouldLoadCategories = window.confirm(
                 'This file contains category data. Do you want to overwrite your existing categories with the categories from this file?\n\n' +
                   'Click "OK" to replace your current categories with the imported ones.\n' +
-                  'Click "Cancel" to keep your current categories.',
+                  'Click "Cancel" to keep your current categories.'
               );
             }
           } else {
@@ -93,6 +101,9 @@ export const loadAccount =
         // Schema 2.0.1+: amounts in cents, no categories
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       } else if (
         schemaVersion === '2.0.0' &&
         data.accounts &&
@@ -104,6 +115,9 @@ export const loadAccount =
           ...transaction,
           amount: dollarsToCents(transaction.amount),
         }));
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       } else {
         // Schema 1.0.0: single account with nested transactions, no categories
         // eslint-disable-next-line no-unused-vars
@@ -114,6 +128,9 @@ export const loadAccount =
           accountId: data.id,
           amount: dollarsToCents(transaction.amount),
         }));
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       }
 
       // Get current state for idempotent merge
@@ -121,12 +138,17 @@ export const loadAccount =
       const existingAccounts = accountSelectors.selectAccounts(currentState);
       const existingTransactions =
         transactionSelectors.selectTransactions(currentState);
+      const existingStatements =
+        statementSelectors.selectStatements(currentState);
 
       // Idempotent upsert: merge imported data with existing data by ID
       // Create a map of existing items for efficient lookup
       const accountsMap = new Map(existingAccounts.map((acc) => [acc.id, acc]));
       const transactionsMap = new Map(
-        existingTransactions.map((txn) => [txn.id, txn]),
+        existingTransactions.map((txn) => [txn.id, txn])
+      );
+      const statementsMap = new Map(
+        existingStatements.map((statement) => [statement.id, statement])
       );
 
       // Upsert imported accounts (overwrites existing by ID)
@@ -140,9 +162,17 @@ export const loadAccount =
         transactionsMap.set(transaction.id, transaction);
       });
 
+      // Upsert imported statements (overwrites existing by ID)
+      statementsToLoad.forEach((statement) => {
+        statementsMap.set(statement.id, statement);
+      });
+
       // Replace entire collections with merged data
       dispatch(setAccounts(Array.from(accountsMap.values())));
       dispatch(setTransactions(Array.from(transactionsMap.values())));
+      if (statementsToLoad.length > 0 || existingStatements.length > 0) {
+        dispatch(setStatements(Array.from(statementsMap.values())));
+      }
 
       // Load categories if user confirmed or no existing categories
       if (shouldLoadCategories && categoriesToLoad) {
@@ -179,7 +209,7 @@ export const loadAccountAsync = () => async (dispatch) => {
     data.name,
     data.type || AccountType.CHECKING,
     data.statementClosingDay ||
-      (data.type === AccountType.CREDIT_CARD ? 1 : null),
+      (data.type === AccountType.CREDIT_CARD ? 1 : null)
   );
 
   const validationResult = await validateSchema('account', account);
@@ -219,8 +249,8 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
       // Delete all related transactions from encrypted database
       await Promise.all(
         transactions.map((transaction) =>
-          deleteEncryptedRecord('transactions', transaction.id),
-        ),
+          deleteEncryptedRecord('transactions', transaction.id)
+        )
       );
     } catch (error) {
       console.error('Failed to delete encrypted data:', error);
@@ -254,12 +284,14 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const accounts = state.accounts.data;
   const transactions = state.transactions;
   const categories = state.categories;
+  const statements = state.statements;
 
   const data = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
     categories,
+    statements,
   };
 
   const saveString = JSON.stringify(data, null, 2);
@@ -277,7 +309,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
     alert(
       'Security Notice: The file you downloaded is NOT encrypted. ' +
         'Your financial data is stored in plain text in this file. ' +
-        'Please store it securely (e.g., in an encrypted folder or password manager).',
+        'Please store it securely (e.g., in an encrypted folder or password manager).'
     );
   }, 500);
 };
@@ -289,6 +321,8 @@ export const saveAccountWithTransactions =
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
     const categories = state.categories;
+    const statements =
+      statementSelectors.selectStatementsByAccountId(accountId)(state);
 
     if (!account) return;
 
@@ -297,6 +331,7 @@ export const saveAccountWithTransactions =
       accounts: [account],
       transactions,
       categories,
+      statements,
     };
 
     const saveString = JSON.stringify(data, null, 2);
@@ -313,7 +348,7 @@ export const saveAccountWithTransactions =
       alert(
         'Security Notice: The file you downloaded is NOT encrypted. ' +
           'Your financial data is stored in plain text in this file. ' +
-          'Please store it securely (e.g., in an encrypted folder or password manager).',
+          'Please store it securely (e.g., in an encrypted folder or password manager).'
       );
     }, 500);
   };
