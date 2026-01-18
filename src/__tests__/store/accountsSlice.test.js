@@ -47,8 +47,12 @@ describe('Accounts Slice', () => {
           setAccounts([accountWithExtraProperties]),
         );
 
-        expect(state.data[0].extraField).toBeUndefined();
-        expect(state.data[0].anotherExtra).toBeUndefined();
+        expect(state.data[0].extraField).toBe(
+          accountWithExtraProperties.extraField,
+        );
+        expect(state.data[0].anotherExtra).toBe(
+          accountWithExtraProperties.anotherExtra,
+        );
         expect(state.data[0].id).toBe(accountWithExtraProperties.id);
       });
 
@@ -97,7 +101,9 @@ describe('Accounts Slice', () => {
           addAccount(accountWithExtraProperties),
         );
 
-        expect(state.data[0].extraField).toBeUndefined();
+        expect(state.data[0].extraField).toBe(
+          accountWithExtraProperties.extraField,
+        );
       });
     });
 
