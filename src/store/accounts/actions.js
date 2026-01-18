@@ -22,6 +22,8 @@ import {
   removeTransaction,
 } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories';
+import { setStatements } from '@/store/statements';
+import { selectors as statementSelectors } from '@/store/statements';
 import { dollarsToCents } from '@/utils';
 
 export const createNewAccount = () => (dispatch) => {
@@ -58,6 +60,7 @@ export const loadAccount =
       let accountsToLoad = [];
       let transactionsToLoad = [];
       let categoriesToLoad = null;
+      let statementsToLoad = [];
       let shouldLoadCategories = false;
 
       if (schemaVersion === '2.1.0') {
@@ -65,6 +68,9 @@ export const loadAccount =
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
         categoriesToLoad = data.categories;
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
 
         // Check if user wants to import categories
         if (categoriesToLoad && categoriesToLoad.length > 0) {
@@ -93,6 +99,9 @@ export const loadAccount =
         // Schema 2.0.1+: amounts in cents, no categories
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       } else if (
         schemaVersion === '2.0.0' &&
         data.accounts &&
@@ -104,6 +113,9 @@ export const loadAccount =
           ...transaction,
           amount: dollarsToCents(transaction.amount),
         }));
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       } else {
         // Schema 1.0.0: single account with nested transactions, no categories
         // eslint-disable-next-line no-unused-vars
@@ -114,6 +126,9 @@ export const loadAccount =
           accountId: data.id,
           amount: dollarsToCents(transaction.amount),
         }));
+        statementsToLoad = Array.isArray(data.statements)
+          ? data.statements
+          : [];
       }
 
       // Get current state for idempotent merge
@@ -121,12 +136,17 @@ export const loadAccount =
       const existingAccounts = accountSelectors.selectAccounts(currentState);
       const existingTransactions =
         transactionSelectors.selectTransactions(currentState);
+      const existingStatements =
+        statementSelectors.selectStatements(currentState);
 
       // Idempotent upsert: merge imported data with existing data by ID
       // Create a map of existing items for efficient lookup
       const accountsMap = new Map(existingAccounts.map((acc) => [acc.id, acc]));
       const transactionsMap = new Map(
         existingTransactions.map((txn) => [txn.id, txn])
+      );
+      const statementsMap = new Map(
+        existingStatements.map((statement) => [statement.id, statement])
       );
 
       // Upsert imported accounts (overwrites existing by ID)
@@ -140,9 +160,17 @@ export const loadAccount =
         transactionsMap.set(transaction.id, transaction);
       });
 
+      // Upsert imported statements (overwrites existing by ID)
+      statementsToLoad.forEach((statement) => {
+        statementsMap.set(statement.id, statement);
+      });
+
       // Replace entire collections with merged data
       dispatch(setAccounts(Array.from(accountsMap.values())));
       dispatch(setTransactions(Array.from(transactionsMap.values())));
+      if (statementsToLoad.length > 0 || existingStatements.length > 0) {
+        dispatch(setStatements(Array.from(statementsMap.values())));
+      }
 
       // Load categories if user confirmed or no existing categories
       if (shouldLoadCategories && categoriesToLoad) {
@@ -253,12 +281,14 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const accounts = state.accounts.data;
   const transactions = state.transactions;
   const categories = state.categories;
+  const statements = state.statements;
 
   const data = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     accounts,
     transactions,
     categories,
+    statements,
   };
 
   const saveString = JSON.stringify(data, null, 2);
@@ -288,6 +318,8 @@ export const saveAccountWithTransactions =
     const transactions =
       transactionSelectors.selectTransactionsByAccountId(accountId)(state);
     const categories = state.categories;
+    const statements =
+      statementSelectors.selectStatementsByAccountId(accountId)(state);
 
     if (!account) return;
 
@@ -296,6 +328,7 @@ export const saveAccountWithTransactions =
       accounts: [account],
       transactions,
       categories,
+      statements,
     };
 
     const saveString = JSON.stringify(data, null, 2);
