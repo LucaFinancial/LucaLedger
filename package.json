@@ -19,7 +19,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@luca-financial/luca-schema": "^2.1.1",
+    "@luca-financial/luca-schema": "^2.1.2",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
     "@mui/system": "^5.18.0",
@@ -32,6 +32,7 @@
     "dexie": "^4.2.1",
     "immer": "^10.2.0",
     "jszip": "^3.10.1",
+    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^8.1.3",

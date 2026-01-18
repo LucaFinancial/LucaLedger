@@ -15,8 +15,8 @@ importers:
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.27)(react@18.3.1))(@types/react@18.3.27)(react@18.3.1)
       '@luca-financial/luca-schema':
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       '@mui/icons-material':
         specifier: ^5.18.0
         version: 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.27)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.27)(react@18.3.1))(@types/react@18.3.27)(react@18.3.1))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.27)(react@18.3.1)
@@ -53,6 +53,9 @@ importers:
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
+      prop-types:
+        specifier: ^15.8.1
+        version: 15.8.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -688,8 +691,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@luca-financial/luca-schema@2.1.1':
-    resolution: {integrity: sha512-I7n5mQaAiZYWfEfUHlWfqZ3pbiwArAXDOLvbFMPqg8bj3Y8ub24W9QzxHwREAYfKD3D1bLacgbBwc/J6EpYG/Q==}
+  '@luca-financial/luca-schema@2.1.2':
+    resolution: {integrity: sha512-7EITkLjUvRIzeOl2Jn81TJ330kf7Xj2NlwSkgMnnpk/G3qRjSIfGO1ZawfDPJBnTmT0W2vNJ+GWmH2X5GY1Fog==}
     engines: {node: '>=22.0.0'}
 
   '@mui/core-downloads-tracker@5.18.0':
@@ -3432,7 +3435,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@luca-financial/luca-schema@2.1.1':
+  '@luca-financial/luca-schema@2.1.2':
     dependencies:
       ajv: 8.17.1
       ajv-formats: 2.1.1(ajv@8.17.1)
