@@ -17,11 +17,7 @@ export default defineConfig({
     include: ['src/**/*.test.{js,jsx}'],
     coverage: {
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/__tests__/',
-        'dist/',
-      ],
+      exclude: ['node_modules/', 'src/__tests__/', 'dist/'],
     },
     alias: {
       '@': path.resolve(__dirname, './src'),
