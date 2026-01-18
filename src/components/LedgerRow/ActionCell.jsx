@@ -5,7 +5,7 @@ import {
   actions as transactionActions,
   constants as transactionConstants,
 } from '@/store/transactions';
-import { actions as recurringOccurrenceActions } from '@/store/recurringOccurrences';
+import { actions as recurringTransactionEventActions } from '@/store/recurringTransactionEvents';
 
 export default function ActionCell({
   transaction,
@@ -18,10 +18,10 @@ export default function ActionCell({
   const handleCreateClick = () => {
     if (isVirtual && recurringTransaction && occurrenceDate) {
       dispatch(
-        recurringOccurrenceActions.realizeRecurringTransaction(
+        recurringTransactionEventActions.realizeRecurringTransaction(
           recurringTransaction,
-          occurrenceDate
-        )
+          occurrenceDate,
+        ),
       );
     }
   };
@@ -31,9 +31,9 @@ export default function ActionCell({
       transactionActions.updateTransactionProperty(
         transaction.accountId,
         transaction,
-        'status',
-        transactionConstants.TransactionStatusEnum.SCHEDULED
-      )
+        transactionConstants.TransactionFields.TRANSACTION_STATE,
+        transactionConstants.TransactionStateEnum.SCHEDULED,
+      ),
     );
   };
 
@@ -42,9 +42,9 @@ export default function ActionCell({
       transactionActions.updateTransactionProperty(
         transaction.accountId,
         transaction,
-        'status',
-        transactionConstants.TransactionStatusEnum.COMPLETE
-      )
+        transactionConstants.TransactionFields.TRANSACTION_STATE,
+        transactionConstants.TransactionStateEnum.COMPLETED,
+      ),
     );
   };
 
@@ -64,8 +64,8 @@ export default function ActionCell({
       );
     }
 
-    switch (transaction.status) {
-      case transactionConstants.TransactionStatusEnum.PLANNED:
+    switch (transaction.transactionState) {
+      case transactionConstants.TransactionStateEnum.PLANNED:
         return (
           <Button
             size='small'
@@ -77,8 +77,8 @@ export default function ActionCell({
             Schedule
           </Button>
         );
-      case transactionConstants.TransactionStatusEnum.SCHEDULED:
-      case transactionConstants.TransactionStatusEnum.PENDING:
+      case transactionConstants.TransactionStateEnum.SCHEDULED:
+      case transactionConstants.TransactionStateEnum.PENDING:
         return (
           <Button
             size='small'
@@ -90,7 +90,7 @@ export default function ActionCell({
             Complete
           </Button>
         );
-      case transactionConstants.TransactionStatusEnum.COMPLETE:
+      case transactionConstants.TransactionStateEnum.COMPLETED:
         // No button for complete status
         return null;
       default:

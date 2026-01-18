@@ -14,10 +14,7 @@ export default function AccountName({ account }) {
   return (
     <>
       {isEditing ? (
-        <AccountNameEdit
-          account={account}
-          setIsEditing={setIsEditing}
-        />
+        <AccountNameEdit account={account} setIsEditing={setIsEditing} />
       ) : (
         <Typography
           variant='h3'

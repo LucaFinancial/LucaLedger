@@ -90,18 +90,10 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onCancel} maxWidth='sm' fullWidth>
       <DialogTitle>Set Up Encryption Password</DialogTitle>
       <DialogContent>
-        <Alert
-          severity='warning'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='warning' sx={{ mb: 2 }}>
           <Typography variant='body2'>
             <strong>Important:</strong> If you forget your password, your data
             cannot be recovered. Please store it in a secure password manager.
@@ -173,8 +165,8 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
           {isGenerated && !passwordCopied && countdown === 0
             ? 'Copy Password to Enable'
             : isGenerated && passwordCopied && countdown > 0
-            ? `Enable in ${countdown}s`
-            : 'Enable Encryption'}
+              ? `Enable in ${countdown}s`
+              : 'Enable Encryption'}
         </Button>
       </DialogActions>
     </Dialog>

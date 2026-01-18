@@ -24,6 +24,7 @@ import {
   actions as statementActions,
 } from '@/store/statements';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
+import { calculateStatementPeriod } from '@/store/statements/utils';
 
 function formatCurrency(cents) {
   const dollars = Math.abs(cents) / 100;
@@ -49,13 +50,13 @@ export default function StatementDetailsModal({
   readOnly = false,
 }) {
   const dispatch = useDispatch();
-  const [periodStart, setPeriodStart] = useState(statement?.periodStart || '');
-  const [periodEnd, setPeriodEnd] = useState(statement?.periodEnd || '');
+  const [periodStart, setPeriodStart] = useState(statement?.startDate || '');
+  const [periodEnd, setPeriodEnd] = useState(statement?.endDate || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const issues = useSelector(
-    statementSelectors.selectStatementIssues(statement?.id)
+    statementSelectors.selectStatementIssues(statement?.id),
   );
 
   // Get statement with both stored and calculated values
@@ -100,16 +101,9 @@ export default function StatementDetailsModal({
   const handleSave = () => {
     if (!canEdit) return;
 
-    // Calculate statementPeriod from periodStart (YYYY-MM format)
-    const periodStartDate = parseISO(periodStart.replace(/\//g, '-'));
-    const statementPeriod = format(periodStartDate, 'yyyy-MM');
-
     const updates = {
-      periodStart,
-      periodEnd,
-      statementPeriod,
-      isStartDateModified: periodStart !== statement.periodStart,
-      isEndDateModified: periodEnd !== statement.periodEnd,
+      startDate: periodStart,
+      endDate: periodEnd,
     };
 
     onSave(statement.id, updates);
@@ -170,22 +164,10 @@ export default function StatementDetailsModal({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth='md'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
       <DialogTitle>
-        <Box
-          display='flex'
-          alignItems='center'
-          gap={2}
-        >
-          <Typography
-            variant='h6'
-            component='span'
-          >
+        <Box display='flex' alignItems='center' gap={2}>
+          <Typography variant='h6' component='span'>
             Statement Details
           </Typography>
           <StatementStatusBadge status={statement.status} />
@@ -199,11 +181,7 @@ export default function StatementDetailsModal({
             sx={{ mb: 2 }}
             action={
               onUnlock && (
-                <Button
-                  color='inherit'
-                  size='small'
-                  onClick={handleUnlock}
-                >
+                <Button color='inherit' size='small' onClick={handleUnlock}>
                   Unlock
                 </Button>
               )
@@ -218,11 +196,7 @@ export default function StatementDetailsModal({
             severity='warning'
             sx={{ mb: 2 }}
             action={
-              <Button
-                color='inherit'
-                size='small'
-                onClick={handleSync}
-              >
+              <Button color='inherit' size='small' onClick={handleSync}>
                 Sync Statement
               </Button>
             }
@@ -258,7 +232,8 @@ export default function StatementDetailsModal({
             }
           >
             <AlertTitle>Duplicate Statement Period</AlertTitle>
-            This statement has the same period ({statement.statementPeriod}) as{' '}
+            This statement has the same period (
+            {calculateStatementPeriod(statement.endDate)}) as{' '}
             {issues.duplicateStatements?.length || 1} other statement
             {(issues.duplicateStatements?.length || 1) !== 1 ? 's' : ''}. This
             should not happen and duplicates must be removed.
@@ -270,11 +245,7 @@ export default function StatementDetailsModal({
             severity='warning'
             sx={{ mb: 2 }}
             action={
-              <Button
-                color='inherit'
-                size='small'
-                onClick={handleFixIssue}
-              >
+              <Button color='inherit' size='small' onClick={handleFixIssue}>
                 Fix Overlap
               </Button>
             }
@@ -291,11 +262,7 @@ export default function StatementDetailsModal({
             severity='warning'
             sx={{ mb: 2 }}
             action={
-              <Button
-                color='inherit'
-                size='small'
-                onClick={handleFixIssue}
-              >
+              <Button color='inherit' size='small' onClick={handleFixIssue}>
                 Fix Gap
               </Button>
             }
@@ -307,17 +274,10 @@ export default function StatementDetailsModal({
         )}
 
         <Box sx={{ mb: 3 }}>
-          <Typography
-            variant='subtitle2'
-            gutterBottom
-          >
+          <Typography variant='subtitle2' gutterBottom>
             Statement Period
           </Typography>
-          <Box
-            display='flex'
-            gap={2}
-            alignItems='center'
-          >
+          <Box display='flex' gap={2} alignItems='center'>
             <TextField
               label='Start Date'
               value={periodStart}
@@ -343,10 +303,7 @@ export default function StatementDetailsModal({
         </Box>
 
         <Box sx={{ mb: 3 }}>
-          <Typography
-            variant='subtitle2'
-            gutterBottom
-          >
+          <Typography variant='subtitle2' gutterBottom>
             Statement Summary
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -358,19 +315,13 @@ export default function StatementDetailsModal({
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography color='text.secondary'>Total Charges</Typography>
-              <Typography
-                fontWeight='bold'
-                color='success.main'
-              >
+              <Typography fontWeight='bold' color='success.main'>
                 +{formatCurrency(totalCharges)}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography color='text.secondary'>Payments / Credits</Typography>
-              <Typography
-                fontWeight='bold'
-                color='error.main'
-              >
+              <Typography fontWeight='bold' color='error.main'>
                 -{formatCurrency(totalPayments)}
               </Typography>
             </Box>
@@ -385,17 +336,11 @@ export default function StatementDetailsModal({
         </Box>
 
         <Box sx={{ mb: 2 }}>
-          <Typography
-            variant='subtitle2'
-            gutterBottom
-          >
+          <Typography variant='subtitle2' gutterBottom>
             Transactions ({statementTransactions.length})
           </Typography>
           {statementTransactions.length === 0 ? (
-            <Typography
-              variant='body2'
-              color='text.secondary'
-            >
+            <Typography variant='body2' color='text.secondary'>
               No transactions in this period
             </Typography>
           ) : (
@@ -431,23 +376,12 @@ export default function StatementDetailsModal({
           )}
         </Box>
 
-        {(statement.isStartDateModified || statement.isEndDateModified) && (
-          <Alert
-            severity='warning'
-            sx={{ mt: 2 }}
-          >
-            This statement has been manually modified.
-          </Alert>
-        )}
+        {null}
       </DialogContent>
 
       <DialogActions>
         {canEdit && statement.status !== 'draft' && onLock && (
-          <Button
-            onClick={handleLock}
-            color='error'
-            variant='outlined'
-          >
+          <Button onClick={handleLock} color='error' variant='outlined'>
             Lock Statement
           </Button>
         )}
@@ -473,19 +407,13 @@ StatementDetailsModal.propTypes = {
   statement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     accountId: PropTypes.string.isRequired,
-    closingDate: PropTypes.string.isRequired,
-    periodStart: PropTypes.string.isRequired,
-    periodEnd: PropTypes.string.isRequired,
-    statementPeriod: PropTypes.string,
-    transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+    startDate: PropTypes.string.isRequired,
+    endDate: PropTypes.string.isRequired,
     startingBalance: PropTypes.number,
     endingBalance: PropTypes.number,
     totalCharges: PropTypes.number,
     totalPayments: PropTypes.number,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
-    isStartDateModified: PropTypes.bool.isRequired,
-    isEndDateModified: PropTypes.bool.isRequired,
-    isTotalModified: PropTypes.bool,
   }),
   onSave: PropTypes.func,
   onLock: PropTypes.func,

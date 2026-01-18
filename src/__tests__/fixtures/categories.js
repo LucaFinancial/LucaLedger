@@ -5,46 +5,59 @@
 
 // Valid parent category
 export const validParentCategory = {
-  id: 'cat-parent-001',
+  id: '00000000-0000-0000-0000-000000000001',
   slug: 'test-parent',
   name: 'Test Parent Category',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 // Valid category with subcategories
 export const validCategoryWithSubcategories = {
-  id: 'cat-parent-002',
+  id: '00000000-0000-0000-0000-000000000002',
   slug: 'custom-category',
   name: 'Custom Category',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 // Valid subcategory
 export const validSubcategory = {
-  id: 'cat-sub-003',
+  id: '00000000-0000-0000-0000-000000000003',
   slug: 'standalone-subcategory',
   name: 'Standalone Subcategory',
+  parentId: '00000000-0000-0000-0000-000000000001',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 // Flat categories for store (as used in Redux store)
 export const flatCategories = [
   {
-    id: 'flat-cat-001',
+    id: '00000000-0000-0000-0000-000000000004',
     slug: 'parent-one',
     name: 'Parent One',
     parentId: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   {
-    id: 'flat-cat-002',
+    id: '00000000-0000-0000-0000-000000000005',
     slug: 'parent-one-child',
     name: 'Child of Parent One',
-    parentId: 'flat-cat-001',
+    parentId: '00000000-0000-0000-0000-000000000004',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   {
-    id: 'flat-cat-003',
+    id: '00000000-0000-0000-0000-000000000006',
     slug: 'parent-two',
     name: 'Parent Two',
     parentId: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
 ];
 
@@ -54,16 +67,20 @@ export const validCategories = [
   validCategoryWithSubcategories,
   // include a sample subcategory as flat entry
   {
-    id: 'cat-sub-001',
+    id: '00000000-0000-0000-0000-000000000007',
     slug: 'custom-subcategory-one',
     name: 'Custom Subcategory One',
-    parentId: 'cat-parent-002',
+    parentId: '00000000-0000-0000-0000-000000000002',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   {
-    id: 'cat-sub-002',
+    id: '00000000-0000-0000-0000-000000000008',
     slug: 'custom-subcategory-two',
     name: 'Custom Subcategory Two',
-    parentId: 'cat-parent-002',
+    parentId: '00000000-0000-0000-0000-000000000002',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
 ];
 
@@ -72,31 +89,41 @@ export const categoryMissingId = {
   slug: 'missing-id',
   name: 'Missing ID',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryMissingSlug = {
-  id: 'cat-missing-slug',
+  id: '00000000-0000-0000-0000-000000000009',
   name: 'Missing Slug',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryMissingName = {
-  id: 'cat-missing-name',
+  id: '00000000-0000-0000-0000-000000000010',
   slug: 'missing-name',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryMissingSubcategories = {
-  id: 'cat-missing-subs',
+  id: '00000000-0000-0000-0000-000000000011',
   slug: 'missing-subcategories',
   name: 'Missing Subcategories',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 // For new flat schema the equivalent missing-field fixture is missing parentId
 export const categoryMissingParentId = {
-  id: 'cat-missing-parent',
+  id: '00000000-0000-0000-0000-000000000012',
   slug: 'missing-parent',
   name: 'Missing Parent',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryEmptyId = {
@@ -104,41 +131,53 @@ export const categoryEmptyId = {
   slug: 'empty-id',
   name: 'Empty ID',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryEmptySlug = {
-  id: 'cat-empty-slug',
+  id: '00000000-0000-0000-0000-000000000013',
   slug: '',
   name: 'Empty Slug',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryEmptyName = {
-  id: 'cat-empty-name',
+  id: '00000000-0000-0000-0000-000000000014',
   slug: 'empty-name',
   name: '',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryInvalidSlug = {
-  id: 'cat-invalid-slug',
+  id: '00000000-0000-0000-0000-000000000015',
   slug: 'Invalid Slug With Spaces', // Slugs should be kebab-case
   name: 'Invalid Slug',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryInvalidSlugUppercase = {
-  id: 'cat-invalid-slug-upper',
+  id: '00000000-0000-0000-0000-000000000016',
   slug: 'Invalid-Slug', // Contains uppercase
   name: 'Invalid Slug Uppercase',
   parentId: null,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 export const categoryInvalidSubcategory = {
-  id: 'cat-invalid-sub',
+  id: '00000000-0000-0000-0000-000000000017',
   slug: 'invalid-sub',
   name: 'Invalid Subcategory',
-  parentId: 'cat-parent-002',
+  parentId: '00000000-0000-0000-0000-000000000002',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: null,
 };
 
 // Invalid categories collection

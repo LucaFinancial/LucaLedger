@@ -32,15 +32,15 @@ describe('Account Generators', () => {
       expect(account.type).toBe(AccountType.SAVINGS);
     });
 
-    it('should generate a credit card account with statementDay', () => {
+    it('should generate a credit card account with statementClosingDay', () => {
       const account = generateAccount({
         name: 'Credit Card Test',
         type: AccountType.CREDIT_CARD,
-        statementDay: 15,
+        statementClosingDay: 15,
       });
 
       expect(account.type).toBe(AccountType.CREDIT_CARD);
-      expect(account.statementDay).toBe(15);
+      expect(account.statementClosingDay).toBe(15);
     });
 
     it('should generate unique IDs', () => {
@@ -51,17 +51,18 @@ describe('Account Generators', () => {
     });
 
     it('should respect provided id', () => {
+      const customId = '123e4567-e89b-12d3-a456-426614174000';
       const account = generateAccount({
-        id: 'custom-id',
+        id: customId,
         name: 'Custom ID Account',
       });
 
-      expect(account.id).toBe('custom-id');
+      expect(account.id).toBe(customId);
     });
 
     it('should throw for invalid account data', () => {
       expect(() => {
-        generateAccount({ type: AccountType.CREDIT_CARD }); // Missing statementDay
+        generateAccount({ type: AccountType.CREDIT_CARD }); // Missing statementClosingDay
       }).toThrow();
     });
   });
@@ -93,7 +94,7 @@ describe('Account Generators', () => {
         'acc-123',
         'Test Account',
         AccountType.CHECKING,
-        undefined
+        undefined,
       );
 
       expect(account.id).toBe('acc-123');
@@ -101,15 +102,15 @@ describe('Account Generators', () => {
       expect(account.type).toBe(AccountType.CHECKING);
     });
 
-    it('should include statementDay for credit cards', () => {
+    it('should include statementClosingDay for credit cards', () => {
       const account = generateAccountObject(
         'cc-123',
         'Credit Card',
         AccountType.CREDIT_CARD,
-        15
+        15,
       );
 
-      expect(account.statementDay).toBe(15);
+      expect(account.statementClosingDay).toBe(15);
     });
   });
 });

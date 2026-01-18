@@ -11,7 +11,7 @@ import transactionsReducer, {
   updateMultipleTransactions,
   removeTransaction,
 } from '@/store/transactions/slice';
-import { TransactionStatusEnum } from '@/store/transactions/constants';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import {
   validCompletedTransaction,
   validPendingTransaction,
@@ -32,7 +32,7 @@ describe('Transactions Slice', () => {
         ];
         const state = transactionsReducer(
           initialState,
-          setTransactions(transactions)
+          setTransactions(transactions),
         );
 
         expect(state).toHaveLength(2);
@@ -43,7 +43,7 @@ describe('Transactions Slice', () => {
       it('should clean transactions by removing extra properties', () => {
         const state = transactionsReducer(
           initialState,
-          setTransactions([transactionWithExtraProperties])
+          setTransactions([transactionWithExtraProperties]),
         );
 
         expect(state[0].extraField).toBeUndefined();
@@ -54,17 +54,17 @@ describe('Transactions Slice', () => {
       it('should sanitize legacy status with trailing spaces', () => {
         const state = transactionsReducer(
           initialState,
-          setTransactions([transactionLegacyStatusSpaces])
+          setTransactions([transactionLegacyStatusSpaces]),
         );
 
-        expect(state[0].status).toBe('complete');
+        expect(state[0].transactionState).toBe('complete');
       });
 
       it('should replace existing transactions', () => {
         const stateWithData = [validCompletedTransaction];
         const state = transactionsReducer(
           stateWithData,
-          setTransactions([validPendingTransaction])
+          setTransactions([validPendingTransaction]),
         );
 
         expect(state).toHaveLength(1);
@@ -76,7 +76,7 @@ describe('Transactions Slice', () => {
       it('should add a new transaction', () => {
         const state = transactionsReducer(
           initialState,
-          addTransaction(validCompletedTransaction)
+          addTransaction(validCompletedTransaction),
         );
 
         expect(state).toHaveLength(1);
@@ -87,7 +87,7 @@ describe('Transactions Slice', () => {
         const stateWithData = [validCompletedTransaction];
         const state = transactionsReducer(
           stateWithData,
-          addTransaction(validPendingTransaction)
+          addTransaction(validPendingTransaction),
         );
 
         expect(state).toHaveLength(2);
@@ -96,7 +96,7 @@ describe('Transactions Slice', () => {
       it('should clean transaction on add', () => {
         const state = transactionsReducer(
           initialState,
-          addTransaction(transactionWithExtraProperties)
+          addTransaction(transactionWithExtraProperties),
         );
 
         expect(state[0].extraField).toBeUndefined();
@@ -112,7 +112,7 @@ describe('Transactions Slice', () => {
         };
         const state = transactionsReducer(
           stateWithData,
-          updateTransaction(updatedTransaction)
+          updateTransaction(updatedTransaction),
         );
 
         expect(state[0].description).toBe('Updated Description');
@@ -126,11 +126,11 @@ describe('Transactions Slice', () => {
         };
         const state = transactionsReducer(
           stateWithData,
-          updateTransaction(updatedTransaction)
+          updateTransaction(updatedTransaction),
         );
 
         expect(state[0].description).toBe(
-          validCompletedTransaction.description
+          validCompletedTransaction.description,
         );
         expect(state[0].amount).toBe(10000);
       });
@@ -146,7 +146,7 @@ describe('Transactions Slice', () => {
         };
         const state = transactionsReducer(
           stateWithData,
-          updateTransaction(updatedTransaction)
+          updateTransaction(updatedTransaction),
         );
 
         expect(state[1].description).toBe(validPendingTransaction.description);
@@ -157,14 +157,14 @@ describe('Transactions Slice', () => {
         const nonExistentTransaction = {
           id: 'non-existent',
           accountId: 'acc-001',
-          status: TransactionStatusEnum.COMPLETE,
+          transactionState: TransactionStateEnum.COMPLETED,
           date: '2024/01/01',
           amount: 0,
           description: 'Non Existent',
         };
         const state = transactionsReducer(
           stateWithData,
-          updateTransaction(nonExistentTransaction)
+          updateTransaction(nonExistentTransaction),
         );
 
         expect(state).toHaveLength(1);
@@ -186,13 +186,13 @@ describe('Transactions Slice', () => {
               validCompletedTransaction.id,
               validPendingTransaction.id,
             ],
-            updates: { status: TransactionStatusEnum.COMPLETE },
-          })
+            updates: { transactionState: TransactionStateEnum.COMPLETED },
+          }),
         );
 
-        expect(state[0].status).toBe(TransactionStatusEnum.COMPLETE);
-        expect(state[1].status).toBe(TransactionStatusEnum.COMPLETE);
-        expect(state[2].status).toBe(TransactionStatusEnum.SCHEDULED); // Unchanged
+        expect(state[0].transactionState).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[1].transactionState).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[2].transactionState).toBe(TransactionStateEnum.SCHEDULED);
       });
 
       it('should preserve non-updated fields', () => {
@@ -202,12 +202,12 @@ describe('Transactions Slice', () => {
           updateMultipleTransactions({
             transactionIds: [validCompletedTransaction.id],
             updates: { amount: 99999 },
-          })
+          }),
         );
 
         expect(state[0].amount).toBe(99999);
         expect(state[0].description).toBe(
-          validCompletedTransaction.description
+          validCompletedTransaction.description,
         );
       });
 
@@ -218,7 +218,7 @@ describe('Transactions Slice', () => {
           updateMultipleTransactions({
             transactionIds: [],
             updates: { amount: 99999 },
-          })
+          }),
         );
 
         expect(state[0].amount).toBe(validCompletedTransaction.amount);
@@ -233,7 +233,7 @@ describe('Transactions Slice', () => {
         ];
         const state = transactionsReducer(
           stateWithData,
-          removeTransaction(validCompletedTransaction.id)
+          removeTransaction(validCompletedTransaction.id),
         );
 
         expect(state).toHaveLength(1);
@@ -244,7 +244,7 @@ describe('Transactions Slice', () => {
         const stateWithData = [validCompletedTransaction];
         const state = transactionsReducer(
           stateWithData,
-          removeTransaction('non-existent')
+          removeTransaction('non-existent'),
         );
 
         expect(state).toHaveLength(1);
@@ -254,7 +254,7 @@ describe('Transactions Slice', () => {
         const stateWithData = [validCompletedTransaction];
         const state = transactionsReducer(
           stateWithData,
-          removeTransaction(validCompletedTransaction.id)
+          removeTransaction(validCompletedTransaction.id),
         );
 
         expect(state).toHaveLength(0);

@@ -9,14 +9,14 @@ export function useCategoryFilters(categories) {
   // Find the Income and Transfers parent category IDs
   const incomeCategoryId = useMemo(() => {
     const incomeCategory = categories.find(
-      (cat) => cat.slug === 'income' && !cat.parentId
+      (cat) => cat.slug === 'income' && !cat.parentId,
     );
     return incomeCategory?.id;
   }, [categories]);
 
   const transfersCategoryId = useMemo(() => {
     const transfersCategory = categories.find(
-      (cat) => cat.slug === 'transfers' && !cat.parentId
+      (cat) => cat.slug === 'transfers' && !cat.parentId,
     );
     return transfersCategory?.id;
   }, [categories]);
@@ -25,7 +25,7 @@ export function useCategoryFilters(categories) {
   const incomeCategoryIds = useMemo(() => {
     if (!incomeCategoryId) return [];
     const subcategories = categories.filter(
-      (cat) => cat.parentId === incomeCategoryId
+      (cat) => cat.parentId === incomeCategoryId,
     );
     return [incomeCategoryId, ...subcategories.map((cat) => cat.id)];
   }, [categories, incomeCategoryId]);
@@ -34,7 +34,7 @@ export function useCategoryFilters(categories) {
   const transferCategoryIds = useMemo(() => {
     if (!transfersCategoryId) return [];
     const subcategories = categories.filter(
-      (cat) => cat.parentId === transfersCategoryId
+      (cat) => cat.parentId === transfersCategoryId,
     );
     return [transfersCategoryId, ...subcategories.map((cat) => cat.id)];
   }, [categories, transfersCategoryId]);
@@ -45,7 +45,7 @@ export function useCategoryFilters(categories) {
       if (!tx.categoryId) return false;
       return incomeCategoryIds.includes(tx.categoryId);
     },
-    [incomeCategoryIds]
+    [incomeCategoryIds],
   );
 
   // Helper function to determine if a transaction is a transfer
@@ -54,7 +54,7 @@ export function useCategoryFilters(categories) {
       if (!tx.categoryId) return false;
       return transferCategoryIds.includes(tx.categoryId);
     },
-    [transferCategoryIds]
+    [transferCategoryIds],
   );
 
   // Helper function to get the display color for a transaction
@@ -63,7 +63,7 @@ export function useCategoryFilters(categories) {
       if (isIncomeTransaction(tx)) return 'success.main';
       return 'error.main'; // Expense
     },
-    [isIncomeTransaction]
+    [isIncomeTransaction],
   );
 
   // Helper function to categorize transaction as income or expense amount
@@ -85,7 +85,7 @@ export function useCategoryFilters(categories) {
       // Everything else is an expense
       return { income: 0, expense: absAmount };
     },
-    [isIncomeTransaction, isTransferTransaction]
+    [isIncomeTransaction, isTransferTransaction],
   );
 
   return {

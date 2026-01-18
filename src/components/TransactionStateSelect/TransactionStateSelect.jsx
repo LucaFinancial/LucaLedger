@@ -7,18 +7,18 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 
-export default function TransactionStatusSelect({
+export default function TransactionStateSelect({
   transaction,
   isSelected,
   isVirtual,
 }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
-  const [status, setStatus] = useState(transaction.status);
+  const [status, setStatus] = useState(transaction.transactionState);
 
   useEffect(() => {
-    setStatus(transaction.status);
-  }, [transaction.status]);
+    setStatus(transaction.transactionState);
+  }, [transaction.transactionState]);
 
   const handleChange = (event) => {
     const { value } = event.target;
@@ -26,9 +26,9 @@ export default function TransactionStatusSelect({
       actions.updateTransactionProperty(
         accountId,
         transaction,
-        constants.TransactionFields.STATUS,
-        value
-      )
+        constants.TransactionFields.TRANSACTION_STATE,
+        value,
+      ),
     );
     setStatus(value);
   };
@@ -80,16 +80,16 @@ export default function TransactionStatusSelect({
           },
         }}
       >
-        {Object.keys(constants.TransactionStatusEnum).map((key) => {
+        {Object.keys(constants.TransactionStateEnum).map((key) => {
           return (
             <MenuItem
               key={key}
-              value={constants.TransactionStatusEnum[key]}
+              value={constants.TransactionStateEnum[key]}
               sx={{
                 textTransform: 'capitalize',
               }}
             >
-              {constants.TransactionStatusEnum[key]}
+              {constants.TransactionStateEnum[key]}
             </MenuItem>
           );
         })}
@@ -98,7 +98,7 @@ export default function TransactionStatusSelect({
   );
 }
 
-TransactionStatusSelect.propTypes = {
+TransactionStateSelect.propTypes = {
   transaction: PropTypes.object.isRequired,
   isSelected: PropTypes.bool,
   isVirtual: PropTypes.bool,

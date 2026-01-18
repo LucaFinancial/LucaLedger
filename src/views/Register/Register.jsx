@@ -169,19 +169,12 @@ export default function Register() {
             >
               Luca Ledger
             </Typography>
-            <Typography
-              variant='body1'
-              color='text.secondary'
-            >
+            <Typography variant='body1' color='text.secondary'>
               Create a new account to get started
             </Typography>
           </Box>
 
-          <Alert
-            severity='warning'
-            icon={<WarningIcon />}
-            sx={{ mb: 3 }}
-          >
+          <Alert severity='warning' icon={<WarningIcon />} sx={{ mb: 3 }}>
             <Typography variant='body2'>
               <strong>Important:</strong> Your password cannot be recovered if
               lost. All your financial data is encrypted with your password and
@@ -190,10 +183,7 @@ export default function Register() {
           </Alert>
 
           {error && (
-            <Alert
-              severity='error'
-              sx={{ mb: 2 }}
-            >
+            <Alert severity='error' sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
@@ -279,10 +269,7 @@ export default function Register() {
                 />
               }
               label={
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   I have read and agree to the{' '}
                   <Link
                     component='button'
@@ -335,10 +322,10 @@ export default function Register() {
                 {isLoading
                   ? 'Creating...'
                   : isGenerated && !passwordCopied && countdown === 0
-                  ? 'Copy Password to Enable'
-                  : isGenerated && passwordCopied && countdown > 0
-                  ? `Create in ${countdown}s`
-                  : 'Create Account'}
+                    ? 'Copy Password to Enable'
+                    : isGenerated && passwordCopied && countdown > 0
+                      ? `Create in ${countdown}s`
+                      : 'Create Account'}
               </Button>
             </Box>
           </form>
@@ -346,11 +333,7 @@ export default function Register() {
           <Box
             sx={{ textAlign: 'center', borderTop: '1px solid #e0e0e0', pt: 3 }}
           >
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ mb: 2 }}
-            >
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
               Already have an account?
             </Typography>
             <Button

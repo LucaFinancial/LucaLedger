@@ -20,25 +20,27 @@ import CategorySelect from '@/components/CategorySelect';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
 import config from '@/config';
 
+const BI_WEEKLY_OPTION = 'BI_WEEKLY';
+
 const frequencyOptions = [
   {
-    value: recurringTransactionConstants.RecurringFrequencyEnum.DAILY,
+    value: recurringTransactionConstants.RecurringFrequencyEnum.DAY,
     label: 'Daily',
   },
   {
-    value: recurringTransactionConstants.RecurringFrequencyEnum.WEEKLY,
+    value: recurringTransactionConstants.RecurringFrequencyEnum.WEEK,
     label: 'Weekly',
   },
   {
-    value: recurringTransactionConstants.RecurringFrequencyEnum.BI_WEEKLY,
+    value: BI_WEEKLY_OPTION,
     label: 'Bi-Weekly',
   },
   {
-    value: recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY,
+    value: recurringTransactionConstants.RecurringFrequencyEnum.MONTH,
     label: 'Monthly',
   },
   {
-    value: recurringTransactionConstants.RecurringFrequencyEnum.YEARLY,
+    value: recurringTransactionConstants.RecurringFrequencyEnum.YEAR,
     label: 'Yearly',
   },
 ];
@@ -55,7 +57,7 @@ export default function RecurringTransactionModal({
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState(null);
   const [frequency, setFrequency] = useState(
-    recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY
+    recurringTransactionConstants.RecurringFrequencyEnum.MONTH,
   );
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
@@ -68,20 +70,28 @@ export default function RecurringTransactionModal({
       setAmount(
         transaction.amount !== undefined
           ? (transaction.amount / 100).toFixed(2)
-          : ''
+          : '',
       );
       setCategoryId(transaction.categoryId || null);
-      setFrequency(
+
+      let freq =
         transaction.frequency ||
-          recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY
-      );
+        recurringTransactionConstants.RecurringFrequencyEnum.MONTH;
+      if (
+        freq === recurringTransactionConstants.RecurringFrequencyEnum.WEEK &&
+        transaction.interval === 2
+      ) {
+        freq = BI_WEEKLY_OPTION;
+      }
+      setFrequency(freq);
+
       setStartDate(
-        transaction.startDate
-          ? parseISO(transaction.startDate.replace(/\//g, '-'))
-          : new Date()
+        transaction.startOn
+          ? parseISO(transaction.startOn.replace(/\//g, '-'))
+          : new Date(),
       );
-      if (transaction.endDate) {
-        setEndDate(parseISO(transaction.endDate.replace(/\//g, '-')));
+      if (transaction.endOn) {
+        setEndDate(parseISO(transaction.endOn.replace(/\//g, '-')));
         setHasEndDate(true);
       } else {
         setEndDate(null);
@@ -92,9 +102,7 @@ export default function RecurringTransactionModal({
       setDescription('');
       setAmount('');
       setCategoryId(null);
-      setFrequency(
-        recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY
-      );
+      setFrequency(recurringTransactionConstants.RecurringFrequencyEnum.MONTH);
       setStartDate(new Date());
       setEndDate(null);
       setHasEndDate(false);
@@ -105,14 +113,28 @@ export default function RecurringTransactionModal({
     const amountValue = parseFloat(amount) || 0;
     const amountInCents = Math.round(amountValue * 100);
 
+    let finalFrequency = frequency;
+    let interval = 1;
+
+    if (frequency === BI_WEEKLY_OPTION) {
+      finalFrequency =
+        recurringTransactionConstants.RecurringFrequencyEnum.WEEK;
+      interval = 2;
+    }
+
     const data = {
       description: description.trim(),
       amount: amountInCents,
       categoryId,
-      frequency,
-      startDate: format(startDate, config.dateFormatString),
-      endDate:
+      frequency: finalFrequency,
+      interval,
+      startOn: format(startDate, config.dateFormatString),
+      endOn:
         hasEndDate && endDate ? format(endDate, config.dateFormatString) : null,
+      occurrences: transaction?.occurrences || null,
+      recurringTransactionState:
+        transaction?.recurringTransactionState ||
+        recurringTransactionConstants.RecurringTransactionStateEnum.ACTIVE,
     };
 
     onSave(data);
@@ -124,12 +146,7 @@ export default function RecurringTransactionModal({
     !isNaN(parseFloat(amount));
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
         {isEditing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       </DialogTitle>
@@ -172,10 +189,7 @@ export default function RecurringTransactionModal({
               onChange={(e) => setFrequency(e.target.value)}
             >
               {frequencyOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                >
+                <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
               ))}
@@ -216,11 +230,7 @@ export default function RecurringTransactionModal({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleSubmit}
-          variant='contained'
-          disabled={!isValid}
-        >
+        <Button onClick={handleSubmit} variant='contained' disabled={!isValid}>
           {isEditing ? 'Save' : 'Add'}
         </Button>
       </DialogActions>

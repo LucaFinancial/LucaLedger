@@ -60,23 +60,21 @@ export function useTransactionTotals({
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
     let scheduledTotal = 0;
-    let plannedTotal = 0;
 
     futureTransactions.forEach((tx) => {
       const { income: txIncome, expense: txExpense } =
         categorizeTransaction(tx);
       const netFlow = txIncome - txExpense;
 
-      if (tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED) {
-        scheduledTotal += netFlow;
-      } else if (
-        tx.status === transactionConstants.TransactionStatusEnum.PLANNED
+      if (
+        tx.transactionState ===
+        transactionConstants.TransactionStateEnum.SCHEDULED
       ) {
-        plannedTotal += netFlow;
+        scheduledTotal += netFlow;
       }
     });
 
-    return { scheduled: scheduledTotal, planned: plannedTotal };
+    return { scheduled: scheduledTotal, planned: 0 };
   }, [futureTransactions, categorizeTransaction]);
 
   // Calculate recent totals (for last 14 days section)
@@ -89,10 +87,14 @@ export function useTransactionTotals({
         categorizeTransaction(tx);
       const netFlow = txIncome - txExpense;
 
-      if (tx.status === transactionConstants.TransactionStatusEnum.COMPLETE) {
+      if (
+        tx.transactionState ===
+        transactionConstants.TransactionStateEnum.COMPLETED
+      ) {
         completedTotal += netFlow;
       } else if (
-        tx.status === transactionConstants.TransactionStatusEnum.PENDING
+        tx.transactionState ===
+        transactionConstants.TransactionStateEnum.PENDING
       ) {
         pendingTotal += netFlow;
       }
@@ -117,9 +119,12 @@ export function useTransactionTotals({
       return (
         txDate >= dateRanges.currentMonthStart &&
         txDate <= dateRanges.currentMonthEnd &&
-        (tx.status === transactionConstants.TransactionStatusEnum.PENDING ||
-          tx.status === transactionConstants.TransactionStatusEnum.SCHEDULED ||
-          tx.status === transactionConstants.TransactionStatusEnum.PLANNED)
+        (tx.transactionState ===
+          transactionConstants.TransactionStateEnum.PENDING ||
+          tx.transactionState ===
+            transactionConstants.TransactionStateEnum.SCHEDULED ||
+          tx.transactionState ===
+            transactionConstants.TransactionStateEnum.SCHEDULED)
       );
     });
 

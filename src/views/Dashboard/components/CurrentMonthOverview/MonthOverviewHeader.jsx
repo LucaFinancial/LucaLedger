@@ -31,10 +31,7 @@ export default function MonthOverviewHeader({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TrendingUpIcon sx={{ color: '#2196f3' }} />
-          <Typography
-            variant='h6'
-            sx={{ fontWeight: 'bold' }}
-          >
+          <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
             Current Month Overview
           </Typography>
           <Chip
@@ -108,7 +105,7 @@ export default function MonthOverviewHeader({
               {formatCurrency(
                 totals.current -
                   currentMonthTotals.netFlow +
-                  monthEndProjections.projectedNetFlow
+                  monthEndProjections.projectedNetFlow,
               )}
             </Typography>
           </Box>
@@ -139,7 +136,7 @@ export default function MonthOverviewHeader({
                   {' '}
                   (+
                   {formatCurrency(
-                    creditCardTotals.pending - creditCardTotals.current
+                    creditCardTotals.pending - creditCardTotals.current,
                   )}{' '}
                   pending)
                 </span>

@@ -15,7 +15,6 @@ import PropTypes from 'prop-types';
 import { AuthProvider, useAuth } from '@/auth';
 import { ProtectedRoute } from '@/components/Auth';
 import MainLayout from '@/components/MainLayout/MainLayout';
-import SchemaVersionProvider from '@/components/SchemaVersionProvider';
 import VersionProvider from '@/components/VersionProvider';
 import EncryptionProvider from '@/components/EncryptionProvider';
 import Welcome from '@/views/Welcome';
@@ -49,10 +48,7 @@ function RootRedirect() {
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
         }}
       >
-        <CircularProgress
-          size={60}
-          sx={{ color: 'white' }}
-        />
+        <CircularProgress size={60} sx={{ color: 'white' }} />
       </Box>
     );
   }
@@ -86,10 +82,7 @@ function PublicRoute({ children }) {
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
         }}
       >
-        <CircularProgress
-          size={60}
-          sx={{ color: 'white' }}
-        />
+        <CircularProgress size={60} sx={{ color: 'white' }} />
       </Box>
     );
   }
@@ -114,10 +107,7 @@ export default function App() {
           <Router>
             <Routes>
               {/* Public routes */}
-              <Route
-                path='/'
-                element={<RootRedirect />}
-              />
+              <Route path='/' element={<RootRedirect />} />
               <Route
                 path='/login'
                 element={
@@ -146,7 +136,6 @@ export default function App() {
             </Routes>
           </Router>
           <EncryptionProvider />
-          <SchemaVersionProvider />
           <VersionProvider />
         </AuthProvider>
       </Provider>

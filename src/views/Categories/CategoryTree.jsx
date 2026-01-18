@@ -160,7 +160,7 @@ export default function CategoryTree({ categories }) {
         .attr('class', 'node')
         .attr(
           'transform',
-          () => `translate(${source.x0 || 0},${source.y0 || 0})`
+          () => `translate(${source.x0 || 0},${source.y0 || 0})`,
         )
         .on('click', toggle)
         .on('keydown', function (event, d) {
@@ -176,7 +176,7 @@ export default function CategoryTree({ categories }) {
           (d) =>
             `${d.data.name}, ${
               d.children || d._children ? 'expandable' : 'leaf'
-            }`
+            }`,
         );
 
       // Add circles
@@ -194,11 +194,11 @@ export default function CategoryTree({ categories }) {
         .attr('dy', '.35em')
         .attr('x', (d) => (d.children || d._children ? -10 : 10))
         .attr('text-anchor', (d) =>
-          d.children || d._children ? 'end' : 'start'
+          d.children || d._children ? 'end' : 'start',
         )
         .text((d) => d.data.name)
         .style('font-size', (d) =>
-          d.depth === 0 ? '16px' : d.depth === 1 ? '14px' : '12px'
+          d.depth === 0 ? '16px' : d.depth === 1 ? '14px' : '12px',
         )
         .style('font-weight', (d) => (d.depth === 1 ? 'bold' : 'normal'))
         .style('fill', '#333')
@@ -307,7 +307,7 @@ export default function CategoryTree({ categories }) {
             maxY: Math.max(acc.maxY, y),
           };
         },
-        { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+        { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity },
       );
 
       // Add padding
@@ -319,7 +319,7 @@ export default function CategoryTree({ categories }) {
       const scale = Math.min(
         width / boundsWidth,
         height / boundsHeight,
-        1.5 // Max scale
+        1.5, // Max scale
       );
 
       // Calculate center position
@@ -375,8 +375,8 @@ CategoryTree.propTypes = {
           id: PropTypes.string.isRequired,
           slug: PropTypes.string.isRequired,
           name: PropTypes.string.isRequired,
-        })
+        }),
       ),
-    })
+    }),
   ).isRequired,
 };

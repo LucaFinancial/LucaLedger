@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import reducer, { setRecurringProjection } from '@/store/settings/slice';
 
 describe('Settings Slice', () => {
@@ -14,7 +14,7 @@ describe('Settings Slice', () => {
     const newProjection = { amount: 2, unit: 'years' };
     const nextState = reducer(
       initialState,
-      setRecurringProjection(newProjection)
+      setRecurringProjection(newProjection),
     );
     expect(nextState.recurringProjection).toEqual(newProjection);
   });

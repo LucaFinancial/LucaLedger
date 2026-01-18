@@ -1,9 +1,15 @@
 export const RecurringFrequencyEnum = Object.freeze({
-  DAILY: 'daily',
-  WEEKLY: 'weekly',
-  BI_WEEKLY: 'bi-weekly',
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly',
+  DAY: 'DAY',
+  WEEK: 'WEEK',
+  MONTH: 'MONTH',
+  YEAR: 'YEAR',
+});
+
+export const RecurringTransactionStateEnum = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
 });
 
 export const RecurringTransactionFields = Object.freeze({
@@ -13,6 +19,9 @@ export const RecurringTransactionFields = Object.freeze({
   AMOUNT: 'amount',
   CATEGORY_ID: 'categoryId',
   FREQUENCY: 'frequency',
-  START_DATE: 'startDate',
-  END_DATE: 'endDate',
+  INTERVAL: 'interval',
+  START_ON: 'startOn',
+  END_ON: 'endOn',
+  OCCURRENCES: 'occurrences',
+  RECURRING_TRANSACTION_STATE: 'recurringTransactionState',
 });

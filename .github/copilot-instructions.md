@@ -8,11 +8,11 @@ Luca Ledger is a React-based personal finance management application for trackin
 
 ### Bootstrap and Development Setup
 
-- **Install dependencies**: `yarn install` -- takes 40 seconds. NEVER CANCEL. Set timeout to 90+ seconds.
-- **Development server**: `yarn dev` -- starts Vite dev server on http://localhost:5173
-- **Production build**: `yarn build` -- takes 15 seconds. NEVER CANCEL. Set timeout to 60+ seconds.
-- **Preview production build**: `yarn preview` -- serves built files on http://localhost:4173
-- **Code quality**: `yarn lint` -- runs ESLint, takes 2 seconds
+- **Install dependencies**: `pnpm install` -- takes 40 seconds. NEVER CANCEL. Set timeout to 90+ seconds.
+- **Development server**: `pnpm dev` -- starts Vite dev server on http://localhost:5173
+- **Production build**: `pnpm build` -- takes 15 seconds. NEVER CANCEL. Set timeout to 60+ seconds.
+- **Preview production build**: `pnpm preview` -- serves built files on http://localhost:4173
+- **Code quality**: `pnpm lint` -- runs ESLint, takes 2 seconds
 
 ### Build Process Details
 
@@ -41,15 +41,15 @@ After making changes, ALWAYS test these user scenarios:
 
 ### Code Quality Requirements
 
-- **ALWAYS** run `yarn lint` before completing changes - CI will fail otherwise
-- **Run tests**: `yarn test` runs Vitest test suite
+- **ALWAYS** run `pnpm lint` before completing changes - CI will fail otherwise
+- **Run tests**: `pnpm test` runs Vitest test suite
 - ESLint configuration enforces React, accessibility, and import standards
 - Prettier formatting is integrated with ESLint
 
 ### CI/CD Validation
 
 - GitHub Actions automatically builds and deploys to GitHub Pages on push to main
-- Actions use Node.js 20 and yarn for builds
+- Actions use Node.js 24 and pnpm for builds
 - Build artifacts are deployed to GitHub Pages at the configured domain
 
 ## Application Architecture
@@ -135,10 +135,10 @@ src/
 
 ### Dependency Management
 
-- Uses yarn 1.22.22+ as package manager (defined in package.json)
-- Dependencies are locked with yarn.lock
-- Install new packages with `yarn add <package>`
-- Development dependencies with `yarn add -D <package>`
+- Uses pnpm 9.x as package manager (defined in package.json)
+- Dependencies are locked with pnpm-lock.yaml
+- Install new packages with `pnpm add <package>`
+- Development dependencies with `pnpm add -D <package>`
 
 ### Code Navigation
 
@@ -298,8 +298,8 @@ This will automatically close issue #42 when the PR is merged to the default bra
 ### Common Issues
 
 - **Build hanging**: Builds complete in 15 seconds - wait with proper timeout, don't cancel
-- **Dev server not starting**: Ensure dependencies are installed with `yarn install` first
-- **Linting failures**: Run `yarn lint` to see specific issues, most are auto-fixable
+- **Dev server not starting**: Ensure dependencies are installed with `pnpm install` first
+- **Linting failures**: Run `pnpm lint` to see specific issues, most are auto-fixable
 - **Version dialog**: Normal on first load, click OK to dismiss
 
 ### Environment Limitations
@@ -317,11 +317,11 @@ This will automatically close issue #42 when the PR is merged to the default bra
 
 | Task    | Command        | Time    | Timeout |
 | ------- | -------------- | ------- | ------- |
-| Install | `yarn install` | 40s     | 90s+    |
-| Lint    | `yarn lint`    | 2s      | 30s     |
-| Test    | `yarn test`    | 5s      | 30s     |
-| Build   | `yarn build`   | 15s     | 60s+    |
-| Dev     | `yarn dev`     | instant | N/A     |
-| Preview | `yarn preview` | instant | N/A     |
+| Install | `pnpm install` | 40s     | 90s+    |
+| Lint    | `pnpm lint`    | 2s      | 30s     |
+| Test    | `pnpm test`    | 5s      | 30s     |
+| Build   | `pnpm build`   | 15s     | 60s+    |
+| Dev     | `pnpm dev`     | instant | N/A     |
+| Preview | `pnpm preview` | instant | N/A     |
 
 **CRITICAL**: Always use adequate timeouts for build commands. NEVER CANCEL builds or long-running processes.

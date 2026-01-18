@@ -20,15 +20,29 @@ import {
 } from '@/store/recurringTransactions';
 import RecurringTransactionModal from '@/components/RecurringTransactionModal';
 
-const formatFrequency = (frequency) => {
+const formatFrequency = (transaction) => {
+  const { frequency, interval } = transaction;
+
+  if (
+    frequency === recurringTransactionConstants.RecurringFrequencyEnum.WEEK &&
+    interval === 2
+  ) {
+    return 'Bi-Weekly';
+  }
+
   const labels = {
-    [recurringTransactionConstants.RecurringFrequencyEnum.DAILY]: 'Daily',
-    [recurringTransactionConstants.RecurringFrequencyEnum.WEEKLY]: 'Weekly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.BI_WEEKLY]:
-      'Bi-Weekly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.MONTHLY]: 'Monthly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.YEARLY]: 'Yearly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Daily',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weekly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Monthly',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Yearly',
   };
+
+  if (interval > 1) {
+    // Simple pluralization logic
+    const label = labels[frequency] || frequency;
+    return `Every ${interval} ${label.replace(/ly$/, '')}s`;
+  }
+
   return labels[frequency] || frequency;
 };
 
@@ -47,16 +61,16 @@ export default function RecurringTransactionsPanel({ accountId }) {
 
   const recurringTransactions = useSelector(
     recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
-      accountId
-    )
+      accountId,
+    ),
   );
 
   const sortedTransactions = useMemo(
     () =>
       [...recurringTransactions].sort((a, b) =>
-        a.description.localeCompare(b.description)
+        a.description.localeCompare(b.description),
       ),
-    [recurringTransactions]
+    [recurringTransactions],
   );
 
   const handleAddClick = () => {
@@ -71,7 +85,9 @@ export default function RecurringTransactionsPanel({ accountId }) {
 
   const handleDeleteClick = (transaction) => {
     dispatch(
-      recurringTransactionActions.removeRecurringTransactionById(transaction.id)
+      recurringTransactionActions.removeRecurringTransactionById(
+        transaction.id,
+      ),
     );
   };
 
@@ -85,15 +101,15 @@ export default function RecurringTransactionsPanel({ accountId }) {
       dispatch(
         recurringTransactionActions.updateRecurringTransactionProperty(
           editingTransaction.id,
-          transactionData
-        )
+          transactionData,
+        ),
       );
     } else {
       dispatch(
         recurringTransactionActions.createNewRecurringTransaction({
           ...transactionData,
           accountId,
-        })
+        }),
       );
     }
     setModalOpen(false);
@@ -112,11 +128,7 @@ export default function RecurringTransactionsPanel({ accountId }) {
       >
         <Typography variant='h6'>Recurring</Typography>
         <Tooltip title='Add recurring transaction'>
-          <IconButton
-            size='small'
-            onClick={handleAddClick}
-            color='primary'
-          >
+          <IconButton size='small' onClick={handleAddClick} color='primary'>
             <Add />
           </IconButton>
         </Tooltip>
@@ -124,11 +136,7 @@ export default function RecurringTransactionsPanel({ accountId }) {
 
       {sortedTransactions.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 3 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            gutterBottom
-          >
+          <Typography variant='body2' color='text.secondary' gutterBottom>
             No recurring transactions
           </Typography>
           <Button
@@ -187,15 +195,12 @@ export default function RecurringTransactionsPanel({ accountId }) {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <Typography
-                      variant='body2'
-                      sx={{ fontWeight: 500 }}
-                    >
+                    <Typography variant='body2' sx={{ fontWeight: 500 }}>
                       {transaction.description}
                     </Typography>
                     <Chip
                       size='small'
-                      label={formatFrequency(transaction.frequency)}
+                      label={formatFrequency(transaction)}
                       sx={{ fontSize: '0.7rem', height: 20 }}
                     />
                   </Box>

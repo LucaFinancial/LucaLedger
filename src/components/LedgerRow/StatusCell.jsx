@@ -1,7 +1,7 @@
 import { TableCell } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import TransactionStatusSelect from '@/components/TransactionStatusSelect';
+import TransactionStateSelect from '@/components/TransactionStateSelect';
 
 export default function StatusCell({ transaction, isSelected, isVirtual }) {
   return (
@@ -11,7 +11,7 @@ export default function StatusCell({ transaction, isSelected, isVirtual }) {
         paddingLeft: '10px',
       }}
     >
-      <TransactionStatusSelect
+      <TransactionStateSelect
         transaction={transaction}
         isSelected={isSelected}
         isVirtual={isVirtual}

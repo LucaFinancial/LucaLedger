@@ -9,10 +9,7 @@ import {
 export default function Help() {
   return (
     <Box>
-      <Container
-        maxWidth='lg'
-        sx={{ py: 4 }}
-      >
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Box sx={{ mb: 5, textAlign: 'center' }}>
           <Typography
             variant='h2'
@@ -70,16 +67,10 @@ export default function Help() {
               1
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 1 }}
-              >
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                 Create Your First Account
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Navigate to the{' '}
                 <MuiLink
                   href='/accounts'
@@ -127,16 +118,10 @@ export default function Help() {
               2
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 1 }}
-              >
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                 Add and Manage Transactions
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Click on any account card to open its ledger. Add new
                 transactions with descriptions, amounts, dates, and categories.
                 Edit or delete existing transactions as needed. Use transaction
@@ -178,16 +163,10 @@ export default function Help() {
               3
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 1 }}
-              >
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                 Organize with Categories
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Visit the{' '}
                 <MuiLink
                   href='/categories'
@@ -235,16 +214,10 @@ export default function Help() {
               4
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 1 }}
-              >
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                 Monitor Your Financial Dashboard
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Check the{' '}
                 <MuiLink
                   href='/dashboard'
@@ -292,16 +265,10 @@ export default function Help() {
               5
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 1 }}
-              >
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                 Backup and Restore Your Data
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Use the save/load functionality in the navigation menu to export
                 your data as a backup file. Keep regular backups to protect your
                 financial records and enable easy transfer between devices or

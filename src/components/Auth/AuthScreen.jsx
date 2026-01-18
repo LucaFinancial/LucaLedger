@@ -40,14 +40,8 @@ export default function AuthScreen() {
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
         }}
       >
-        <CircularProgress
-          size={60}
-          sx={{ color: 'white' }}
-        />
-        <Typography
-          variant='h6'
-          sx={{ mt: 2, color: 'white' }}
-        >
+        <CircularProgress size={60} sx={{ color: 'white' }} />
+        <Typography variant='h6' sx={{ mt: 2, color: 'white' }}>
           Loading...
         </Typography>
       </Box>

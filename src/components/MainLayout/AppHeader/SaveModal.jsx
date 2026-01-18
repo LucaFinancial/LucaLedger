@@ -46,11 +46,7 @@ export default function SaveModal({ closeCb }) {
         aria-describedby='modal-modal-description'
       >
         <Box sx={style}>
-          <Typography
-            id='modal-modal-title'
-            variant='h6'
-            component='h2'
-          >
+          <Typography id='modal-modal-title' variant='h6' component='h2'>
             Enter a name for your file
           </Typography>
           <Typography variant='body2'>{filename}.json</Typography>
@@ -59,10 +55,7 @@ export default function SaveModal({ closeCb }) {
             value={filename}
             onChange={(event) => setFilename(event.target.value)}
           />
-          <Button
-            variant='contained'
-            onClick={handleSave}
-          >
+          <Button variant='contained' onClick={handleSave}>
             Save
           </Button>
         </Box>

@@ -12,7 +12,7 @@ import {
 export const createNewRecurringTransaction =
   (recurringTransactionData) => (dispatch) => {
     const newRecurringTransaction = generateRecurringTransaction(
-      recurringTransactionData
+      recurringTransactionData,
     );
     if (newRecurringTransaction) {
       dispatch(addRecurringTransaction(newRecurringTransaction));
@@ -29,7 +29,7 @@ export const updateRecurringTransactionProperty =
   (recurringTransactionId, updates) => (dispatch, getState) => {
     const state = getState();
     const recurringTransaction = state.recurringTransactions.find(
-      (rt) => rt.id === recurringTransactionId
+      (rt) => rt.id === recurringTransactionId,
     );
 
     if (!recurringTransaction) {
@@ -60,12 +60,12 @@ export const removeRecurringTransactionById =
       try {
         await deleteEncryptedRecord(
           'recurringTransactions',
-          recurringTransactionId
+          recurringTransactionId,
         );
       } catch (error) {
         console.error(
           'Failed to delete encrypted recurring transaction:',
-          error
+          error,
         );
         throw error;
       }

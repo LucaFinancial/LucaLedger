@@ -11,43 +11,14 @@ import Settings from '@/views/Settings';
 export default function AppContent() {
   return (
     <Routes>
-      <Route
-        path='/dashboard'
-        element={<Dashboard />}
-      />
-      <Route
-        path='/home'
-        element={<Landing />}
-      />
-      <Route
-        path='/accounts'
-        element={<Accounts />}
-      />
-      <Route
-        path='/accounts/:accountId'
-        element={<Ledger />}
-      />
-      <Route
-        path='/categories'
-        element={<Categories />}
-      />
-      <Route
-        path='/settings'
-        element={<Settings />}
-      />
-      <Route
-        path='/help'
-        element={<Help />}
-      />
-      <Route
-        path='*'
-        element={
-          <Navigate
-            to='/dashboard'
-            replace
-          />
-        }
-      />
+      <Route path='/dashboard' element={<Dashboard />} />
+      <Route path='/home' element={<Landing />} />
+      <Route path='/accounts' element={<Accounts />} />
+      <Route path='/accounts/:accountId' element={<Ledger />} />
+      <Route path='/categories' element={<Categories />} />
+      <Route path='/settings' element={<Settings />} />
+      <Route path='/help' element={<Help />} />
+      <Route path='*' element={<Navigate to='/dashboard' replace />} />
     </Routes>
   );
 }

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateAccountSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Validates and cleans an account object
@@ -7,7 +7,7 @@ import { validateAccountSync } from '@/validation/validator';
  */
 const cleanAccount = (account) => {
   try {
-    return validateAccountSync(account, account.type);
+    return validateSchemaSync('account', account);
   } catch (error) {
     console.error('Invalid account data:', error);
     // Return the account as-is if validation fails
@@ -37,6 +37,7 @@ const accounts = createSlice({
       const updatedAccount = cleanAccount(action.payload);
       const index = state.data.findIndex((a) => a.id === updatedAccount.id);
       if (index !== -1) {
+        updatedAccount.updatedAt = new Date().toISOString();
         state.data[index] = updatedAccount;
       }
     },
@@ -57,7 +58,7 @@ const accounts = createSlice({
     },
     removeLoadingAccountId: (state, action) => {
       state.loadingAccountIds = state.loadingAccountIds.filter(
-        (id) => id !== action.payload
+        (id) => id !== action.payload,
       );
     },
     clearLoadingAccountIds: (state) => {

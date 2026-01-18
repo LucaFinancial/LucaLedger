@@ -7,7 +7,7 @@ import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
-import { selectors as recurringOccurrenceSelectors } from '@/store/recurringOccurrences';
+import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
 import { selectors as settingsSelectors } from '@/store/settings';
 import { Paper, Table, TableBody, TableContainer } from '@mui/material';
 import {
@@ -17,7 +17,6 @@ import {
   isAfter,
   isSameDay,
   add,
-  addDays,
   subMonths,
   isWithinInterval,
 } from 'date-fns';
@@ -45,24 +44,24 @@ export default function LedgerTable({
 
   const selectAccountTransactions = useMemo(
     () => transactionSelectors.selectTransactionsByAccountId(accountId),
-    [accountId]
+    [accountId],
   );
   const transactions = useSelector(selectAccountTransactions);
 
   const categories = useSelector(categorySelectors.selectAllCategories);
   const accountStatements = useSelector(
-    statementSelectors.selectStatementsByAccountId(accountId)
+    statementSelectors.selectStatementsByAccountId(accountId),
   );
   const recurringTransactions = useSelector(
     recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
-      accountId
-    )
+      accountId,
+    ),
   );
   const realizedDatesMap = useSelector(
-    recurringOccurrenceSelectors.selectAllRealizedDatesMap
+    recurringTransactionEventSelectors.selectAllRealizedDatesMap,
   );
   const recurringProjection = useSelector(
-    settingsSelectors.selectRecurringProjection
+    settingsSelectors.selectRecurringProjection,
   );
 
   // Generate virtual transactions from recurring rules
@@ -73,19 +72,19 @@ export default function LedgerTable({
     return generateVirtualTransactions(
       recurringTransactions,
       realizedDatesMap,
-      projectionEndDate
+      projectionEndDate,
     );
   }, [recurringTransactions, realizedDatesMap, recurringProjection]);
 
   // Combine real and virtual transactions
   const allTransactions = useMemo(
     () => [...transactions, ...virtualTransactions],
-    [transactions, virtualTransactions]
+    [transactions, virtualTransactions],
   );
 
   const sortedTransactions = useMemo(
     () => [...allTransactions].sort(dateCompareFn),
-    [allTransactions]
+    [allTransactions],
   );
 
   const transactionsWithBalance = useMemo(() => {
@@ -142,7 +141,7 @@ export default function LedgerTable({
 
         // Check category name
         const category = categories.find(
-          (cat) => cat.id === transaction.categoryId
+          (cat) => cat.id === transaction.categoryId,
         );
         const matchesCategory = category?.name
           .toLowerCase()
@@ -181,7 +180,7 @@ export default function LedgerTable({
     setCollapsedGroups((prevCollapsedGroups) =>
       prevCollapsedGroups.includes(groupId)
         ? prevCollapsedGroups.filter((id) => id !== groupId)
-        : [...prevCollapsedGroups, groupId]
+        : [...prevCollapsedGroups, groupId],
     );
   };
 
@@ -192,7 +191,7 @@ export default function LedgerTable({
         .map((t) => getYearMonthKey(t.date));
       const uniqueMonths = [...new Set(monthsInYear)];
       return prevCollapsedGroups.filter(
-        (id) => !uniqueMonths.includes(id) && id !== yearId
+        (id) => !uniqueMonths.includes(id) && id !== yearId,
       );
     });
   };
@@ -233,7 +232,7 @@ export default function LedgerTable({
     (date) => {
       return `${getYearIdentifier(date)}-${getMonthIdentifier(date)}`;
     },
-    [getYearIdentifier, getMonthIdentifier]
+    [getYearIdentifier, getMonthIdentifier],
   );
 
   const getSelectedCountForGroup = useCallback(
@@ -253,13 +252,13 @@ export default function LedgerTable({
       selectedTransactions,
       getYearIdentifier,
       getYearMonthKey,
-    ]
+    ],
   );
 
   // Build grouped data structure with transactions and statement dividers
   const groupedData = useMemo(() => {
     const groups = {};
-    const statementClosingDay = account.statementDay || 1;
+    const statementClosingDay = account.statementClosingDay || 1;
     const isCreditCard =
       account.type === accountConstants.AccountType.CREDIT_CARD;
 
@@ -288,22 +287,18 @@ export default function LedgerTable({
 
     // For credit cards, insert statement dividers using actual statement data
     if (isCreditCard && accountStatements.length > 0) {
-      // Sort statements by closing date
+      // Sort statements by end date
       const sortedStatements = [...accountStatements].sort((a, b) =>
-        a.closingDate.localeCompare(b.closingDate)
+        a.endDate.localeCompare(b.endDate),
       );
 
       sortedStatements.forEach((statement) => {
         try {
-          const closingDate = parseISO(
-            statement.closingDate.replace(/\//g, '-')
-          );
+          const closingDate = parseISO(statement.endDate.replace(/\//g, '-'));
           const periodStartDate = parseISO(
-            statement.periodStart.replace(/\//g, '-')
+            statement.startDate.replace(/\//g, '-'),
           );
-          const periodEndDate = parseISO(
-            statement.periodEnd.replace(/\//g, '-')
-          );
+          const periodEndDate = parseISO(statement.endDate.replace(/\//g, '-'));
 
           if (
             isNaN(closingDate.getTime()) ||
@@ -351,7 +346,7 @@ export default function LedgerTable({
           if (!groups[year][yearMonthKey]) {
             groups[year][yearMonthKey] = {
               month,
-              firstTransactionDate: statement.closingDate,
+              firstTransactionDate: statement.endDate,
               items: [],
             };
           }
@@ -364,7 +359,7 @@ export default function LedgerTable({
             if (items[i].type === 'transaction') {
               try {
                 const itemDate = parseISO(
-                  items[i].data.date.replace(/\//g, '-')
+                  items[i].data.date.replace(/\//g, '-'),
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
@@ -384,8 +379,8 @@ export default function LedgerTable({
             type: 'statement-divider',
             date: format(closingDate, 'yyyy-MM-dd'),
             statementClosingDay,
-            periodStart: format(periodStartDate, 'yyyy-MM-dd'),
-            periodEnd: format(periodEndDate, 'yyyy-MM-dd'),
+            startDate: format(periodStartDate, 'yyyy-MM-dd'),
+            endDate: format(periodEndDate, 'yyyy-MM-dd'),
             transactions: statementTransactions,
           });
         } catch (error) {
@@ -422,19 +417,19 @@ export default function LedgerTable({
           const daysInMonth = new Date(
             parseInt(yearStr),
             monthIndex + 1,
-            0
+            0,
           ).getDate();
           const validStatementDay = Math.min(statementClosingDay, daysInMonth);
           const statementDate = new Date(
             parseInt(yearStr),
             monthIndex,
-            validStatementDay
+            validStatementDay,
           );
 
           // Calculate period covered by this statement
           // Statement closes on statementDate (e.g., Dec 10)
           // It covers transactions from previous closing day through day before this closing
-          const periodEnd = addDays(statementDate, -1);
+          const periodEnd = statementDate;
           const periodStart = subMonths(statementDate, 1);
 
           // Get all transactions in this statement period
@@ -446,8 +441,7 @@ export default function LedgerTable({
               return (
                 (isAfter(tDate, periodStart) ||
                   isSameDay(tDate, periodStart)) &&
-                (isBefore(tDate, statementDate) ||
-                  isSameDay(tDate, periodEnd)) &&
+                (isBefore(tDate, periodEnd) || isSameDay(tDate, periodEnd)) &&
                 !t.description.toLowerCase().includes('payment')
               );
             } catch {
@@ -463,7 +457,7 @@ export default function LedgerTable({
             if (items[i].type === 'transaction') {
               try {
                 const itemDate = parseISO(
-                  items[i].data.date.replace(/\//g, '-')
+                  items[i].data.date.replace(/\//g, '-'),
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
@@ -483,8 +477,8 @@ export default function LedgerTable({
             type: 'statement-divider',
             date: format(statementDate, 'yyyy-MM-dd'),
             statementClosingDay,
-            periodStart: format(periodStart, 'yyyy-MM-dd'),
-            periodEnd: format(periodEnd, 'yyyy-MM-dd'),
+            startDate: format(periodStart, 'yyyy-MM-dd'),
+            endDate: format(periodEnd, 'yyyy-MM-dd'),
             transactions: statementTransactions,
           });
         });
@@ -495,7 +489,7 @@ export default function LedgerTable({
   }, [
     filteredTransactions,
     transactionsWithBalance,
-    account.statementDay,
+    account.statementClosingDay,
     account.type,
     accountStatements,
     getYearIdentifier,
@@ -546,7 +540,7 @@ export default function LedgerTable({
                           }
                           selectedCount={getSelectedCountForGroup(
                             yearMonthKey,
-                            false
+                            false,
                           )}
                           monthKey={yearMonthKey}
                         />
@@ -562,7 +556,7 @@ export default function LedgerTable({
                                   row={transaction}
                                   balance={transaction.balance}
                                   isSelected={selectedTransactions.has(
-                                    transaction.id
+                                    transaction.id,
                                   )}
                                   onSelectionChange={onSelectionChange}
                                   isVirtual={isVirtual}
@@ -580,10 +574,9 @@ export default function LedgerTable({
                               return (
                                 <StatementSeparatorRow
                                   key={`statement-${item.date}`}
-                                  statementDay={item.statementClosingDay}
                                   statementDate={item.date}
-                                  periodStart={item.periodStart}
-                                  periodEnd={item.periodEnd}
+                                  startDate={item.startDate}
+                                  endDate={item.endDate}
                                   transactions={item.transactions}
                                   accountId={account.id}
                                 />

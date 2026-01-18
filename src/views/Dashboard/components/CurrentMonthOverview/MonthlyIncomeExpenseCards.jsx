@@ -7,17 +7,8 @@ export default function MonthlyIncomeExpenseCards({
   formatCurrency,
 }) {
   return (
-    <Grid
-      container
-      spacing={3}
-      sx={{ mb: 3 }}
-    >
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        md={4}
-      >
+    <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid item xs={12} sm={6} md={4}>
         <Card
           sx={{
             borderTop: '3px solid #4caf50',
@@ -40,10 +31,7 @@ export default function MonthlyIncomeExpenseCards({
               }}
             >
               <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Current
                 </Typography>
                 <Typography
@@ -54,10 +42,7 @@ export default function MonthlyIncomeExpenseCards({
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Projected
                 </Typography>
                 <Typography
@@ -71,12 +56,7 @@ export default function MonthlyIncomeExpenseCards({
           </CardContent>
         </Card>
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        md={4}
-      >
+      <Grid item xs={12} sm={6} md={4}>
         <Card
           sx={{
             borderTop: '3px solid #f44336',
@@ -99,10 +79,7 @@ export default function MonthlyIncomeExpenseCards({
               }}
             >
               <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Current
                 </Typography>
                 <Typography
@@ -113,10 +90,7 @@ export default function MonthlyIncomeExpenseCards({
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Projected
                 </Typography>
                 <Typography
@@ -130,12 +104,7 @@ export default function MonthlyIncomeExpenseCards({
           </CardContent>
         </Card>
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        md={4}
-      >
+      <Grid item xs={12} sm={6} md={4}>
         <Card
           sx={{
             borderTop: '3px solid #2196f3',
@@ -158,10 +127,7 @@ export default function MonthlyIncomeExpenseCards({
               }}
             >
               <Box>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Current
                 </Typography>
                 <Typography
@@ -176,10 +142,7 @@ export default function MonthlyIncomeExpenseCards({
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   Projected
                 </Typography>
                 <Typography

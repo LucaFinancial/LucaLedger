@@ -84,7 +84,7 @@ export default function CategoryDialog({
       const duplicate = categories.find(
         (cat) =>
           cat.name.toLowerCase() === name.trim().toLowerCase() &&
-          (!category || cat.id !== category.id)
+          (!category || cat.id !== category.id),
       );
       if (duplicate) {
         newErrors.name = 'A category with this name already exists';
@@ -94,7 +94,7 @@ export default function CategoryDialog({
       const duplicate = selectedParent.subcategories.find(
         (sub) =>
           sub.name.toLowerCase() === name.trim().toLowerCase() &&
-          (!subcategory || sub.id !== subcategory.id)
+          (!subcategory || sub.id !== subcategory.id),
       );
       if (duplicate) {
         newErrors.name =
@@ -118,14 +118,14 @@ export default function CategoryDialog({
         if (category) {
           // Update parent category
           dispatch(
-            categoryActions.updateCategory(category.id, { name: name.trim() })
+            categoryActions.updateCategory(category.id, { name: name.trim() }),
           );
         } else if (subcategory && parentId) {
           // Update subcategory
           dispatch(
             categoryActions.updateCategory(subcategory.id, {
               name: name.trim(),
-            })
+            }),
           );
         }
       } else {
@@ -133,12 +133,12 @@ export default function CategoryDialog({
         if (!selectedParent) {
           // Create top-level category
           createdCategory = dispatch(
-            categoryActions.createCategory(name.trim())
+            categoryActions.createCategory(name.trim()),
           );
         } else {
           // Create subcategory
           const createdSubcategory = dispatch(
-            categoryActions.createSubcategory(selectedParent.id, name.trim())
+            categoryActions.createSubcategory(selectedParent.id, name.trim()),
           );
           // For subcategories, we want to return the subcategory ID, not the parent
           createdCategory = createdSubcategory;
@@ -168,12 +168,7 @@ export default function CategoryDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleCancel} maxWidth='sm' fullWidth>
       <DialogTitle>
         {isEdit
           ? isSubcategoryEdit
@@ -197,10 +192,7 @@ export default function CategoryDialog({
         />
 
         {!isEdit && (
-          <FormControl
-            fullWidth
-            sx={{ mb: 2 }}
-          >
+          <FormControl fullWidth sx={{ mb: 2 }}>
             <Autocomplete
               value={selectedParent}
               onChange={(event, newValue) => setSelectedParent(newValue)}
@@ -226,20 +218,14 @@ export default function CategoryDialog({
         )}
 
         {errors.submit && (
-          <Typography
-            color='error'
-            sx={{ mt: 1 }}
-          >
+          <Typography color='error' sx={{ mt: 1 }}>
             {errors.submit}
           </Typography>
         )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
-        <Button
-          onClick={handleSave}
-          variant='contained'
-        >
+        <Button onClick={handleSave} variant='contained'>
           {isEdit ? 'Save' : 'Create'}
         </Button>
       </DialogActions>

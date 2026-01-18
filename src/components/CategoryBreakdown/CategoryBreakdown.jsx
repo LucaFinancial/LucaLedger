@@ -64,7 +64,7 @@ const COLORS = [
 export default function CategoryBreakdown() {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const allCategories = useSelector(
-    categorySelectors.selectCategoriesHierarchical
+    categorySelectors.selectCategoriesHierarchical,
   );
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
@@ -75,7 +75,7 @@ export default function CategoryBreakdown() {
 
     // Find the Transfers and Income category IDs
     const transfersCategory = allCategories.find(
-      (cat) => cat.slug === 'transfers'
+      (cat) => cat.slug === 'transfers',
     );
     const transfersCategoryId = transfersCategory?.id;
     const transfersSubcategoryIds =
@@ -142,7 +142,8 @@ export default function CategoryBreakdown() {
       const txDate = startOfDay(parseISO(tx.date.replace(/\//g, '-')));
       const isCurrent =
         (isBefore(txDate, today) || isSameDay(txDate, today)) &&
-        tx.status === transactionConstants.TransactionStatusEnum.COMPLETE;
+        tx.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED;
 
       if (isCurrent) {
         currentExpenses += expenseAmount;
@@ -227,7 +228,7 @@ export default function CategoryBreakdown() {
       .map((cat) => ({
         ...cat,
         subcategories: Array.from(cat.subcategories.values()).sort(
-          (a, b) => b.projected - a.projected
+          (a, b) => b.projected - a.projected,
         ),
       }))
       .filter((cat) => cat.projected > 0)
@@ -260,10 +261,7 @@ export default function CategoryBreakdown() {
           border: '1px solid #e0e0e0',
         }}
       >
-        <Typography
-          variant='h6'
-          sx={{ fontWeight: 'bold', mb: 2 }}
-        >
+        <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
           Spending by Category
         </Typography>
         <Typography
@@ -301,16 +299,10 @@ export default function CategoryBreakdown() {
     >
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography
-          variant='h6'
-          sx={{ fontWeight: 'bold', mb: 0.5 }}
-        >
+        <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 0.5 }}>
           Spending by Category
         </Typography>
-        <Typography
-          variant='body2'
-          color='text.secondary'
-        >
+        <Typography variant='body2' color='text.secondary'>
           {categoryData.periodLabel}
         </Typography>
       </Box>{' '}
@@ -325,10 +317,7 @@ export default function CategoryBreakdown() {
             border: '1px solid #2196f3',
           }}
         >
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
+          <Typography variant='caption' color='text.secondary'>
             Current
           </Typography>
           <Typography
@@ -347,10 +336,7 @@ export default function CategoryBreakdown() {
             border: '1px solid #9c27b0',
           }}
         >
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
+          <Typography variant='caption' color='text.secondary'>
             Projected
           </Typography>
           <Typography
@@ -384,10 +370,7 @@ export default function CategoryBreakdown() {
             Current Spending
           </Typography>
           {currentPieChartData.length > 0 ? (
-            <ResponsiveContainer
-              width='100%'
-              height={300}
-            >
+            <ResponsiveContainer width='100%' height={300}>
               <PieChart>
                 <Pie
                   data={currentPieChartData}
@@ -446,10 +429,7 @@ export default function CategoryBreakdown() {
           >
             Projected Spending
           </Typography>
-          <ResponsiveContainer
-            width='100%'
-            height={300}
-          >
+          <ResponsiveContainer width='100%' height={300}>
             <PieChart>
               <Pie
                 data={projectedPieChartData}
@@ -496,22 +476,13 @@ export default function CategoryBreakdown() {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-                <TableCell
-                  align='right'
-                  sx={{ fontWeight: 700 }}
-                >
+                <TableCell align='right' sx={{ fontWeight: 700 }}>
                   Current
                 </TableCell>
-                <TableCell
-                  align='right'
-                  sx={{ fontWeight: 700 }}
-                >
+                <TableCell align='right' sx={{ fontWeight: 700 }}>
                   Projected
                 </TableCell>
-                <TableCell
-                  align='right'
-                  sx={{ fontWeight: 700 }}
-                >
+                <TableCell align='right' sx={{ fontWeight: 700 }}>
                   %
                 </TableCell>
               </TableRow>
@@ -552,10 +523,7 @@ export default function CategoryBreakdown() {
                           }}
                         >
                           {hasSubcategories && (
-                            <IconButton
-                              size='small'
-                              sx={{ p: 0 }}
-                            >
+                            <IconButton size='small' sx={{ p: 0 }}>
                               {isExpanded ? (
                                 <KeyboardArrowDownIcon fontSize='small' />
                               ) : (
@@ -587,10 +555,7 @@ export default function CategoryBreakdown() {
                       >
                         {formatCurrency(centsToDollars(cat.projected))}
                       </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{ color: 'text.secondary' }}
-                      >
+                      <TableCell align='right' sx={{ color: 'text.secondary' }}>
                         {percentage.toFixed(1)}%
                       </TableCell>
                     </TableRow>

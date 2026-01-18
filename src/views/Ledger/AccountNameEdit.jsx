@@ -22,7 +22,11 @@ export default function AccountNameEdit({ account, setIsEditing }) {
 
   const handleSave = () => {
     dispatch(
-      actions.updateAccountProperty(account, constants.AccountFields.NAME, name)
+      actions.updateAccountProperty(
+        account,
+        constants.AccountFields.NAME,
+        name,
+      ),
     );
     setIsEditing(false);
   };

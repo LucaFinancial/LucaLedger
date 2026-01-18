@@ -22,7 +22,7 @@ export const selectRecurringTransactionsByAccountId = (accountId) =>
   createSelector(
     [selectRecurringTransactions, () => accountId],
     (recurringTransactions, id) =>
-      recurringTransactions.filter((rt) => rt.accountId === id)
+      recurringTransactions.filter((rt) => rt.accountId === id),
   );
 
 /**
@@ -33,5 +33,5 @@ export const selectRecurringTransactionById = (recurringTransactionId) =>
   createSelector(
     [selectRecurringTransactions, () => recurringTransactionId],
     (recurringTransactions, id) =>
-      recurringTransactions.find((rt) => rt.id === id)
+      recurringTransactions.find((rt) => rt.id === id),
   );

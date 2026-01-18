@@ -69,16 +69,9 @@ export default function Welcome() {
         }}
       >
         <Container maxWidth='lg'>
-          <Grid
-            container
-            spacing={4}
-            alignItems='center'
-          >
+          <Grid container spacing={4} alignItems='center'>
             {/* Header row - in-flow title */}
-            <Grid
-              item
-              xs={12}
-            >
+            <Grid item xs={12}>
               <Typography
                 variant={isMobile ? 'h4' : 'h3'}
                 align='center'
@@ -93,11 +86,7 @@ export default function Welcome() {
               </Typography>
             </Grid>
             {/* Left side - Hero Text */}
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
+            <Grid item xs={12} md={6}>
               <Typography
                 variant={isMobile ? 'h3' : 'h2'}
                 component='h1'
@@ -126,28 +115,19 @@ export default function Welcome() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <SecurityIcon sx={{ color: 'white' }} />
-                  <Typography
-                    variant='body1'
-                    sx={{ color: 'white' }}
-                  >
+                  <Typography variant='body1' sx={{ color: 'white' }}>
                     Bank-grade AES-256 encryption
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <DevicesIcon sx={{ color: 'white' }} />
-                  <Typography
-                    variant='body1'
-                    sx={{ color: 'white' }}
-                  >
+                  <Typography variant='body1' sx={{ color: 'white' }}>
                     Works completely offline
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <LockIcon sx={{ color: 'white' }} />
-                  <Typography
-                    variant='body1'
-                    sx={{ color: 'white' }}
-                  >
+                  <Typography variant='body1' sx={{ color: 'white' }}>
                     Your data never leaves your device
                   </Typography>
                 </Box>
@@ -155,11 +135,7 @@ export default function Welcome() {
             </Grid>
 
             {/* Right side - Login Form or CTA */}
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
+            <Grid item xs={12} md={6}>
               {isMobile ? (
                 // Mobile: Show simple CTAs
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -197,10 +173,7 @@ export default function Welcome() {
                 </Box>
               ) : (
                 // Desktop: Show inline login form
-                <Paper
-                  elevation={8}
-                  sx={{ p: 4, borderRadius: 2 }}
-                >
+                <Paper elevation={8} sx={{ p: 4, borderRadius: 2 }}>
                   <Typography
                     variant='h5'
                     sx={{
@@ -213,10 +186,7 @@ export default function Welcome() {
                   </Typography>
 
                   {error && (
-                    <Alert
-                      severity='error'
-                      sx={{ mb: 2 }}
-                    >
+                    <Alert severity='error' sx={{ mb: 2 }}>
                       {error}
                     </Alert>
                   )}
@@ -273,10 +243,7 @@ export default function Welcome() {
                   </form>
 
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                    >
+                    <Typography variant='body2' color='text.secondary'>
                       Don&apos;t have an account?
                     </Typography>
                     <Button
@@ -296,10 +263,7 @@ export default function Welcome() {
       </Box>
 
       {/* Features Section */}
-      <Container
-        maxWidth='lg'
-        sx={{ py: 8 }}
-      >
+      <Container maxWidth='lg' sx={{ py: 8 }}>
         <Typography
           variant='h3'
           component='h2'
@@ -325,16 +289,9 @@ export default function Welcome() {
           Everything you need to manage your finances effectively
         </Typography>
 
-        <Grid
-          container
-          spacing={4}
-        >
+        <Grid container spacing={4}>
           {/* Transaction Categories */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-          >
+          <Grid item xs={12} md={6}>
             <Paper
               elevation={2}
               sx={{
@@ -355,10 +312,7 @@ export default function Welcome() {
               >
                 📊 Transaction Categories
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Organize your finances with custom categories and subcategories.
                 Track spending by category and gain insights into where your
                 money goes.
@@ -367,11 +321,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Encryption */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-          >
+          <Grid item xs={12} md={6}>
             <Paper
               elevation={2}
               sx={{
@@ -392,10 +342,7 @@ export default function Welcome() {
               >
                 🔒 Enhanced Security
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Data encryption at rest with industry standard AES-256
                 encryption. Your financial data is protected with the same
                 encryption used by banks and government agencies.
@@ -404,11 +351,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Multiple Accounts */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-          >
+          <Grid item xs={12} md={6}>
             <Paper
               elevation={2}
               sx={{
@@ -429,10 +372,7 @@ export default function Welcome() {
               >
                 💳 Multiple Account Support
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Track checking, savings, and credit card accounts all in one
                 place. Get a complete view of your financial picture across all
                 your accounts.
@@ -441,11 +381,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Analytics */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-          >
+          <Grid item xs={12} md={6}>
             <Paper
               elevation={2}
               sx={{
@@ -466,10 +402,7 @@ export default function Welcome() {
               >
                 📈 Analytics & Insights
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Powerful analytics tools to track spending patterns across
                 categories. Visualize your expenses with interactive charts and
                 make data-driven financial decisions.
@@ -507,73 +440,40 @@ export default function Welcome() {
             Your financial data stays completely under your control
           </Typography>
 
-          <Grid
-            container
-            spacing={4}
-          >
-            <Grid
-              item
-              xs={12}
-              md={4}
-            >
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <SecurityIcon sx={{ fontSize: 60, color: '#2196f3', mb: 2 }} />
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
+                <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                   Bank-Grade Encryption
                 </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                >
+                <Typography variant='body2' color='text.secondary'>
                   AES-256 encryption protects your data with the same security
                   standard used by financial institutions worldwide.
                 </Typography>
               </Box>
             </Grid>
 
-            <Grid
-              item
-              xs={12}
-              md={4}
-            >
+            <Grid item xs={12} md={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <DevicesIcon sx={{ fontSize: 60, color: '#4caf50', mb: 2 }} />
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
+                <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                   Completely Offline
                 </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                >
+                <Typography variant='body2' color='text.secondary'>
                   Once loaded, works entirely offline. No internet required, no
                   data transmission, complete privacy.
                 </Typography>
               </Box>
             </Grid>
 
-            <Grid
-              item
-              xs={12}
-              md={4}
-            >
+            <Grid item xs={12} md={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <LockIcon sx={{ fontSize: 60, color: '#9c27b0', mb: 2 }} />
-                <Typography
-                  variant='h6'
-                  sx={{ fontWeight: 600, mb: 1 }}
-                >
+                <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
                   Local Storage Only
                 </Typography>
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                >
+                <Typography variant='body2' color='text.secondary'>
                   Your data never leaves your device. No servers, no cloud sync,
                   no third-party access.
                 </Typography>
@@ -641,19 +541,9 @@ export default function Welcome() {
         }}
       >
         <Container maxWidth='lg'>
-          <Grid
-            container
-            spacing={4}
-          >
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 2 }}
-              >
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Luca Ledger
               </Typography>
               <Typography
@@ -664,15 +554,8 @@ export default function Welcome() {
                 tracking your expenses.
               </Typography>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-            >
-              <Typography
-                variant='h6'
-                sx={{ fontWeight: 600, mb: 2 }}
-              >
+            <Grid item xs={12} md={6}>
+              <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Quick Links
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

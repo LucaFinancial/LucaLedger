@@ -40,35 +40,35 @@ describe('Statement Utils', () => {
     describe('with statement day 15', () => {
       it('should calculate dates for date before statement day', () => {
         const result = calculateStatementDates('2024/01/10', 15);
-        expect(result.closingDate).toBe('2024/01/15');
-        expect(result.periodStart).toBe('2023/12/16');
-        expect(result.periodEnd).toBe('2024/01/15');
+        expect(result.endDate).toBe('2024/01/15');
+        expect(result.startDate).toBe('2023/12/16');
+        expect(result.endDate).toBe('2024/01/15');
       });
 
       it('should calculate dates for date on statement day', () => {
         const result = calculateStatementDates('2024/01/15', 15);
-        expect(result.closingDate).toBe('2024/01/15');
-        expect(result.periodStart).toBe('2023/12/16');
-        expect(result.periodEnd).toBe('2024/01/15');
+        expect(result.endDate).toBe('2024/01/15');
+        expect(result.startDate).toBe('2023/12/16');
+        expect(result.endDate).toBe('2024/01/15');
       });
 
       it('should calculate dates for date after statement day', () => {
         const result = calculateStatementDates('2024/01/20', 15);
-        expect(result.closingDate).toBe('2024/02/15');
-        expect(result.periodStart).toBe('2024/01/16');
-        expect(result.periodEnd).toBe('2024/02/15');
+        expect(result.endDate).toBe('2024/02/15');
+        expect(result.startDate).toBe('2024/01/16');
+        expect(result.endDate).toBe('2024/02/15');
       });
     });
 
     describe('with statement day 1', () => {
       it('should calculate dates for first of month', () => {
         const result = calculateStatementDates('2024/02/01', 1);
-        expect(result.closingDate).toBe('2024/02/01');
+        expect(result.endDate).toBe('2024/02/01');
       });
 
       it('should calculate dates for mid month', () => {
         const result = calculateStatementDates('2024/02/15', 1);
-        expect(result.closingDate).toBe('2024/03/01');
+        expect(result.endDate).toBe('2024/03/01');
       });
     });
 
@@ -77,12 +77,12 @@ describe('Statement Utils', () => {
         // February
         const result = calculateStatementDates('2024/02/15', 31);
         // Should use the last day of February (29 in 2024 leap year)
-        expect(result.closingDate).toBe('2024/02/29');
+        expect(result.endDate).toBe('2024/02/29');
       });
 
       it('should use 31 for months with 31 days', () => {
         const result = calculateStatementDates('2024/01/15', 31);
-        expect(result.closingDate).toBe('2024/01/31');
+        expect(result.endDate).toBe('2024/01/31');
       });
     });
   });
@@ -95,16 +95,16 @@ describe('Statement Utils', () => {
       const result = getPreviousPeriod('2024/01/15', 15);
       // Going back one day (Jan 14) still falls in the current statement period
       // which ends on Jan 15, so the calculated closing is still Jan 15
-      expect(result.closingDate).toBe('2024/01/15');
+      expect(result.endDate).toBe('2024/01/15');
     });
   });
 
   describe('getNextPeriod', () => {
     it('should get next period from closing date', () => {
       const result = getNextPeriod('2024/01/15', 15);
-      expect(result.closingDate).toBe('2024/02/15');
-      expect(result.periodStart).toBe('2024/01/16');
-      expect(result.periodEnd).toBe('2024/02/15');
+      expect(result.endDate).toBe('2024/02/15');
+      expect(result.startDate).toBe('2024/01/16');
+      expect(result.endDate).toBe('2024/02/15');
     });
   });
 
@@ -112,15 +112,13 @@ describe('Statement Utils', () => {
     const existingStatements = [
       {
         accountId: 'acc-credit-001',
-        closingDate: '2024/01/15',
-        periodStart: '2023/12/16',
-        statementPeriod: '2024-01',
+        endDate: '2024/01/15',
+        startDate: '2023/12/16',
       },
       {
         accountId: 'acc-credit-001',
-        closingDate: '2023/12/15',
-        periodStart: '2023/11/16',
-        statementPeriod: '2023-12',
+        endDate: '2023/12/15',
+        startDate: '2023/11/16',
       },
     ];
 
@@ -128,7 +126,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-001',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toBe(true);
     });
@@ -137,7 +135,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-001',
-        '2024/02/15'
+        '2024/02/15',
       );
       expect(result).toBe(false);
     });
@@ -146,7 +144,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-002',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toBe(false);
     });
@@ -155,13 +153,13 @@ describe('Statement Utils', () => {
       const legacyStatements = [
         {
           accountId: 'acc-credit-001',
-          periodStart: '2023/10/16',
+          periodEnd: '2023/10/20',
         },
       ];
       const result = statementExistsForPeriod(
         legacyStatements,
         'acc-credit-001',
-        '2023/10/20'
+        '2023/10/20',
       );
       expect(result).toBe(true);
     });
@@ -179,7 +177,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/01/08',
-        '2024/01/16'
+        '2024/01/16',
       );
       expect(result).toContain('tx-1');
       expect(result).toContain('tx-2');
@@ -191,7 +189,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/01/10',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toContain('tx-1'); // On start
       expect(result).toContain('tx-2'); // On end
@@ -201,7 +199,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/03/01',
-        '2024/03/31'
+        '2024/03/31',
       );
       expect(result).toHaveLength(0);
     });
@@ -213,12 +211,12 @@ describe('Statement Utils', () => {
         { id: 'tx-2', accountId: 'acc-2', date: '2024/01/10' },
       ];
       const acc1Transactions = allTransactions.filter(
-        (t) => t.accountId === 'acc-1'
+        (t) => t.accountId === 'acc-1',
       );
       const result = getTransactionsInPeriod(
         acc1Transactions,
         '2024/01/01',
-        '2024/01/31'
+        '2024/01/31',
       );
       expect(result).toContain('tx-1');
       expect(result).not.toContain('tx-2');
@@ -325,7 +323,7 @@ describe('Statement Utils', () => {
     it('should return current period for given statement day', () => {
       const result = getCurrentPeriod(15);
       // Jan 20 is after the 15th, so closing is Feb 15
-      expect(result.closingDate).toBe('2024/02/15');
+      expect(result.endDate).toBe('2024/02/15');
     });
   });
 });

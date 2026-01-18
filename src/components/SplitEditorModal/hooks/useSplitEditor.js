@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { v4 as uuid } from 'uuid';
 import { dollarsToCents } from '@/utils';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 
 /**
  * Custom hook for managing split editor state
@@ -8,13 +10,18 @@ import { dollarsToCents } from '@/utils';
 export function useSplitEditor(open, transaction) {
   const [splits, setSplits] = useState([]);
   const [errors, setErrors] = useState({});
+  const existingSplits = useSelector(
+    transaction?.id
+      ? transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
+      : () => [],
+  );
 
   // Initialize splits from transaction when modal opens
   useEffect(() => {
     if (open && transaction) {
-      if (transaction.splits && transaction.splits.length > 0) {
+      if (existingSplits.length > 0) {
         // Load existing splits
-        setSplits(transaction.splits.map((split) => ({ ...split })));
+        setSplits(existingSplits.map((split) => ({ ...split })));
       } else {
         // Start with one empty split
         setSplits([
@@ -27,7 +34,7 @@ export function useSplitEditor(open, transaction) {
       }
       setErrors({});
     }
-  }, [open, transaction]);
+  }, [open, transaction, existingSplits]);
 
   const handleAddSplit = () => {
     setSplits([
@@ -47,8 +54,8 @@ export function useSplitEditor(open, transaction) {
   const handleCategoryChange = (splitId, categoryId) => {
     setSplits(
       splits.map((split) =>
-        split.id === splitId ? { ...split, categoryId } : split
-      )
+        split.id === splitId ? { ...split, categoryId } : split,
+      ),
     );
     // Clear error for this split when category changes
     if (errors[splitId]) {
@@ -65,8 +72,8 @@ export function useSplitEditor(open, transaction) {
         value === '' ? 0 : dollarsToCents(parseFloat(value));
       setSplits(
         splits.map((split) =>
-          split.id === splitId ? { ...split, amount: amountInCents } : split
-        )
+          split.id === splitId ? { ...split, amount: amountInCents } : split,
+        ),
       );
       // Clear error for this split when amount changes
       if (errors[splitId]) {
@@ -85,15 +92,15 @@ export function useSplitEditor(open, transaction) {
       // Find the last split with amount 0 or the last split overall
       const lastEmptyIndex = splits.reduce(
         (lastIdx, split, idx) => (split.amount === 0 ? idx : lastIdx),
-        splits.length - 1
+        splits.length - 1,
       );
 
       setSplits(
         splits.map((split, idx) =>
           idx === lastEmptyIndex
             ? { ...split, amount: split.amount + remaining }
-            : split
-        )
+            : split,
+        ),
       );
     }
   };

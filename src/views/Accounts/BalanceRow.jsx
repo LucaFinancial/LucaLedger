@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import BalanceDifference from './BalanceDifference';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { constants as accountConstants } from '@/store/accounts';
 import { centsToDollars } from '@/utils';
 
 export default function BalanceRow({
@@ -13,12 +14,12 @@ export default function BalanceRow({
   filterArray,
 }) {
   const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId),
   );
 
   // Amounts are in cents, sum them
   const totalCents = transactions
-    .filter((t) => filterArray.includes(t.status))
+    .filter((t) => filterArray.includes(t.transactionState))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
   // Convert cents to dollars for display
@@ -32,7 +33,10 @@ export default function BalanceRow({
   // Determine color for negative balance
   let negativeColor;
   if (totalDollars < 0) {
-    negativeColor = accountType === 'Credit Card' ? 'green' : 'red';
+    negativeColor =
+      accountType === accountConstants.AccountType.CREDIT_CARD
+        ? 'green'
+        : 'red';
   }
 
   return (

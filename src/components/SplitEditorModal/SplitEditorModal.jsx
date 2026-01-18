@@ -40,7 +40,7 @@ export default function SplitEditorModal({
     const totalAmount = Math.abs(transaction.amount);
     const { isValid, errors: validationErrors } = validateSplits(
       splits,
-      totalAmount
+      totalAmount,
     );
 
     if (isValid) {
@@ -62,20 +62,11 @@ export default function SplitEditorModal({
   const remaining = calculateRemaining(totalAmount, splits);
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth='md'
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth>
       <DialogTitle>Split Transaction into Categories</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            sx={{ mb: 2 }}
-          >
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
             Transaction Amount:{' '}
             <strong>${centsToDollars(totalAmount).toFixed(2)}</strong>
           </Typography>

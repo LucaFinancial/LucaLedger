@@ -20,27 +20,16 @@ export default function UnlockDialog({ open, onUnlock, error }) {
   };
 
   return (
-    <Dialog
-      open={open}
-      maxWidth='xs'
-      fullWidth
-      disableEscapeKeyDown
-    >
+    <Dialog open={open} maxWidth='xs' fullWidth disableEscapeKeyDown>
       <form onSubmit={handleSubmit}>
         <DialogTitle>Unlock Your Ledger</DialogTitle>
         <DialogContent>
-          <Typography
-            variant='body2'
-            sx={{ mb: 2 }}
-          >
+          <Typography variant='body2' sx={{ mb: 2 }}>
             Enter your encryption password to access your data.
           </Typography>
 
           {error && (
-            <Alert
-              severity='error'
-              sx={{ mb: 2 }}
-            >
+            <Alert severity='error' sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}

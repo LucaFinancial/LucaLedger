@@ -37,7 +37,7 @@ describe('Encryption Slice', () => {
       it('should set status to UNENCRYPTED', () => {
         const state = encryptionReducer(
           initialState,
-          setEncryptionStatus(EncryptionStatus.UNENCRYPTED)
+          setEncryptionStatus(EncryptionStatus.UNENCRYPTED),
         );
         expect(state.status).toBe(EncryptionStatus.UNENCRYPTED);
       });
@@ -45,7 +45,7 @@ describe('Encryption Slice', () => {
       it('should set status to ENCRYPTING', () => {
         const state = encryptionReducer(
           initialState,
-          setEncryptionStatus(EncryptionStatus.ENCRYPTING)
+          setEncryptionStatus(EncryptionStatus.ENCRYPTING),
         );
         expect(state.status).toBe(EncryptionStatus.ENCRYPTING);
       });
@@ -53,7 +53,7 @@ describe('Encryption Slice', () => {
       it('should set status to ENCRYPTED', () => {
         const state = encryptionReducer(
           initialState,
-          setEncryptionStatus(EncryptionStatus.ENCRYPTED)
+          setEncryptionStatus(EncryptionStatus.ENCRYPTED),
         );
         expect(state.status).toBe(EncryptionStatus.ENCRYPTED);
       });
@@ -63,7 +63,7 @@ describe('Encryption Slice', () => {
       it('should set auth status to UNAUTHENTICATED', () => {
         const state = encryptionReducer(
           initialState,
-          setAuthStatus(AuthStatus.UNAUTHENTICATED)
+          setAuthStatus(AuthStatus.UNAUTHENTICATED),
         );
         expect(state.authStatus).toBe(AuthStatus.UNAUTHENTICATED);
       });
@@ -71,7 +71,7 @@ describe('Encryption Slice', () => {
       it('should set auth status to AUTHENTICATING', () => {
         const state = encryptionReducer(
           initialState,
-          setAuthStatus(AuthStatus.AUTHENTICATING)
+          setAuthStatus(AuthStatus.AUTHENTICATING),
         );
         expect(state.authStatus).toBe(AuthStatus.AUTHENTICATING);
       });
@@ -79,7 +79,7 @@ describe('Encryption Slice', () => {
       it('should set auth status to AUTHENTICATED', () => {
         const state = encryptionReducer(
           initialState,
-          setAuthStatus(AuthStatus.AUTHENTICATED)
+          setAuthStatus(AuthStatus.AUTHENTICATED),
         );
         expect(state.authStatus).toBe(AuthStatus.AUTHENTICATED);
       });
@@ -103,7 +103,7 @@ describe('Encryption Slice', () => {
         const timestamp = Date.now() + 86400000; // +1 day
         const state = encryptionReducer(
           initialState,
-          setDismissUntil(timestamp)
+          setDismissUntil(timestamp),
         );
 
         expect(state.dismissUntil).toBe(timestamp);
@@ -115,7 +115,7 @@ describe('Encryption Slice', () => {
 
         expect(localStorage.setItem).toHaveBeenCalledWith(
           'encryptionPromptDismissUntil',
-          String(timestamp)
+          String(timestamp),
         );
       });
 
@@ -130,7 +130,7 @@ describe('Encryption Slice', () => {
         encryptionReducer(initialState, setDismissUntil(null));
 
         expect(localStorage.removeItem).toHaveBeenCalledWith(
-          'encryptionPromptDismissUntil'
+          'encryptionPromptDismissUntil',
         );
       });
     });
@@ -140,7 +140,7 @@ describe('Encryption Slice', () => {
         const timestamp = Date.now() + 259200000; // +3 days
         const state = encryptionReducer(
           initialState,
-          setSessionExpiresAt(timestamp)
+          setSessionExpiresAt(timestamp),
         );
 
         expect(state.sessionExpiresAt).toBe(timestamp);
@@ -150,7 +150,7 @@ describe('Encryption Slice', () => {
         const sessionState = { ...initialState, sessionExpiresAt: Date.now() };
         const state = encryptionReducer(
           sessionState,
-          setSessionExpiresAt(null)
+          setSessionExpiresAt(null),
         );
 
         expect(state.sessionExpiresAt).toBeNull();
@@ -161,7 +161,7 @@ describe('Encryption Slice', () => {
       it('should set error message', () => {
         const state = encryptionReducer(
           initialState,
-          setError('Authentication failed')
+          setError('Authentication failed'),
         );
         expect(state.error).toBe('Authentication failed');
       });

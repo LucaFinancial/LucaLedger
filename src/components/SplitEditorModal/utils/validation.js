@@ -32,9 +32,9 @@ export function validateSplits(splits, totalAmount) {
 
   if (splitsTotal !== totalAmount) {
     newErrors.sum = `Sum of splits ($${centsToDollars(splitsTotal).toFixed(
-      2
+      2,
     )}) must equal transaction amount ($${centsToDollars(totalAmount).toFixed(
-      2
+      2,
     )})`;
     isValid = false;
   }

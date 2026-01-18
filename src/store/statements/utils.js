@@ -16,11 +16,11 @@ import {
 /**
  * Calculate statement period string from closing date
  * This is the canonical implementation used everywhere
- * @param {string} closingDate - Closing date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY/MM/DD format
  * @returns {string} Period in YYYY-MM format
  */
-export function calculateStatementPeriod(closingDate) {
-  const date = parseISO(closingDate.replace(/\//g, '-'));
+export function calculateStatementPeriod(endDate) {
+  const date = parseISO(endDate.replace(/\//g, '-'));
   return format(date, 'yyyy-MM');
 }
 
@@ -28,7 +28,7 @@ export function calculateStatementPeriod(closingDate) {
  * Calculate the statement period dates for a given date and statement day
  * @param {string} dateStr - Date in YYYY/MM/DD format
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
  */
 export function calculateStatementDates(dateStr, statementDay) {
   // Convert slash format to hyphen format for parseISO
@@ -72,16 +72,15 @@ export function calculateStatementDates(dateStr, statementDay) {
 
   // Convert to YYYY/MM/DD format with slashes
   return {
-    closingDate: format(closingDate, 'yyyy/MM/dd'),
-    periodStart: format(periodStart, 'yyyy/MM/dd'),
-    periodEnd: format(periodEnd, 'yyyy/MM/dd'),
+    startDate: format(periodStart, 'yyyy/MM/dd'),
+    endDate: format(periodEnd, 'yyyy/MM/dd'),
   };
 }
 
 /**
  * Get the current statement period for an account
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
  */
 export function getCurrentPeriod(statementDay) {
   const today = format(new Date(), 'yyyy/MM/dd');
@@ -90,13 +89,13 @@ export function getCurrentPeriod(statementDay) {
 
 /**
  * Get the previous statement period relative to a given closing date
- * @param {string} closingDate - Closing date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY/MM/DD format
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
  */
-export function getPreviousPeriod(closingDate, statementDay) {
-  // Parse the closing date and go back one day to get into previous period
-  const date = parseISO(closingDate.replace(/\//g, '-'));
+export function getPreviousPeriod(endDate, statementDay) {
+  // Parse the end date and go back one day to get into previous period
+  const date = parseISO(endDate.replace(/\//g, '-'));
   const prevDate = new Date(date);
   prevDate.setDate(prevDate.getDate() - 1);
   const prevDateStr = format(prevDate, 'yyyy/MM/dd');
@@ -106,13 +105,13 @@ export function getPreviousPeriod(closingDate, statementDay) {
 
 /**
  * Get the next statement period relative to a given closing date
- * @param {string} closingDate - Closing date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY/MM/DD format
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { periodStart, periodEnd, closingDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
  */
-export function getNextPeriod(closingDate, statementDay) {
-  // Parse the closing date and go forward one day to get into next period
-  const date = parseISO(closingDate.replace(/\//g, '-'));
+export function getNextPeriod(endDate, statementDay) {
+  // Parse the end date and go forward one day to get into next period
+  const date = parseISO(endDate.replace(/\//g, '-'));
   const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + 1);
   const nextDateStr = format(nextDate, 'yyyy/MM/dd');
@@ -122,30 +121,25 @@ export function getNextPeriod(closingDate, statementDay) {
 
 /**
  * Check if a statement already exists for a given period and account
- * Uses the statementPeriod field for reliable period matching
+ * Uses the statement end date to derive the period key
  * @param {Array} statements - Array of all statements
  * @param {string} accountId - Account ID
- * @param {string} closingDate - Closing date in YYYY/MM/DD format (used to calculate target period)
+ * @param {string} endDate - Statement end date in YYYY/MM/DD format (used to calculate target period)
  * @returns {boolean} - True if statement exists for this period
  */
-export function statementExistsForPeriod(statements, accountId, closingDate) {
-  // Parse the closing date to calculate the target period (YYYY-MM format)
-  const closingDateParsed = parseISO(closingDate.replace(/\//g, '-'));
+export function statementExistsForPeriod(statements, accountId, endDate) {
+  // Parse the end date to calculate the target period (YYYY-MM format)
+  const closingDateParsed = parseISO(endDate.replace(/\//g, '-'));
   const targetPeriod = format(closingDateParsed, 'yyyy-MM');
 
-  // Check if any statement exists for this account with matching statementPeriod
+  // Check if any statement exists for this account with matching derived period
   return statements.some((stmt) => {
     if (stmt.accountId !== accountId) return false;
 
-    // If statement has the statementPeriod field, use it for comparison
-    if (stmt.statementPeriod) {
-      return stmt.statementPeriod === targetPeriod;
-    }
-
-    // Fallback for old statements without statementPeriod field
-    // Parse the statement's periodStart to determine its period
-    const stmtPeriodStart = parseISO(stmt.periodStart.replace(/\//g, '-'));
-    const stmtPeriod = format(stmtPeriodStart, 'yyyy-MM');
+    const stmtEnd = stmt.endDate || stmt.periodEnd || stmt.closingDate;
+    if (!stmtEnd) return false;
+    const stmtEndParsed = parseISO(stmtEnd.replace(/\//g, '-'));
+    const stmtPeriod = format(stmtEndParsed, 'yyyy-MM');
 
     return stmtPeriod === targetPeriod;
   });
@@ -154,18 +148,20 @@ export function statementExistsForPeriod(statements, accountId, closingDate) {
 /**
  * Get transactions that fall within a date range
  * @param {Array} transactions - Array of transactions (caller should pre-filter by account if needed)
- * @param {string} periodStart - Period start date in YYYY/MM/DD format
- * @param {string} periodEnd - Period end date in YYYY/MM/DD format
+ * @param {string} startDate - Period start date in YYYY/MM/DD format
+ * @param {string} endDate - Period end date in YYYY/MM/DD format
  * @returns {Array} - Array of transaction IDs that fall in the period
  */
-export function getTransactionsInPeriod(transactions, periodStart, periodEnd) {
-  const startDate = parseISO(periodStart.replace(/\//g, '-'));
-  const endDate = parseISO(periodEnd.replace(/\//g, '-'));
+export function getTransactionsInPeriod(transactions, startDate, endDate) {
+  const startDateParsed = parseISO(startDate.replace(/\//g, '-'));
+  const endDateParsed = parseISO(endDate.replace(/\//g, '-'));
 
   return transactions
     .filter((t) => {
       const txDate = parseISO(t.date.replace(/\//g, '-'));
-      return !isBefore(txDate, startDate) && !isAfter(txDate, endDate);
+      return (
+        !isBefore(txDate, startDateParsed) && !isAfter(txDate, endDateParsed)
+      );
     })
     .map((t) => t.id);
 }
@@ -193,7 +189,7 @@ export function summarizeStatementTransactions(transactions, transactionIds) {
       }
       return acc;
     },
-    { totalCharges: 0, totalPayments: 0 }
+    { totalCharges: 0, totalPayments: 0 },
   );
 }
 
@@ -216,7 +212,7 @@ export function calculateStatementBalances(
   statement,
   transactions,
   allStatements = [],
-  forceRecalculate = false
+  forceRecalculate = false,
 ) {
   if (!statement) {
     return {
@@ -241,8 +237,8 @@ export function calculateStatementBalances(
         typeof statement.endingBalance === 'number'
           ? statement.endingBalance
           : typeof statement.total === 'number'
-          ? statement.total
-          : 0,
+            ? statement.total
+            : 0,
       totalCharges:
         typeof statement.totalCharges === 'number' ? statement.totalCharges : 0,
       totalPayments:
@@ -256,21 +252,25 @@ export function calculateStatementBalances(
   // For unlocked statements (or forced recalculation), calculate from transactions
   // Get transactions in the statement's date range (pre-filter by account)
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === statement.accountId
+    (t) => t.accountId === statement.accountId,
   );
+  const startDate = statement.startDate || statement.periodStart;
+  const endDate =
+    statement.endDate || statement.periodEnd || statement.closingDate;
+
   const transactionIds = getTransactionsInPeriod(
     accountTransactions,
-    statement.periodStart,
-    statement.periodEnd
+    startDate,
+    endDate,
   );
 
   // Calculate total by summing all transaction amounts (same as StatementSeparatorRow)
   const statementTransactions = transactions.filter((t) =>
-    transactionIds.includes(t.id)
+    transactionIds.includes(t.id),
   );
   const total = statementTransactions.reduce(
     (sum, t) => sum + Number(t.amount),
-    0
+    0,
   );
 
   // For the breakdown, separate charges (positive) and payments (negative)
@@ -283,15 +283,21 @@ export function calculateStatementBalances(
 
   // Calculate starting balance from previous statement's ending balance
   let startingBalance = 0;
-  if (statement.closingDate && allStatements.length > 0) {
-    const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
+  if (endDate && allStatements.length > 0) {
+    const statementEndDate = parseISO(endDate.replace(/\//g, '-'));
     const previousStatements = allStatements
-      .filter((s) => s.accountId === statement.accountId && s.closingDate)
+      .filter((s) => s.accountId === statement.accountId)
+      .filter((s) => s.endDate || s.periodEnd || s.closingDate)
       .filter((s) => {
-        const sClosingDate = parseISO(s.closingDate.replace(/\//g, '-'));
-        return sClosingDate < closingDate;
+        const sEndDate = s.endDate || s.periodEnd || s.closingDate;
+        const sParsed = parseISO(sEndDate.replace(/\//g, '-'));
+        return sParsed < statementEndDate;
       })
-      .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+      .sort((a, b) => {
+        const aEnd = a.endDate || a.periodEnd || a.closingDate || '';
+        const bEnd = b.endDate || b.periodEnd || b.closingDate || '';
+        return aEnd.localeCompare(bEnd);
+      });
 
     if (previousStatements.length > 0) {
       const prevStatement = previousStatements[previousStatements.length - 1];
@@ -299,8 +305,8 @@ export function calculateStatementBalances(
         typeof prevStatement.endingBalance === 'number'
           ? prevStatement.endingBalance
           : typeof prevStatement.total === 'number'
-          ? prevStatement.total
-          : 0;
+            ? prevStatement.total
+            : 0;
     }
   }
 
@@ -334,7 +340,7 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
     statement,
     transactions,
     allStatements,
-    true // Force recalculation
+    true, // Force recalculation
   );
 
   // Compare with stored values
@@ -346,8 +352,8 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
     typeof statement.endingBalance === 'number'
       ? statement.endingBalance
       : typeof statement.total === 'number'
-      ? statement.total
-      : 0;
+        ? statement.total
+        : 0;
   const storedCharges =
     typeof statement.totalCharges === 'number' ? statement.totalCharges : 0;
   const storedPayments =
@@ -380,7 +386,7 @@ export function getEarliestStatementDate(account, transactions) {
 
   // Get earliest transaction date for this account
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === account.id
+    (t) => t.accountId === account.id,
   );
 
   if (accountTransactions.length === 0) {
@@ -392,7 +398,7 @@ export function getEarliestStatementDate(account, transactions) {
       const txDate = parseISO(t.date.replace(/\//g, '-'));
       return isBefore(txDate, earliest) ? txDate : earliest;
     },
-    parseISO(accountTransactions[0].date.replace(/\//g, '-'))
+    parseISO(accountTransactions[0].date.replace(/\//g, '-')),
   );
 
   // Use whichever is earlier
@@ -439,44 +445,42 @@ export function determineStatementStatus(periodStart, periodEnd) {
  * @returns {Array} - Array of statement period definitions to create
  */
 export function getMissingStatementPeriods(account, statements, transactions) {
-  const { statementDay } = account;
-  if (!statementDay) return [];
+  const { statementClosingDay } = account;
+  if (!statementClosingDay) return [];
 
   const missingPeriods = [];
   const earliestDate = getEarliestStatementDate(account, transactions);
-  const currentPeriod = getCurrentPeriod(statementDay);
+  const currentPeriod = getCurrentPeriod(statementClosingDay);
   const accountStatements = statements
     .filter((s) => s.accountId === account.id)
-    .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+    .sort((a, b) => (a.endDate || '').localeCompare(b.endDate || ''));
 
   const existingStatementsByPeriod = new Map();
   accountStatements.forEach((stmt) => {
-    const key =
-      stmt.statementPeriod || calculateStatementPeriod(stmt.closingDate);
+    const endDate = stmt.endDate || stmt.periodEnd || stmt.closingDate;
+    if (!endDate) return;
+    const key = calculateStatementPeriod(endDate);
     existingStatementsByPeriod.set(key, stmt);
   });
 
   // Start from the earliest date and walk forward
-  let period = calculateStatementDates(earliestDate, statementDay);
-  const firstPeriodStartDate = parseISO(period.periodStart.replace(/\//g, '-'));
+  let period = calculateStatementDates(earliestDate, statementClosingDay);
+  const firstPeriodStartDate = parseISO(period.startDate.replace(/\//g, '-'));
   let lastKnownEndingBalance = getEndingBalanceBeforeDate(
     accountStatements,
-    firstPeriodStartDate
+    firstPeriodStartDate,
   );
-  const currentClosing = parseISO(
-    currentPeriod.closingDate.replace(/\//g, '-')
-  );
+  const currentClosing = parseISO(currentPeriod.endDate.replace(/\//g, '-'));
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
-    const periodClosing = parseISO(period.closingDate.replace(/\//g, '-'));
+    const periodClosing = parseISO(period.endDate.replace(/\//g, '-'));
 
     // Stop if we've gone beyond the current period (use >= to include current)
     if (isAfter(periodClosing, currentClosing)) {
       break;
     }
 
-    const statementPeriod = calculateStatementPeriod(period.closingDate);
+    const statementPeriod = calculateStatementPeriod(period.endDate);
     const existingStatement = existingStatementsByPeriod.get(statementPeriod);
 
     if (existingStatement) {
@@ -485,13 +489,13 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       // Get transactions for this period (transactions already filtered to this account)
       const transactionIds = getTransactionsInPeriod(
         transactions,
-        period.periodStart,
-        period.periodEnd
+        period.startDate,
+        period.endDate,
       );
 
       const { totalCharges, totalPayments } = summarizeStatementTransactions(
         transactions,
-        transactionIds
+        transactionIds,
       );
 
       let startingBalance = 0;
@@ -501,18 +505,12 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       const endingBalance = startingBalance + totalCharges - totalPayments;
 
       // Determine status based on whether today falls in this period
-      const status = determineStatementStatus(
-        period.periodStart,
-        period.periodEnd
-      );
+      const status = determineStatementStatus(period.startDate, period.endDate);
 
       missingPeriods.push({
         accountId: account.id,
-        closingDate: period.closingDate,
-        periodStart: period.periodStart,
-        periodEnd: period.periodEnd,
-        statementPeriod,
-        transactionIds,
+        startDate: period.startDate,
+        endDate: period.endDate,
         startingBalance,
         endingBalance,
         totalCharges,
@@ -524,7 +522,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
     }
 
     // Move to next period - go forward one day from closing date
-    period = getNextPeriod(period.closingDate, statementDay);
+    period = getNextPeriod(period.endDate, statementClosingDay);
   }
 
   return missingPeriods;
@@ -543,8 +541,12 @@ function getStatementEndingBalance(statement) {
 function getEndingBalanceBeforeDate(statements, targetDate) {
   let balance = 0;
   statements.forEach((stmt) => {
-    const closingDate = parseISO(stmt.closingDate.replace(/\//g, '-'));
-    if (closingDate < targetDate) {
+    const endDate = stmt.endDate || stmt.periodEnd || stmt.closingDate;
+    if (!endDate) {
+      return;
+    }
+    const parsedEndDate = parseISO(endDate.replace(/\//g, '-'));
+    if (parsedEndDate < targetDate) {
       balance = getStatementEndingBalance(stmt);
     }
   });

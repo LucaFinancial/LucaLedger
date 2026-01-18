@@ -25,7 +25,7 @@ export const computeStatementMonth = (transaction, statementDay) => {
 export const generateVirtualTransactions = (
   recurringTransactions,
   realizedDatesMap,
-  projectionEndDate
+  projectionEndDate,
 ) => {
   const virtualTransactions = [];
   const today = new Date();
@@ -37,7 +37,7 @@ export const generateVirtualTransactions = (
       recurringTransactionGenerators.generateOccurrenceDates(
         rule,
         today,
-        endDate
+        endDate,
       );
 
     occurrenceDates.forEach((dateStr) => {
@@ -55,7 +55,7 @@ export const generateVirtualTransactions = (
         amount: rule.amount,
         description: rule.description,
         categoryId: rule.categoryId,
-        status: 'recurring',
+        transactionState: 'recurring',
         isVirtual: true,
         recurringTransactionId: rule.id,
         recurringTransaction: rule,
