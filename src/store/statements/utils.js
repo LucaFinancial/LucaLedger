@@ -472,7 +472,6 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   );
   const currentClosing = parseISO(currentPeriod.endDate.replace(/\//g, '-'));
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const periodClosing = parseISO(period.endDate.replace(/\//g, '-'));
 
