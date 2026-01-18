@@ -22,6 +22,7 @@ const transactionSplits = createSlice({
       const updated = cleanSplit(action.payload);
       const index = state.findIndex((s) => s.id === updated.id);
       if (index !== -1) {
+        updated.updatedAt = new Date().toISOString();
         state[index] = updated;
       }
     },
@@ -30,7 +31,14 @@ const transactionSplits = createSlice({
     setTransactionSplitsForTransaction: (state, action) => {
       const { transactionId, splits } = action.payload;
       const remaining = state.filter((s) => s.transactionId !== transactionId);
-      return [...remaining, ...splits.map(cleanSplit)];
+      const timestamp = new Date().toISOString();
+      return [
+        ...remaining,
+        ...splits.map((split) => ({
+          ...cleanSplit(split),
+          updatedAt: timestamp,
+        })),
+      ];
     },
   },
 });

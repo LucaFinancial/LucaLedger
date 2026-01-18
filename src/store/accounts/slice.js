@@ -37,6 +37,7 @@ const accounts = createSlice({
       const updatedAccount = cleanAccount(action.payload);
       const index = state.data.findIndex((a) => a.id === updatedAccount.id);
       if (index !== -1) {
+        updatedAccount.updatedAt = new Date().toISOString();
         state.data[index] = updatedAccount;
       }
     },

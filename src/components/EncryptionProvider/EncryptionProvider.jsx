@@ -21,9 +21,8 @@ import { setStatements } from '@/store/statements/slice';
 import { setRecurringTransactions } from '@/store/recurringTransactions/slice';
 import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvents/slice';
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
-import { dollarsToCents } from '@/utils';
 import categoriesData from '@/config/categories.json';
+import { migrateDataToSchema } from '@/utils/dataMigration';
 
 export default function EncryptionProvider() {
   const dispatch = useDispatch();
@@ -54,10 +53,6 @@ export default function EncryptionProvider() {
         if (sessionExpiresAt) {
           dispatch(setSessionExpiresAt(sessionExpiresAt));
         }
-
-        // Load user's encrypted data
-        // Check schema version from localStorage
-        let schemaVersion = localStorage.getItem('dataSchemaVersion');
 
         // Load encrypted data for this user
         let [
@@ -90,73 +85,164 @@ export default function EncryptionProvider() {
           ),
         ]);
 
-        // Check if we need to migrate from schema 2.0.0 to 2.0.1
-        const needsMigration =
-          !schemaVersion ||
-          schemaVersion === '2.0.0' ||
-          (schemaVersion < CURRENT_SCHEMA_VERSION &&
-            encryptedTransactions.length > 0);
+        const migrationTimestamp = new Date().toISOString();
+        const hasLegacyTransactions = (encryptedTransactions || []).some(
+          (transaction) =>
+            typeof transaction.status === 'string' ||
+            !transaction.transactionState,
+        );
+        const hasNonIntegerAmounts = (encryptedTransactions || []).some(
+          (transaction) =>
+            typeof transaction.amount === 'number' &&
+            !Number.isInteger(transaction.amount),
+        );
+        const migration = migrateDataToSchema(
+          {
+            accounts: encryptedAccounts || [],
+            transactions: encryptedTransactions || [],
+            categories: encryptedCategories || [],
+            statements: encryptedStatements || [],
+            recurringTransactions: encryptedRecurringTransactions || [],
+            recurringTransactionEvents:
+              encryptedRecurringTransactionEvents || [],
+            transactionSplits: encryptedTransactionSplits || [],
+          },
+          {
+            convertTransactionAmounts:
+              hasLegacyTransactions || hasNonIntegerAmounts,
+            timestamp: migrationTimestamp,
+          },
+        );
 
-        if (needsMigration) {
-          localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
+        if (migration.changed) {
+          encryptedAccounts = migration.data.accounts;
+          encryptedTransactions = migration.data.transactions;
+          encryptedCategories = migration.data.categories;
+          encryptedStatements = migration.data.statements;
+          encryptedRecurringTransactions = migration.data.recurringTransactions;
+          encryptedRecurringTransactionEvents =
+            migration.data.recurringTransactionEvents;
+          encryptedTransactionSplits = migration.data.transactionSplits;
 
-          console.log(
-            `[IndexedDB Migration] Migrating encrypted data from schema ${
-              schemaVersion || 'unknown'
-            } to ${CURRENT_SCHEMA_VERSION}`,
-          );
+          const recordWrites = [];
 
-          let amountConversionCount = 0;
-
-          // Migrate transactions
-          const migratedTransactions = encryptedTransactions.map(
-            (transaction) => {
-              let updated = { ...transaction };
-
-              if (
-                (!schemaVersion || schemaVersion === '2.0.0') &&
-                typeof updated.amount === 'number'
-              ) {
-                updated.amount = dollarsToCents(updated.amount);
-                amountConversionCount++;
-              }
-
-              return updated;
-            },
-          );
-
-          if (amountConversionCount > 0) {
-            console.log(
-              `[IndexedDB Migration] Converted ${amountConversionCount} transaction amounts to cents`,
+          if (migration.changes.accounts) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'accounts',
+                encryptedAccounts.map((account) => ({
+                  id: account.id,
+                  data: account,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
             );
           }
 
-          // Save migrated transactions back to IndexedDB
-          const transactionRecords = migratedTransactions.map(
-            (transaction) => ({
-              id: transaction.id,
-              data: transaction,
-            }),
-          );
+          if (migration.changes.transactions) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'transactions',
+                encryptedTransactions.map((transaction) => ({
+                  id: transaction.id,
+                  data: transaction,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
 
-          await batchStoreUserEncryptedRecords(
-            'transactions',
-            transactionRecords,
-            activeDEK,
-            currentUser.id,
-          );
+          if (migration.changes.categories) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'categories',
+                encryptedCategories.map((category) => ({
+                  id: category.id,
+                  data: category,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
 
-          console.log(
-            `[IndexedDB Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`,
-          );
+          if (migration.changes.statements) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'statements',
+                encryptedStatements.map((statement) => ({
+                  id: statement.id,
+                  data: statement,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
 
-          encryptedTransactions = migratedTransactions;
+          if (migration.changes.recurringTransactions) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'recurringTransactions',
+                encryptedRecurringTransactions.map((recurringTransaction) => ({
+                  id: recurringTransaction.id,
+                  data: recurringTransaction,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
+
+          if (migration.changes.recurringTransactionEvents) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'recurringTransactionEvents',
+                encryptedRecurringTransactionEvents.map(
+                  (recurringTransactionEvent) => ({
+                    id: recurringTransactionEvent.id,
+                    data: recurringTransactionEvent,
+                  }),
+                ),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
+
+          if (migration.changes.transactionSplits) {
+            recordWrites.push(
+              batchStoreUserEncryptedRecords(
+                'transactionSplits',
+                encryptedTransactionSplits.map((transactionSplit) => ({
+                  id: transactionSplit.id,
+                  data: transactionSplit,
+                })),
+                activeDEK,
+                currentUser.id,
+              ),
+            );
+          }
+
+          if (recordWrites.length > 0) {
+            await Promise.all(recordWrites);
+          }
         }
 
         // Initialize categories with defaults if none exist
         let categoriesToLoad = encryptedCategories || [];
         if (categoriesToLoad.length === 0) {
-          categoriesToLoad = categoriesData.categories;
+          const defaultCategories = migrateDataToSchema(
+            {
+              categories: categoriesData.categories,
+            },
+            {
+              timestamp: migrationTimestamp,
+            },
+          );
+          categoriesToLoad = defaultCategories.data.categories;
           console.log('Initialized default categories for encrypted storage');
 
           // Save default categories to encrypted storage

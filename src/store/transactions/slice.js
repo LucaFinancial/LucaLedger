@@ -50,6 +50,7 @@ const transactions = createSlice({
       const updatedTransaction = cleanTransaction(action.payload);
       const index = state.findIndex((t) => t.id === updatedTransaction.id);
       if (index !== -1) {
+        updatedTransaction.updatedAt = new Date().toISOString();
         state[index] = { ...state[index], ...updatedTransaction };
       }
     },
@@ -61,7 +62,11 @@ const transactions = createSlice({
       transactionIds.forEach((id) => {
         const index = state.findIndex((t) => t.id === id);
         if (index !== -1) {
-          const merged = { ...state[index], ...updates };
+          const merged = {
+            ...state[index],
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          };
           state[index] = cleanTransaction(merged);
         }
       });

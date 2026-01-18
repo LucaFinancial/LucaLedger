@@ -18,7 +18,10 @@ const categories = createSlice({
     updateCategory: (state, action) => {
       const index = state.findIndex((cat) => cat.id === action.payload.id);
       if (index !== -1) {
-        state[index] = action.payload;
+        state[index] = {
+          ...action.payload,
+          updatedAt: new Date().toISOString(),
+        };
       }
     },
     removeCategory: (state, action) => {

@@ -23,7 +23,6 @@ import {
 import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
 import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
 import categoriesData from '@/config/categories.json';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function EncryptButton() {
   const dispatch = useDispatch();
@@ -74,9 +73,6 @@ export default function EncryptButton() {
 
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
-
-      // Set schema version for encrypted storage
-      localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
 
       // Clear localStorage
       localStorage.removeItem('reduxState');

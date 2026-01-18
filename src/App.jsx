@@ -15,7 +15,6 @@ import PropTypes from 'prop-types';
 import { AuthProvider, useAuth } from '@/auth';
 import { ProtectedRoute } from '@/components/Auth';
 import MainLayout from '@/components/MainLayout/MainLayout';
-import SchemaVersionProvider from '@/components/SchemaVersionProvider';
 import VersionProvider from '@/components/VersionProvider';
 import EncryptionProvider from '@/components/EncryptionProvider';
 import Welcome from '@/views/Welcome';
@@ -137,7 +136,6 @@ export default function App() {
             </Routes>
           </Router>
           <EncryptionProvider />
-          <SchemaVersionProvider />
           <VersionProvider />
         </AuthProvider>
       </Provider>

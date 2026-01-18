@@ -1,1 +1,3 @@
-export const CURRENT_SCHEMA_VERSION = '2.1.0';
+import lucaSchemaPackage from '@luca-financial/luca-schema/package.json';
+
+export const CURRENT_SCHEMA_VERSION = lucaSchemaPackage.version;
