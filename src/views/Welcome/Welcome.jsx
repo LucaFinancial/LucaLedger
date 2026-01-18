@@ -29,6 +29,8 @@ import {
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/auth';
+import { version } from '../../../package.json';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -592,6 +594,17 @@ export default function Welcome() {
               sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center' }}
             >
               © {new Date().getFullYear()} Luca Ledger. All rights reserved.
+            </Typography>
+            <Typography
+              variant='caption'
+              sx={{
+                color: 'rgba(255, 255, 255, 0.6)',
+                textAlign: 'center',
+                display: 'block',
+                mt: 1,
+              }}
+            >
+              App v{version} • Schema v{CURRENT_SCHEMA_VERSION}
             </Typography>
           </Box>
         </Container>
