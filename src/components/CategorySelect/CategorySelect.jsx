@@ -20,7 +20,7 @@ export default function CategorySelect({
   sx = {},
 }) {
   const categories = useSelector(
-    categorySelectors.selectCategoriesHierarchical
+    categorySelectors.selectCategoriesHierarchical,
   );
   const flatCategories = useSelector(categorySelectors.selectAllCategories);
   const [inputValue, setInputValue] = useState('');
@@ -33,7 +33,7 @@ export default function CategorySelect({
 
     // Sort categories alphabetically by name
     const sortedCategories = [...categories].sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
 
     sortedCategories.forEach((category) => {
@@ -48,7 +48,7 @@ export default function CategorySelect({
 
       // Sort subcategories alphabetically by name
       const sortedSubcategories = [...category.subcategories].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        a.name.localeCompare(b.name),
       );
 
       // Add subcategories
@@ -113,7 +113,7 @@ export default function CategorySelect({
     // If there's input, show specific "Create 'Search Text'" option
     if (inputValue && inputValue.trim()) {
       const exactMatch = baseOptions.some(
-        (opt) => opt.name.toLowerCase() === inputValue.toLowerCase()
+        (opt) => opt.name.toLowerCase() === inputValue.toLowerCase(),
       );
 
       if (!exactMatch) {
@@ -245,15 +245,15 @@ export default function CategorySelect({
                       },
                     }
                   : isSelected
-                  ? {
-                      '& .MuiInputBase-input': {
-                        color: 'white',
-                      },
-                      '& .MuiSvgIcon-root': {
-                        color: 'white',
-                      },
-                    }
-                  : undefined),
+                    ? {
+                        '& .MuiInputBase-input': {
+                          color: 'white',
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: 'white',
+                        },
+                      }
+                    : undefined),
               }}
               InputProps={inputProps}
             />

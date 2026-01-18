@@ -20,7 +20,7 @@ describe('Categories Slice', () => {
       it('should replace all categories', () => {
         const state = categoriesReducer(
           initialState,
-          setCategories(flatCategories)
+          setCategories(flatCategories),
         );
 
         expect(state).toHaveLength(flatCategories.length);
@@ -33,7 +33,7 @@ describe('Categories Slice', () => {
         ];
         const state = categoriesReducer(
           existingCategories,
-          setCategories(flatCategories)
+          setCategories(flatCategories),
         );
 
         expect(state).toHaveLength(flatCategories.length);
@@ -72,7 +72,7 @@ describe('Categories Slice', () => {
         };
         const state = categoriesReducer(
           stateWithParent,
-          addCategory(childCategory)
+          addCategory(childCategory),
         );
 
         expect(state).toHaveLength(2);
@@ -87,7 +87,7 @@ describe('Categories Slice', () => {
             slug: 'new-cat',
             name: 'New Category',
             parentId: null,
-          })
+          }),
         );
 
         expect(state).toHaveLength(flatCategories.length + 1);
@@ -103,7 +103,7 @@ describe('Categories Slice', () => {
             slug: flatCategories[0].slug,
             name: 'Updated Name',
             parentId: null,
-          })
+          }),
         );
 
         expect(state[0].name).toBe('Updated Name');
@@ -117,7 +117,7 @@ describe('Categories Slice', () => {
             slug: 'updated-slug',
             name: flatCategories[0].name,
             parentId: null,
-          })
+          }),
         );
 
         expect(state[0].slug).toBe('updated-slug');
@@ -131,7 +131,7 @@ describe('Categories Slice', () => {
             slug: 'updated',
             name: 'Updated',
             parentId: null,
-          })
+          }),
         );
 
         expect(state[1].name).toBe(flatCategories[1].name);
@@ -145,7 +145,7 @@ describe('Categories Slice', () => {
             slug: 'non-existent',
             name: 'Non Existent',
             parentId: null,
-          })
+          }),
         );
 
         expect(state).toHaveLength(flatCategories.length);
@@ -156,11 +156,11 @@ describe('Categories Slice', () => {
       it('should remove category by id', () => {
         const state = categoriesReducer(
           flatCategories,
-          removeCategory(flatCategories[0].id)
+          removeCategory(flatCategories[0].id),
         );
 
         expect(
-          state.find((c) => c.id === flatCategories[0].id)
+          state.find((c) => c.id === flatCategories[0].id),
         ).toBeUndefined();
       });
 
@@ -168,22 +168,22 @@ describe('Categories Slice', () => {
         // flatCategories[1] has parentId of flatCategories[0]
         const state = categoriesReducer(
           flatCategories,
-          removeCategory(flatCategories[0].id)
+          removeCategory(flatCategories[0].id),
         );
 
         // Parent and its child should both be removed
         expect(
-          state.find((c) => c.id === flatCategories[0].id)
+          state.find((c) => c.id === flatCategories[0].id),
         ).toBeUndefined();
         expect(
-          state.find((c) => c.parentId === flatCategories[0].id)
+          state.find((c) => c.parentId === flatCategories[0].id),
         ).toBeUndefined();
       });
 
       it('should not remove unrelated categories', () => {
         const state = categoriesReducer(
           flatCategories,
-          removeCategory(flatCategories[0].id)
+          removeCategory(flatCategories[0].id),
         );
 
         // flatCategories[2] has parentId null, should remain
@@ -193,7 +193,7 @@ describe('Categories Slice', () => {
       it('should do nothing if category not found', () => {
         const state = categoriesReducer(
           flatCategories,
-          removeCategory('non-existent')
+          removeCategory('non-existent'),
         );
 
         expect(state).toHaveLength(flatCategories.length);
@@ -202,12 +202,12 @@ describe('Categories Slice', () => {
       it('should handle removing child category only', () => {
         const state = categoriesReducer(
           flatCategories,
-          removeCategory(flatCategories[1].id)
+          removeCategory(flatCategories[1].id),
         );
 
         // Only the child should be removed
         expect(
-          state.find((c) => c.id === flatCategories[1].id)
+          state.find((c) => c.id === flatCategories[1].id),
         ).toBeUndefined();
         expect(state.find((c) => c.id === flatCategories[0].id)).toBeDefined();
       });

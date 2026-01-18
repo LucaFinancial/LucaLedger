@@ -30,7 +30,7 @@ export default function Settings() {
   const [showTosModal, setShowTosModal] = useState(false);
 
   const recurringProjection = useSelector(
-    settingsSelectors.selectRecurringProjection
+    settingsSelectors.selectRecurringProjection,
   );
   const [projectionError, setProjectionError] = useState('');
 
@@ -76,7 +76,7 @@ export default function Settings() {
 
     setProjectionError('');
     dispatch(
-      settingsActions.setRecurringProjection({ ...newProjection, amount })
+      settingsActions.setRecurringProjection({ ...newProjection, amount }),
     );
   };
 
@@ -91,20 +91,14 @@ export default function Settings() {
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
-      <Typography
-        variant='h4'
-        sx={{ mb: 4 }}
-      >
+      <Typography variant='h4' sx={{ mb: 4 }}>
         Settings
       </Typography>
 
       {/* Encryption Section */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography
-            variant='h5'
-            sx={{ mb: 3 }}
-          >
+          <Typography variant='h5' sx={{ mb: 3 }}>
             Encryption & Security
           </Typography>
 
@@ -122,19 +116,13 @@ export default function Settings() {
                 color={encryptionConfig.color}
                 size='medium'
               />
-              <Typography
-                variant='body2'
-                sx={{ color: 'text.secondary' }}
-              >
+              <Typography variant='body2' sx={{ color: 'text.secondary' }}>
                 {encryptionConfig.description}
               </Typography>
             </Box>
           </Box>
 
-          <Typography
-            variant='body2'
-            sx={{ color: 'text.secondary', mt: 2 }}
-          >
+          <Typography variant='body2' sx={{ color: 'text.secondary', mt: 2 }}>
             All data is encrypted with AES-256 encryption. Your data is stored
             locally and protected by your password.
           </Typography>
@@ -144,10 +132,7 @@ export default function Settings() {
       {/* Preferences Section */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography
-            variant='h5'
-            sx={{ mb: 3 }}
-          >
+          <Typography variant='h5' sx={{ mb: 3 }}>
             Preferences
           </Typography>
 
@@ -158,10 +143,7 @@ export default function Settings() {
             >
               Recurring Transactions Projection
             </Typography>
-            <Typography
-              variant='body2'
-              sx={{ mb: 2, color: 'text.secondary' }}
-            >
+            <Typography variant='body2' sx={{ mb: 2, color: 'text.secondary' }}>
               Determine how far into the future recurring transactions should be
               generated.
             </Typography>
@@ -194,10 +176,7 @@ export default function Settings() {
               </FormControl>
             </Box>
             {projectionError && (
-              <Alert
-                severity='error'
-                sx={{ mt: 2, maxWidth: 400 }}
-              >
+              <Alert severity='error' sx={{ mt: 2, maxWidth: 400 }}>
                 {projectionError}
               </Alert>
             )}
@@ -208,29 +187,20 @@ export default function Settings() {
       {/* Version Information */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography
-            variant='h5'
-            sx={{ mb: 3 }}
-          >
+          <Typography variant='h5' sx={{ mb: 3 }}>
             About
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box>
-              <Typography
-                variant='subtitle2'
-                sx={{ color: 'text.secondary' }}
-              >
+              <Typography variant='subtitle2' sx={{ color: 'text.secondary' }}>
                 Application Version
               </Typography>
               <Typography variant='body1'>v{version}</Typography>
             </Box>
 
             <Box>
-              <Typography
-                variant='subtitle2'
-                sx={{ color: 'text.secondary' }}
-              >
+              <Typography variant='subtitle2' sx={{ color: 'text.secondary' }}>
                 Data Schema Version
               </Typography>
               <Typography variant='body1'>{CURRENT_SCHEMA_VERSION}</Typography>

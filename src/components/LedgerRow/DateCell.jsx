@@ -14,7 +14,7 @@ export default function DateCell({ transaction }) {
   const { accountId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [dateValue, setDateValue] = useState(
-    parseISO(transaction.date.replace(/\//g, '-'))
+    parseISO(transaction.date.replace(/\//g, '-')),
   );
 
   // Sync local state when transaction.date changes (e.g., from bulk edit)
@@ -29,8 +29,8 @@ export default function DateCell({ transaction }) {
           accountId,
           transaction,
           constants.TransactionFields.DATE,
-          format(value, config.dateFormatString)
-        )
+          format(value, config.dateFormatString),
+        ),
       );
     }
   };

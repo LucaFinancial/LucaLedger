@@ -44,24 +44,24 @@ export default function LedgerTable({
 
   const selectAccountTransactions = useMemo(
     () => transactionSelectors.selectTransactionsByAccountId(accountId),
-    [accountId]
+    [accountId],
   );
   const transactions = useSelector(selectAccountTransactions);
 
   const categories = useSelector(categorySelectors.selectAllCategories);
   const accountStatements = useSelector(
-    statementSelectors.selectStatementsByAccountId(accountId)
+    statementSelectors.selectStatementsByAccountId(accountId),
   );
   const recurringTransactions = useSelector(
     recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
-      accountId
-    )
+      accountId,
+    ),
   );
   const realizedDatesMap = useSelector(
-    recurringTransactionEventSelectors.selectAllRealizedDatesMap
+    recurringTransactionEventSelectors.selectAllRealizedDatesMap,
   );
   const recurringProjection = useSelector(
-    settingsSelectors.selectRecurringProjection
+    settingsSelectors.selectRecurringProjection,
   );
 
   // Generate virtual transactions from recurring rules
@@ -72,19 +72,19 @@ export default function LedgerTable({
     return generateVirtualTransactions(
       recurringTransactions,
       realizedDatesMap,
-      projectionEndDate
+      projectionEndDate,
     );
   }, [recurringTransactions, realizedDatesMap, recurringProjection]);
 
   // Combine real and virtual transactions
   const allTransactions = useMemo(
     () => [...transactions, ...virtualTransactions],
-    [transactions, virtualTransactions]
+    [transactions, virtualTransactions],
   );
 
   const sortedTransactions = useMemo(
     () => [...allTransactions].sort(dateCompareFn),
-    [allTransactions]
+    [allTransactions],
   );
 
   const transactionsWithBalance = useMemo(() => {
@@ -141,7 +141,7 @@ export default function LedgerTable({
 
         // Check category name
         const category = categories.find(
-          (cat) => cat.id === transaction.categoryId
+          (cat) => cat.id === transaction.categoryId,
         );
         const matchesCategory = category?.name
           .toLowerCase()
@@ -180,7 +180,7 @@ export default function LedgerTable({
     setCollapsedGroups((prevCollapsedGroups) =>
       prevCollapsedGroups.includes(groupId)
         ? prevCollapsedGroups.filter((id) => id !== groupId)
-        : [...prevCollapsedGroups, groupId]
+        : [...prevCollapsedGroups, groupId],
     );
   };
 
@@ -191,7 +191,7 @@ export default function LedgerTable({
         .map((t) => getYearMonthKey(t.date));
       const uniqueMonths = [...new Set(monthsInYear)];
       return prevCollapsedGroups.filter(
-        (id) => !uniqueMonths.includes(id) && id !== yearId
+        (id) => !uniqueMonths.includes(id) && id !== yearId,
       );
     });
   };
@@ -232,7 +232,7 @@ export default function LedgerTable({
     (date) => {
       return `${getYearIdentifier(date)}-${getMonthIdentifier(date)}`;
     },
-    [getYearIdentifier, getMonthIdentifier]
+    [getYearIdentifier, getMonthIdentifier],
   );
 
   const getSelectedCountForGroup = useCallback(
@@ -252,7 +252,7 @@ export default function LedgerTable({
       selectedTransactions,
       getYearIdentifier,
       getYearMonthKey,
-    ]
+    ],
   );
 
   // Build grouped data structure with transactions and statement dividers
@@ -289,14 +289,14 @@ export default function LedgerTable({
     if (isCreditCard && accountStatements.length > 0) {
       // Sort statements by end date
       const sortedStatements = [...accountStatements].sort((a, b) =>
-        a.endDate.localeCompare(b.endDate)
+        a.endDate.localeCompare(b.endDate),
       );
 
       sortedStatements.forEach((statement) => {
         try {
           const closingDate = parseISO(statement.endDate.replace(/\//g, '-'));
           const periodStartDate = parseISO(
-            statement.startDate.replace(/\//g, '-')
+            statement.startDate.replace(/\//g, '-'),
           );
           const periodEndDate = parseISO(statement.endDate.replace(/\//g, '-'));
 
@@ -359,7 +359,7 @@ export default function LedgerTable({
             if (items[i].type === 'transaction') {
               try {
                 const itemDate = parseISO(
-                  items[i].data.date.replace(/\//g, '-')
+                  items[i].data.date.replace(/\//g, '-'),
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
@@ -417,13 +417,13 @@ export default function LedgerTable({
           const daysInMonth = new Date(
             parseInt(yearStr),
             monthIndex + 1,
-            0
+            0,
           ).getDate();
           const validStatementDay = Math.min(statementClosingDay, daysInMonth);
           const statementDate = new Date(
             parseInt(yearStr),
             monthIndex,
-            validStatementDay
+            validStatementDay,
           );
 
           // Calculate period covered by this statement
@@ -457,7 +457,7 @@ export default function LedgerTable({
             if (items[i].type === 'transaction') {
               try {
                 const itemDate = parseISO(
-                  items[i].data.date.replace(/\//g, '-')
+                  items[i].data.date.replace(/\//g, '-'),
                 );
                 if (
                   !isNaN(itemDate.getTime()) &&
@@ -540,7 +540,7 @@ export default function LedgerTable({
                           }
                           selectedCount={getSelectedCountForGroup(
                             yearMonthKey,
-                            false
+                            false,
                           )}
                           monthKey={yearMonthKey}
                         />
@@ -556,7 +556,7 @@ export default function LedgerTable({
                                   row={transaction}
                                   balance={transaction.balance}
                                   isSelected={selectedTransactions.has(
-                                    transaction.id
+                                    transaction.id,
                                   )}
                                   onSelectionChange={onSelectionChange}
                                   isVirtual={isVirtual}

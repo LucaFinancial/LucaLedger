@@ -61,7 +61,7 @@ export async function deriveKeyFromPassword(password, salt) {
     passwordBuffer,
     'PBKDF2',
     false,
-    ['deriveKey']
+    ['deriveKey'],
   );
 
   // Derive KWK using PBKDF2
@@ -75,7 +75,7 @@ export async function deriveKeyFromPassword(password, salt) {
     keyMaterial,
     { name: 'AES-GCM', length: KEY_LENGTH },
     false, // non-extractable for security
-    ['wrapKey', 'unwrapKey']
+    ['wrapKey', 'unwrapKey'],
   );
 }
 
@@ -90,7 +90,7 @@ export async function generateDataEncryptionKey() {
       length: KEY_LENGTH,
     },
     true, // extractable so it can be wrapped
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   );
 }
 
@@ -131,7 +131,7 @@ export async function unwrapKey(wrappedKey, iv, kwk) {
       length: KEY_LENGTH,
     },
     true, // extractable so it can be re-wrapped if needed
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   );
 }
 
@@ -152,7 +152,7 @@ export async function encrypt(data, dek) {
       iv,
     },
     dek,
-    dataBuffer
+    dataBuffer,
   );
 
   return { ciphertext, iv };
@@ -172,7 +172,7 @@ export async function decrypt(ciphertext, iv, dek) {
       iv,
     },
     dek,
-    ciphertext
+    ciphertext,
   );
 
   const jsonString = new TextDecoder().decode(decryptedBuffer);

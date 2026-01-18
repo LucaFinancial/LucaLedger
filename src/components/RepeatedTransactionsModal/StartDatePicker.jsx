@@ -10,10 +10,7 @@ export default function StartDatePicker({ startDate, setStartDate }) {
   return (
     <>
       <Typography>Start Date</Typography>
-      <DatePicker
-        value={startDate}
-        onChange={onDateChange}
-      />
+      <DatePicker value={startDate} onChange={onDateChange} />
     </>
   );
 }

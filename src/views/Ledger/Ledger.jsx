@@ -66,16 +66,16 @@ export default function Ledger() {
 
   const selectAccountTransactions = useMemo(
     () => transactionSelectors.selectTransactionsByAccountId(accountId),
-    [accountId]
+    [accountId],
   );
   const transactions = useSelector(selectAccountTransactions);
 
   const selectAccountRecurringTransactions = useMemo(
     () =>
       recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
-        accountId
+        accountId,
       ),
-    [accountId]
+    [accountId],
   );
   const recurringTransactions = useSelector(selectAccountRecurringTransactions);
 
@@ -95,13 +95,13 @@ export default function Ledger() {
   }, [transactions]);
 
   const recurringProjection = useSelector(
-    settingsSelectors.selectRecurringProjection
+    settingsSelectors.selectRecurringProjection,
   );
 
   // Get available years from transactions and recurring transactions
   const availableYears = useMemo(() => {
     const transactionYears = transactions.map((t) =>
-      format(parseISO(t.date.replace(/\//g, '-')), 'yyyy')
+      format(parseISO(t.date.replace(/\//g, '-')), 'yyyy'),
     );
 
     // Calculate projection limit once
@@ -114,13 +114,13 @@ export default function Ledger() {
       try {
         const startYear = parseInt(
           format(parseISO(rt.startDate.replace(/\//g, '-')), 'yyyy'),
-          10
+          10,
         );
 
         const rtEndYear = rt.endDate
           ? parseInt(
               format(parseISO(rt.endDate.replace(/\//g, '-')), 'yyyy'),
-              10
+              10,
             )
           : projectionYear;
 
@@ -176,7 +176,7 @@ export default function Ledger() {
     }
     return transactions.filter(
       (t) =>
-        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
+        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear,
     );
   }, [transactions, selectedYear, rollingDateRange]);
 
@@ -201,7 +201,7 @@ export default function Ledger() {
 
         // Check category name
         const category = flatCategories.find(
-          (cat) => cat.id === transaction.categoryId
+          (cat) => cat.id === transaction.categoryId,
         );
         const matchesCategory = category?.name
           .toLowerCase()
@@ -234,7 +234,7 @@ export default function Ledger() {
             transactions.map((t) => {
               const date = parseISO(t.date.replace(/\//g, '-'));
               return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
-            })
+            }),
           ),
         ].sort((a, b) => {
           const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
@@ -251,11 +251,11 @@ export default function Ledger() {
 
     const previousMonthStr = `${format(previous, 'yyyy')}-${format(
       previous,
-      'MMMM'
+      'MMMM',
     )}`;
     const currentMonthStr = `${format(current, 'yyyy')}-${format(
       current,
-      'MMMM'
+      'MMMM',
     )}`;
     const nextMonthStr = `${format(next, 'yyyy')}-${format(next, 'MMMM')}`;
     const currentYear = format(current, 'yyyy');
@@ -299,7 +299,7 @@ export default function Ledger() {
   };
 
   const [collapsedGroups, setCollapsedGroups] = useState(() =>
-    getDefaultCollapsedGroups()
+    getDefaultCollapsedGroups(),
   );
   const hasGeneratedStatements = useRef(new Set());
   const prevAllMonthsLength = useRef(allMonths.length);
@@ -342,11 +342,11 @@ export default function Ledger() {
       setTimeout(() => {
         const currentMonthStr = `${format(new Date(), 'yyyy')}-${format(
           new Date(),
-          'MMMM'
+          'MMMM',
         )}`;
         // Find the month separator row for current month
         const monthElement = document.querySelector(
-          `[data-month-key="${currentMonthStr}"]`
+          `[data-month-key="${currentMonthStr}"]`,
         );
         if (monthElement) {
           monthElement.scrollIntoView({
@@ -402,8 +402,8 @@ export default function Ledger() {
     dispatch(
       transactionActions.updateMultipleTransactionsFields(
         Array.from(selectedTransactions),
-        updates
-      )
+        updates,
+      ),
     );
     setSelectedTransactions(new Set());
     setBulkEditModalOpen(false);
@@ -418,8 +418,8 @@ export default function Ledger() {
         dispatch(
           transactionActions.removeTransactionById(
             transaction.accountId,
-            transaction
-          )
+            transaction,
+          ),
         );
       }
     });
@@ -470,8 +470,8 @@ export default function Ledger() {
       dispatch(
         transactionActions.updateMultipleTransactionsFields(
           transactionsToUpdate,
-          { categoryId: null }
-        )
+          { categoryId: null },
+        ),
       );
     }
   };
@@ -512,10 +512,7 @@ export default function Ledger() {
         }}
       >
         {sidebarOpen && (
-          <SettingsPanel
-            account={account}
-            selectedYear={selectedYear}
-          />
+          <SettingsPanel account={account} selectedYear={selectedYear} />
         )}
       </Box>
 
@@ -557,10 +554,7 @@ export default function Ledger() {
 
           {/* Center Section: Year Filter + Search */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-            <FormControl
-              size='small'
-              sx={{ minWidth: 120 }}
-            >
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel id='year-filter-label'>Year</InputLabel>
               <Select
                 labelId='year-filter-label'
@@ -572,10 +566,7 @@ export default function Ledger() {
                 <MenuItem value='rolling'>Rolling</MenuItem>
                 <MenuItem value='all'>All Years</MenuItem>
                 {availableYears.map((year) => (
-                  <MenuItem
-                    key={year}
-                    value={year}
-                  >
+                  <MenuItem key={year} value={year}>
                     {year}
                   </MenuItem>
                 ))}

@@ -107,7 +107,7 @@ export async function getAllEncryptedRecords(storeName, dek) {
       const iv = base64ToUint8Array(record.iv);
       const ciphertext = base64ToArrayBuffer(record.ciphertext);
       return decrypt(ciphertext, iv, dek);
-    })
+    }),
   );
 
   return decryptedRecords;
@@ -188,7 +188,7 @@ export async function batchStoreEncryptedRecords(storeName, records, dek) {
         iv: uint8ArrayToBase64(iv),
         ciphertext: arrayBufferToBase64(ciphertext),
       };
-    })
+    }),
   );
 
   await db[storeName].bulkPut(encryptedRecords);
@@ -216,7 +216,7 @@ export async function createUser(
   wrappedDEK,
   wrappedDEKIV,
   sentinel,
-  sentinelIV
+  sentinelIV,
 ) {
   // Check if username already exists
   const existingUser = await db.users
@@ -308,7 +308,7 @@ export async function storeUserEncryptedRecord(
   id,
   data,
   dek,
-  userId
+  userId,
 ) {
   const { ciphertext, iv } = await encrypt(data, dek);
 
@@ -337,7 +337,7 @@ export async function getUserEncryptedRecords(storeName, dek, userId) {
       const iv = base64ToUint8Array(record.iv);
       const ciphertext = base64ToArrayBuffer(record.ciphertext);
       return decrypt(ciphertext, iv, dek);
-    })
+    }),
   );
 
   return decryptedRecords;
@@ -355,7 +355,7 @@ export async function batchStoreUserEncryptedRecords(
   storeName,
   records,
   dek,
-  userId
+  userId,
 ) {
   const encryptedRecords = await Promise.all(
     records.map(async ({ id, data }) => {
@@ -366,7 +366,7 @@ export async function batchStoreUserEncryptedRecords(
         iv: uint8ArrayToBase64(iv),
         ciphertext: arrayBufferToBase64(ciphertext),
       };
-    })
+    }),
   );
 
   await db[storeName].bulkPut(encryptedRecords);

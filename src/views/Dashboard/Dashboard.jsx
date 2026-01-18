@@ -44,7 +44,7 @@ export default function Dashboard() {
     allTransactions,
     dateRanges,
     accountMap,
-    isTransferTransaction
+    isTransferTransaction,
   );
 
   // Use custom hook for totals calculations
@@ -71,10 +71,7 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography
-        variant='h4'
-        sx={{ mb: 4, fontWeight: 'bold' }}
-      >
+      <Typography variant='h4' sx={{ mb: 4, fontWeight: 'bold' }}>
         Financial Dashboard
       </Typography>
 

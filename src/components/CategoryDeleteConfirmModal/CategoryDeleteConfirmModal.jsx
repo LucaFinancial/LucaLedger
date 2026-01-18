@@ -21,35 +21,21 @@ export default function CategoryDeleteConfirmModal({
   const itemType = isSubcategory ? 'subcategory' : 'category';
 
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onCancel} maxWidth='sm' fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <WarningIcon color='warning' />
         Delete {isSubcategory ? 'Subcategory' : 'Category'}
       </DialogTitle>
 
       <DialogContent>
-        <Alert
-          severity='warning'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='warning' sx={{ mb: 2 }}>
           This action cannot be undone!
         </Alert>
 
-        <Typography
-          variant='body1'
-          sx={{ mb: 2 }}
-        >
+        <Typography variant='body1' sx={{ mb: 2 }}>
           Are you sure you want to delete{' '}
           {categoryName ? (
-            <Box
-              component='span'
-              sx={{ fontWeight: 'bold' }}
-            >
+            <Box component='span' sx={{ fontWeight: 'bold' }}>
               &quot;{categoryName}&quot;
             </Box>
           ) : (
@@ -58,38 +44,19 @@ export default function CategoryDeleteConfirmModal({
           ?
         </Typography>
 
-        <Typography
-          variant='body2'
-          color='text.secondary'
-          sx={{ mb: 1 }}
-        >
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
           This will:
         </Typography>
-        <Box
-          component='ul'
-          sx={{ ml: 2, mt: 0 }}
-        >
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            component='li'
-          >
+        <Box component='ul' sx={{ ml: 2, mt: 0 }}>
+          <Typography variant='body2' color='text.secondary' component='li'>
             Permanently remove the {itemType} from your system
           </Typography>
           {!isSubcategory && (
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              component='li'
-            >
+            <Typography variant='body2' color='text.secondary' component='li'>
               Delete all subcategories within this category
             </Typography>
           )}
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            component='li'
-          >
+          <Typography variant='body2' color='text.secondary' component='li'>
             Transactions will be marked with invalid category references
           </Typography>
         </Box>
@@ -97,11 +64,7 @@ export default function CategoryDeleteConfirmModal({
 
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
-        <Button
-          onClick={onConfirm}
-          variant='contained'
-          color='error'
-        >
+        <Button onClick={onConfirm} variant='contained' color='error'>
           Delete {isSubcategory ? 'Subcategory' : 'Category'}
         </Button>
       </DialogActions>

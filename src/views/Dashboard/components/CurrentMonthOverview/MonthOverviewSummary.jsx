@@ -17,10 +17,7 @@ export default function MonthOverviewSummary({
         border: '1px solid #e0e0e0',
       }}
     >
-      <Typography
-        variant='h6'
-        sx={{ fontWeight: 'bold', mb: 2 }}
-      >
+      <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
         Month Overview
       </Typography>
 
@@ -33,17 +30,11 @@ export default function MonthOverviewSummary({
             mb: 1,
           }}
         >
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             Day {monthEndProjections.currentDay} of{' '}
             {monthEndProjections.daysInMonth}
           </Typography>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             {monthEndProjections.daysRemaining} days remaining
           </Typography>
         </Box>
@@ -68,16 +59,9 @@ export default function MonthOverviewSummary({
       </Box>
 
       {/* Three-column summary */}
-      <Grid
-        container
-        spacing={2}
-      >
+      <Grid container spacing={2}>
         {/* Month-to-Date (Actuals) */}
-        <Grid
-          item
-          xs={12}
-          md={4}
-        >
+        <Grid item xs={12} md={4}>
           <Paper
             sx={{
               p: 2,
@@ -92,10 +76,7 @@ export default function MonthOverviewSummary({
               Current
             </Typography>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Income
               </Typography>
               <Typography
@@ -106,10 +87,7 @@ export default function MonthOverviewSummary({
               </Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Expenses {totals.pending - totals.current < 0 && '(Pending)'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
@@ -136,10 +114,7 @@ export default function MonthOverviewSummary({
                 borderTop: '1px solid #90caf9',
               }}
             >
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Balance {totals.pending !== totals.current && '(Pending)'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
@@ -163,11 +138,7 @@ export default function MonthOverviewSummary({
         </Grid>
 
         {/* Remaining Month (Scheduled/Planned) */}
-        <Grid
-          item
-          xs={12}
-          md={4}
-        >
+        <Grid item xs={12} md={4}>
           <Paper
             sx={{
               p: 2,
@@ -182,10 +153,7 @@ export default function MonthOverviewSummary({
               Remaining
             </Typography>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Income
               </Typography>
               <Typography
@@ -196,10 +164,7 @@ export default function MonthOverviewSummary({
               </Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Expenses
               </Typography>
               <Typography
@@ -215,10 +180,7 @@ export default function MonthOverviewSummary({
                 borderTop: '1px solid #ffcc80',
               }}
             >
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Net
               </Typography>
               <Typography
@@ -236,11 +198,7 @@ export default function MonthOverviewSummary({
         </Grid>
 
         {/* Month-End Projection */}
-        <Grid
-          item
-          xs={12}
-          md={4}
-        >
+        <Grid item xs={12} md={4}>
           <Paper
             sx={{
               p: 2,
@@ -255,10 +213,7 @@ export default function MonthOverviewSummary({
               Projected
             </Typography>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Income
               </Typography>
               <Typography
@@ -269,10 +224,7 @@ export default function MonthOverviewSummary({
               </Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Expenses
               </Typography>
               <Typography
@@ -288,10 +240,7 @@ export default function MonthOverviewSummary({
                 borderTop: '1px solid #ce93d8',
               }}
             >
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 Projected Net Flow
               </Typography>
               <Typography

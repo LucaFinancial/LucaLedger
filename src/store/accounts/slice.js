@@ -57,7 +57,7 @@ const accounts = createSlice({
     },
     removeLoadingAccountId: (state, action) => {
       state.loadingAccountIds = state.loadingAccountIds.filter(
-        (id) => id !== action.payload
+        (id) => id !== action.payload,
       );
     },
     clearLoadingAccountIds: (state) => {

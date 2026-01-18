@@ -20,8 +20,8 @@ export default function ActionCell({
       dispatch(
         recurringTransactionEventActions.realizeRecurringTransaction(
           recurringTransaction,
-          occurrenceDate
-        )
+          occurrenceDate,
+        ),
       );
     }
   };
@@ -32,8 +32,8 @@ export default function ActionCell({
         transaction.accountId,
         transaction,
         transactionConstants.TransactionFields.TRANSACTION_STATE,
-        transactionConstants.TransactionStateEnum.SCHEDULED
-      )
+        transactionConstants.TransactionStateEnum.SCHEDULED,
+      ),
     );
   };
 
@@ -43,8 +43,8 @@ export default function ActionCell({
         transaction.accountId,
         transaction,
         transactionConstants.TransactionFields.TRANSACTION_STATE,
-        transactionConstants.TransactionStateEnum.COMPLETED
-      )
+        transactionConstants.TransactionStateEnum.COMPLETED,
+      ),
     );
   };
 

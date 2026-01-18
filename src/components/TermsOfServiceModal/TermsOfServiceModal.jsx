@@ -20,51 +20,30 @@ export default function TermsOfServiceModal({ open, onClose, onAgree }) {
     >
       <DialogTitle id='tos-dialog-title'>Terms of Service</DialogTitle>
       <DialogContent dividers>
-        <DialogContentText
-          id='tos-dialog-description'
-          component='div'
-        >
-          <Typography
-            variant='h6'
-            gutterBottom
-          >
+        <DialogContentText id='tos-dialog-description' component='div'>
+          <Typography variant='h6' gutterBottom>
             1. Acceptance of Terms
           </Typography>
-          <Typography
-            paragraph
-            variant='body2'
-          >
+          <Typography paragraph variant='body2'>
             By accessing and using Luca Ledger (&quot;the Application&quot;),
             you acknowledge that you have read, understood, and agree to be
             these Terms of Service.
           </Typography>
 
-          <Typography
-            variant='h6'
-            gutterBottom
-          >
+          <Typography variant='h6' gutterBottom>
             2. No Financial Advice
           </Typography>
-          <Typography
-            paragraph
-            variant='body2'
-          >
+          <Typography paragraph variant='body2'>
             The Application is provided for informational and personal finance
             management purposes only. It does not constitute financial,
             investment, legal, or tax advice. You should consult with a
             qualified professional for advice specific to your situation.
           </Typography>
 
-          <Typography
-            variant='h6'
-            gutterBottom
-          >
+          <Typography variant='h6' gutterBottom>
             3. Data Security and Privacy
           </Typography>
-          <Typography
-            paragraph
-            variant='body2'
-          >
+          <Typography paragraph variant='body2'>
             While we employ industry-standard encryption (AES-256) to protect
             your data locally on your device, you acknowledge that no method of
             electronic storage is 100% secure. You are solely responsible for
@@ -72,16 +51,10 @@ export default function TermsOfServiceModal({ open, onClose, onAgree }) {
             data resulting from a lost password or compromised device.
           </Typography>
 
-          <Typography
-            variant='h6'
-            gutterBottom
-          >
+          <Typography variant='h6' gutterBottom>
             4. Limitation of Liability
           </Typography>
-          <Typography
-            paragraph
-            variant='body2'
-          >
+          <Typography paragraph variant='body2'>
             TO THE MAXIMUM EXTENT PERMITTED BY LAW, LUCA FINANCIAL AND ITS
             DEVELOPERS SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
             SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT
@@ -92,16 +65,10 @@ export default function TermsOfServiceModal({ open, onClose, onAgree }) {
             ALTERATION OF YOUR TRANSMISSIONS OR CONTENT.
           </Typography>
 
-          <Typography
-            variant='h6'
-            gutterBottom
-          >
+          <Typography variant='h6' gutterBottom>
             5. &quot;As Is&quot; Basis
           </Typography>
-          <Typography
-            paragraph
-            variant='body2'
-          >
+          <Typography paragraph variant='body2'>
             The Application is provided on an &quot;AS IS&quot; and &quot;AS
             AVAILABLE&quot; basis. We make no representations or warranties of
             any kind, express or implied, regarding the operation of the
@@ -113,25 +80,15 @@ export default function TermsOfServiceModal({ open, onClose, onAgree }) {
       <DialogActions>
         {onAgree ? (
           <>
-            <Button
-              onClick={onClose}
-              color='inherit'
-            >
+            <Button onClick={onClose} color='inherit'>
               Disagree
             </Button>
-            <Button
-              onClick={onAgree}
-              variant='contained'
-              color='primary'
-            >
+            <Button onClick={onAgree} variant='contained' color='primary'>
               Agree
             </Button>
           </>
         ) : (
-          <Button
-            onClick={onClose}
-            color='primary'
-          >
+          <Button onClick={onClose} color='primary'>
             Close
           </Button>
         )}

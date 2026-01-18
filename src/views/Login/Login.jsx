@@ -83,19 +83,13 @@ export default function Login() {
             >
               Luca Ledger
             </Typography>
-            <Typography
-              variant='body1'
-              color='text.secondary'
-            >
+            <Typography variant='body1' color='text.secondary'>
               Sign in to access your accounts
             </Typography>
           </Box>
 
           {error && (
-            <Alert
-              severity='error'
-              sx={{ mb: 2 }}
-            >
+            <Alert severity='error' sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
@@ -150,11 +144,7 @@ export default function Login() {
           <Box
             sx={{ textAlign: 'center', borderTop: '1px solid #e0e0e0', pt: 3 }}
           >
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ mb: 2 }}
-            >
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
               Don&apos;t have an account?
             </Typography>
             <Button

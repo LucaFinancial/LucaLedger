@@ -7,7 +7,7 @@ export const saveTransactionSplits = (transactionId, splits) => (dispatch) => {
       generateTransactionSplit({
         ...split,
         transactionId,
-      })
+      }),
     )
     .filter(Boolean);
 
@@ -15,6 +15,6 @@ export const saveTransactionSplits = (transactionId, splits) => (dispatch) => {
     setTransactionSplitsForTransaction({
       transactionId,
       splits: normalized,
-    })
+    }),
   );
 };

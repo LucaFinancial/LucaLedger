@@ -14,7 +14,7 @@ describe('Settings Slice', () => {
     const newProjection = { amount: 2, unit: 'years' };
     const nextState = reducer(
       initialState,
-      setRecurringProjection(newProjection)
+      setRecurringProjection(newProjection),
     );
     expect(nextState.recurringProjection).toEqual(newProjection);
   });

@@ -10,7 +10,7 @@ export const useAccountBalances = (accounts) => {
   // Get all transactions for the provided accounts
   const accountIds = useMemo(() => accounts.map((a) => a.id), [accounts]);
   const allRelevantTransactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountIds(accountIds)
+    transactionSelectors.selectTransactionsByAccountIds(accountIds),
   );
 
   return useMemo(() => {
@@ -34,7 +34,7 @@ export const useAccountBalances = (accounts) => {
     const processedAccounts = accounts.map((account) => {
       // Filter transactions for this specific account
       const transactions = allRelevantTransactions.filter(
-        (t) => t.accountId === account.id
+        (t) => t.accountId === account.id,
       );
 
       const balances = {

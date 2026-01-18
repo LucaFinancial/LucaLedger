@@ -39,7 +39,7 @@ describe('Statements Slice', () => {
         const statements = [validCurrentStatement, validPastStatement];
         const state = statementsReducer(
           initialState,
-          setStatements(statements)
+          setStatements(statements),
         );
 
         expect(state).toHaveLength(2);
@@ -50,7 +50,7 @@ describe('Statements Slice', () => {
       it('should clean statements and normalize dates', () => {
         const state = statementsReducer(
           initialState,
-          setStatements([legacyStatementWithTotal])
+          setStatements([legacyStatementWithTotal]),
         );
 
         expect(state[0].endDate).toBeDefined();
@@ -60,7 +60,7 @@ describe('Statements Slice', () => {
       it('should handle legacy statement with total field', () => {
         const state = statementsReducer(
           initialState,
-          setStatements([legacyStatementWithTotal])
+          setStatements([legacyStatementWithTotal]),
         );
 
         expect(state[0].endingBalance).toBe(15000);
@@ -70,7 +70,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validCurrentStatement];
         const state = statementsReducer(
           stateWithData,
-          setStatements([validPastStatement])
+          setStatements([validPastStatement]),
         );
 
         expect(state).toHaveLength(1);
@@ -82,7 +82,7 @@ describe('Statements Slice', () => {
       it('should add a new statement', () => {
         const state = statementsReducer(
           initialState,
-          addStatement(validCurrentStatement)
+          addStatement(validCurrentStatement),
         );
 
         expect(state).toHaveLength(1);
@@ -93,7 +93,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validCurrentStatement];
         const state = statementsReducer(
           stateWithData,
-          addStatement(validPastStatement)
+          addStatement(validPastStatement),
         );
 
         expect(state).toHaveLength(2);
@@ -107,7 +107,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          addStatement(duplicateStatement)
+          addStatement(duplicateStatement),
         );
 
         // Should not add duplicate
@@ -124,7 +124,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          addStatement(differentAccountStatement)
+          addStatement(differentAccountStatement),
         );
 
         expect(state).toHaveLength(2);
@@ -137,7 +137,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          addStatement(differentPeriodStatement)
+          addStatement(differentPeriodStatement),
         );
 
         expect(state).toHaveLength(2);
@@ -153,7 +153,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          updateStatement(updatedStatement)
+          updateStatement(updatedStatement),
         );
 
         expect(state[0].endingBalance).toBe(50000);
@@ -167,7 +167,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          updateStatement(updatedStatement)
+          updateStatement(updatedStatement),
         );
 
         expect(state[0].updatedAt).toBe('2024-06-15T12:00:00.000Z');
@@ -181,7 +181,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          updateStatement(updatedStatement)
+          updateStatement(updatedStatement),
         );
 
         expect(state[1].endingBalance).toBe(validPastStatement.endingBalance);
@@ -195,7 +195,7 @@ describe('Statements Slice', () => {
         };
         const state = statementsReducer(
           stateWithData,
-          updateStatement(nonExistentStatement)
+          updateStatement(nonExistentStatement),
         );
 
         expect(state).toHaveLength(1);
@@ -208,7 +208,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validCurrentStatement, validPastStatement];
         const state = statementsReducer(
           stateWithData,
-          removeStatement(validCurrentStatement.id)
+          removeStatement(validCurrentStatement.id),
         );
 
         expect(state).toHaveLength(1);
@@ -219,7 +219,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validCurrentStatement];
         const state = statementsReducer(
           stateWithData,
-          removeStatement('non-existent')
+          removeStatement('non-existent'),
         );
 
         expect(state).toHaveLength(1);
@@ -231,7 +231,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validPastStatement];
         const state = statementsReducer(
           stateWithData,
-          lockStatement(validPastStatement.id)
+          lockStatement(validPastStatement.id),
         );
 
         expect(state[0].status).toBe(StatementStatusEnum.LOCKED);
@@ -241,7 +241,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validPastStatement];
         const state = statementsReducer(
           stateWithData,
-          lockStatement(validPastStatement.id)
+          lockStatement(validPastStatement.id),
         );
 
         expect(state[0].updatedAt).toBe('2024-06-15T12:00:00.000Z');
@@ -251,7 +251,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validCurrentStatement];
         const state = statementsReducer(
           stateWithData,
-          lockStatement('non-existent')
+          lockStatement('non-existent'),
         );
 
         expect(state[0].status).toBe(validCurrentStatement.status);
@@ -263,7 +263,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validLockedStatement];
         const state = statementsReducer(
           stateWithData,
-          unlockStatement(validLockedStatement.id)
+          unlockStatement(validLockedStatement.id),
         );
 
         expect(state[0].status).toBe(StatementStatusEnum.PAST);
@@ -273,7 +273,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validLockedStatement];
         const state = statementsReducer(
           stateWithData,
-          unlockStatement(validLockedStatement.id)
+          unlockStatement(validLockedStatement.id),
         );
 
         expect(state[0].updatedAt).toBe('2024-06-15T12:00:00.000Z');
@@ -283,7 +283,7 @@ describe('Statements Slice', () => {
         const stateWithData = [validLockedStatement];
         const state = statementsReducer(
           stateWithData,
-          unlockStatement('non-existent')
+          unlockStatement('non-existent'),
         );
 
         expect(state[0].status).toBe(StatementStatusEnum.LOCKED);

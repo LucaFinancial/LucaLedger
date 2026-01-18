@@ -8,7 +8,7 @@ import { actions, constants } from '@/store/accounts';
 export default function StatementDayInput({ account }) {
   const dispatch = useDispatch();
   const [statementDay, setStatementDay] = useState(
-    account.statementClosingDay || 1
+    account.statementClosingDay || 1,
   );
 
   // Sync local state when account prop changes
@@ -38,8 +38,8 @@ export default function StatementDayInput({ account }) {
       actions.updateAccountProperty(
         account,
         constants.AccountFields.STATEMENT_DAY,
-        newValue
-      )
+        newValue,
+      ),
     );
   };
 

@@ -37,7 +37,7 @@ const migrateState = (persistedState) => {
     if (!isEncryptionActive) {
       localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
       console.log(
-        `Initialized new user with schema version ${CURRENT_SCHEMA_VERSION}`
+        `Initialized new user with schema version ${CURRENT_SCHEMA_VERSION}`,
       );
     }
 
@@ -54,7 +54,7 @@ const migrateState = (persistedState) => {
 
   if (hasLegacyData) {
     console.log(
-      'Migration: Converting remaining legacy data to normalized format...'
+      'Migration: Converting remaining legacy data to normalized format...',
     );
 
     // Initialize accounts with new structure if needed
@@ -94,7 +94,7 @@ const migrateState = (persistedState) => {
       state.transactions = allTransactions;
 
       console.log(
-        `Migration: Converted ${state.accounts.data.length} accounts and ${allTransactions.length} transactions to normalized format`
+        `Migration: Converted ${state.accounts.data.length} accounts and ${allTransactions.length} transactions to normalized format`,
       );
     }
 
@@ -106,7 +106,7 @@ const migrateState = (persistedState) => {
   // Migrate old array-based accounts structure to new object structure
   if (state.accounts && Array.isArray(state.accounts)) {
     console.log(
-      '[Migration] Converting accounts from array to object structure'
+      '[Migration] Converting accounts from array to object structure',
     );
     state.accounts = {
       data: state.accounts,
@@ -132,7 +132,7 @@ const migrateState = (persistedState) => {
   if (state.accounts && !state.accounts.data) {
     console.warn(
       '[Migration] WARNING: accounts exists but is missing data property!',
-      state.accounts
+      state.accounts,
     );
     // Force correct structure
     state.accounts = {
@@ -151,7 +151,7 @@ const migrateState = (persistedState) => {
     Array.isArray(state.accounts.data)
   ) {
     const hadVersion = state.accounts.data.some(
-      (account) => 'version' in account
+      (account) => 'version' in account,
     );
     if (hadVersion) {
       state.accounts.data = state.accounts.data.map((account) => {

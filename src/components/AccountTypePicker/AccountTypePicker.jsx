@@ -29,8 +29,8 @@ export default function AccountTypePicker({ account }) {
         actions.updateAccountProperty(
           account,
           constants.AccountFields.TYPE,
-          value
-        )
+          value,
+        ),
       );
     }
   };
@@ -47,10 +47,7 @@ export default function AccountTypePicker({ account }) {
         style={{ width: '150px' }}
       >
         {Object.keys(constants.AccountType).map((key) => (
-          <MenuItem
-            key={key}
-            value={constants.AccountType[key]}
-          >
+          <MenuItem key={key} value={constants.AccountType[key]}>
             {constants.AccountType[key]}
           </MenuItem>
         ))}

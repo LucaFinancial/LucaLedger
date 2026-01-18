@@ -20,8 +20,8 @@ export default function DescriptionCell({ transaction }) {
         accountId,
         transaction,
         constants.TransactionFields.DESCRIPTION,
-        description
-      )
+        description,
+      ),
     );
     setEdit(false);
   };
@@ -69,18 +69,10 @@ export default function DescriptionCell({ transaction }) {
               },
             }}
           />
-          <Button
-            variant='contained'
-            style={buttonStyle}
-            onClick={handleSave}
-          >
+          <Button variant='contained' style={buttonStyle} onClick={handleSave}>
             <Check />
           </Button>
-          <Button
-            variant='outlined'
-            style={buttonStyle}
-            onClick={handleCancel}
-          >
+          <Button variant='outlined' style={buttonStyle} onClick={handleCancel}>
             <Cancel />
           </Button>
         </Box>

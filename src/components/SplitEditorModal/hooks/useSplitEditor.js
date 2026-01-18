@@ -13,7 +13,7 @@ export function useSplitEditor(open, transaction) {
   const existingSplits = useSelector(
     transaction?.id
       ? transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
-      : () => []
+      : () => [],
   );
 
   // Initialize splits from transaction when modal opens
@@ -54,8 +54,8 @@ export function useSplitEditor(open, transaction) {
   const handleCategoryChange = (splitId, categoryId) => {
     setSplits(
       splits.map((split) =>
-        split.id === splitId ? { ...split, categoryId } : split
-      )
+        split.id === splitId ? { ...split, categoryId } : split,
+      ),
     );
     // Clear error for this split when category changes
     if (errors[splitId]) {
@@ -72,8 +72,8 @@ export function useSplitEditor(open, transaction) {
         value === '' ? 0 : dollarsToCents(parseFloat(value));
       setSplits(
         splits.map((split) =>
-          split.id === splitId ? { ...split, amount: amountInCents } : split
-        )
+          split.id === splitId ? { ...split, amount: amountInCents } : split,
+        ),
       );
       // Clear error for this split when amount changes
       if (errors[splitId]) {
@@ -92,15 +92,15 @@ export function useSplitEditor(open, transaction) {
       // Find the last split with amount 0 or the last split overall
       const lastEmptyIndex = splits.reduce(
         (lastIdx, split, idx) => (split.amount === 0 ? idx : lastIdx),
-        splits.length - 1
+        splits.length - 1,
       );
 
       setSplits(
         splits.map((split, idx) =>
           idx === lastEmptyIndex
             ? { ...split, amount: split.amount + remaining }
-            : split
-        )
+            : split,
+        ),
       );
     }
   };

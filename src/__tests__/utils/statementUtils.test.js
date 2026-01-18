@@ -126,7 +126,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-001',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toBe(true);
     });
@@ -135,7 +135,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-001',
-        '2024/02/15'
+        '2024/02/15',
       );
       expect(result).toBe(false);
     });
@@ -144,7 +144,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         existingStatements,
         'acc-credit-002',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toBe(false);
     });
@@ -159,7 +159,7 @@ describe('Statement Utils', () => {
       const result = statementExistsForPeriod(
         legacyStatements,
         'acc-credit-001',
-        '2023/10/20'
+        '2023/10/20',
       );
       expect(result).toBe(true);
     });
@@ -177,7 +177,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/01/08',
-        '2024/01/16'
+        '2024/01/16',
       );
       expect(result).toContain('tx-1');
       expect(result).toContain('tx-2');
@@ -189,7 +189,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/01/10',
-        '2024/01/15'
+        '2024/01/15',
       );
       expect(result).toContain('tx-1'); // On start
       expect(result).toContain('tx-2'); // On end
@@ -199,7 +199,7 @@ describe('Statement Utils', () => {
       const result = getTransactionsInPeriod(
         transactions,
         '2024/03/01',
-        '2024/03/31'
+        '2024/03/31',
       );
       expect(result).toHaveLength(0);
     });
@@ -211,12 +211,12 @@ describe('Statement Utils', () => {
         { id: 'tx-2', accountId: 'acc-2', date: '2024/01/10' },
       ];
       const acc1Transactions = allTransactions.filter(
-        (t) => t.accountId === 'acc-1'
+        (t) => t.accountId === 'acc-1',
       );
       const result = getTransactionsInPeriod(
         acc1Transactions,
         '2024/01/01',
-        '2024/01/31'
+        '2024/01/31',
       );
       expect(result).toContain('tx-1');
       expect(result).not.toContain('tx-2');

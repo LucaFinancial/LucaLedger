@@ -56,7 +56,7 @@ export const generateRecurringTransaction = (initialData = {}) => {
 export const generateOccurrenceDates = (
   recurringTransaction,
   fromDate,
-  toDate
+  toDate,
 ) => {
   const { frequency, interval, startOn, endOn } = recurringTransaction;
   const dates = [];

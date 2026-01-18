@@ -37,7 +37,7 @@ export const createRepeatTransaction = createAsyncThunk(
       occurrences,
       accountId,
     },
-    { dispatch }
+    { dispatch },
   ) => {
     const startDay = getDate(startDate);
     let nextDate = startDate;
@@ -96,7 +96,7 @@ export const createRepeatTransaction = createAsyncThunk(
         }
       }
     }
-  }
+  },
 );
 
 export const updateTransactionProperty =
@@ -135,7 +135,7 @@ export const updateMultipleTransactionsStatus =
       updateMultipleTransactions({
         transactionIds,
         updates: { transactionState: newStatus },
-      })
+      }),
     );
   };
 
@@ -155,6 +155,6 @@ export const updateMultipleTransactionsFields =
       updateMultipleTransactions({
         transactionIds,
         updates: processedUpdates,
-      })
+      }),
     );
   };

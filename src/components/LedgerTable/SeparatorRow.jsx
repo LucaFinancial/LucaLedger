@@ -26,7 +26,7 @@ export default function SeparatorRow({
       : format(parseISO(transaction.date.replace(/\//g, '-')), 'MMyyyy') ===
         format(
           parseISO(previousTransaction.date.replace(/\//g, '-')),
-          'MMyyyy'
+          'MMyyyy',
         ))
   ) {
     return null;
@@ -57,10 +57,7 @@ export default function SeparatorRow({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <IconButton
-            size='small'
-            onClick={onToggleCollapse}
-          >
+          <IconButton size='small' onClick={onToggleCollapse}>
             {isCollapsed ? (
               <KeyboardArrowRight fontSize='small' />
             ) : (

@@ -50,7 +50,7 @@ const COLORS = [
 export default function CategoryTotals({ category }) {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
-    transactionSplitSelectors.selectTransactionSplits
+    transactionSplitSelectors.selectTransactionSplits,
   );
   const [timePeriod, setTimePeriod] = useState('month');
 
@@ -113,13 +113,13 @@ export default function CategoryTotals({ category }) {
       const splits = splitsByTransaction.get(transaction.id) || [];
       if (splits.length > 0) {
         const hasCategoryInSplits = splits.some((split) =>
-          categoryIds.has(split.categoryId)
+          categoryIds.has(split.categoryId),
         );
         if (hasCategoryInSplits) {
           // Still need to check date range
           if (startDate && endDate) {
             const transactionDate = startOfDay(
-              parseISO(transaction.date.replace(/\//g, '-'))
+              parseISO(transaction.date.replace(/\//g, '-')),
             );
             if (
               isBefore(transactionDate, startDate) ||
@@ -138,7 +138,7 @@ export default function CategoryTotals({ category }) {
       // For date filtering, only include transactions within the time period
       if (startDate && endDate) {
         const transactionDate = startOfDay(
-          parseISO(transaction.date.replace(/\//g, '-'))
+          parseISO(transaction.date.replace(/\//g, '-')),
         );
         if (
           isBefore(transactionDate, startDate) ||
@@ -168,19 +168,19 @@ export default function CategoryTotals({ category }) {
       pastTransactions.reduce((sum, t) => {
         const categoryAmount = Array.from(categoryIds).reduce(
           (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0
+          0,
         );
         return sum + categoryAmount;
-      }, 0)
+      }, 0),
     );
     const futureTotal = centsToDollars(
       futureTransactions.reduce((sum, t) => {
         const categoryAmount = Array.from(categoryIds).reduce(
           (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0
+          0,
         );
         return sum + categoryAmount;
-      }, 0)
+      }, 0),
     );
     const total = pastTotal + futureTotal;
     const count = categoryTransactions.length;
@@ -196,23 +196,23 @@ export default function CategoryTotals({ category }) {
       });
 
       const subPastTransactions = pastTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0
+        (t) => getAmountForCategory(t, subcategory.id) !== 0,
       );
       const subFutureTransactions = futureTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0
+        (t) => getAmountForCategory(t, subcategory.id) !== 0,
       );
 
       const pastTotal = centsToDollars(
         subPastTransactions.reduce(
           (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0
-        )
+          0,
+        ),
       );
       const futureTotal = centsToDollars(
         subFutureTransactions.reduce(
           (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0
-        )
+          0,
+        ),
       );
 
       return {
@@ -252,10 +252,7 @@ export default function CategoryTotals({ category }) {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography
-            variant='subtitle2'
-            sx={{ fontWeight: 600 }}
-          >
+          <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
             Category Totals
           </Typography>
           <ToggleButtonGroup
@@ -304,10 +301,7 @@ export default function CategoryTotals({ category }) {
           zIndex: 2,
         }}
       >
-        <Typography
-          variant='subtitle2'
-          sx={{ fontWeight: 600 }}
-        >
+        <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
           Category Totals
         </Typography>
         <ToggleButtonGroup
@@ -339,10 +333,7 @@ export default function CategoryTotals({ category }) {
             height: 220,
           }}
         >
-          <ResponsiveContainer
-            width='100%'
-            height='100%'
-          >
+          <ResponsiveContainer width='100%' height='100%'>
             <PieChart>
               <Pie
                 data={subcategoryTotals
@@ -478,22 +469,13 @@ export default function CategoryTotals({ category }) {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Past
                   </TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Future
                   </TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Total
                   </TableCell>
                 </TableRow>
@@ -556,7 +538,7 @@ CategoryTotals.propTypes = {
         id: PropTypes.string.isRequired,
         slug: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-      })
+      }),
     ).isRequired,
   }).isRequired,
 };

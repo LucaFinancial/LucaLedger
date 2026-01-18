@@ -165,19 +165,12 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
           >
             Luca Ledger
           </Typography>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             Create a new account to get started
           </Typography>
         </Box>
 
-        <Alert
-          severity='warning'
-          icon={<WarningIcon />}
-          sx={{ mb: 3 }}
-        >
+        <Alert severity='warning' icon={<WarningIcon />} sx={{ mb: 3 }}>
           <Typography variant='body2'>
             <strong>Important:</strong> Your password cannot be recovered if
             lost. All your financial data is encrypted with your password and
@@ -186,10 +179,7 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
         </Alert>
 
         {error && (
-          <Alert
-            severity='error'
-            sx={{ mb: 2 }}
-          >
+          <Alert severity='error' sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
@@ -275,10 +265,7 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
               />
             }
             label={
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
+              <Typography variant='caption' color='text.secondary'>
                 I have read and agree to the{' '}
                 <Link
                   component='button'
@@ -331,20 +318,17 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
               {isLoading
                 ? 'Creating...'
                 : isGenerated && !passwordCopied && countdown === 0
-                ? 'Copy Password to Enable'
-                : isGenerated && passwordCopied && countdown > 0
-                ? `Create in ${countdown}s`
-                : 'Create Account'}
+                  ? 'Copy Password to Enable'
+                  : isGenerated && passwordCopied && countdown > 0
+                    ? `Create in ${countdown}s`
+                    : 'Create Account'}
             </Button>
           </Box>
         </form>
 
         {showBackToLogin && (
           <Box sx={{ textAlign: 'center', mt: 2 }}>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-            >
+            <Typography variant='body2' color='text.secondary'>
               Already have an account?{' '}
               <Link
                 component='button'

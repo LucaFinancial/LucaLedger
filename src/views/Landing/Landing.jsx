@@ -71,10 +71,7 @@ Section.propTypes = {
 export default function Landing() {
   return (
     <Box>
-      <Container
-        maxWidth='lg'
-        sx={{ py: 4 }}
-      >
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Box sx={{ mb: 5, textAlign: 'center' }}>
           <Typography
             variant='h2'
@@ -94,10 +91,7 @@ export default function Landing() {
 
         {/* New in Version 2 Section */}
         <Section title='New in Version 2'>
-          <Typography
-            variant='body1'
-            sx={{ mb: 2, color: 'text.secondary' }}
-          >
+          <Typography variant='body1' sx={{ mb: 2, color: 'text.secondary' }}>
             Version 2 brings powerful new capabilities and architectural
             improvements to help you manage your finances more effectively and
             securely.
@@ -124,10 +118,7 @@ export default function Landing() {
               >
                 📊 Transaction Categories
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Organize your finances with custom categories and subcategories.
                 Track spending by category and gain insights into where your
                 money goes.
@@ -155,10 +146,7 @@ export default function Landing() {
               >
                 ✏️ Bulk Edit for Transactions
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Efficiently edit multiple transactions at once, saving time and
                 improving data management.
               </Typography>
@@ -185,10 +173,7 @@ export default function Landing() {
               >
                 🔒 Enhanced Security
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Data encryption at rest with industry standard AES-256
                 encryption and migration from localStorage to IndexedDB for
                 better performance and security.
@@ -216,10 +201,7 @@ export default function Landing() {
               >
                 📁 Unified File Format
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 All accounts and transactions are now stored in a single unified
                 file format, with transactions separated from account data for
                 better organization.
@@ -247,10 +229,7 @@ export default function Landing() {
               >
                 💰 Improved Precision
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Enhanced monetary calculations by storing amounts in minor units
                 (cents), eliminating floating-point errors.
               </Typography>
@@ -277,10 +256,7 @@ export default function Landing() {
               >
                 🎨 Refreshed Ledger View
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Modern, intuitive ledger interface with enhanced balance cards,
                 interactive spending visualizations by category with pie charts,
                 and smart filtering by month and transaction status for better
@@ -309,10 +285,7 @@ export default function Landing() {
               >
                 📄 Statements Feature
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Generate comprehensive financial statements for your accounts.
                 View detailed transaction histories, account summaries, and
                 export statements for record-keeping and tax purposes.
@@ -340,10 +313,7 @@ export default function Landing() {
               >
                 📊 Improved Dashboard
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Enhanced dashboard with comprehensive financial overview, visual
                 spending trends, account balance summaries, and quick access to
                 recent transactions for better financial management at a glance.
@@ -371,10 +341,7 @@ export default function Landing() {
               >
                 📈 Analytics for Spending by Categories
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Powerful analytics tools to track spending patterns across
                 categories. Visualize your expenses with interactive charts,
                 identify spending trends, and make data-driven financial
@@ -386,10 +353,7 @@ export default function Landing() {
 
         {/* Coming Next Section */}
         <Section title='Coming Next'>
-          <Typography
-            variant='body1'
-            sx={{ mb: 3, color: 'text.secondary' }}
-          >
+          <Typography variant='body1' sx={{ mb: 3, color: 'text.secondary' }}>
             We&apos;re actively developing exciting new features to make Luca
             Ledger even more powerful for managing your finances:
           </Typography>
@@ -415,10 +379,7 @@ export default function Landing() {
               >
                 🔀 Split Categories for Transactions
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Allocate a single transaction across multiple categories with
                 custom split amounts. Perfect for purchases covering different
                 expense types like groceries and household items in one trip.
@@ -446,10 +407,7 @@ export default function Landing() {
               >
                 📚 Double-Entry Accounting
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Professional-grade double-entry bookkeeping system for accurate
                 financial tracking with debits, credits, and automatic balance
                 reconciliation. Link transactions across accounts to track
@@ -479,10 +437,7 @@ export default function Landing() {
               >
                 🔄 Recurring Transactions
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Automate your regular expenses and income with flexible
                 recurring transaction patterns. Set it once and let the system
                 handle monthly bills, subscriptions, and paychecks.
@@ -510,10 +465,7 @@ export default function Landing() {
               >
                 📈 Advanced Reporting & Analytics
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Interactive charts, spending trends, and customizable reports to
                 visualize your financial health. Export reports as PDF or CSV
                 for tax preparation and record-keeping.
@@ -541,10 +493,7 @@ export default function Landing() {
               >
                 🎯 Smart Budget Management
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Create and monitor budgets by category with real-time alerts
                 when approaching limits. Track your progress and adjust spending
                 to meet your financial goals.
@@ -572,10 +521,7 @@ export default function Landing() {
               >
                 📊 Investment Account Tracking
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Monitor your investment portfolios alongside traditional
                 accounts. Track stocks, bonds, mutual funds, and other assets
                 with performance metrics and portfolio allocation insights.
@@ -603,10 +549,7 @@ export default function Landing() {
               >
                 📅 &quot;Rolling&quot; Year Option for Continuous Date Range
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Track your finances with a rolling 12-month window that
                 continuously updates to show the last year of activity. Perfect
                 for monitoring annual spending trends and year-over-year
@@ -635,10 +578,7 @@ export default function Landing() {
               >
                 📋 Enhanced Monthly Grouping and Separator
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Improved transaction organization with clear monthly separators
                 and groupings. Navigate through your transaction history more
                 easily with visual month boundaries and summary totals for each
@@ -650,10 +590,7 @@ export default function Landing() {
 
         {/* Data Storage Section */}
         <Section title='Data Storage & Privacy'>
-          <Typography
-            variant='body1'
-            sx={{ mb: 3, color: 'text.secondary' }}
-          >
+          <Typography variant='body1' sx={{ mb: 3, color: 'text.secondary' }}>
             Your data privacy is our top priority. Luca Ledger is built with a
             privacy-first approach, ensuring your financial information stays
             completely under your control.
@@ -680,10 +617,7 @@ export default function Landing() {
               >
                 🔐 Complete Privacy
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Your financial data never leaves your device. Everything is
                 stored locally in your browser&apos;s IndexedDB with no servers,
                 no cloud sync, and no third-party access. Your data is yours
@@ -712,10 +646,7 @@ export default function Landing() {
               >
                 ✈️ Works Completely Offline
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Once loaded, the application works entirely offline. Manage your
                 finances anywhere, anytime—no internet connection required. Your
                 data stays on your device and accessible only to you.
@@ -743,10 +674,7 @@ export default function Landing() {
               >
                 🛡️ Industry-Standard Encryption
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Optional AES-256 encryption at rest protects your financial data
                 with the same encryption standard used by banks and government
                 agencies. Enable encryption in settings for an additional layer
@@ -775,10 +703,7 @@ export default function Landing() {
               >
                 🚀 Modern Storage Architecture
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Version 2 uses IndexedDB for superior performance and
                 reliability compared to localStorage. Enjoy faster data access,
                 better organization, and seamless automatic migration from
@@ -807,10 +732,7 @@ export default function Landing() {
               >
                 💾 Easy Export & Backup
               </Typography>
-              <Typography
-                variant='body1'
-                color='text.secondary'
-              >
+              <Typography variant='body1' color='text.secondary'>
                 Full control over your data with simple export and import
                 functionality. Create backups anytime, transfer between devices,
                 or keep archives for your records—all in a standard,

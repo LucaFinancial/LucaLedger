@@ -80,19 +80,13 @@ export default function LoginForm({ onSwitchToRegister }) {
           >
             Luca Ledger
           </Typography>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             Sign in to access your accounts
           </Typography>
         </Box>
 
         {error && (
-          <Alert
-            severity='error'
-            sx={{ mb: 2 }}
-          >
+          <Alert severity='error' sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
@@ -145,10 +139,7 @@ export default function LoginForm({ onSwitchToRegister }) {
         </form>
 
         <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             Don&apos;t have an account?{' '}
             <Link
               component='button'

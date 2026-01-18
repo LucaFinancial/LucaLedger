@@ -130,7 +130,7 @@ export function AuthProvider({ children }) {
 
       const sessionKWK = await deriveKeyFromPassword(
         token.sessionPassword,
-        sessionSalt
+        sessionSalt,
       );
       const dek = await unwrapKey(sessionWrappedDEK, sessionIV, sessionKWK);
 
@@ -170,7 +170,7 @@ export function AuthProvider({ children }) {
     // Create sentinel for password validation
     const { ciphertext: sentinelCiphertext, iv: sentinelIV } = await encrypt(
       SENTINEL_VALUE,
-      dek
+      dek,
     );
 
     // Generate user ID
@@ -184,7 +184,7 @@ export function AuthProvider({ children }) {
       arrayBufferToBase64(wrappedKey),
       uint8ArrayToBase64(wrappedIV),
       arrayBufferToBase64(sentinelCiphertext),
-      uint8ArrayToBase64(sentinelIV)
+      uint8ArrayToBase64(sentinelIV),
     );
 
     // Check for legacy data to migrate
@@ -239,7 +239,7 @@ export function AuthProvider({ children }) {
       const decryptedSentinel = await decrypt(
         sentinelCiphertext,
         sentinelIV,
-        dek
+        dek,
       );
       if (decryptedSentinel !== SENTINEL_VALUE) {
         throw new Error('Invalid username or password');
@@ -273,11 +273,11 @@ export function AuthProvider({ children }) {
     const sessionPassword = crypto.randomUUID();
     const sessionKWK = await deriveKeyFromPassword(
       sessionPassword,
-      sessionSalt
+      sessionSalt,
     );
     const { wrappedKey: sessionWrappedDEK, iv: sessionIV } = await wrapKey(
       dek,
-      sessionKWK
+      sessionKWK,
     );
 
     const sessionToken = {
@@ -328,7 +328,7 @@ export function AuthProvider({ children }) {
         setAuthState('no-users');
       }
     },
-    [currentUser, logout]
+    [currentUser, logout],
   );
 
   /**

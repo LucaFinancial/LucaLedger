@@ -76,26 +76,26 @@ export const createNewStatement = (statementData) => (dispatch, getState) => {
   const state = getState();
   const transactions = state.transactions;
   const accountStatements = state.statements.filter(
-    (s) => s.accountId === statementData.accountId
+    (s) => s.accountId === statementData.accountId,
   );
 
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === statementData.accountId
+    (t) => t.accountId === statementData.accountId,
   );
   const transactionIds = getTransactionsInPeriod(
     accountTransactions,
     statementData.startDate,
-    statementData.endDate
+    statementData.endDate,
   );
 
   const { totalCharges, totalPayments } = summarizeStatementTransactions(
     transactions,
-    transactionIds
+    transactionIds,
   );
 
   const startingBalance = getPreviousEndingBalance(
     accountStatements,
-    statementData.endDate
+    statementData.endDate,
   );
 
   const endingBalance = startingBalance + totalCharges - totalPayments;
@@ -138,7 +138,7 @@ export const updateStatementProperty =
     }
 
     const accountStatements = state.statements.filter(
-      (s) => s.accountId === statement.accountId
+      (s) => s.accountId === statement.accountId,
     );
 
     const sortedStatements = accountStatements
@@ -156,7 +156,7 @@ export const updateStatementProperty =
       .sort((a, b) => a.__sortValue - b.__sortValue);
 
     const currentIndex = sortedStatements.findIndex(
-      (s) => s.id === statementId
+      (s) => s.id === statementId,
     );
     const previousStatement =
       currentIndex > 0
@@ -178,7 +178,7 @@ export const updateStatementProperty =
         if (previousStatement.status === 'locked') {
           console.error(
             'Cannot update statement: previous statement is locked',
-            previousStatement.id
+            previousStatement.id,
           );
           return;
         }
@@ -197,7 +197,7 @@ export const updateStatementProperty =
             ...previousStatement,
             endDate: newPrevEndDate,
             updatedAt: new Date().toISOString(),
-          })
+          }),
         );
       }
     }
@@ -209,7 +209,7 @@ export const updateStatementProperty =
         if (nextStatement.status === 'locked') {
           console.error(
             'Cannot update statement: next statement is locked',
-            nextStatement.id
+            nextStatement.id,
           );
           return;
         }
@@ -228,7 +228,7 @@ export const updateStatementProperty =
             ...nextStatement,
             startDate: newNextStartDate,
             updatedAt: new Date().toISOString(),
-          })
+          }),
         );
       }
     }
@@ -297,10 +297,10 @@ export const fixStatementIssue =
   (currentStatementId, adjacentStatementId) => (dispatch, getState) => {
     const state = getState();
     const currentStmt = state.statements.find(
-      (s) => s.id === currentStatementId
+      (s) => s.id === currentStatementId,
     );
     const adjacentStmt = state.statements.find(
-      (s) => s.id === adjacentStatementId
+      (s) => s.id === adjacentStatementId,
     );
 
     if (!currentStmt || !adjacentStmt) {
@@ -316,27 +316,27 @@ export const fixStatementIssue =
       // Current statement is before adjacent - adjust adjacent's start date
       const newAdjacentStart = format(
         addDays(parseISO(currentStmt.endDate.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd'
+        'yyyy/MM/dd',
       );
       dispatch(
         updateStatementNormalized({
           ...adjacentStmt,
           startDate: newAdjacentStart,
           updatedAt: new Date().toISOString(),
-        })
+        }),
       );
     } else {
       // Current statement is after adjacent - adjust adjacent's end date
       const newAdjacentEnd = format(
         subDays(parseISO(currentStmt.startDate.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd'
+        'yyyy/MM/dd',
       );
       dispatch(
         updateStatementNormalized({
           ...adjacentStmt,
           endDate: newAdjacentEnd,
           updatedAt: new Date().toISOString(),
-        })
+        }),
       );
     }
   };
@@ -357,14 +357,14 @@ export const autoGenerateStatements = (accountId) => (dispatch, getState) => {
 
   const statements = state.statements.filter((s) => s.accountId === accountId);
   const transactions = state.transactions.filter(
-    (t) => t.accountId === accountId
+    (t) => t.accountId === accountId,
   );
 
   // Get all missing periods (includes current)
   const missingPeriods = getMissingStatementPeriods(
     account,
     statements,
-    transactions
+    transactions,
   );
 
   // Create statements for each missing period
@@ -399,7 +399,7 @@ export const syncStatement = (statementId) => (dispatch, getState) => {
     statement,
     state.transactions,
     state.statements,
-    true // Force recalculation even if locked
+    true, // Force recalculation even if locked
   );
 
   // Update the statement with fresh calculated values

@@ -21,7 +21,7 @@ export function useFilteredTransactions(
   allTransactions,
   dateRanges,
   accountMap,
-  isTransferTransaction
+  isTransferTransaction,
 ) {
   // Filter recent transactions (last 14 days, excluding transfers and credit cards)
   const recentTransactions = useMemo(() => {

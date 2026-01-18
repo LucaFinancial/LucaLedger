@@ -94,21 +94,13 @@ export default function LegacyDataMigrationDialog({ onComplete }) {
   };
 
   return (
-    <Dialog
-      open={true}
-      maxWidth='sm'
-      fullWidth
-      disableEscapeKeyDown
-    >
+    <Dialog open={true} maxWidth='sm' fullWidth disableEscapeKeyDown>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <WarningIcon color='warning' />
         Legacy Data Detected
       </DialogTitle>
       <DialogContent>
-        <Alert
-          severity='warning'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='warning' sx={{ mb: 2 }}>
           <Typography variant='body2'>
             <strong>Action Required:</strong> We found unencrypted financial
             data stored in your browser. For your security, Luca Ledger now
@@ -116,46 +108,26 @@ export default function LegacyDataMigrationDialog({ onComplete }) {
           </Typography>
         </Alert>
 
-        <Typography
-          variant='body1'
-          sx={{ mb: 2 }}
-        >
+        <Typography variant='body1' sx={{ mb: 2 }}>
           To continue, you must:
         </Typography>
 
-        <Box
-          component='ol'
-          sx={{ pl: 2, mb: 2 }}
-        >
-          <Typography
-            component='li'
-            variant='body2'
-            sx={{ mb: 1 }}
-          >
+        <Box component='ol' sx={{ pl: 2, mb: 2 }}>
+          <Typography component='li' variant='body2' sx={{ mb: 1 }}>
             <strong>Export your data</strong> - Download a backup of your
             existing accounts and transactions.
           </Typography>
-          <Typography
-            component='li'
-            variant='body2'
-            sx={{ mb: 1 }}
-          >
+          <Typography component='li' variant='body2' sx={{ mb: 1 }}>
             <strong>Create an account</strong> - Register with a username and
             password to encrypt your data.
           </Typography>
-          <Typography
-            component='li'
-            variant='body2'
-          >
+          <Typography component='li' variant='body2'>
             <strong>Import your data</strong> - Load your exported file into
             your new encrypted account.
           </Typography>
         </Box>
 
-        <Alert
-          severity='error'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='error' sx={{ mb: 2 }}>
           <Typography variant='body2'>
             The unencrypted data will be permanently deleted after this process.
             Make sure to save your export file in a safe location.
@@ -163,10 +135,7 @@ export default function LegacyDataMigrationDialog({ onComplete }) {
         </Alert>
 
         {exported && (
-          <Alert
-            severity='success'
-            sx={{ mb: 2 }}
-          >
+          <Alert severity='success' sx={{ mb: 2 }}>
             <Typography variant='body2'>
               Data exported successfully! You can now proceed to delete the
               legacy data and create your encrypted account.

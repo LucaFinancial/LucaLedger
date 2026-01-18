@@ -14,7 +14,7 @@ export default function BalanceRow({
   filterArray,
 }) {
   const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId),
   );
 
   // Amounts are in cents, sum them

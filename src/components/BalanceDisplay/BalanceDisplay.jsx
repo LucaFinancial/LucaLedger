@@ -24,8 +24,8 @@ export default function BalanceDisplay({
         ? 'red'
         : 'green'
       : isPositive
-      ? 'green'
-      : 'red';
+        ? 'green'
+        : 'red';
   }
 
   // Determine icon based on label
@@ -75,10 +75,7 @@ export default function BalanceDisplay({
             gap: 0.5,
           }}
         >
-          <Box
-            component='span'
-            sx={{ fontSize: '0.8rem' }}
-          >
+          <Box component='span' sx={{ fontSize: '0.8rem' }}>
             {getIcon()}
           </Box>
           {label.replace(' Balance', '')}

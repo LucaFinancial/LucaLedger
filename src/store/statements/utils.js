@@ -189,7 +189,7 @@ export function summarizeStatementTransactions(transactions, transactionIds) {
       }
       return acc;
     },
-    { totalCharges: 0, totalPayments: 0 }
+    { totalCharges: 0, totalPayments: 0 },
   );
 }
 
@@ -212,7 +212,7 @@ export function calculateStatementBalances(
   statement,
   transactions,
   allStatements = [],
-  forceRecalculate = false
+  forceRecalculate = false,
 ) {
   if (!statement) {
     return {
@@ -237,8 +237,8 @@ export function calculateStatementBalances(
         typeof statement.endingBalance === 'number'
           ? statement.endingBalance
           : typeof statement.total === 'number'
-          ? statement.total
-          : 0,
+            ? statement.total
+            : 0,
       totalCharges:
         typeof statement.totalCharges === 'number' ? statement.totalCharges : 0,
       totalPayments:
@@ -252,7 +252,7 @@ export function calculateStatementBalances(
   // For unlocked statements (or forced recalculation), calculate from transactions
   // Get transactions in the statement's date range (pre-filter by account)
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === statement.accountId
+    (t) => t.accountId === statement.accountId,
   );
   const startDate = statement.startDate || statement.periodStart;
   const endDate =
@@ -261,16 +261,16 @@ export function calculateStatementBalances(
   const transactionIds = getTransactionsInPeriod(
     accountTransactions,
     startDate,
-    endDate
+    endDate,
   );
 
   // Calculate total by summing all transaction amounts (same as StatementSeparatorRow)
   const statementTransactions = transactions.filter((t) =>
-    transactionIds.includes(t.id)
+    transactionIds.includes(t.id),
   );
   const total = statementTransactions.reduce(
     (sum, t) => sum + Number(t.amount),
-    0
+    0,
   );
 
   // For the breakdown, separate charges (positive) and payments (negative)
@@ -305,8 +305,8 @@ export function calculateStatementBalances(
         typeof prevStatement.endingBalance === 'number'
           ? prevStatement.endingBalance
           : typeof prevStatement.total === 'number'
-          ? prevStatement.total
-          : 0;
+            ? prevStatement.total
+            : 0;
     }
   }
 
@@ -340,7 +340,7 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
     statement,
     transactions,
     allStatements,
-    true // Force recalculation
+    true, // Force recalculation
   );
 
   // Compare with stored values
@@ -352,8 +352,8 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
     typeof statement.endingBalance === 'number'
       ? statement.endingBalance
       : typeof statement.total === 'number'
-      ? statement.total
-      : 0;
+        ? statement.total
+        : 0;
   const storedCharges =
     typeof statement.totalCharges === 'number' ? statement.totalCharges : 0;
   const storedPayments =
@@ -386,7 +386,7 @@ export function getEarliestStatementDate(account, transactions) {
 
   // Get earliest transaction date for this account
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === account.id
+    (t) => t.accountId === account.id,
   );
 
   if (accountTransactions.length === 0) {
@@ -398,7 +398,7 @@ export function getEarliestStatementDate(account, transactions) {
       const txDate = parseISO(t.date.replace(/\//g, '-'));
       return isBefore(txDate, earliest) ? txDate : earliest;
     },
-    parseISO(accountTransactions[0].date.replace(/\//g, '-'))
+    parseISO(accountTransactions[0].date.replace(/\//g, '-')),
   );
 
   // Use whichever is earlier
@@ -468,7 +468,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   const firstPeriodStartDate = parseISO(period.startDate.replace(/\//g, '-'));
   let lastKnownEndingBalance = getEndingBalanceBeforeDate(
     accountStatements,
-    firstPeriodStartDate
+    firstPeriodStartDate,
   );
   const currentClosing = parseISO(currentPeriod.endDate.replace(/\//g, '-'));
 
@@ -490,12 +490,12 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       const transactionIds = getTransactionsInPeriod(
         transactions,
         period.startDate,
-        period.endDate
+        period.endDate,
       );
 
       const { totalCharges, totalPayments } = summarizeStatementTransactions(
         transactions,
-        transactionIds
+        transactionIds,
       );
 
       let startingBalance = 0;

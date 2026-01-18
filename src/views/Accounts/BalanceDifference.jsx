@@ -10,7 +10,7 @@ export default function BalanceDifference({
   filterArray,
 }) {
   const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+    transactionSelectors.selectTransactionsByAccountId(accountId),
   );
 
   if (filterArray.length <= 1) {
@@ -38,8 +38,8 @@ export default function BalanceDifference({
       ? 'red'
       : 'green'
     : isPositive
-    ? 'green'
-    : 'red';
+      ? 'green'
+      : 'red';
 
   return (
     <span

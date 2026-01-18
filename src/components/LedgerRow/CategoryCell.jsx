@@ -24,7 +24,7 @@ export default function CategoryCell({ transaction, isSelected }) {
   const [modalOpen, setModalOpen] = useState(false);
   const categories = useSelector(categorySelectors.selectAllCategories);
   const transactionSplits = useSelector(
-    transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
+    transactionSplitSelectors.selectSplitsByTransactionId(transaction.id),
   );
 
   const hasSplits = transactionSplits.length > 0;
@@ -45,8 +45,8 @@ export default function CategoryCell({ transaction, isSelected }) {
         transaction.accountId,
         transaction,
         'categoryId',
-        categoryId
-      )
+        categoryId,
+      ),
     );
   };
 
@@ -60,7 +60,7 @@ export default function CategoryCell({ transaction, isSelected }) {
 
   const handleSaveSplits = (splits) => {
     dispatch(
-      transactionSplitActions.saveTransactionSplits(transaction.id, splits)
+      transactionSplitActions.saveTransactionSplits(transaction.id, splits),
     );
   };
 
@@ -71,10 +71,7 @@ export default function CategoryCell({ transaction, isSelected }) {
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {hasSplits ? (
               <Tooltip title={splitCategoryNames}>
-                <Typography
-                  variant='body2'
-                  noWrap
-                >
+                <Typography variant='body2' noWrap>
                   {splitCategoryNames}
                 </Typography>
               </Tooltip>

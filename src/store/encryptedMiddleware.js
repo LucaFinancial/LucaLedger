@@ -52,7 +52,7 @@ async function flushWriteQueue() {
         id,
         data,
         currentDEK,
-        currentUserId
+        currentUserId,
       );
     }
   } catch (error) {
@@ -66,7 +66,7 @@ async function flushWriteQueue() {
 function queueWrite(storeName, id, data) {
   // Add or update in queue
   const existingIndex = writeQueue.findIndex(
-    (item) => item.storeName === storeName && item.id === id
+    (item) => item.storeName === storeName && item.id === id,
   );
 
   if (existingIndex >= 0) {
@@ -129,7 +129,7 @@ function handleEncryptedPersistence(action, state) {
           'accounts',
           accountRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist accounts to IndexedDB:', error);
         });
@@ -160,7 +160,7 @@ function handleEncryptedPersistence(action, state) {
           'transactions',
           transactionRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist transactions to IndexedDB:', error);
         });
@@ -197,7 +197,7 @@ function handleEncryptedPersistence(action, state) {
     });
     // Delete all subcategories (children) of this category
     const children = state.categories.filter(
-      (cat) => cat.parentId === categoryId
+      (cat) => cat.parentId === categoryId,
     );
     children.forEach((child) => {
       db.categories.delete(child.id).catch((error) => {
@@ -217,7 +217,7 @@ function handleEncryptedPersistence(action, state) {
           'categories',
           categoryRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist categories to IndexedDB:', error);
         });
@@ -252,7 +252,7 @@ function handleEncryptedPersistence(action, state) {
           'statements',
           statementRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist statements to IndexedDB:', error);
         });
@@ -284,11 +284,11 @@ function handleEncryptedPersistence(action, state) {
           'recurringTransactions',
           records,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error(
             'Failed to persist recurring transactions to IndexedDB:',
-            error
+            error,
           );
         });
       });
@@ -300,7 +300,7 @@ function handleEncryptedPersistence(action, state) {
     db.recurringTransactions.delete(id).catch((error) => {
       console.error(
         'Failed to delete recurring transaction from IndexedDB:',
-        error
+        error,
       );
     });
   }
@@ -323,11 +323,11 @@ function handleEncryptedPersistence(action, state) {
           'recurringTransactionEvents',
           records,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error(
             'Failed to persist recurring transaction events to IndexedDB:',
-            error
+            error,
           );
         });
       });
@@ -339,7 +339,7 @@ function handleEncryptedPersistence(action, state) {
     db.recurringTransactionEvents.delete(id).catch((error) => {
       console.error(
         'Failed to delete recurring transaction event from IndexedDB:',
-        error
+        error,
       );
     });
   }
@@ -360,11 +360,11 @@ function handleEncryptedPersistence(action, state) {
           'transactionSplits',
           records,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error(
             'Failed to persist transaction splits to IndexedDB:',
-            error
+            error,
           );
         });
       });
@@ -381,7 +381,7 @@ function handleEncryptedPersistence(action, state) {
     db.transactionSplits.delete(id).catch((error) => {
       console.error(
         'Failed to delete transaction split from IndexedDB:',
-        error
+        error,
       );
     });
   }

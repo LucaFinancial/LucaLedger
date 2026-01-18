@@ -19,16 +19,10 @@ export default function PlaceholderCard({
       }}
     >
       <InfoOutlinedIcon sx={{ fontSize: 40, color, mb: 1 }} />
-      <Typography
-        variant='h6'
-        sx={{ color: 'text.secondary', mb: 1 }}
-      >
+      <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
         {title}
       </Typography>
-      <Typography
-        variant='body2'
-        sx={{ color: 'text.secondary' }}
-      >
+      <Typography variant='body2' sx={{ color: 'text.secondary' }}>
         {description}
       </Typography>
     </Paper>

@@ -23,10 +23,7 @@ export default function SplitSummary({
       <Typography variant='body2'>
         <strong>Remaining:</strong> ${centsToDollars(remaining).toFixed(2)}
       </Typography>
-      <Typography
-        variant='caption'
-        color='text.secondary'
-      >
+      <Typography variant='caption' color='text.secondary'>
         Total of splits: ${centsToDollars(splitsTotal).toFixed(2)} / $
         {centsToDollars(totalAmount).toFixed(2)}
       </Typography>

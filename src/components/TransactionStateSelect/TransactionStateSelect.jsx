@@ -27,8 +27,8 @@ export default function TransactionStateSelect({
         accountId,
         transaction,
         constants.TransactionFields.TRANSACTION_STATE,
-        value
-      )
+        value,
+      ),
     );
     setStatus(value);
   };

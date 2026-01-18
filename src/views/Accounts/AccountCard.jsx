@@ -18,7 +18,7 @@ import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
   const isLoading = useSelector(
-    accountSelectors.selectIsAccountLoading(account.id)
+    accountSelectors.selectIsAccountLoading(account.id),
   );
 
   const cardLength = '320px';

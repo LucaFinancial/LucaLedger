@@ -25,7 +25,7 @@ const categories = createSlice({
       const categoryId = action.payload;
       // Remove the category and all its children
       return state.filter(
-        (cat) => cat.id !== categoryId && cat.parentId !== categoryId
+        (cat) => cat.id !== categoryId && cat.parentId !== categoryId,
       );
     },
   },

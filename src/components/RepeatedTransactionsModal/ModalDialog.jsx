@@ -40,7 +40,7 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
         frequencyCount,
         occurrences,
         accountId,
-      })
+      }),
     );
     handleClose();
   };
@@ -75,18 +75,12 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
     >
       <DialogTitle>Create Repeated Transactions</DialogTitle>
       <DialogContent>
-        <StartDatePicker
-          startDate={startDate}
-          setStartDate={setStartDate}
-        />
+        <StartDatePicker startDate={startDate} setStartDate={setStartDate} />
         <DescriptionField
           description={description}
           setDescription={setDescription}
         />
-        <AmountField
-          amount={amount}
-          setAmount={setAmount}
-        />
+        <AmountField amount={amount} setAmount={setAmount} />
         <FrequencyField
           frequency={frequency}
           setFrequency={setFrequency}
@@ -99,16 +93,10 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
         />
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={handleCancel}
-          color='primary'
-        >
+        <Button onClick={handleCancel} color='primary'>
           Cancel
         </Button>
-        <Button
-          onClick={handleCreate}
-          color='primary'
-        >
+        <Button onClick={handleCreate} color='primary'>
           Create
         </Button>
       </DialogActions>

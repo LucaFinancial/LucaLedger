@@ -23,28 +23,16 @@ export default function ButtonGroup() {
           justifyContent: 'center',
         }}
       >
-        <Grid
-          item
-          key={0}
-        >
+        <Grid item key={0}>
           <LoadButton />
         </Grid>
-        <Grid
-          item
-          key={1}
-        >
+        <Grid item key={1}>
           <CreateNewButton />
         </Grid>
-        <Grid
-          item
-          key={2}
-        >
+        <Grid item key={2}>
           <SaveButton />
         </Grid>
-        <Grid
-          item
-          key={3}
-        >
+        <Grid item key={3}>
           <EncryptButton />
         </Grid>
       </Grid>

@@ -24,7 +24,7 @@ export const selectStatements = (state) => state.statements;
  */
 export const selectStatementsByAccountId = (accountId) =>
   createSelector([selectStatements, () => accountId], (statements, id) =>
-    statements.filter((statement) => statement.accountId === id)
+    statements.filter((statement) => statement.accountId === id),
   );
 
 /**
@@ -35,7 +35,7 @@ export const selectStatementsByAccountId = (accountId) =>
  */
 export const selectStatementById = (statementId) =>
   createSelector([selectStatements, () => statementId], (statements, id) =>
-    statements.find((statement) => statement.id === id)
+    statements.find((statement) => statement.id === id),
   );
 
 /**
@@ -51,8 +51,8 @@ export const selectStatementsByAccountIdAndStatus = (accountId, status) =>
     (statements, id, statusValue) =>
       statements.filter(
         (statement) =>
-          statement.accountId === id && statement.status === statusValue
-      )
+          statement.accountId === id && statement.status === statusValue,
+      ),
   );
 
 /**
@@ -67,8 +67,8 @@ export const selectStatementByAccountIdAndEndDate = (accountId, endDate) =>
     [selectStatements, () => accountId, () => endDate],
     (statements, id, date) =>
       statements.find(
-        (statement) => statement.accountId === id && statement.endDate === date
-      )
+        (statement) => statement.accountId === id && statement.endDate === date,
+      ),
   );
 
 /**
@@ -88,7 +88,7 @@ export const selectPreviousStatement = (accountId, startDate) =>
         checkDate.setDate(checkDate.getDate() - 1);
         return endDate.getTime() === checkDate.getTime();
       });
-    }
+    },
   );
 
 /**
@@ -108,7 +108,7 @@ export const selectNextStatement = (accountId, endDate) =>
         checkDate.setDate(checkDate.getDate() + 1);
         return startDate.getTime() === checkDate.getTime();
       });
-    }
+    },
   );
 
 /**
@@ -139,7 +139,7 @@ export const selectStatementIssues = (statementId) =>
     // Check for duplicate period - find ALL duplicates
     const statementPeriod = calculateStatementPeriod(statement.endDate);
     const duplicates = accountStatements.filter(
-      (s) => calculateStatementPeriod(s.endDate) === statementPeriod
+      (s) => calculateStatementPeriod(s.endDate) === statementPeriod,
     );
     if (duplicates.length > 0) {
       issues.hasDuplicate = true;
@@ -285,8 +285,8 @@ function getStoredBalances(statement) {
       typeof statement.endingBalance === 'number'
         ? statement.endingBalance
         : typeof statement.total === 'number'
-        ? statement.total
-        : 0,
+          ? statement.total
+          : 0,
     totalCharges:
       typeof statement.totalCharges === 'number' ? statement.totalCharges : 0,
     totalPayments:
@@ -366,15 +366,15 @@ export const selectStatementWithCalculations = (statementId) =>
             typeof prevStatement.endingBalance === 'number'
               ? prevStatement.endingBalance
               : typeof prevStatement.total === 'number'
-              ? prevStatement.total
-              : 0;
+                ? prevStatement.total
+                : 0;
         }
       }
 
       // Calculate balances from transactions
       const calculated = calculateBalancesFromTransactions(
         periodTransactions,
-        calculatedStartingBalance
+        calculatedStartingBalance,
       );
 
       // Check if out of sync
@@ -385,7 +385,7 @@ export const selectStatementWithCalculations = (statementId) =>
         calculated,
         isOutOfSync,
       };
-    }
+    },
   );
 
 /**
@@ -413,5 +413,5 @@ export const selectStatementSummary = (statementId) =>
 export const selectIsStatementOutOfSync = (statementId) =>
   createSelector(
     [selectStatementWithCalculations(statementId)],
-    (result) => result.isOutOfSync
+    (result) => result.isOutOfSync,
   );

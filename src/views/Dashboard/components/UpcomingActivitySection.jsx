@@ -52,10 +52,7 @@ export default function UpcomingActivitySection({
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <EventIcon sx={{ color: '#4caf50' }} />
-            <Typography
-              variant='h6'
-              sx={{ fontWeight: 'bold' }}
-            >
+            <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
               Upcoming Activity
             </Typography>
             <Chip
@@ -115,10 +112,7 @@ export default function UpcomingActivitySection({
       </AccordionSummary>
       <AccordionDetails>
         <TableContainer sx={{ maxHeight: 260, overflow: 'auto' }}>
-          <Table
-            size='small'
-            stickyHeader
-          >
+          <Table size='small' stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>
@@ -158,7 +152,7 @@ export default function UpcomingActivitySection({
                     <TableCell>
                       {format(
                         parseISO(tx.date.replace(/\//g, '-')),
-                        'MMM d, yyyy'
+                        'MMM d, yyyy',
                       )}
                     </TableCell>
                     <TableCell>{getAccountName(tx.accountId)}</TableCell>

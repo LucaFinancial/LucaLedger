@@ -76,17 +76,17 @@ export default function EncryptionProvider() {
           getUserEncryptedRecords(
             'recurringTransactions',
             activeDEK,
-            currentUser.id
+            currentUser.id,
           ),
           getUserEncryptedRecords(
             'recurringTransactionEvents',
             activeDEK,
-            currentUser.id
+            currentUser.id,
           ),
           getUserEncryptedRecords(
             'transactionSplits',
             activeDEK,
-            currentUser.id
+            currentUser.id,
           ),
         ]);
 
@@ -103,7 +103,7 @@ export default function EncryptionProvider() {
           console.log(
             `[IndexedDB Migration] Migrating encrypted data from schema ${
               schemaVersion || 'unknown'
-            } to ${CURRENT_SCHEMA_VERSION}`
+            } to ${CURRENT_SCHEMA_VERSION}`,
           );
 
           let amountConversionCount = 0;
@@ -122,12 +122,12 @@ export default function EncryptionProvider() {
               }
 
               return updated;
-            }
+            },
           );
 
           if (amountConversionCount > 0) {
             console.log(
-              `[IndexedDB Migration] Converted ${amountConversionCount} transaction amounts to cents`
+              `[IndexedDB Migration] Converted ${amountConversionCount} transaction amounts to cents`,
             );
           }
 
@@ -136,18 +136,18 @@ export default function EncryptionProvider() {
             (transaction) => ({
               id: transaction.id,
               data: transaction,
-            })
+            }),
           );
 
           await batchStoreUserEncryptedRecords(
             'transactions',
             transactionRecords,
             activeDEK,
-            currentUser.id
+            currentUser.id,
           );
 
           console.log(
-            `[IndexedDB Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`
+            `[IndexedDB Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`,
           );
 
           encryptedTransactions = migratedTransactions;
@@ -168,11 +168,11 @@ export default function EncryptionProvider() {
             'categories',
             categoryRecords,
             activeDEK,
-            currentUser.id
+            currentUser.id,
           );
         } else {
           console.log(
-            `Loaded ${categoriesToLoad.length} custom categories from encrypted storage`
+            `Loaded ${categoriesToLoad.length} custom categories from encrypted storage`,
           );
         }
 
@@ -182,12 +182,12 @@ export default function EncryptionProvider() {
         dispatch(setCategories(categoriesToLoad));
         dispatch(setStatements(encryptedStatements || []));
         dispatch(
-          setRecurringTransactions(encryptedRecurringTransactions || [])
+          setRecurringTransactions(encryptedRecurringTransactions || []),
         );
         dispatch(
           setRecurringTransactionEvents(
-            encryptedRecurringTransactionEvents || []
-          )
+            encryptedRecurringTransactionEvents || [],
+          ),
         );
         dispatch(setTransactionSplits(encryptedTransactionSplits || []));
 
@@ -246,16 +246,10 @@ export default function EncryptionProvider() {
         }}
       >
         <CircularProgress size={60} />
-        <Typography
-          variant='h6'
-          sx={{ mt: 2, color: 'white' }}
-        >
+        <Typography variant='h6' sx={{ mt: 2, color: 'white' }}>
           {loadingMessage}
         </Typography>
-        <Typography
-          variant='body2'
-          sx={{ mt: 1, color: 'white' }}
-        >
+        <Typography variant='body2' sx={{ mt: 1, color: 'white' }}>
           Please wait...
         </Typography>
       </Box>

@@ -16,27 +16,16 @@ export default function CategoryImportConfirmModal({
   categoriesCount,
 }) {
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onCancel} maxWidth='sm' fullWidth>
       <DialogTitle>Import Categories</DialogTitle>
       <DialogContent>
-        <Typography
-          variant='body1'
-          sx={{ mb: 2 }}
-        >
+        <Typography variant='body1' sx={{ mb: 2 }}>
           This file contains {categoriesCount} categor
           {categoriesCount === 1 ? 'y' : 'ies'}. Do you want to overwrite your
           existing categories with the categories from this file?
         </Typography>
 
-        <Alert
-          severity='warning'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='warning' sx={{ mb: 2 }}>
           <Typography variant='body2'>
             <strong>This action will:</strong>
           </Typography>
@@ -51,10 +40,7 @@ export default function CategoryImportConfirmModal({
           </Typography>
         </Alert>
 
-        <Typography
-          variant='body2'
-          color='text.secondary'
-        >
+        <Typography variant='body2' color='text.secondary'>
           Choose &quot;Import Categories&quot; to replace your current
           categories, or &quot;Keep Current&quot; to keep your existing
           categories and skip the import.
@@ -62,11 +48,7 @@ export default function CategoryImportConfirmModal({
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Keep Current</Button>
-        <Button
-          onClick={onConfirm}
-          variant='contained'
-          color='warning'
-        >
+        <Button onClick={onConfirm} variant='contained' color='warning'>
           Import Categories
         </Button>
       </DialogActions>

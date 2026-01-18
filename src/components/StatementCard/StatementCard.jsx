@@ -38,13 +38,13 @@ export default function StatementCard({
   compact = false,
 }) {
   const issues = useSelector(
-    statementSelectors.selectStatementIssues(statement.id)
+    statementSelectors.selectStatementIssues(statement.id),
   );
 
   // Get statement with both stored and calculated values
   const statementDataSelector = useMemo(
     () => statementSelectors.selectStatementWithCalculations(statement.id),
-    [statement.id]
+    [statement.id],
   );
   const statementData = useSelector(statementDataSelector);
   const { stored, calculated, isOutOfSync } = statementData;
@@ -60,16 +60,16 @@ export default function StatementCard({
 
   const periodStartFormatted = format(
     parseISO(statement.startDate.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    'MMM d, yyyy',
   );
   const periodEndFormatted = format(
     parseISO(statement.endDate.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    'MMM d, yyyy',
   );
 
   const statementPeriodFormatted = format(
     parseISO(statement.endDate.replace(/\//g, '-')),
-    'MMMM yyyy'
+    'MMMM yyyy',
   );
 
   return (
@@ -82,8 +82,8 @@ export default function StatementCard({
           statement.status === 'current'
             ? 'primary.main'
             : statement.status === 'locked'
-            ? 'error.main'
-            : 'grey.300',
+              ? 'error.main'
+              : 'grey.300',
       }}
     >
       <CardContent sx={{ py: compact ? 1 : 2, '&:last-child': { pb: 1.5 } }}>
@@ -93,12 +93,7 @@ export default function StatementCard({
           alignItems='flex-start'
         >
           <Box flex={1}>
-            <Box
-              display='flex'
-              alignItems='center'
-              gap={1}
-              mb={0.5}
-            >
+            <Box display='flex' alignItems='center' gap={1} mb={0.5}>
               <Box>
                 <Typography
                   variant={compact ? 'body2' : 'h6'}
@@ -107,10 +102,7 @@ export default function StatementCard({
                   {statementPeriodFormatted ||
                     `${periodStartFormatted} - ${periodEndFormatted}`}
                 </Typography>
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                >
+                <Typography variant='caption' color='text.secondary'>
                   {periodStartFormatted} - {periodEndFormatted}
                 </Typography>
               </Box>
@@ -176,33 +168,20 @@ export default function StatementCard({
               {calculated.transactionIds.length !== 1 ? 's' : ''}
             </Typography>
 
-            <Typography
-              variant={compact ? 'body1' : 'h6'}
-              fontWeight='bold'
-            >
+            <Typography variant={compact ? 'body1' : 'h6'} fontWeight='bold'>
               Ending Balance: {formatCurrency(endingBalance)}
             </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ mt: 0.5 }}
-            >
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
               {summaryText}
             </Typography>
 
             {null}
           </Box>
 
-          <Box
-            display='flex'
-            gap={0.5}
-          >
+          <Box display='flex' gap={0.5}>
             {onView && (
               <Tooltip title='View Details'>
-                <IconButton
-                  size='small'
-                  onClick={() => onView(statement)}
-                >
+                <IconButton size='small' onClick={() => onView(statement)}>
                   <Visibility fontSize='small' />
                 </IconButton>
               </Tooltip>
@@ -222,10 +201,7 @@ export default function StatementCard({
 
             {statement.status === 'locked' && (
               <Tooltip title='Locked'>
-                <IconButton
-                  size='small'
-                  disabled
-                >
+                <IconButton size='small' disabled>
                   <Lock fontSize='small' />
                 </IconButton>
               </Tooltip>

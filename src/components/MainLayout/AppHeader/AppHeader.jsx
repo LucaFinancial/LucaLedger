@@ -47,31 +47,16 @@ export default function AppHeader() {
               }}
             />
           </Link>
-          <NavItem
-            linkTo='/dashboard'
-            navText='Dashboard'
-          />
-          <NavItem
-            linkTo='/accounts'
-            navText='Accounts'
-          />
-          <NavItem
-            linkTo='/categories'
-            navText='Categories'
-          />
+          <NavItem linkTo='/dashboard' navText='Dashboard' />
+          <NavItem linkTo='/accounts' navText='Accounts' />
+          <NavItem linkTo='/categories' navText='Categories' />
         </Box>
-        <Typography
-          variant='h4'
-          sx={{ flexGrow: 1, textAlign: 'center' }}
-        >
+        <Typography variant='h4' sx={{ flexGrow: 1, textAlign: 'center' }}>
           Luca Ledger
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {currentUser && (
-            <Typography
-              variant='body2'
-              sx={{ color: 'white', mr: 1 }}
-            >
+            <Typography variant='body2' sx={{ color: 'white', mr: 1 }}>
               {currentUser.username}
             </Typography>
           )}

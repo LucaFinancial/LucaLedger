@@ -28,7 +28,7 @@ import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 export default function EncryptButton() {
   const dispatch = useDispatch();
   const encryptionStatus = useSelector(
-    encryptionSelectors.selectEncryptionStatus
+    encryptionSelectors.selectEncryptionStatus,
   );
   const dismissUntil = useSelector(encryptionSelectors.selectDismissUntil);
   const accountsLoading = useSelector(accountSelectors.selectAccountsLoading);
@@ -69,7 +69,7 @@ export default function EncryptButton() {
       // Initialize encryption and get DEK
       const { dek, expiresAt } = await initializeEncryption(
         password,
-        stayLoggedIn
+        stayLoggedIn,
       );
 
       // Migrate data from localStorage to IndexedDB
@@ -144,7 +144,7 @@ export default function EncryptButton() {
     await batchStoreEncryptedRecords('categories', categoryRecords, dek);
 
     console.log(
-      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesToMigrate.length} categories to encrypted storage`
+      `Migrated ${accountsArray.length} accounts, ${transactionsArray.length} transactions, and ${categoriesToMigrate.length} categories to encrypted storage`,
     );
   };
 

@@ -94,7 +94,7 @@ describe('Account Generators', () => {
         'acc-123',
         'Test Account',
         AccountType.CHECKING,
-        undefined
+        undefined,
       );
 
       expect(account.id).toBe('acc-123');
@@ -107,7 +107,7 @@ describe('Account Generators', () => {
         'cc-123',
         'Credit Card',
         AccountType.CREDIT_CARD,
-        15
+        15,
       );
 
       expect(account.statementClosingDay).toBe(15);

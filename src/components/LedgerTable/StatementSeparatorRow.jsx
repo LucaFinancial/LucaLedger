@@ -47,15 +47,15 @@ export default function StatementSeparatorRow({
   const statement = useSelector(
     statementSelectors.selectStatementByAccountIdAndEndDate(
       accountId,
-      statementEndDate
-    )
+      statementEndDate,
+    ),
   );
 
   // Get issue information for this statement
   const issues = useSelector(
     statement
       ? statementSelectors.selectStatementIssues(statement.id)
-      : () => null
+      : () => null,
   );
 
   // Get statement with both stored and calculated values
@@ -107,11 +107,11 @@ export default function StatementSeparatorRow({
 
   const formattedStartDate = format(
     parseISO(displayPeriodStart.replace(/\//g, '-')),
-    'MMM d'
+    'MMM d',
   );
   const formattedEndDate = format(
     parseISO(displayPeriodEnd.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    'MMM d, yyyy',
   );
   const dateRange = `${formattedStartDate} - ${formattedEndDate}`;
 
@@ -158,7 +158,7 @@ export default function StatementSeparatorRow({
         startDate,
         endDate,
         status: 'draft',
-      })
+      }),
     );
   };
 
@@ -177,10 +177,7 @@ export default function StatementSeparatorRow({
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography
-                component='span'
-                sx={{ fontWeight: 'bold' }}
-              >
+              <Typography component='span' sx={{ fontWeight: 'bold' }}>
                 Statement {statementDate} ({dateRange})
               </Typography>
               <StatementStatusBadge status={statement?.status || 'draft'} />
@@ -222,18 +219,12 @@ export default function StatementSeparatorRow({
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {pendingCharges > 0 && (
-                <Typography
-                  component='span'
-                  sx={{ color: '#cc8800' }}
-                >
+                <Typography component='span' sx={{ color: '#cc8800' }}>
                   Pending: ${formatAmount(pendingCharges)}
                 </Typography>
               )}
               {scheduledCharges > 0 && (
-                <Typography
-                  component='span'
-                  sx={{ color: '#0066cc' }}
-                >
+                <Typography component='span' sx={{ color: '#0066cc' }}>
                   Scheduled: ${formatAmount(scheduledCharges)}
                 </Typography>
               )}
@@ -330,6 +321,6 @@ StatementSeparatorRow.propTypes = {
         .isRequired,
       description: PropTypes.string.isRequired,
       status: PropTypes.string,
-    })
+    }),
   ).isRequired,
 };

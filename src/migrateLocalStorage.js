@@ -13,7 +13,7 @@ const schemaVersion = localStorage.getItem('dataSchemaVersion');
 console.log(
   'Stored and current schema versions:',
   schemaVersion,
-  CURRENT_SCHEMA_VERSION
+  CURRENT_SCHEMA_VERSION,
 );
 
 if (!schemaVersion || schemaVersion !== CURRENT_SCHEMA_VERSION) {
@@ -46,7 +46,7 @@ if (!schemaVersion || schemaVersion !== CURRENT_SCHEMA_VERSION) {
 
         if (amountConversionCount > 0) {
           console.log(
-            `[Migration] Converted ${amountConversionCount} transaction amounts to cents`
+            `[Migration] Converted ${amountConversionCount} transaction amounts to cents`,
           );
         }
 
@@ -57,7 +57,7 @@ if (!schemaVersion || schemaVersion !== CURRENT_SCHEMA_VERSION) {
         // Update schema version
         localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
         console.log(
-          `[Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`
+          `[Migration] Updated schema version to ${CURRENT_SCHEMA_VERSION}`,
         );
       }
     } catch (error) {

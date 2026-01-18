@@ -65,7 +65,7 @@ const encryptionSlice = createSlice({
       if (action.payload !== null) {
         localStorage.setItem(
           'encryptionPromptDismissUntil',
-          String(action.payload)
+          String(action.payload),
         );
       } else {
         localStorage.removeItem('encryptionPromptDismissUntil');

@@ -49,7 +49,7 @@ export default function LedgerRow({
   const bgColor = getStatusBackground(
     row.transactionState,
     isSelected,
-    isVirtual
+    isVirtual,
   );
 
   return (
@@ -85,10 +85,7 @@ export default function LedgerRow({
         isVirtual={isVirtual}
       />
       <DateCell transaction={row} />
-      <CategoryCell
-        transaction={row}
-        isSelected={isSelected}
-      />
+      <CategoryCell transaction={row} isSelected={isSelected} />
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />

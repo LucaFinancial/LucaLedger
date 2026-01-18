@@ -12,15 +12,8 @@ export default function Accounts() {
   const sortedAccounts = [...accounts].sort(accountSortByName);
 
   return (
-    <Box
-      display='flex'
-      flexDirection='column'
-      alignItems='center'
-    >
-      <Typography
-        variant='h3'
-        style={{ fontWeight: 'bold', padding: '25px' }}
-      >
+    <Box display='flex' flexDirection='column' alignItems='center'>
+      <Typography variant='h3' style={{ fontWeight: 'bold', padding: '25px' }}>
         Accounts
       </Typography>
       <Grid
@@ -33,10 +26,7 @@ export default function Accounts() {
         }}
       >
         {sortedAccounts.map((account) => (
-          <Grid
-            item
-            key={account.id}
-          >
+          <Grid item key={account.id}>
             <AccountCard account={account} />
           </Grid>
         ))}

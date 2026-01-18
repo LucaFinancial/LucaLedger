@@ -13,7 +13,7 @@ import {
 export default function EncryptionStatus() {
   const status = useSelector(encryptionSelectors.selectEncryptionStatus);
   const isAuthenticated = useSelector(
-    encryptionSelectors.selectIsAuthenticated
+    encryptionSelectors.selectIsAuthenticated,
   );
 
   const getStatusConfig = () => {

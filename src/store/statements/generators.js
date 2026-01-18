@@ -37,8 +37,8 @@ export const generateStatement = (initialData = {}) => {
       typeof initialData.endingBalance === 'number'
         ? initialData.endingBalance
         : typeof initialData.total === 'number'
-        ? initialData.total
-        : 0,
+          ? initialData.total
+          : 0,
     totalCharges:
       typeof initialData.totalCharges === 'number'
         ? initialData.totalCharges

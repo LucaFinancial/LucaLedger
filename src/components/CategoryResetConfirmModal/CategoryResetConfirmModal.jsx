@@ -17,38 +17,23 @@ export default function CategoryResetConfirmModal({
   onCancel,
 }) {
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onCancel} maxWidth='sm' fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <WarningIcon color='warning' />
         Reset Categories
       </DialogTitle>
 
       <DialogContent>
-        <Alert
-          severity='warning'
-          sx={{ mb: 2 }}
-        >
+        <Alert severity='warning' sx={{ mb: 2 }}>
           This action cannot be undone!
         </Alert>
 
-        <Typography
-          variant='body1'
-          sx={{ mb: 2 }}
-        >
+        <Typography variant='body1' sx={{ mb: 2 }}>
           Are you sure you want to reset all categories to the default set?
         </Typography>
 
         <Box sx={{ pl: 2 }}>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            sx={{ mb: 1 }}
-          >
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
             This will:
           </Typography>
           <Typography
@@ -63,11 +48,7 @@ export default function CategoryResetConfirmModal({
           </Typography>
         </Box>
 
-        <Typography
-          variant='body2'
-          color='text.secondary'
-          sx={{ mt: 2 }}
-        >
+        <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
           Your transaction data will not be affected, but transactions may lose
           their category assignments.
         </Typography>
@@ -75,11 +56,7 @@ export default function CategoryResetConfirmModal({
 
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
-        <Button
-          onClick={onConfirm}
-          variant='contained'
-          color='warning'
-        >
+        <Button onClick={onConfirm} variant='contained' color='warning'>
           Reset Categories
         </Button>
       </DialogActions>

@@ -79,12 +79,7 @@ export default function LoadButton() {
         onClick={handleLoadAccountsClick}
         disabled={loading}
         startIcon={
-          loading ? (
-            <CircularProgress
-              size={20}
-              color='inherit'
-            />
-          ) : null
+          loading ? <CircularProgress size={20} color='inherit' /> : null
         }
       >
         {loading ? 'Loading...' : 'Load Accounts'}

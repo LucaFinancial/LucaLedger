@@ -31,7 +31,7 @@ export default function SchemaVersionProvider() {
           } catch (error) {
             console.error(
               'Error checking Redux state for schema version:',
-              error
+              error,
             );
           }
         }
@@ -41,7 +41,7 @@ export default function SchemaVersionProvider() {
         if (hasData) {
           localStorage.setItem('dataSchemaVersion', CURRENT_SCHEMA_VERSION);
           console.log(
-            `Initial data schema version set to ${CURRENT_SCHEMA_VERSION}`
+            `Initial data schema version set to ${CURRENT_SCHEMA_VERSION}`,
           );
         }
       }

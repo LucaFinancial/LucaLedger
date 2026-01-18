@@ -49,10 +49,7 @@ function RootRedirect() {
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
         }}
       >
-        <CircularProgress
-          size={60}
-          sx={{ color: 'white' }}
-        />
+        <CircularProgress size={60} sx={{ color: 'white' }} />
       </Box>
     );
   }
@@ -86,10 +83,7 @@ function PublicRoute({ children }) {
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
         }}
       >
-        <CircularProgress
-          size={60}
-          sx={{ color: 'white' }}
-        />
+        <CircularProgress size={60} sx={{ color: 'white' }} />
       </Box>
     );
   }
@@ -114,10 +108,7 @@ export default function App() {
           <Router>
             <Routes>
               {/* Public routes */}
-              <Route
-                path='/'
-                element={<RootRedirect />}
-              />
+              <Route path='/' element={<RootRedirect />} />
               <Route
                 path='/login'
                 element={

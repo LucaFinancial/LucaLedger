@@ -66,7 +66,7 @@ export const selectLoadingAccountIds = (state) => {
 export const selectIsAccountLoading = (accountId) =>
   createSelector(
     [selectLoadingAccountIds, () => accountId],
-    (loadingAccountIds, id) => loadingAccountIds.includes(id)
+    (loadingAccountIds, id) => loadingAccountIds.includes(id),
   );
 
 /**
@@ -77,5 +77,5 @@ export const selectIsAccountLoading = (accountId) =>
  */
 export const selectAccountById = (accountId) =>
   createSelector([selectAccounts, () => accountId], (accounts, id) =>
-    accounts.find((account) => account.id === id)
+    accounts.find((account) => account.id === id),
   );

@@ -4,5 +4,5 @@ const selectSettings = (state) => state.settings;
 
 export const selectRecurringProjection = createSelector(
   selectSettings,
-  (settings) => settings.recurringProjection
+  (settings) => settings.recurringProjection,
 );

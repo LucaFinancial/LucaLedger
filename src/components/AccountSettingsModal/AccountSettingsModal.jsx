@@ -24,14 +24,14 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [name, setName] = useState(account.name);
   const [type, setType] = useState(account.type);
   const [statementDay, setStatementDay] = useState(
-    account.statementClosingDay || 1
+    account.statementClosingDay || 1,
   );
   const [isDirty, setIsDirty] = useState(false);
   // Store initial values to compare against
   const [initialName, setInitialName] = useState(account.name);
   const [initialType, setInitialType] = useState(account.type);
   const [initialStatementDay, setInitialStatementDay] = useState(
-    account.statementClosingDay || 1
+    account.statementClosingDay || 1,
   );
 
   // Reset state when modal opens with new account
@@ -152,10 +152,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       </DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 3 }}>
-          <Typography
-            variant='subtitle1'
-            sx={{ fontWeight: 'bold', mb: 2 }}
-          >
+          <Typography variant='subtitle1' sx={{ fontWeight: 'bold', mb: 2 }}>
             Account Information
           </Typography>
           <TextField
@@ -175,10 +172,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               fullWidth
             >
               {Object.keys(constants.AccountType).map((key) => (
-                <MenuItem
-                  key={key}
-                  value={constants.AccountType[key]}
-                >
+                <MenuItem key={key} value={constants.AccountType[key]}>
                   {constants.AccountType[key]}
                 </MenuItem>
               ))}

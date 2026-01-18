@@ -7,7 +7,7 @@ export const selectEventsByRecurringTransactionId = (recurringTransactionId) =>
   createSelector(
     [selectRecurringTransactionEvents, () => recurringTransactionId],
     (events, id) =>
-      events.filter((event) => event.recurringTransactionId === id)
+      events.filter((event) => event.recurringTransactionId === id),
   );
 
 export const selectEventByRuleAndDate = (recurringTransactionId, date) =>
@@ -21,12 +21,12 @@ export const selectEventByRuleAndDate = (recurringTransactionId, date) =>
       events.find(
         (event) =>
           event.recurringTransactionId === rtId &&
-          event.expectedDate === dateStr
-      )
+          event.expectedDate === dateStr,
+      ),
   );
 
 export const selectRealizedDatesForRecurringTransaction = (
-  recurringTransactionId
+  recurringTransactionId,
 ) =>
   createSelector(
     [selectRecurringTransactionEvents, () => recurringTransactionId],
@@ -37,11 +37,11 @@ export const selectRealizedDatesForRecurringTransaction = (
           (event) =>
             event.recurringTransactionId === rtId &&
             event.eventState === 'MODIFIED' &&
-            event.transactionId
+            event.transactionId,
         )
         .forEach((event) => dates.add(event.expectedDate));
       return dates;
-    }
+    },
   );
 
 export const selectAllRealizedDatesMap = createSelector(
@@ -55,5 +55,5 @@ export const selectAllRealizedDatesMap = createSelector(
         map.set(key, event.transactionId);
       });
     return map;
-  }
+  },
 );

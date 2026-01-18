@@ -57,7 +57,7 @@ export default function RecurringTransactionModal({
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState(null);
   const [frequency, setFrequency] = useState(
-    recurringTransactionConstants.RecurringFrequencyEnum.MONTH
+    recurringTransactionConstants.RecurringFrequencyEnum.MONTH,
   );
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
@@ -70,7 +70,7 @@ export default function RecurringTransactionModal({
       setAmount(
         transaction.amount !== undefined
           ? (transaction.amount / 100).toFixed(2)
-          : ''
+          : '',
       );
       setCategoryId(transaction.categoryId || null);
 
@@ -88,7 +88,7 @@ export default function RecurringTransactionModal({
       setStartDate(
         transaction.startOn
           ? parseISO(transaction.startOn.replace(/\//g, '-'))
-          : new Date()
+          : new Date(),
       );
       if (transaction.endOn) {
         setEndDate(parseISO(transaction.endOn.replace(/\//g, '-')));
@@ -146,12 +146,7 @@ export default function RecurringTransactionModal({
     !isNaN(parseFloat(amount));
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth='sm'
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
         {isEditing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
       </DialogTitle>
@@ -194,10 +189,7 @@ export default function RecurringTransactionModal({
               onChange={(e) => setFrequency(e.target.value)}
             >
               {frequencyOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                >
+                <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
               ))}
@@ -238,11 +230,7 @@ export default function RecurringTransactionModal({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleSubmit}
-          variant='contained'
-          disabled={!isValid}
-        >
+        <Button onClick={handleSubmit} variant='contained' disabled={!isValid}>
           {isEditing ? 'Save' : 'Add'}
         </Button>
       </DialogActions>

@@ -26,7 +26,7 @@ describe('Transaction Generators', () => {
       expect(transaction).not.toBeNull();
       expect(transaction.id).toBeDefined();
       expect(transaction.accountId).toBe(
-        '00000000-0000-0000-0000-000000000001'
+        '00000000-0000-0000-0000-000000000001',
       );
       expect(transaction.transactionState).toBe(TransactionStateEnum.PLANNED);
       expect(transaction.amount).toBe(0);
@@ -104,7 +104,7 @@ describe('Transaction Generators', () => {
       });
 
       expect(transaction.categoryId).toBe(
-        '00000000-0000-0000-0000-000000000002'
+        '00000000-0000-0000-0000-000000000002',
       );
     });
 
