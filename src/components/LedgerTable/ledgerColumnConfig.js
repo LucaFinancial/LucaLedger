@@ -55,7 +55,7 @@ export const LEDGER_HEADER_ROW_STYLE = {
 export const LEDGER_ROW_STYLE = {
   '& td': {
     borderBottom: '1px solid',
-    // borderColor: 'divider',
+    borderColor: 'divider',
   },
   '&:hover': {
     filter: 'brightness(0.95)',
