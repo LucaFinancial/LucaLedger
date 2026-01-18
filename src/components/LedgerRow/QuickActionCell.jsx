@@ -54,7 +54,12 @@ export default function QuickActionCell({
     if (isVirtual) {
       return (
         <Tooltip title='Create transaction'>
-          <IconButton size='small' onClick={handleCreateClick} color='primary'>
+          <IconButton
+            size='small'
+            onClick={handleCreateClick}
+            color='primary'
+            sx={{ padding: 0 }}
+          >
             <AddCircleOutline fontSize='small' />
           </IconButton>
         </Tooltip>
@@ -65,7 +70,12 @@ export default function QuickActionCell({
       case transactionConstants.TransactionStateEnum.PLANNED:
         return (
           <Tooltip title='Schedule transaction'>
-            <IconButton size='small' onClick={handleScheduleClick} color='info'>
+            <IconButton
+              size='small'
+              onClick={handleScheduleClick}
+              color='info'
+              sx={{ padding: 0 }}
+            >
               <AccessTime fontSize='small' />
             </IconButton>
           </Tooltip>
@@ -78,6 +88,7 @@ export default function QuickActionCell({
               size='small'
               onClick={handleCompleteClick}
               color='success'
+              sx={{ padding: 0 }}
             >
               <CheckCircle fontSize='small' />
             </IconButton>

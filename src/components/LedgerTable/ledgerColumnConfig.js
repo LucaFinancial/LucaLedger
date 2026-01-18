@@ -1,23 +1,46 @@
 export const LEDGER_COLUMN_STYLES = {
-  selection: { width: '20px', paddingLeft: '1px' },
-  quickAction: {
+  selection: {
     width: '20px',
-    paddingLeft: '1px',
-    paddingRight: '1px',
+    padding: '2px 10px',
   },
-  status: { width: '135px', paddingLeft: '1px' },
-  date: { width: '160px', cursor: 'pointer' },
-  category: { width: '130px', minWidth: '130px' },
-  description: { width: '500px' },
-  amount: { width: '200px', cursor: 'pointer' },
-  balance: { width: '100px' },
-  actionMenu: { width: '20px', textAlign: 'center' },
-};
-
-export const LEDGER_CELL_STYLE = {
-  padding: '2px 4px',
-  borderBottom: '1px solid',
-  borderColor: 'divider',
+  quickAction: {
+    width: '12px',
+    padding: '2px 0px',
+  },
+  status: {
+    width: '80px',
+    padding: '0px 0px 0px 10px',
+  },
+  date: {
+    width: '60px',
+    cursor: 'pointer',
+    padding: '2px 0px 2px 10px',
+  },
+  category: {
+    width: '150px',
+    padding: '2px 0px 2px 5px',
+  },
+  description: {
+    width: '500px',
+    padding: '2px 0px 2px 10px',
+    cursor: 'pointer',
+  },
+  amount: {
+    width: '75px',
+    cursor: 'pointer',
+    padding: '2px 10px 2px 0px',
+    textAlign: 'right',
+  },
+  balance: {
+    width: '75px',
+    padding: '2px 10px 2px 0px',
+    textAlign: 'right',
+  },
+  actionMenu: {
+    width: '20px',
+    textAlign: 'center',
+    padding: '2px 0px',
+  },
 };
 
 export const LEDGER_HEADER_ROW_STYLE = {
@@ -26,11 +49,14 @@ export const LEDGER_HEADER_ROW_STYLE = {
     backgroundColor: 'background.paper',
     borderBottom: '2px solid',
     borderColor: 'divider',
-    padding: '12px',
   },
 };
 
 export const LEDGER_ROW_STYLE = {
+  '& td': {
+    borderBottom: '1px solid',
+    // borderColor: 'divider',
+  },
   '&:hover': {
     filter: 'brightness(0.95)',
   },
