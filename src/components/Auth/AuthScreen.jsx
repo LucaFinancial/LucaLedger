@@ -8,12 +8,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import LegacyDataMigrationDialog from './LegacyDataMigrationDialog';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 export default function AuthScreen() {
-  const { authState, hasLegacyData, setAuthState, clearLegacyDataFlag } =
-    useAuth();
+  const { authState, setAuthState } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,18 +51,6 @@ export default function AuthScreen() {
           Loading...
         </Typography>
       </Box>
-    );
-  }
-
-  // Show legacy data migration dialog if needed
-  if (hasLegacyData && authState !== 'authenticated') {
-    return (
-      <LegacyDataMigrationDialog
-        onComplete={() => {
-          // Clear legacy data flag and continue to registration
-          clearLegacyDataFlag();
-        }}
-      />
     );
   }
 
