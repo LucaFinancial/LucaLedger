@@ -20,27 +20,27 @@ describe('Statement Generators', () => {
 
     it('should generate a statement with required fields', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
 
       expect(statement).not.toBeNull();
       expect(statement.id).toBeDefined();
-      expect(statement.accountId).toBe('acc-credit-001');
+      expect(statement.accountId).toBe('00000000-0000-0000-0000-000000000003');
       expect(statement.startDate).toBe('2024-05-16');
       expect(statement.endDate).toBe('2024-06-15');
     });
 
     it('should generate unique IDs', () => {
       const stmt1 = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
 
       const stmt2 = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
@@ -50,7 +50,7 @@ describe('Statement Generators', () => {
 
     it('should set default status to DRAFT', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
@@ -60,7 +60,7 @@ describe('Statement Generators', () => {
 
     it('should accept custom status', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
         status: StatementStatusEnum.CURRENT,
@@ -71,7 +71,7 @@ describe('Statement Generators', () => {
 
     it('should set default numeric fields to 0', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
@@ -84,7 +84,7 @@ describe('Statement Generators', () => {
 
     it('should accept custom balance fields', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
         startingBalance: 10000,
@@ -101,7 +101,7 @@ describe('Statement Generators', () => {
 
     it('should set createdAt and updatedAt timestamps', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
@@ -114,7 +114,7 @@ describe('Statement Generators', () => {
 
     it('should handle legacy total field', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
         total: 25000, // Legacy field
@@ -125,7 +125,7 @@ describe('Statement Generators', () => {
 
     it('should prioritize endingBalance over total', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
         endingBalance: 30000,
@@ -138,7 +138,7 @@ describe('Statement Generators', () => {
     it('should return null for invalid statement data', () => {
       // Invalid status
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
         status: 'invalid_status',
@@ -149,7 +149,7 @@ describe('Statement Generators', () => {
 
     it('should return null for invalid date format', () => {
       const statement = generateStatement({
-        accountId: 'acc-credit-001',
+        accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024/06/15', // Wrong format
       });

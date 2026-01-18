@@ -91,8 +91,8 @@ export const validStatements = [
 
 // Legacy statement with 'total' instead of 'endingBalance'
 export const legacyStatementWithTotal = {
-  id: 'stmt-legacy-001',
-  accountId: 'acc-credit-001',
+  id: '00000000-0000-0000-0000-000000000006',
+  accountId: '00000000-0000-0000-0000-000000000003',
   closingDate: '2023-09-15',
   periodStart: '2023-08-16',
   periodEnd: '2023-09-15',

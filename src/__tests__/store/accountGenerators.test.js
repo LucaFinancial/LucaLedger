@@ -70,21 +70,27 @@ describe('Account Generators', () => {
   describe('generateNewCheckingAccount', () => {
     it('should throw without a name (requires name)', () => {
       // generateNewCheckingAccount requires a name to be valid
-      expect(() => generateNewCheckingAccount()).toThrow('name is required');
+      expect(() => generateNewCheckingAccount()).toThrow(
+        /required property 'name'/,
+      );
     });
   });
 
   describe('generateNewSavingsAccount', () => {
     it('should throw without a name (requires name)', () => {
       // generateNewSavingsAccount requires a name to be valid
-      expect(() => generateNewSavingsAccount()).toThrow('name is required');
+      expect(() => generateNewSavingsAccount()).toThrow(
+        /required property 'name'/,
+      );
     });
   });
 
   describe('generateNewCreditCardAccount', () => {
     it('should throw without a name (requires name)', () => {
       // generateNewCreditCardAccount requires a name to be valid
-      expect(() => generateNewCreditCardAccount()).toThrow('name is required');
+      expect(() => generateNewCreditCardAccount()).toThrow(
+        /required property 'name'/,
+      );
     });
   });
 

@@ -46,8 +46,12 @@ describe('Transactions Slice', () => {
           setTransactions([transactionWithExtraProperties]),
         );
 
-        expect(state[0].extraField).toBeUndefined();
-        expect(state[0].anotherExtra).toBeUndefined();
+        expect(state[0].extraField).toBe(
+          transactionWithExtraProperties.extraField,
+        );
+        expect(state[0].anotherExtra).toBe(
+          transactionWithExtraProperties.anotherExtra,
+        );
         expect(state[0].id).toBe(transactionWithExtraProperties.id);
       });
 
@@ -99,7 +103,9 @@ describe('Transactions Slice', () => {
           addTransaction(transactionWithExtraProperties),
         );
 
-        expect(state[0].extraField).toBeUndefined();
+        expect(state[0].extraField).toBe(
+          transactionWithExtraProperties.extraField,
+        );
       });
     });
 
