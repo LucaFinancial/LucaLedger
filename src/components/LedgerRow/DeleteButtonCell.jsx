@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { actions } from '@/store/transactions';
 
 import DeleteIcon from '@mui/icons-material/Delete';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function DeleteButtonCell({ transaction }) {
   const dispatch = useDispatch();
@@ -16,7 +17,7 @@ export default function DeleteButtonCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ width: '50px', textAlign: 'center' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.actionMenu}>
       <DeleteIcon onClick={handleDelete} style={{ cursor: 'pointer' }} />
     </TableCell>
   );

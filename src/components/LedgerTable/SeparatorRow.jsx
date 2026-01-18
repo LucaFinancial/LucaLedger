@@ -3,6 +3,7 @@ import { IconButton, TableCell, TableRow } from '@mui/material';
 import { format, getYear, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
 import YearControls from './YearControls';
+import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 
 export default function SeparatorRow({
   transaction,
@@ -51,7 +52,7 @@ export default function SeparatorRow({
       }}
     >
       <TableCell
-        colSpan={8}
+        colSpan={LEDGER_COLUMN_COUNT}
         sx={{
           paddingLeft: isYear ? '16px' : '32px',
         }}

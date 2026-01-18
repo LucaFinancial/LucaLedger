@@ -1,17 +1,18 @@
 import { TableCell } from '@mui/material';
 import PropTypes from 'prop-types';
 import { centsToDollars } from '@/utils';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function BalanceCell({ amount }) {
   const amountInDollars = centsToDollars(amount);
 
   const cellStyle = {
-    backgroundColor: amountInDollars < 0 ? '#CC4040' : 'inherit',
-    width: '100px',
+    ...LEDGER_COLUMN_STYLES.balance,
+    color: amount < 0 ? '#CC4040' : 'inherit',
   };
 
   return (
-    <TableCell style={cellStyle}>
+    <TableCell sx={cellStyle}>
       {'$ '}
       {amountInDollars.toLocaleString(undefined, {
         minimumFractionDigits: 2,

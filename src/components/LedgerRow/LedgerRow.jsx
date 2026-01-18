@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from '@mui/material';
+import { TableRow } from '@mui/material';
 import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactions';
@@ -6,11 +6,12 @@ import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
 import CategoryCell from './CategoryCell';
 import DateCell from './DateCell';
-import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
 import ActionCell from './ActionCell';
+import QuickActionCell from './QuickActionCell';
+import { LEDGER_ROW_STYLE } from '@/components/LedgerTable/ledgerColumnConfig';
 
 const VIRTUAL_STATE = 'recurring';
 
@@ -52,29 +53,27 @@ export default function LedgerRow({
     isVirtual,
   );
 
+  const rowStyle = {
+    ...LEDGER_ROW_STYLE,
+    backgroundColor: bgColor,
+    color: isSelected ? 'white' : 'inherit',
+    opacity: isVirtual ? 0.85 : 1,
+    fontStyle: isVirtual ? 'italic' : 'normal',
+  };
+
   return (
-    <TableRow
-      sx={{
-        backgroundColor: bgColor,
-        color: isSelected ? 'white' : 'inherit',
-        opacity: isVirtual ? 0.85 : 1,
-        '&:hover': {
-          filter: 'brightness(0.95)',
-        },
-        '& .MuiTableCell-root': {
-          padding: '2px 4px',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          color: isSelected ? 'white' : 'inherit',
-          fontStyle: isVirtual ? 'italic' : 'normal',
-        },
-      }}
-    >
+    <TableRow sx={rowStyle}>
       <SelectionCell
         transaction={row}
         isSelected={isSelected}
         onSelectionChange={onSelectionChange}
         isVirtual={isVirtual}
+      />
+      <QuickActionCell
+        transaction={row}
+        isVirtual={isVirtual}
+        recurringTransaction={recurringTransaction}
+        occurrenceDate={occurrenceDate}
       />
       <StatusCell
         transaction={{
@@ -89,14 +88,7 @@ export default function LedgerRow({
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
-      <ActionCell
-        transaction={row}
-        isVirtual={isVirtual}
-        recurringTransaction={recurringTransaction}
-        occurrenceDate={occurrenceDate}
-      />
-      {!isVirtual && <DeleteButtonCell transaction={row} />}
-      {isVirtual && <TableCell sx={{ width: '48px' }} />}
+      <ActionCell transaction={row} isVirtual={isVirtual} />
     </TableRow>
   );
 }

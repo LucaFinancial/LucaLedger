@@ -18,6 +18,7 @@ import {
 import { selectors as categorySelectors } from '@/store/categories';
 import CategorySelect from '@/components/CategorySelect';
 import SplitEditorModal from '@/components/SplitEditorModal';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
@@ -66,7 +67,7 @@ export default function CategoryCell({ transaction, isSelected }) {
 
   return (
     <>
-      <TableCell sx={{ width: 130, minWidth: 130 }}>
+      <TableCell sx={LEDGER_COLUMN_STYLES.category}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {hasSplits ? (

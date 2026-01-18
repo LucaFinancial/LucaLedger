@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_STATUS_SELECT_WIDTH } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function TransactionStateSelect({
   transaction,
@@ -55,7 +56,7 @@ export default function TransactionStateSelect({
   return (
     <FormControl
       sx={{
-        width: '120px',
+        width: LEDGER_STATUS_SELECT_WIDTH,
         '& .MuiInput-underline:before': {
           borderBottom: 'none',
         },

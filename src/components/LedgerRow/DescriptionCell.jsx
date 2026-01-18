@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
 import { Cancel, Check } from '@mui/icons-material';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function DescriptionCell({ transaction }) {
   const dispatch = useDispatch();
@@ -52,7 +53,7 @@ export default function DescriptionCell({ transaction }) {
   const buttonStyle = { height: '35px', width: '50px', marginLeft: '8px' };
 
   return (
-    <TableCell style={{ width: '500px' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.description}>
       {edit ? (
         <Box style={{ display: 'flex', alignItems: 'center' }}>
           <TextField
