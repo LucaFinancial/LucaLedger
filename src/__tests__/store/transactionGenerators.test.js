@@ -28,7 +28,7 @@ describe('Transaction Generators', () => {
       expect(transaction.accountId).toBe(
         '00000000-0000-0000-0000-000000000001'
       );
-      expect(transaction.transactionState).toBe(TransactionStateEnum.PENDING);
+      expect(transaction.transactionState).toBe(TransactionStateEnum.PLANNED);
       expect(transaction.amount).toBe(0);
       expect(transaction.description).toBe('Enter transaction description');
     });
@@ -112,7 +112,7 @@ describe('Transaction Generators', () => {
       // Invalid status
       const transaction = generateTransaction({
         accountId: 'acc-001',
-        status: 'invalid_status',
+        transactionState: 'invalid_status',
       });
 
       expect(transaction).toBeNull();
@@ -121,7 +121,7 @@ describe('Transaction Generators', () => {
     it('should return null for invalid date format', () => {
       const transaction = generateTransaction({
         accountId: 'acc-001',
-        date: '2024-12-25', // Wrong format
+        date: '2024/12/25', // Wrong format
       });
 
       expect(transaction).toBeNull();

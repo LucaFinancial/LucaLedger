@@ -18,7 +18,11 @@ export default function AccountTypePicker({ account }) {
     const { value } = event.target;
     setType(value);
     if (value === constants.AccountType.CREDIT_CARD) {
-      const updatedAccount = { ...account, type: value, statementDay: 1 };
+      const updatedAccount = {
+        ...account,
+        type: value,
+        statementClosingDay: 1,
+      };
       dispatch(actions.updateAccount(updatedAccount));
     } else {
       dispatch(

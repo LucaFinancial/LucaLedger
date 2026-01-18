@@ -29,7 +29,8 @@ const migrateState = (persistedState) => {
       transactions: [],
       categories: isEncryptionActive ? [] : categoriesData.categories,
       recurringTransactions: [],
-      recurringOccurrences: [],
+      recurringTransactionEvents: [],
+      transactionSplits: [],
     };
 
     // Set schema version for new users
@@ -75,7 +76,8 @@ const migrateState = (persistedState) => {
         id: account.id,
         name: account.name,
         type: account.type,
-        statementDay: account.statementDay,
+        statementClosingDay:
+          account.statementClosingDay ?? account.statementDay ?? null,
       }));
 
       const allTransactions = [];

@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { AccountType } from './constants';
-import { validateAccountSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 export const generateAccount = (initialData = {}) => {
   const accountType = initialData.type || AccountType.CHECKING;
@@ -12,7 +12,7 @@ export const generateAccount = (initialData = {}) => {
     updatedAt: null,
     ...initialData,
   };
-  validateAccountSync(account, accountType);
+  validateSchemaSync('account', account);
   return account;
 };
 
@@ -23,13 +23,13 @@ export const generateNewSavingsAccount = () =>
   generateAccount({ type: AccountType.SAVINGS });
 
 export const generateNewCreditCardAccount = () =>
-  generateAccount({ type: AccountType.CREDIT_CARD, statementDay: 1 });
+  generateAccount({ type: AccountType.CREDIT_CARD, statementClosingDay: 1 });
 
-export const generateAccountObject = (id, name, type, statementDay) => ({
+export const generateAccountObject = (id, name, type, statementClosingDay) => ({
   id,
   name,
   type,
-  statementDay,
+  statementClosingDay,
   createdAt: new Date().toISOString(),
   updatedAt: null,
 });

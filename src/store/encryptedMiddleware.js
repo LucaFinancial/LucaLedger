@@ -305,34 +305,82 @@ function handleEncryptedPersistence(action, state) {
     });
   }
 
-  // Handle recurring occurrence actions
-  if (action.type === 'recurringOccurrences/addRecurringOccurrence') {
-    queueWrite('recurringOccurrences', action.payload.id, action.payload);
-  } else if (action.type === 'recurringOccurrences/setRecurringOccurrences') {
+  // Handle recurring transaction event actions
+  if (
+    action.type === 'recurringTransactionEvents/addRecurringTransactionEvent'
+  ) {
+    queueWrite('recurringTransactionEvents', action.payload.id, action.payload);
+  } else if (
+    action.type === 'recurringTransactionEvents/setRecurringTransactionEvents'
+  ) {
     if (currentDEK && currentUserId) {
       import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const records = action.payload.map((occ) => ({
-          id: occ.id,
-          data: occ,
+        const records = action.payload.map((event) => ({
+          id: event.id,
+          data: event,
         }));
         batchStoreUserEncryptedRecords(
-          'recurringOccurrences',
+          'recurringTransactionEvents',
           records,
           currentDEK,
           currentUserId
         ).catch((error) => {
           console.error(
-            'Failed to persist recurring occurrences to IndexedDB:',
+            'Failed to persist recurring transaction events to IndexedDB:',
             error
           );
         });
       });
     }
-  } else if (action.type === 'recurringOccurrences/removeRecurringOccurrence') {
+  } else if (
+    action.type === 'recurringTransactionEvents/removeRecurringTransactionEvent'
+  ) {
     const id = action.payload;
-    db.recurringOccurrences.delete(id).catch((error) => {
+    db.recurringTransactionEvents.delete(id).catch((error) => {
       console.error(
-        'Failed to delete recurring occurrence from IndexedDB:',
+        'Failed to delete recurring transaction event from IndexedDB:',
+        error
+      );
+    });
+  }
+
+  // Handle transaction split actions
+  if (action.type === 'transactionSplits/addTransactionSplit') {
+    queueWrite('transactionSplits', action.payload.id, action.payload);
+  } else if (action.type === 'transactionSplits/updateTransactionSplit') {
+    queueWrite('transactionSplits', action.payload.id, action.payload);
+  } else if (action.type === 'transactionSplits/setTransactionSplits') {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((split) => ({
+          id: split.id,
+          data: split,
+        }));
+        batchStoreUserEncryptedRecords(
+          'transactionSplits',
+          records,
+          currentDEK,
+          currentUserId
+        ).catch((error) => {
+          console.error(
+            'Failed to persist transaction splits to IndexedDB:',
+            error
+          );
+        });
+      });
+    }
+  } else if (
+    action.type === 'transactionSplits/setTransactionSplitsForTransaction'
+  ) {
+    const { splits } = action.payload;
+    splits.forEach((split) => {
+      queueWrite('transactionSplits', split.id, split);
+    });
+  } else if (action.type === 'transactionSplits/removeTransactionSplit') {
+    const id = action.payload;
+    db.transactionSplits.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete transaction split from IndexedDB:',
         error
       );
     });

@@ -142,7 +142,8 @@ export default function CategoryBreakdown() {
       const txDate = startOfDay(parseISO(tx.date.replace(/\//g, '-')));
       const isCurrent =
         (isBefore(txDate, today) || isSameDay(txDate, today)) &&
-        tx.transactionState === transactionConstants.TransactionStateEnum.COMPLETED;
+        tx.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED;
 
       if (isCurrent) {
         currentExpenses += expenseAmount;

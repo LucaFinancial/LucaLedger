@@ -28,7 +28,7 @@ export const validCreditCardAccount = {
   id: '00000000-0000-0000-0000-000000000003',
   name: 'Rewards Card',
   type: AccountType.CREDIT_CARD,
-  statementDay: 15,
+  statementClosingDay: 15,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -38,7 +38,7 @@ export const creditCardStatementDay1 = {
   id: '00000000-0000-0000-0000-000000000004',
   name: 'Basic Card',
   type: AccountType.CREDIT_CARD,
-  statementDay: 1,
+  statementClosingDay: 1,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -47,7 +47,7 @@ export const creditCardStatementDay31 = {
   id: '00000000-0000-0000-0000-000000000005',
   name: 'Premium Card',
   type: AccountType.CREDIT_CARD,
-  statementDay: 31,
+  statementClosingDay: 31,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -119,7 +119,7 @@ export const creditCardInvalidStatementDay = {
   id: '00000000-0000-0000-0000-000000000011',
   name: 'Invalid Statement Day',
   type: AccountType.CREDIT_CARD,
-  statementDay: 32,
+  statementClosingDay: 32,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -128,7 +128,7 @@ export const creditCardStatementDayZero = {
   id: '00000000-0000-0000-0000-000000000012',
   name: 'Statement Day Zero',
   type: AccountType.CREDIT_CARD,
-  statementDay: 0,
+  statementClosingDay: 0,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -137,7 +137,7 @@ export const creditCardStatementDayNegative = {
   id: '00000000-0000-0000-0000-000000000013',
   name: 'Statement Day Negative',
   type: AccountType.CREDIT_CARD,
-  statementDay: -1,
+  statementClosingDay: -1,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: null,
 };
@@ -161,15 +161,15 @@ export const invalidAccounts = [
   { account: accountEmptyId, expectedError: 'id must not be empty' },
   {
     account: creditCardMissingStatementDay,
-    expectedError: 'statementDay is required',
+    expectedError: 'statementClosingDay is required',
   },
   {
     account: creditCardInvalidStatementDay,
-    expectedError: 'statementDay must be at most 31',
+    expectedError: 'statementClosingDay must be at most 31',
   },
   {
     account: creditCardStatementDayZero,
-    expectedError: 'statementDay must be at least 1',
+    expectedError: 'statementClosingDay must be at least 1',
   },
 ];
 

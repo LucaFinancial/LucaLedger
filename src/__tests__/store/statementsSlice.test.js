@@ -47,13 +47,14 @@ describe('Statements Slice', () => {
         expect(state[1].id).toBe(validPastStatement.id);
       });
 
-      it('should clean statements and ensure statementPeriod', () => {
+      it('should clean statements and normalize dates', () => {
         const state = statementsReducer(
           initialState,
-          setStatements([validCurrentStatement])
+          setStatements([legacyStatementWithTotal])
         );
 
-        expect(state[0].statementPeriod).toBe('2024-01');
+        expect(state[0].endDate).toBeDefined();
+        expect(state[0].statementPeriod).toBeUndefined();
       });
 
       it('should handle legacy statement with total field', () => {
@@ -172,20 +173,6 @@ describe('Statements Slice', () => {
         expect(state[0].updatedAt).toBe('2024-06-15T12:00:00.000Z');
       });
 
-      it('should recalculate statementPeriod on update', () => {
-        const stateWithData = [validCurrentStatement];
-        const updatedStatement = {
-          ...validCurrentStatement,
-          closingDate: '2024/03/15',
-        };
-        const state = statementsReducer(
-          stateWithData,
-          updateStatement(updatedStatement)
-        );
-
-        expect(state[0].statementPeriod).toBe('2024-03');
-      });
-
       it('should not modify other statements', () => {
         const stateWithData = [validCurrentStatement, validPastStatement];
         const updatedStatement = {
@@ -250,16 +237,6 @@ describe('Statements Slice', () => {
         expect(state[0].status).toBe(StatementStatusEnum.LOCKED);
       });
 
-      it('should set lockedAt timestamp', () => {
-        const stateWithData = [validPastStatement];
-        const state = statementsReducer(
-          stateWithData,
-          lockStatement(validPastStatement.id)
-        );
-
-        expect(state[0].lockedAt).toBe('2024-06-15T12:00:00.000Z');
-      });
-
       it('should update updatedAt timestamp', () => {
         const stateWithData = [validPastStatement];
         const state = statementsReducer(
@@ -290,16 +267,6 @@ describe('Statements Slice', () => {
         );
 
         expect(state[0].status).toBe(StatementStatusEnum.PAST);
-      });
-
-      it('should set lockedAt to null', () => {
-        const stateWithData = [validLockedStatement];
-        const state = statementsReducer(
-          stateWithData,
-          unlockStatement(validLockedStatement.id)
-        );
-
-        expect(state[0].lockedAt).toBeNull();
       });
 
       it('should update updatedAt timestamp', () => {

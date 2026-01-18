@@ -134,7 +134,7 @@ export const updateMultipleTransactionsStatus =
     dispatch(
       updateMultipleTransactions({
         transactionIds,
-        updates: { status: newStatus },
+        updates: { transactionState: newStatus },
       })
     );
   };

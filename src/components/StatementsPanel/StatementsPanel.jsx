@@ -19,12 +19,10 @@ export default function StatementsPanel({ accountId }) {
     statementSelectors.selectStatementsByAccountId(accountId)
   );
 
-  // Sort by closing date descending
+  // Sort by end date descending
   const statements = useMemo(
     () =>
-      [...accountStatements].sort((a, b) =>
-        b.closingDate.localeCompare(a.closingDate)
-      ),
+      [...accountStatements].sort((a, b) => b.endDate.localeCompare(a.endDate)),
     [accountStatements]
   );
 

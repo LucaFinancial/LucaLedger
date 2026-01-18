@@ -1,15 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateStatementSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 import { calculateStatementPeriod } from './utils';
 
 /**
  * Validates and cleans a statement object
  * Removes any properties not defined in the schema
- * Ensures statementPeriod is always set
+ * Normalizes legacy statement fields to startDate/endDate
  */
 const cleanStatement = (statement) => {
   try {
     const normalized = { ...statement };
+
+    if (!normalized.startDate && normalized.periodStart) {
+      normalized.startDate = normalized.periodStart;
+    }
+    if (!normalized.endDate) {
+      normalized.endDate = normalized.periodEnd || normalized.closingDate;
+    }
+
+    delete normalized.periodStart;
+    delete normalized.periodEnd;
+    delete normalized.closingDate;
+    delete normalized.statementPeriod;
+    delete normalized.transactionIds;
+    delete normalized.isStartDateModified;
+    delete normalized.isEndDateModified;
+    delete normalized.isTotalModified;
+    delete normalized.lockedAt;
 
     if (
       typeof normalized.total === 'number' &&
@@ -19,13 +36,7 @@ const cleanStatement = (statement) => {
     }
     delete normalized.total;
 
-    const validated = validateStatementSync(normalized);
-
-    if (validated.closingDate) {
-      validated.statementPeriod = calculateStatementPeriod(
-        validated.closingDate
-      );
-    }
+    const validated = validateSchemaSync('statement', normalized);
 
     if (typeof validated.endingBalance !== 'number') {
       validated.endingBalance = 0;
@@ -63,12 +74,16 @@ const statements = createSlice({
       const newStatement = cleanStatement(action.payload);
 
       // Prevent duplicate statements for the same account and period
-      const isDuplicate = state.some(
-        (s) =>
-          s.accountId === newStatement.accountId &&
-          s.statementPeriod === newStatement.statementPeriod &&
-          s.id !== newStatement.id
-      );
+      const newStatementPeriod = calculateStatementPeriod(newStatement.endDate);
+      const isDuplicate = state.some((s) => {
+        if (
+          s.accountId !== newStatement.accountId ||
+          s.id === newStatement.id
+        ) {
+          return false;
+        }
+        return calculateStatementPeriod(s.endDate) === newStatementPeriod;
+      });
 
       if (isDuplicate) {
         return;
@@ -83,13 +98,6 @@ const statements = createSlice({
         // Update timestamp
         updatedStatement.updatedAt = new Date().toISOString();
 
-        // Recalculate statementPeriod based on current closingDate to ensure consistency
-        if (updatedStatement.closingDate) {
-          updatedStatement.statementPeriod = calculateStatementPeriod(
-            updatedStatement.closingDate
-          );
-        }
-
         state[index] = { ...state[index], ...updatedStatement };
       }
     },
@@ -102,7 +110,6 @@ const statements = createSlice({
       const index = state.findIndex((s) => s.id === statementId);
       if (index !== -1) {
         state[index].status = 'locked';
-        state[index].lockedAt = new Date().toISOString();
         state[index].updatedAt = new Date().toISOString();
       }
     },
@@ -112,7 +119,6 @@ const statements = createSlice({
       if (index !== -1) {
         // Restore to 'past' status when unlocking
         state[index].status = 'past';
-        state[index].lockedAt = null;
         state[index].updatedAt = new Date().toISOString();
       }
     },

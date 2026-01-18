@@ -24,6 +24,7 @@ import {
   actions as statementActions,
 } from '@/store/statements';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
+import { calculateStatementPeriod } from '@/store/statements/utils';
 
 function formatCurrency(cents) {
   const dollars = Math.abs(cents) / 100;
@@ -49,8 +50,8 @@ export default function StatementDetailsModal({
   readOnly = false,
 }) {
   const dispatch = useDispatch();
-  const [periodStart, setPeriodStart] = useState(statement?.periodStart || '');
-  const [periodEnd, setPeriodEnd] = useState(statement?.periodEnd || '');
+  const [periodStart, setPeriodStart] = useState(statement?.startDate || '');
+  const [periodEnd, setPeriodEnd] = useState(statement?.endDate || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
@@ -100,16 +101,9 @@ export default function StatementDetailsModal({
   const handleSave = () => {
     if (!canEdit) return;
 
-    // Calculate statementPeriod from periodStart (YYYY-MM format)
-    const periodStartDate = parseISO(periodStart.replace(/\//g, '-'));
-    const statementPeriod = format(periodStartDate, 'yyyy-MM');
-
     const updates = {
-      periodStart,
-      periodEnd,
-      statementPeriod,
-      isStartDateModified: periodStart !== statement.periodStart,
-      isEndDateModified: periodEnd !== statement.periodEnd,
+      startDate: periodStart,
+      endDate: periodEnd,
     };
 
     onSave(statement.id, updates);
@@ -258,7 +252,8 @@ export default function StatementDetailsModal({
             }
           >
             <AlertTitle>Duplicate Statement Period</AlertTitle>
-            This statement has the same period ({statement.statementPeriod}) as{' '}
+            This statement has the same period (
+            {calculateStatementPeriod(statement.endDate)}) as{' '}
             {issues.duplicateStatements?.length || 1} other statement
             {(issues.duplicateStatements?.length || 1) !== 1 ? 's' : ''}. This
             should not happen and duplicates must be removed.
@@ -431,14 +426,7 @@ export default function StatementDetailsModal({
           )}
         </Box>
 
-        {(statement.isStartDateModified || statement.isEndDateModified) && (
-          <Alert
-            severity='warning'
-            sx={{ mt: 2 }}
-          >
-            This statement has been manually modified.
-          </Alert>
-        )}
+        {null}
       </DialogContent>
 
       <DialogActions>
@@ -473,19 +461,13 @@ StatementDetailsModal.propTypes = {
   statement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     accountId: PropTypes.string.isRequired,
-    closingDate: PropTypes.string.isRequired,
-    periodStart: PropTypes.string.isRequired,
-    periodEnd: PropTypes.string.isRequired,
-    statementPeriod: PropTypes.string,
-    transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+    startDate: PropTypes.string.isRequired,
+    endDate: PropTypes.string.isRequired,
     startingBalance: PropTypes.number,
     endingBalance: PropTypes.number,
     totalCharges: PropTypes.number,
     totalPayments: PropTypes.number,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
-    isStartDateModified: PropTypes.bool.isRequired,
-    isEndDateModified: PropTypes.bool.isRequired,
-    isTotalModified: PropTypes.bool,
   }),
   onSave: PropTypes.func,
   onLock: PropTypes.func,

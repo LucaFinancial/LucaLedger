@@ -9,7 +9,7 @@ import { TransactionStateEnum } from '@/store/transactions/constants';
 export const validCompletedTransaction = {
   id: '00000000-0000-0000-0000-000000000001',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000, // $50.00 in cents
   description: 'Grocery Store Purchase',
@@ -21,7 +21,7 @@ export const validCompletedTransaction = {
 export const validPendingTransaction = {
   id: '00000000-0000-0000-0000-000000000002',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.PENDING,
+  transactionState: TransactionStateEnum.PENDING,
   date: '2024-01-16',
   amount: 2500,
   description: 'Restaurant Payment',
@@ -33,7 +33,7 @@ export const validPendingTransaction = {
 export const validScheduledTransaction = {
   id: '00000000-0000-0000-0000-000000000003',
   accountId: '00000000-0000-0000-0000-000000000003',
-  status: TransactionStateEnum.SCHEDULED,
+  transactionState: TransactionStateEnum.SCHEDULED,
   date: '2024-02-01',
   amount: 150000, // $1,500.00
   description: 'Monthly Rent',
@@ -45,7 +45,7 @@ export const validScheduledTransaction = {
 export const validPlannedTransaction = {
   id: '00000000-0000-0000-0000-000000000004',
   accountId: '00000000-0000-0000-0000-000000000002',
-  status: TransactionStateEnum.SCHEDULED,
+  transactionState: TransactionStateEnum.SCHEDULED,
   date: '2024-03-15',
   amount: -100000, // -$1,000.00 (deposit/income)
   description: 'Planned Salary Deposit',
@@ -57,7 +57,7 @@ export const validPlannedTransaction = {
 export const validNegativeAmountTransaction = {
   id: '00000000-0000-0000-0000-000000000005',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-01',
   amount: -500000, // -$5,000.00 (deposit)
   description: 'Direct Deposit Paycheck',
@@ -69,7 +69,7 @@ export const validNegativeAmountTransaction = {
 export const validZeroAmountTransaction = {
   id: '00000000-0000-0000-0000-000000000006',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-10',
   amount: 0,
   description: 'Account Adjustment',
@@ -81,7 +81,7 @@ export const validZeroAmountTransaction = {
 export const validTransactionNullCategory = {
   id: '00000000-0000-0000-0000-000000000007',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-20',
   amount: 1599,
   description: 'Uncategorized Purchase',
@@ -106,7 +106,7 @@ export const creditCardTransactions = [
   {
     id: '00000000-0000-0000-0000-000000000008',
     accountId: '00000000-0000-0000-0000-000000000003',
-    status: TransactionStateEnum.COMPLETED,
+    transactionState: TransactionStateEnum.COMPLETED,
     date: '2024-01-05',
     amount: 4999, // $49.99
     description: 'Subscription Service',
@@ -117,7 +117,7 @@ export const creditCardTransactions = [
   {
     id: '00000000-0000-0000-0000-000000000009',
     accountId: '00000000-0000-0000-0000-000000000003',
-    status: TransactionStateEnum.COMPLETED,
+    transactionState: TransactionStateEnum.COMPLETED,
     date: '2024-01-10',
     amount: 12500, // $125.00
     description: 'Utility Bill',
@@ -128,7 +128,7 @@ export const creditCardTransactions = [
   {
     id: '00000000-0000-0000-0000-000000000010',
     accountId: '00000000-0000-0000-0000-000000000003',
-    status: TransactionStateEnum.COMPLETED,
+    transactionState: TransactionStateEnum.COMPLETED,
     date: '2024-01-12',
     amount: -5000, // -$50.00 (payment)
     description: 'Credit Card Payment',
@@ -141,7 +141,7 @@ export const creditCardTransactions = [
 // Invalid Transaction Fixtures (for failure tests)
 export const transactionMissingId = {
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000,
   description: 'Missing ID',
@@ -152,7 +152,7 @@ export const transactionMissingId = {
 
 export const transactionMissingAccountId = {
   id: '00000000-0000-0000-0000-000000000011',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000,
   description: 'Missing Account ID',
@@ -175,7 +175,7 @@ export const transactionMissingStatus = {
 export const transactionInvalidStatus = {
   id: '00000000-0000-0000-0000-000000000013',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: 'invalid_status',
+  transactionState: 'invalid_status',
   date: '2024-01-15',
   amount: 5000,
   description: 'Invalid Status',
@@ -187,7 +187,7 @@ export const transactionInvalidStatus = {
 export const transactionMissingDate = {
   id: '00000000-0000-0000-0000-000000000014',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   amount: 5000,
   description: 'Missing Date',
   categoryId: '00000004-0000-0000-0000-000000000001',
@@ -198,7 +198,7 @@ export const transactionMissingDate = {
 export const transactionInvalidDateFormat = {
   id: '00000000-0000-0000-0000-000000000015',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024/01/15', // Wrong format (slashes instead of hyphens)
   amount: 5000,
   description: 'Invalid Date Format',
@@ -210,7 +210,7 @@ export const transactionInvalidDateFormat = {
 export const transactionInvalidDateFormat2 = {
   id: '00000000-0000-0000-0000-000000000016',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '01/15/2024', // Wrong order
   amount: 5000,
   description: 'Invalid Date Order',
@@ -222,7 +222,7 @@ export const transactionInvalidDateFormat2 = {
 export const transactionMissingAmount = {
   id: '00000000-0000-0000-0000-000000000017',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   description: 'Missing Amount',
   categoryId: '00000004-0000-0000-0000-000000000001',
@@ -233,7 +233,7 @@ export const transactionMissingAmount = {
 export const transactionStringAmount = {
   id: '00000000-0000-0000-0000-000000000018',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: '5000',
   description: 'String Amount',
@@ -245,7 +245,7 @@ export const transactionStringAmount = {
 export const transactionMissingDescription = {
   id: '00000000-0000-0000-0000-000000000019',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000,
   categoryId: '00000004-0000-0000-0000-000000000001',
@@ -256,7 +256,7 @@ export const transactionMissingDescription = {
 export const transactionEmptyDescription = {
   id: '00000000-0000-0000-0000-000000000020',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000,
   description: '',
@@ -268,7 +268,7 @@ export const transactionEmptyDescription = {
 export const transactionWithExtraProperties = {
   id: '00000000-0000-0000-0000-000000000021',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: TransactionStateEnum.COMPLETED,
+  transactionState: TransactionStateEnum.COMPLETED,
   date: '2024-01-15',
   amount: 5000,
   description: 'Extra Props Transaction',
@@ -283,7 +283,7 @@ export const transactionWithExtraProperties = {
 export const transactionLegacyStatusSpaces = {
   id: '00000000-0000-0000-0000-000000000022',
   accountId: '00000000-0000-0000-0000-000000000001',
-  status: 'complete ', // trailing space
+  transactionState: 'complete ', // trailing space
   date: '2024-01-15',
   amount: 5000,
   description: 'Legacy Status with Spaces',

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { v4 as uuid } from 'uuid';
 import { dollarsToCents } from '@/utils';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 
 /**
  * Custom hook for managing split editor state
@@ -8,13 +10,18 @@ import { dollarsToCents } from '@/utils';
 export function useSplitEditor(open, transaction) {
   const [splits, setSplits] = useState([]);
   const [errors, setErrors] = useState({});
+  const existingSplits = useSelector(
+    transaction?.id
+      ? transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
+      : () => []
+  );
 
   // Initialize splits from transaction when modal opens
   useEffect(() => {
     if (open && transaction) {
-      if (transaction.splits && transaction.splits.length > 0) {
+      if (existingSplits.length > 0) {
         // Load existing splits
-        setSplits(transaction.splits.map((split) => ({ ...split })));
+        setSplits(existingSplits.map((split) => ({ ...split })));
       } else {
         // Start with one empty split
         setSplits([
@@ -27,7 +34,7 @@ export function useSplitEditor(open, transaction) {
       }
       setErrors({});
     }
-  }, [open, transaction]);
+  }, [open, transaction, existingSplits]);
 
   const handleAddSplit = () => {
     setSplits([

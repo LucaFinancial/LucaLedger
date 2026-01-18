@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateTransactionSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Sanitizes transaction data before validation
@@ -25,7 +25,7 @@ const cleanTransaction = (transaction) => {
     // Sanitize first to fix legacy data issues
     const sanitized = sanitizeTransaction(transaction);
     // Then validate to remove invalid properties
-    return validateTransactionSync(sanitized);
+    return validateSchemaSync('transaction', sanitized);
   } catch (error) {
     console.error('Invalid transaction data:', error);
     // Return the sanitized version even if validation fails

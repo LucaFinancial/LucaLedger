@@ -9,5 +9,5 @@ export const AccountFields = Object.freeze({
   ID: 'id',
   NAME: 'name',
   TYPE: 'type',
-  STATEMENT_DAY: 'statementDay',
+  STATEMENT_DAY: 'statementClosingDay',
 });

@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { TransactionStateEnum } from './constants';
-import { validateTransactionSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 export const generateTransaction = (initialData = {}) => {
   const transaction = {
@@ -20,7 +20,7 @@ export const generateTransaction = (initialData = {}) => {
   };
 
   try {
-    validateTransactionSync(transaction);
+    validateSchemaSync('transaction', transaction);
     return transaction;
   } catch (error) {
     console.error(error);

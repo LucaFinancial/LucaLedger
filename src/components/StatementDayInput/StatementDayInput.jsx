@@ -7,12 +7,14 @@ import { actions, constants } from '@/store/accounts';
 
 export default function StatementDayInput({ account }) {
   const dispatch = useDispatch();
-  const [statementDay, setStatementDay] = useState(account.statementDay || 1);
+  const [statementDay, setStatementDay] = useState(
+    account.statementClosingDay || 1
+  );
 
   // Sync local state when account prop changes
   useEffect(() => {
-    setStatementDay(account.statementDay || 1);
-  }, [account.statementDay]);
+    setStatementDay(account.statementClosingDay || 1);
+  }, [account.statementClosingDay]);
 
   if (account.type !== constants.AccountType.CREDIT_CARD) {
     return null;
@@ -56,7 +58,7 @@ export default function StatementDayInput({ account }) {
 
 StatementDayInput.propTypes = {
   account: PropTypes.shape({
-    statementDay: PropTypes.number,
+    statementClosingDay: PropTypes.number,
     type: PropTypes.string.isRequired,
   }).isRequired,
 };

@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { parseISO, differenceInDays } from 'date-fns';
 import { selectTransactions } from '../transactions/selectors';
+import { calculateStatementPeriod } from './utils';
 
 /**
  * Memoized Redux Selectors for Statements
@@ -55,22 +56,18 @@ export const selectStatementsByAccountIdAndStatus = (accountId, status) =>
   );
 
 /**
- * Memoized selector factory for statement by account and closing date
- * Returns the statement for a specific account with a specific closing date.
+ * Memoized selector factory for statement by account and end date
+ * Returns the statement for a specific account with a specific end date.
  *
  * Usage:
- *   const statement = useSelector(selectStatementByAccountIdAndClosingDate(accountId, '2025/11/25'));
+ *   const statement = useSelector(selectStatementByAccountIdAndEndDate(accountId, '2025/11/25'));
  */
-export const selectStatementByAccountIdAndClosingDate = (
-  accountId,
-  closingDate
-) =>
+export const selectStatementByAccountIdAndEndDate = (accountId, endDate) =>
   createSelector(
-    [selectStatements, () => accountId, () => closingDate],
+    [selectStatements, () => accountId, () => endDate],
     (statements, id, date) =>
       statements.find(
-        (statement) =>
-          statement.accountId === id && statement.closingDate === date
+        (statement) => statement.accountId === id && statement.endDate === date
       )
   );
 
@@ -78,15 +75,15 @@ export const selectStatementByAccountIdAndClosingDate = (
  * Helper function to find the statement that ends just before the given statement starts
  * Returns the previous statement or null if not found
  */
-export const selectPreviousStatement = (accountId, periodStart) =>
+export const selectPreviousStatement = (accountId, startDate) =>
   createSelector(
-    [selectStatements, () => accountId, () => periodStart],
+    [selectStatements, () => accountId, () => startDate],
     (statements, id, startDate) => {
       const accountStatements = statements.filter((s) => s.accountId === id);
-      // Find statement where periodEnd is one day before this periodStart
+      // Find statement where endDate is one day before this startDate
       return accountStatements.find((s) => {
         // Parse dates and compare
-        const endDate = new Date(s.periodEnd.replace(/\//g, '-'));
+        const endDate = new Date(s.endDate.replace(/\//g, '-'));
         const checkDate = new Date(startDate.replace(/\//g, '-'));
         checkDate.setDate(checkDate.getDate() - 1);
         return endDate.getTime() === checkDate.getTime();
@@ -98,15 +95,15 @@ export const selectPreviousStatement = (accountId, periodStart) =>
  * Helper function to find the statement that starts just after the given statement ends
  * Returns the next statement or null if not found
  */
-export const selectNextStatement = (accountId, periodEnd) =>
+export const selectNextStatement = (accountId, endDate) =>
   createSelector(
-    [selectStatements, () => accountId, () => periodEnd],
+    [selectStatements, () => accountId, () => endDate],
     (statements, id, endDate) => {
       const accountStatements = statements.filter((s) => s.accountId === id);
-      // Find statement where periodStart is one day after this periodEnd
+      // Find statement where startDate is one day after this endDate
       return accountStatements.find((s) => {
         // Parse dates and compare
-        const startDate = new Date(s.periodStart.replace(/\//g, '-'));
+        const startDate = new Date(s.startDate.replace(/\//g, '-'));
         const checkDate = new Date(endDate.replace(/\//g, '-'));
         checkDate.setDate(checkDate.getDate() + 1);
         return startDate.getTime() === checkDate.getTime();
@@ -125,7 +122,7 @@ export const selectStatementIssues = (statementId) =>
 
     const accountStatements = statements
       .filter((s) => s.accountId === statement.accountId && s.id !== id)
-      .sort((a, b) => a.periodStart.localeCompare(b.periodStart));
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
 
     const issues = {
       hasDuplicate: false,
@@ -140,8 +137,9 @@ export const selectStatementIssues = (statementId) =>
     };
 
     // Check for duplicate period - find ALL duplicates
+    const statementPeriod = calculateStatementPeriod(statement.endDate);
     const duplicates = accountStatements.filter(
-      (s) => s.statementPeriod === statement.statementPeriod
+      (s) => calculateStatementPeriod(s.endDate) === statementPeriod
     );
     if (duplicates.length > 0) {
       issues.hasDuplicate = true;
@@ -150,16 +148,14 @@ export const selectStatementIssues = (statementId) =>
     }
 
     // Parse dates for this statement
-    const thisStart = parseISO(statement.periodStart.replace(/\//g, '-'));
-    const thisEnd = parseISO(statement.periodEnd.replace(/\//g, '-'));
+    const thisStart = parseISO(statement.startDate.replace(/\//g, '-'));
+    const thisEnd = parseISO(statement.endDate.replace(/\//g, '-'));
 
     let previousStatement = null;
     let nextStatement = null;
 
     accountStatements.forEach((otherStmt) => {
-      const otherStartDate = parseISO(
-        otherStmt.periodStart.replace(/\//g, '-')
-      );
+      const otherStartDate = parseISO(otherStmt.startDate.replace(/\//g, '-'));
 
       if (otherStartDate < thisStart) {
         previousStatement = otherStmt;
@@ -174,8 +170,8 @@ export const selectStatementIssues = (statementId) =>
     const analyzeNeighbor = (neighbor, position) => {
       if (!neighbor) return;
 
-      const neighborStart = parseISO(neighbor.periodStart.replace(/\//g, '-'));
-      const neighborEnd = parseISO(neighbor.periodEnd.replace(/\//g, '-'));
+      const neighborStart = parseISO(neighbor.startDate.replace(/\//g, '-'));
+      const neighborEnd = parseISO(neighbor.endDate.replace(/\//g, '-'));
 
       const overlaps =
         thisStart <= neighborEnd &&
@@ -346,22 +342,22 @@ export const selectStatementWithCalculations = (statementId) =>
       const periodTransactions = allTransactions.filter((t) => {
         if (t.accountId !== statement.accountId) return false;
         const txDate = new Date(t.date.replace(/\//g, '-'));
-        const startDate = new Date(statement.periodStart.replace(/\//g, '-'));
-        const endDate = new Date(statement.periodEnd.replace(/\//g, '-'));
+        const startDate = new Date(statement.startDate.replace(/\//g, '-'));
+        const endDate = new Date(statement.endDate.replace(/\//g, '-'));
         return txDate >= startDate && txDate <= endDate;
       });
 
       // Calculate starting balance from previous statement
       let calculatedStartingBalance = 0;
-      if (statement.closingDate) {
-        const closingDate = new Date(statement.closingDate.replace(/\//g, '-'));
+      if (statement.endDate) {
+        const closingDate = new Date(statement.endDate.replace(/\//g, '-'));
         const previousStatements = statements
-          .filter((s) => s.accountId === statement.accountId && s.closingDate)
+          .filter((s) => s.accountId === statement.accountId && s.endDate)
           .filter((s) => {
-            const sClosingDate = new Date(s.closingDate.replace(/\//g, '-'));
+            const sClosingDate = new Date(s.endDate.replace(/\//g, '-'));
             return sClosingDate < closingDate;
           })
-          .sort((a, b) => a.closingDate.localeCompare(b.closingDate));
+          .sort((a, b) => a.endDate.localeCompare(b.endDate));
 
         if (previousStatements.length > 0) {
           const prevStatement =

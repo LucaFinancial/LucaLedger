@@ -322,7 +322,7 @@ export default function Ledger() {
   useEffect(() => {
     if (!account) {
       navigate('/accounts');
-    } else if (account.type === 'Credit Card' && account.statementDay) {
+    } else if (account.type === 'Credit Card' && account.statementClosingDay) {
       // Check if we've already generated for this account
       if (hasGeneratedStatements.current.has(accountId)) {
         return;
@@ -644,7 +644,7 @@ export default function Ledger() {
           {/* Right Section: Action Buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Statements Button - Only for credit cards */}
-            {account.type === 'Credit Card' && account.statementDay && (
+            {account.type === 'Credit Card' && account.statementClosingDay && (
               <Tooltip title='View Statements'>
                 <IconButton
                   onClick={() => setStatementsDrawerOpen(true)}

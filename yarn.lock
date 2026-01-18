@@ -815,10 +815,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@luca-financial/luca-schema@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@luca-financial/luca-schema/-/luca-schema-1.3.0.tgz#900583f64c685d3af4928fb5d5fea3841125fcfe"
-  integrity sha512-WiNcRPGxQMVqfDxxHDdTvftOFY15uBo1NPBG5YukaLBl016Hs6wkzSIKFTldD1ah0dni81/B/LYvLvAl1ERPgQ==
+"@luca-financial/luca-schema@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@luca-financial/luca-schema/-/luca-schema-2.1.0.tgz#431f0ada0e0b68024fbc6dd9213dfdccc87189d5"
+  integrity sha512-8LO49ELW0se7rXbGTMawn8khWwNkm10GEFtCNKzbEB+Hwz83r+/O6QflHOq0qvXhF0EoLXtcsj9COG1445SWBg==
   dependencies:
     ajv "^8.12.0"
     ajv-formats "^2.1.1"

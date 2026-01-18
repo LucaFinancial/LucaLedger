@@ -12,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { RecurringFrequencyEnum } from './constants';
-import { validateRecurringTransactionSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Generates a new recurring transaction with default values
@@ -38,7 +38,7 @@ export const generateRecurringTransaction = (initialData = {}) => {
   };
 
   try {
-    validateRecurringTransactionSync(recurringTransaction);
+    validateSchemaSync('recurringTransaction', recurringTransaction);
     return recurringTransaction;
   } catch (error) {
     console.error('Recurring transaction validation failed:', error);

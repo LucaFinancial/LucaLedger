@@ -57,7 +57,7 @@ describe('Transactions Slice', () => {
           setTransactions([transactionLegacyStatusSpaces])
         );
 
-        expect(state[0].status).toBe('complete');
+        expect(state[0].transactionState).toBe('complete');
       });
 
       it('should replace existing transactions', () => {
@@ -157,7 +157,7 @@ describe('Transactions Slice', () => {
         const nonExistentTransaction = {
           id: 'non-existent',
           accountId: 'acc-001',
-          status: TransactionStateEnum.COMPLETED,
+          transactionState: TransactionStateEnum.COMPLETED,
           date: '2024/01/01',
           amount: 0,
           description: 'Non Existent',
@@ -186,13 +186,13 @@ describe('Transactions Slice', () => {
               validCompletedTransaction.id,
               validPendingTransaction.id,
             ],
-            updates: { status: TransactionStateEnum.COMPLETED },
+            updates: { transactionState: TransactionStateEnum.COMPLETED },
           })
         );
 
-        expect(state[0].status).toBe(TransactionStateEnum.COMPLETED);
-        expect(state[1].status).toBe(TransactionStateEnum.COMPLETED);
-        expect(state[2].status).toBe(TransactionStateEnum.SCHEDULED);
+        expect(state[0].transactionState).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[1].transactionState).toBe(TransactionStateEnum.COMPLETED);
+        expect(state[2].transactionState).toBe(TransactionStateEnum.SCHEDULED);
       });
 
       it('should preserve non-updated fields', () => {

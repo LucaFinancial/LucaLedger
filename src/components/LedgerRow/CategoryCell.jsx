@@ -10,10 +10,11 @@ import { CallSplit } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { actions as transactionActions } from '@/store/transactions';
 import {
-  actions as transactionActions,
-  updateTransaction,
-} from '@/store/transactions';
+  actions as transactionSplitActions,
+  selectors as transactionSplitSelectors,
+} from '@/store/transactionSplits';
 import { selectors as categorySelectors } from '@/store/categories';
 import CategorySelect from '@/components/CategorySelect';
 import SplitEditorModal from '@/components/SplitEditorModal';
@@ -22,18 +23,21 @@ export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
+  );
 
-  const hasSplits = transaction.splits && transaction.splits.length > 0;
+  const hasSplits = transactionSplits.length > 0;
 
   const splitCategoryNames = useMemo(() => {
     if (!hasSplits) return '';
-    return transaction.splits
+    return transactionSplits
       .map((split) => {
         const cat = categories.find((c) => c.id === split.categoryId);
         return cat ? cat.name : 'Uncategorized';
       })
       .join(', ');
-  }, [hasSplits, transaction.splits, categories]);
+  }, [hasSplits, transactionSplits, categories]);
 
   const handleCategoryChange = (categoryId) => {
     dispatch(
@@ -55,11 +59,9 @@ export default function CategoryCell({ transaction, isSelected }) {
   };
 
   const handleSaveSplits = (splits) => {
-    const updatedTransaction = {
-      ...transaction,
-      splits: splits.length > 0 ? splits : undefined,
-    };
-    dispatch(updateTransaction(updatedTransaction));
+    dispatch(
+      transactionSplitActions.saveTransactionSplits(transaction.id, splits)
+    );
   };
 
   return (
@@ -96,7 +98,7 @@ export default function CategoryCell({ transaction, isSelected }) {
               color={hasSplits ? 'primary' : 'default'}
             >
               <Badge
-                badgeContent={hasSplits ? transaction.splits.length : 0}
+                badgeContent={hasSplits ? transactionSplits.length : 0}
                 color='primary'
                 invisible={!hasSplits}
               >

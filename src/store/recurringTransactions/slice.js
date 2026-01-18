@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateRecurringTransactionSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Validates and cleans a recurring transaction object
@@ -7,7 +7,7 @@ import { validateRecurringTransactionSync } from '@/validation/validator';
  */
 const cleanRecurringTransaction = (recurringTransaction) => {
   try {
-    return validateRecurringTransactionSync(recurringTransaction);
+    return validateSchemaSync('recurringTransaction', recurringTransaction);
   } catch (error) {
     console.error('Invalid recurring transaction data:', error);
     // Return the recurring transaction as-is if validation fails

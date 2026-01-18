@@ -14,6 +14,7 @@ import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
   parseISO,
@@ -48,6 +49,9 @@ const COLORS = [
  */
 export default function CategoryTotals({ category }) {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectTransactionSplits
+  );
   const [timePeriod, setTimePeriod] = useState('month');
 
   // Calculate totals for this category and all its subcategories
@@ -81,15 +85,22 @@ export default function CategoryTotals({ category }) {
       ...category.subcategories.map((sub) => sub.id),
     ]);
 
+    const splitsByTransaction = new Map();
+    transactionSplits.forEach((split) => {
+      if (!splitsByTransaction.has(split.transactionId)) {
+        splitsByTransaction.set(split.transactionId, []);
+      }
+      splitsByTransaction.get(split.transactionId).push(split);
+    });
+
     // Helper function to get amount for a specific category from a transaction
     const getAmountForCategory = (transaction, targetCategoryId) => {
-      // If transaction has splits, sum amounts for matching categoryId in splits
-      if (transaction.splits && transaction.splits.length > 0) {
-        return transaction.splits
+      const splits = splitsByTransaction.get(transaction.id) || [];
+      if (splits.length > 0) {
+        return splits
           .filter((split) => split.categoryId === targetCategoryId)
           .reduce((sum, split) => sum + split.amount, 0);
       }
-      // No splits - return full amount if categoryId matches
       return transaction.categoryId === targetCategoryId
         ? transaction.amount
         : 0;
@@ -99,8 +110,9 @@ export default function CategoryTotals({ category }) {
     // Include transaction if it has the category in main categoryId OR in any split
     const categoryTransactions = allTransactions.filter((transaction) => {
       // Check if transaction has category in splits
-      if (transaction.splits && transaction.splits.length > 0) {
-        const hasCategoryInSplits = transaction.splits.some((split) =>
+      const splits = splitsByTransaction.get(transaction.id) || [];
+      if (splits.length > 0) {
+        const hasCategoryInSplits = splits.some((split) =>
           categoryIds.has(split.categoryId)
         );
         if (hasCategoryInSplits) {
@@ -220,7 +232,7 @@ export default function CategoryTotals({ category }) {
       totals: { pastTotal, futureTotal, total, count },
       subcategoryTotals: subTotals,
     };
-  }, [allTransactions, category, timePeriod]);
+  }, [allTransactions, category, timePeriod, transactionSplits]);
 
   const handleTimePeriodChange = (event, newPeriod) => {
     if (newPeriod !== null) {

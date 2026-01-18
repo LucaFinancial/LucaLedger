@@ -5,7 +5,7 @@ import {
   actions as transactionActions,
   constants as transactionConstants,
 } from '@/store/transactions';
-import { actions as recurringOccurrenceActions } from '@/store/recurringOccurrences';
+import { actions as recurringTransactionEventActions } from '@/store/recurringTransactionEvents';
 
 export default function ActionCell({
   transaction,
@@ -18,7 +18,7 @@ export default function ActionCell({
   const handleCreateClick = () => {
     if (isVirtual && recurringTransaction && occurrenceDate) {
       dispatch(
-        recurringOccurrenceActions.realizeRecurringTransaction(
+        recurringTransactionEventActions.realizeRecurringTransaction(
           recurringTransaction,
           occurrenceDate
         )
@@ -31,7 +31,7 @@ export default function ActionCell({
       transactionActions.updateTransactionProperty(
         transaction.accountId,
         transaction,
-        'status',
+        transactionConstants.TransactionFields.TRANSACTION_STATE,
         transactionConstants.TransactionStateEnum.SCHEDULED
       )
     );
@@ -42,7 +42,7 @@ export default function ActionCell({
       transactionActions.updateTransactionProperty(
         transaction.accountId,
         transaction,
-        'status',
+        transactionConstants.TransactionFields.TRANSACTION_STATE,
         transactionConstants.TransactionStateEnum.COMPLETED
       )
     );

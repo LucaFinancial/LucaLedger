@@ -73,24 +73,20 @@ describe('LedgerTable Year Filter', () => {
     // Mock statements from different years
     const accountStatements = [
       {
-        closingDate: '2023/12/10',
-        periodStart: '2023/11/11',
-        periodEnd: '2023/12/10',
+        endDate: '2023/12/10',
+        startDate: '2023/11/11',
       },
       {
-        closingDate: '2024/01/10',
-        periodStart: '2023/12/11',
-        periodEnd: '2024/01/10',
+        endDate: '2024/01/10',
+        startDate: '2023/12/11',
       },
       {
-        closingDate: '2024/02/10',
-        periodStart: '2024/01/11',
-        periodEnd: '2024/02/10',
+        endDate: '2024/02/10',
+        startDate: '2024/01/11',
       },
       {
-        closingDate: '2025/01/10',
-        periodStart: '2024/12/11',
-        periodEnd: '2025/01/10',
+        endDate: '2025/01/10',
+        startDate: '2024/12/11',
       },
     ];
 
@@ -99,15 +95,15 @@ describe('LedgerTable Year Filter', () => {
     // Apply the statement filter logic (the fix we added)
     const filteredStatements = accountStatements.filter((statement) => {
       try {
-        const closingDate = parseISO(statement.closingDate.replace(/\//g, '-'));
+        const endDate = parseISO(statement.endDate.replace(/\//g, '-'));
 
-        if (isNaN(closingDate.getTime())) {
+        if (isNaN(endDate.getTime())) {
           return false;
         }
 
         // Filter by selected year
         if (selectedYear !== 'all') {
-          const statementYear = format(closingDate, 'yyyy');
+          const statementYear = format(endDate, 'yyyy');
           if (statementYear !== selectedYear) {
             return false;
           }
@@ -121,7 +117,7 @@ describe('LedgerTable Year Filter', () => {
 
     // Should only include 2024 statements
     expect(filteredStatements).toHaveLength(2);
-    expect(filteredStatements.map((s) => s.closingDate)).toEqual([
+    expect(filteredStatements.map((s) => s.endDate)).toEqual([
       '2024/01/10',
       '2024/02/10',
     ]);

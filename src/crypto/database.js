@@ -15,7 +15,7 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
@@ -29,7 +29,8 @@ db.version(DB_VERSION).stores({
   categories: 'id, userId', // Per-user categories
   statements: 'id, userId', // Per-user statements
   recurringTransactions: 'id, userId', // Per-user recurring transactions
-  recurringOccurrences: 'id, userId', // Per-user recurring occurrences
+  recurringTransactionEvents: 'id, userId', // Per-user recurring transaction events
+  transactionSplits: 'id, userId', // Per-user transaction splits
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
 });
 

@@ -19,7 +19,8 @@ import { setTransactions } from '@/store/transactions/slice';
 import { setCategories } from '@/store/categories/slice';
 import { setStatements } from '@/store/statements/slice';
 import { setRecurringTransactions } from '@/store/recurringTransactions/slice';
-import { setRecurringOccurrences } from '@/store/recurringOccurrences/slice';
+import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvents/slice';
+import { setTransactionSplits } from '@/store/transactionSplits/slice';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { dollarsToCents } from '@/utils';
 import categoriesData from '@/config/categories.json';
@@ -65,7 +66,8 @@ export default function EncryptionProvider() {
           encryptedCategories,
           encryptedStatements,
           encryptedRecurringTransactions,
-          encryptedRecurringOccurrences,
+          encryptedRecurringTransactionEvents,
+          encryptedTransactionSplits,
         ] = await Promise.all([
           getUserEncryptedRecords('accounts', activeDEK, currentUser.id),
           getUserEncryptedRecords('transactions', activeDEK, currentUser.id),
@@ -77,7 +79,12 @@ export default function EncryptionProvider() {
             currentUser.id
           ),
           getUserEncryptedRecords(
-            'recurringOccurrences',
+            'recurringTransactionEvents',
+            activeDEK,
+            currentUser.id
+          ),
+          getUserEncryptedRecords(
+            'transactionSplits',
             activeDEK,
             currentUser.id
           ),
@@ -177,7 +184,12 @@ export default function EncryptionProvider() {
         dispatch(
           setRecurringTransactions(encryptedRecurringTransactions || [])
         );
-        dispatch(setRecurringOccurrences(encryptedRecurringOccurrences || []));
+        dispatch(
+          setRecurringTransactionEvents(
+            encryptedRecurringTransactionEvents || []
+          )
+        );
+        dispatch(setTransactionSplits(encryptedTransactionSplits || []));
 
         setDataLoaded(true);
       } catch (error) {
@@ -208,7 +220,8 @@ export default function EncryptionProvider() {
       dispatch(setCategories([]));
       dispatch(setStatements([]));
       dispatch(setRecurringTransactions([]));
-      dispatch(setRecurringOccurrences([]));
+      dispatch(setRecurringTransactionEvents([]));
+      dispatch(setTransactionSplits([]));
       dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
     }

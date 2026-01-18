@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateAccountSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Validates and cleans an account object
@@ -7,7 +7,7 @@ import { validateAccountSync } from '@/validation/validator';
  */
 const cleanAccount = (account) => {
   try {
-    return validateAccountSync(account, account.type);
+    return validateSchemaSync('account', account);
   } catch (error) {
     console.error('Invalid account data:', error);
     // Return the account as-is if validation fails
