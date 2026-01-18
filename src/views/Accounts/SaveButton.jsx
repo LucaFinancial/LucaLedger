@@ -5,12 +5,14 @@ import { format } from 'date-fns';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { selectors as statementSelectors } from '@/store/statements';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const transactions = useSelector(transactionSelectors.selectTransactions);
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const statements = useSelector(statementSelectors.selectStatements);
   const loading = useSelector(accountSelectors.selectAccountsLoading);
 
   const handleSave = () => {
@@ -19,6 +21,7 @@ export default function SaveButton() {
       accounts,
       transactions,
       categories,
+      statements,
     };
 
     const saveString = JSON.stringify(data, null, 2);
