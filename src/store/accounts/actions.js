@@ -1,30 +1,32 @@
 import { v4 as uuid } from 'uuid';
 
-import { AccountType } from './constants';
-import { generateAccountObject } from './generators';
-import { validateAccount } from '@/validation/validator';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
-import {
-  addAccount,
-  setAccounts,
-  updateAccount as updateAccountNormalized,
-  removeAccount,
-  setLoading,
-  setError,
-  addLoadingAccountId,
-  clearLoadingAccountIds,
-} from './slice';
 import { selectors as accountSelectors } from '@/store/accounts';
+import { setCategories } from '@/store/categories';
+import {
+  setStatements,
+  selectors as statementSelectors,
+} from '@/store/statements';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import {
   addTransaction,
-  setTransactions,
   removeTransaction,
+  setTransactions,
 } from '@/store/transactions/slice';
-import { setCategories } from '@/store/categories';
-import { setStatements } from '@/store/statements';
-import { selectors as statementSelectors } from '@/store/statements';
 import { dollarsToCents } from '@/utils';
+import { validateAccount } from '@/validation/validator';
+import { AccountType } from './constants';
+import { generateAccountObject } from './generators';
+import {
+  addAccount,
+  addLoadingAccountId,
+  clearLoadingAccountIds,
+  removeAccount,
+  setAccounts,
+  setError,
+  setLoading,
+  updateAccount as updateAccountNormalized,
+} from './slice';
 
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
