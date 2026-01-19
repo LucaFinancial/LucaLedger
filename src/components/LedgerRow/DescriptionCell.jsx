@@ -62,7 +62,12 @@ export default function DescriptionCell({ transaction }) {
   const TEXT_FIELD_MIN_WIDTH = LEDGER_COLUMN_STYLES.description.minWidth;
 
   return (
-    <TableCell sx={LEDGER_COLUMN_STYLES.description}>
+    <TableCell 
+      sx={{
+        ...LEDGER_COLUMN_STYLES.description,
+        maxWidth: 0,
+      }}
+    >
       {edit ? (
         <Box 
           sx={{ 
@@ -103,6 +108,7 @@ export default function DescriptionCell({ transaction }) {
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             display: 'block',
+            width: '100%',
           }}
           onClick={handleEdit}
         >
