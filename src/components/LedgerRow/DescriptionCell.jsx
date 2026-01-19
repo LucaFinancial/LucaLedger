@@ -58,11 +58,6 @@ export default function DescriptionCell({ transaction }) {
     flexShrink: 0,
   };
 
-  // Minimum widths for edit mode:
-  // - TextField: 120px (matches column minWidth from config)
-  // - Two buttons: 50px each = 100px
-  // - Margins: ~16px
-  // Total container minWidth: ~236px (rounded to 240px for consistency)
   const EDIT_CONTAINER_MIN_WIDTH = '240px';
   const TEXT_FIELD_MIN_WIDTH = LEDGER_COLUMN_STYLES.description.minWidth;
 
