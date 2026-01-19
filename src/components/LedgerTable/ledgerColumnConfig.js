@@ -25,8 +25,13 @@ export const LEDGER_COLUMN_STYLES = {
   },
   description: {
     minWidth: '120px',
+    maxWidth: '500px',
+    width: '100%',
     padding: '2px 0px 2px 10px',
     cursor: 'pointer',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   amount: {
     width: '75px',
