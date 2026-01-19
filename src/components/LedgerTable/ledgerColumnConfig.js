@@ -51,12 +51,14 @@ export const LEDGER_HEADER_ROW_STYLE = {
     fontWeight: 600,
     backgroundColor: 'background.paper',
     borderBottom: '2px solid',
-    borderColor: 'divider',
+    borderColor: 'darkGray',
   },
 };
 
 export const LEDGER_ROW_STYLE = {
   '& td': {
+    paddingTop: '2px',
+    borderTop: '1px solid',
     borderBottom: '1px solid',
     borderColor: 'divider',
   },

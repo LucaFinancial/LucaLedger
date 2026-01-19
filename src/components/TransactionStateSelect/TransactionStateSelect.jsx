@@ -53,36 +53,41 @@ export default function TransactionStateSelect({
     );
   }
 
+  const formStyle = {
+    width: LEDGER_STATUS_SELECT_WIDTH,
+    '& .MuiInput-underline:before': {
+      borderBottom: 'none',
+    },
+    '& .MuiInput-underline:after': {
+      borderBottom: 'none',
+    },
+  };
+
+  const selectStyle = {
+    textTransform: 'capitalize',
+    color: isSelected ? 'white' : 'inherit',
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 1,
+    },
+    '& .MuiSvgIcon-root': {
+      color: isSelected ? 'white' : 'inherit',
+    },
+    '&:hover:before': {
+      borderBottom: 'none !important',
+    },
+  };
+
   return (
-    <FormControl
-      sx={{
-        width: LEDGER_STATUS_SELECT_WIDTH,
-        '& .MuiInput-underline:before': {
-          borderBottom: 'none',
-        },
-        '& .MuiInput-underline:after': {
-          borderBottom: 'none',
-        },
-      }}
-      variant='standard'
-      fullWidth
-    >
+    <FormControl sx={formStyle} variant='standard' fullWidth>
       <Select
         labelId='demo-simple-select-label'
         id='demo-simple-select'
         value={status}
         label='Status'
         onChange={handleChange}
-        sx={{
-          textTransform: 'capitalize',
-          color: isSelected ? 'white' : 'inherit',
-          '& .MuiSvgIcon-root': {
-            color: isSelected ? 'white' : 'inherit',
-          },
-          '&:hover:before': {
-            borderBottom: 'none !important',
-          },
-        }}
+        sx={selectStyle}
       >
         {Object.keys(constants.TransactionStateEnum).map((key) => {
           return (
