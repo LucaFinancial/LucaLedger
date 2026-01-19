@@ -1,6 +1,5 @@
 import { AccountType } from '@/store/accounts/constants';
 import { TransactionStateEnum } from '@/store/transactions/constants';
-import { dollarsToCents } from '@/utils';
 
 const ACCOUNT_TYPE_MAP = new Map([
   ['Checking', AccountType.CHECKING],
@@ -75,7 +74,7 @@ const normalizeAccount = (account, timestamp) => {
   };
 };
 
-const normalizeTransaction = (transaction, timestamp, options = {}) => {
+const normalizeTransaction = (transaction, timestamp) => {
   let changed = false;
   const normalized = { ...transaction };
 
@@ -92,14 +91,6 @@ const normalizeTransaction = (transaction, timestamp, options = {}) => {
 
   if ('status' in normalized) {
     delete normalized.status;
-    changed = true;
-  }
-
-  if (
-    options.convertTransactionAmounts &&
-    typeof normalized.amount === 'number'
-  ) {
-    normalized.amount = dollarsToCents(normalized.amount);
     changed = true;
   }
 

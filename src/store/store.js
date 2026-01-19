@@ -119,15 +119,6 @@ const migrateState = (persistedState) => {
     needsPersist = true;
   }
 
-  const hasLegacyTransactions = (state.transactions || []).some(
-    (transaction) =>
-      typeof transaction.status === 'string' || !transaction.transactionState,
-  );
-  const hasNonIntegerAmounts = (state.transactions || []).some(
-    (transaction) =>
-      typeof transaction.amount === 'number' &&
-      !Number.isInteger(transaction.amount),
-  );
   const migrationTimestamp = new Date().toISOString();
   const migration = migrateDataToSchema(
     {
@@ -140,7 +131,6 @@ const migrateState = (persistedState) => {
       transactionSplits: state.transactionSplits || [],
     },
     {
-      convertTransactionAmounts: hasLegacyTransactions || hasNonIntegerAmounts,
       timestamp: migrationTimestamp,
     },
   );
