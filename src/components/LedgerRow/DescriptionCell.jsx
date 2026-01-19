@@ -50,12 +50,25 @@ export default function DescriptionCell({ transaction }) {
     }
   };
 
-  const buttonStyle = { height: '35px', width: '50px', marginLeft: '8px' };
+  const buttonStyle = { 
+    height: '35px', 
+    width: '50px', 
+    minWidth: '50px',
+    marginLeft: '8px',
+    flexShrink: 0,
+  };
 
   return (
     <TableCell sx={LEDGER_COLUMN_STYLES.description}>
       {edit ? (
-        <Box style={{ display: 'flex', alignItems: 'center' }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            minWidth: '250px',
+            flexWrap: 'nowrap',
+          }}
+        >
           <TextField
             variant='filled'
             value={description}
@@ -63,7 +76,8 @@ export default function DescriptionCell({ transaction }) {
             onKeyDown={handleKeyPress}
             inputRef={inputRef}
             sx={{
-              width: '100%',
+              flexGrow: 1,
+              minWidth: '100px',
               '.MuiFilledInput-root': {
                 height: '30px',
                 paddingBottom: '8px',
@@ -80,7 +94,13 @@ export default function DescriptionCell({ transaction }) {
       ) : (
         <Typography
           variant='body1'
-          style={{ cursor: 'pointer' }}
+          sx={{ 
+            cursor: 'pointer',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'block',
+          }}
           onClick={handleEdit}
         >
           {transaction.description === ''

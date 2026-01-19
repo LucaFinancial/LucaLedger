@@ -505,7 +505,12 @@ export default function LedgerTable({
     >
       <Table
         stickyHeader
-        sx={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' }}
+        sx={{ 
+          tableLayout: 'auto', 
+          width: '100%', 
+          borderCollapse: 'collapse',
+          minWidth: '600px',
+        }}
       >
         <LedgerHeader />
         <TableBody>
