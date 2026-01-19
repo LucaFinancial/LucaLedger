@@ -58,6 +58,14 @@ export default function DescriptionCell({ transaction }) {
     flexShrink: 0,
   };
 
+  // Minimum widths for edit mode:
+  // - TextField: 120px (matches column minWidth from config)
+  // - Two buttons: 50px each = 100px
+  // - Margins: ~16px
+  // Total container minWidth: ~236px (rounded to 240px for consistency)
+  const EDIT_CONTAINER_MIN_WIDTH = '240px';
+  const TEXT_FIELD_MIN_WIDTH = LEDGER_COLUMN_STYLES.description.minWidth;
+
   return (
     <TableCell sx={LEDGER_COLUMN_STYLES.description}>
       {edit ? (
@@ -65,7 +73,7 @@ export default function DescriptionCell({ transaction }) {
           sx={{ 
             display: 'flex', 
             alignItems: 'center',
-            minWidth: '250px',
+            minWidth: EDIT_CONTAINER_MIN_WIDTH,
             flexWrap: 'nowrap',
           }}
         >
@@ -77,7 +85,7 @@ export default function DescriptionCell({ transaction }) {
             inputRef={inputRef}
             sx={{
               flexGrow: 1,
-              minWidth: '100px',
+              minWidth: TEXT_FIELD_MIN_WIDTH,
               '.MuiFilledInput-root': {
                 height: '30px',
                 paddingBottom: '8px',
