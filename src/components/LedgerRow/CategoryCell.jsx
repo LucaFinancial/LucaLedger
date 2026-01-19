@@ -69,6 +69,21 @@ export default function CategoryCell({ transaction, isSelected }) {
     <>
       <TableCell sx={LEDGER_COLUMN_STYLES.category}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
+            <IconButton
+              onClick={handleOpenModal}
+              size='small'
+              color={hasSplits ? 'primary' : 'default'}
+            >
+              <Badge
+                badgeContent={hasSplits ? transactionSplits.length : 0}
+                color='primary'
+                invisible={!hasSplits}
+              >
+                <CallSplit fontSize='small' />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {hasSplits ? (
               <Tooltip title={splitCategoryNames}>
@@ -89,21 +104,6 @@ export default function CategoryCell({ transaction, isSelected }) {
               />
             )}
           </Box>
-          <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
-            <IconButton
-              onClick={handleOpenModal}
-              size='small'
-              color={hasSplits ? 'primary' : 'default'}
-            >
-              <Badge
-                badgeContent={hasSplits ? transactionSplits.length : 0}
-                color='primary'
-                invisible={!hasSplits}
-              >
-                <CallSplit fontSize='small' />
-              </Badge>
-            </IconButton>
-          </Tooltip>
         </Box>
       </TableCell>
       <SplitEditorModal

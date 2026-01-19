@@ -2,23 +2,26 @@ export const LEDGER_COLUMN_STYLES = {
   selection: {
     width: '20px',
     padding: '2px 10px',
+    textAlign: 'center',
   },
   quickAction: {
     width: '12px',
     padding: '2px 0px',
+    textAlign: 'center',
   },
   status: {
-    width: '80px',
+    width: '50px',
     padding: '0px 0px 0px 10px',
   },
   date: {
     width: '60px',
     cursor: 'pointer',
-    padding: '2px 0px 2px 10px',
+    padding: '2px 0px 2px 5px',
+    textAlign: 'center',
   },
   category: {
-    width: '150px',
-    padding: '2px 0px 2px 5px',
+    width: '120px',
+    padding: '2px 0px',
   },
   description: {
     width: '500px',
