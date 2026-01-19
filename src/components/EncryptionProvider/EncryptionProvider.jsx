@@ -86,16 +86,6 @@ export default function EncryptionProvider() {
         ]);
 
         const migrationTimestamp = new Date().toISOString();
-        const hasLegacyTransactions = (encryptedTransactions || []).some(
-          (transaction) =>
-            typeof transaction.status === 'string' ||
-            !transaction.transactionState,
-        );
-        const hasNonIntegerAmounts = (encryptedTransactions || []).some(
-          (transaction) =>
-            typeof transaction.amount === 'number' &&
-            !Number.isInteger(transaction.amount),
-        );
         const migration = migrateDataToSchema(
           {
             accounts: encryptedAccounts || [],
@@ -108,8 +98,7 @@ export default function EncryptionProvider() {
             transactionSplits: encryptedTransactionSplits || [],
           },
           {
-            convertTransactionAmounts:
-              hasLegacyTransactions || hasNonIntegerAmounts,
+            // ...existing code...
             timestamp: migrationTimestamp,
           },
         );

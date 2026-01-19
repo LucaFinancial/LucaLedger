@@ -130,7 +130,7 @@ export const loadAccount =
           statements: statementsToLoad,
         },
         {
-          convertTransactionAmounts: schemaVersion === '2.0.0',
+          // ...existing code...
           timestamp: migrationTimestamp,
         },
       );
