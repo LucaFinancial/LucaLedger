@@ -79,6 +79,9 @@ export default function TransactionStateSelect({
           '& .MuiSvgIcon-root': {
             color: isSelected ? 'white' : 'inherit',
           },
+          '&:hover:before': {
+            borderBottom: 'none !important',
+          },
         }}
       >
         {Object.keys(constants.TransactionStateEnum).map((key) => {
