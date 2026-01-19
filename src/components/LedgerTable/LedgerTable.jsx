@@ -503,7 +503,10 @@ export default function LedgerTable({
       component={Paper}
       style={{ overflow: 'auto', height: '100%' }}
     >
-      <Table stickyHeader>
+      <Table
+        stickyHeader
+        sx={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' }}
+      >
         <LedgerHeader />
         <TableBody>
           {Object.keys(groupedData).map((year) => {

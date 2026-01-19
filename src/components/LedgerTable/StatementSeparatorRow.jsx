@@ -29,6 +29,7 @@ import {
   selectors as statementSelectors,
   actions as statementActions,
 } from '@/store/statements';
+import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 
 export default function StatementSeparatorRow({
   statementDate,
@@ -166,7 +167,7 @@ export default function StatementSeparatorRow({
     <>
       <TableRow>
         <TableCell
-          colSpan={8}
+          colSpan={LEDGER_COLUMN_COUNT}
           style={{ backgroundColor: '#f5f5f5', padding: '8px 16px' }}
         >
           <Box

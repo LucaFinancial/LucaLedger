@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 import {
   centsToDollars,
   dollarsToCents,
@@ -85,7 +86,7 @@ export default function AmountCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ cursor: 'pointer', width: '200px' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.amount}>
       {edit ? (
         <>
           <TextField

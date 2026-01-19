@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 
 import config from '@/config';
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function DateCell({ transaction }) {
   const dispatch = useDispatch();
@@ -51,7 +52,7 @@ export default function DateCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ cursor: 'pointer', width: '160px' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.date}>
       {isOpen ? (
         <DatePicker
           open={isOpen}

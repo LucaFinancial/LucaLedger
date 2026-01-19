@@ -18,6 +18,7 @@ import {
 import { selectors as categorySelectors } from '@/store/categories';
 import CategorySelect from '@/components/CategorySelect';
 import SplitEditorModal from '@/components/SplitEditorModal';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
@@ -66,8 +67,23 @@ export default function CategoryCell({ transaction, isSelected }) {
 
   return (
     <>
-      <TableCell sx={{ width: 130, minWidth: 130 }}>
+      <TableCell sx={LEDGER_COLUMN_STYLES.category}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
+            <IconButton
+              onClick={handleOpenModal}
+              size='small'
+              color={hasSplits ? 'primary' : 'default'}
+            >
+              <Badge
+                badgeContent={hasSplits ? transactionSplits.length : 0}
+                color='primary'
+                invisible={!hasSplits}
+              >
+                <CallSplit fontSize='small' />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {hasSplits ? (
               <Tooltip title={splitCategoryNames}>
@@ -88,21 +104,6 @@ export default function CategoryCell({ transaction, isSelected }) {
               />
             )}
           </Box>
-          <Tooltip title={hasSplits ? 'Edit splits' : 'Split into categories'}>
-            <IconButton
-              onClick={handleOpenModal}
-              size='small'
-              color={hasSplits ? 'primary' : 'default'}
-            >
-              <Badge
-                badgeContent={hasSplits ? transactionSplits.length : 0}
-                color='primary'
-                invisible={!hasSplits}
-              >
-                <CallSplit fontSize='small' />
-              </Badge>
-            </IconButton>
-          </Tooltip>
         </Box>
       </TableCell>
       <SplitEditorModal

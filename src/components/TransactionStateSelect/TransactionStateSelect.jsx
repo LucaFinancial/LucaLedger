@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_STATUS_SELECT_WIDTH } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function TransactionStateSelect({
   transaction,
@@ -52,33 +53,41 @@ export default function TransactionStateSelect({
     );
   }
 
+  const formStyle = {
+    width: LEDGER_STATUS_SELECT_WIDTH,
+    '& .MuiInput-underline:before': {
+      borderBottom: 'none',
+    },
+    '& .MuiInput-underline:after': {
+      borderBottom: 'none',
+    },
+  };
+
+  const selectStyle = {
+    textTransform: 'capitalize',
+    color: isSelected ? 'white' : 'inherit',
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 1,
+    },
+    '& .MuiSvgIcon-root': {
+      color: isSelected ? 'white' : 'inherit',
+    },
+    '&:hover:before': {
+      borderBottom: 'none !important',
+    },
+  };
+
   return (
-    <FormControl
-      sx={{
-        width: '120px',
-        '& .MuiInput-underline:before': {
-          borderBottom: 'none',
-        },
-        '& .MuiInput-underline:after': {
-          borderBottom: 'none',
-        },
-      }}
-      variant='standard'
-      fullWidth
-    >
+    <FormControl sx={formStyle} variant='standard' fullWidth>
       <Select
         labelId='demo-simple-select-label'
         id='demo-simple-select'
         value={status}
         label='Status'
         onChange={handleChange}
-        sx={{
-          textTransform: 'capitalize',
-          color: isSelected ? 'white' : 'inherit',
-          '& .MuiSvgIcon-root': {
-            color: isSelected ? 'white' : 'inherit',
-          },
-        }}
+        sx={selectStyle}
       >
         {Object.keys(constants.TransactionStateEnum).map((key) => {
           return (
