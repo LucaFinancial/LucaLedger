@@ -23,13 +23,15 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const dispatch = useDispatch();
   const [name, setName] = useState(account.name);
   const [type, setType] = useState(account.type);
-  const [statementDay, setStatementDay] = useState(account.statementDay || 1);
+  const [statementDay, setStatementDay] = useState(
+    account.statementClosingDay || 1,
+  );
   const [isDirty, setIsDirty] = useState(false);
   // Store initial values to compare against
   const [initialName, setInitialName] = useState(account.name);
   const [initialType, setInitialType] = useState(account.type);
   const [initialStatementDay, setInitialStatementDay] = useState(
-    account.statementDay || 1
+    account.statementClosingDay || 1,
   );
 
   // Reset state when modal opens with new account
@@ -37,10 +39,10 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     if (open) {
       setName(account.name);
       setType(account.type);
-      setStatementDay(account.statementDay || 1);
+      setStatementDay(account.statementClosingDay || 1);
       setInitialName(account.name);
       setInitialType(account.type);
-      setInitialStatementDay(account.statementDay || 1);
+      setInitialStatementDay(account.statementClosingDay || 1);
       setIsDirty(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,14 +99,14 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       updates.type = type;
       // When switching to credit card, ensure statement day is included
       if (type === constants.AccountType.CREDIT_CARD) {
-        updates.statementDay = statementDay;
+        updates.statementClosingDay = statementDay;
       }
     } else if (
       type === constants.AccountType.CREDIT_CARD &&
       statementDay !== initialStatementDay
     ) {
       // Save statement day if changed for existing credit card
-      updates.statementDay = statementDay;
+      updates.statementClosingDay = statementDay;
     }
 
     // Apply all updates in a single dispatch
@@ -150,10 +152,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       </DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 3 }}>
-          <Typography
-            variant='subtitle1'
-            sx={{ fontWeight: 'bold', mb: 2 }}
-          >
+          <Typography variant='subtitle1' sx={{ fontWeight: 'bold', mb: 2 }}>
             Account Information
           </Typography>
           <TextField
@@ -173,10 +172,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               fullWidth
             >
               {Object.keys(constants.AccountType).map((key) => (
-                <MenuItem
-                  key={key}
-                  value={constants.AccountType[key]}
-                >
+                <MenuItem key={key} value={constants.AccountType[key]}>
                   {constants.AccountType[key]}
                 </MenuItem>
               ))}
@@ -258,6 +254,6 @@ AccountSettingsModal.propTypes = {
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
-    statementDay: PropTypes.number,
+    statementClosingDay: PropTypes.number,
   }).isRequired,
 };

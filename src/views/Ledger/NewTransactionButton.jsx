@@ -28,11 +28,7 @@ export default function NewTransactionButton({ compact = false }) {
   }
 
   return (
-    <Button
-      variant='contained'
-      onClick={handleClick}
-      fullWidth
-    >
+    <Button variant='contained' onClick={handleClick} fullWidth>
       Add new transaction
     </Button>
   );

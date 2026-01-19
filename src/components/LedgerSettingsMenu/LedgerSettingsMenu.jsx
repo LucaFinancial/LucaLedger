@@ -53,10 +53,7 @@ export default function LedgerSettingsMenu({
       }}
     >
       <Box sx={{ px: 2, py: 1 }}>
-        <Typography
-          variant='subtitle2'
-          color='text.secondary'
-        >
+        <Typography variant='subtitle2' color='text.secondary'>
           View Controls
         </Typography>
       </Box>
@@ -93,10 +90,7 @@ export default function LedgerSettingsMenu({
       <Divider sx={{ my: 1 }} />
 
       <Box sx={{ px: 2, py: 1 }}>
-        <Typography
-          variant='subtitle2'
-          color='text.secondary'
-        >
+        <Typography variant='subtitle2' color='text.secondary'>
           Account Settings
         </Typography>
       </Box>
@@ -118,10 +112,7 @@ export default function LedgerSettingsMenu({
       <Divider sx={{ my: 1 }} />
 
       <Box sx={{ px: 2, py: 1 }}>
-        <Typography
-          variant='subtitle2'
-          color='text.secondary'
-        >
+        <Typography variant='subtitle2' color='text.secondary'>
           Data Actions
         </Typography>
       </Box>

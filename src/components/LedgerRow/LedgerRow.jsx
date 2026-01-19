@@ -6,25 +6,33 @@ import AmountCell from './AmountCell';
 import BalanceCell from './BalanceCell';
 import CategoryCell from './CategoryCell';
 import DateCell from './DateCell';
-import DeleteButtonCell from './DeleteButtonCell';
 import DescriptionCell from './DescriptionCell';
 import SelectionCell from './SelectionCell';
 import StatusCell from './StatusCell';
+import ActionCell from './ActionCell';
+import QuickActionCell from './QuickActionCell';
+import { LEDGER_ROW_STYLE } from '@/components/LedgerTable/ledgerColumnConfig';
 
-const getStatusBackground = (status, isSelected) => {
+const VIRTUAL_STATE = 'recurring';
+
+const getStatusBackground = (status, isSelected, isVirtual) => {
   if (isSelected) {
     return '#f57c00'; // chart orange
   }
 
+  if (isVirtual) {
+    return '#e1bee7'; // light purple for virtual/recurring
+  }
+
   switch (status) {
-    case constants.TransactionStatusEnum.COMPLETE:
+    case constants.TransactionStateEnum.COMPLETED:
       return '#e0e0e0'; // lightgray
-    case constants.TransactionStatusEnum.PENDING:
+    case constants.TransactionStateEnum.PENDING:
       return '#fff9c4'; // light yellow
-    case constants.TransactionStatusEnum.PLANNED:
-      return '#c8e6c9'; // light green
-    case constants.TransactionStatusEnum.SCHEDULED:
+    case constants.TransactionStateEnum.SCHEDULED:
       return '#b3e5fc'; // light blue
+    case constants.TransactionStateEnum.PLANNED:
+      return '#c8e6c9'; // light green
     default:
       return 'white';
   }
@@ -35,43 +43,52 @@ export default function LedgerRow({
   balance,
   isSelected,
   onSelectionChange,
+  isVirtual,
+  recurringTransaction,
+  occurrenceDate,
 }) {
-  const bgColor = getStatusBackground(row.status, isSelected);
+  const bgColor = getStatusBackground(
+    row.transactionState,
+    isSelected,
+    isVirtual,
+  );
+
+  const rowStyle = {
+    ...LEDGER_ROW_STYLE,
+    backgroundColor: bgColor,
+    color: isSelected ? 'white' : 'inherit',
+    opacity: isVirtual ? 0.85 : 1,
+    fontStyle: isVirtual ? 'italic' : 'normal',
+  };
 
   return (
-    <TableRow
-      sx={{
-        backgroundColor: bgColor,
-        color: isSelected ? 'white' : 'inherit',
-        '&:hover': {
-          filter: 'brightness(0.95)',
-        },
-        '& .MuiTableCell-root': {
-          padding: '2px 4px',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          color: isSelected ? 'white' : 'inherit',
-        },
-      }}
-    >
+    <TableRow sx={rowStyle}>
       <SelectionCell
         transaction={row}
         isSelected={isSelected}
         onSelectionChange={onSelectionChange}
+        isVirtual={isVirtual}
+      />
+      <QuickActionCell
+        transaction={row}
+        isVirtual={isVirtual}
+        recurringTransaction={recurringTransaction}
+        occurrenceDate={occurrenceDate}
       />
       <StatusCell
-        transaction={row}
+        transaction={{
+          ...row,
+          transactionState: isVirtual ? VIRTUAL_STATE : row.transactionState,
+        }}
         isSelected={isSelected}
+        isVirtual={isVirtual}
       />
       <DateCell transaction={row} />
-      <CategoryCell
-        transaction={row}
-        isSelected={isSelected}
-      />
+      <CategoryCell transaction={row} isSelected={isSelected} />
       <DescriptionCell transaction={row} />
       <AmountCell transaction={row} />
       <BalanceCell amount={balance} />
-      <DeleteButtonCell transaction={row} />
+      <ActionCell transaction={row} isVirtual={isVirtual} />
     </TableRow>
   );
 }
@@ -81,4 +98,13 @@ LedgerRow.propTypes = {
   balance: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
   onSelectionChange: PropTypes.func,
+  isVirtual: PropTypes.bool,
+  recurringTransaction: PropTypes.object,
+  occurrenceDate: PropTypes.string,
+};
+
+LedgerRow.defaultProps = {
+  isVirtual: false,
+  recurringTransaction: null,
+  occurrenceDate: null,
 };

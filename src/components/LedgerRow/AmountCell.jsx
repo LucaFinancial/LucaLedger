@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 import {
   centsToDollars,
   dollarsToCents,
@@ -25,7 +26,7 @@ export default function AmountCell({ transaction }) {
   const inputRef = useRef(null);
   const [edit, setEdit] = useState(false);
   const [value, setValue] = useState(
-    centsToDollars(transaction.amount).toFixed(2)
+    centsToDollars(transaction.amount).toFixed(2),
   );
 
   const validNumberRegex = /^-?\d+(\.\d{1,2})?$|^-?\.\d{1,2}$|^-?\d+\.$|^-?$/;
@@ -56,8 +57,8 @@ export default function AmountCell({ transaction }) {
           accountId,
           transaction,
           constants.TransactionFields.AMOUNT,
-          amountInCents
-        )
+          amountInCents,
+        ),
       );
       setEdit(false);
     }
@@ -85,7 +86,7 @@ export default function AmountCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ cursor: 'pointer', width: '200px' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.amount}>
       {edit ? (
         <>
           <TextField
@@ -126,10 +127,7 @@ export default function AmountCell({ transaction }) {
           </Button>
         </>
       ) : (
-        <Typography
-          variant='body1'
-          onClick={handleEdit}
-        >
+        <Typography variant='body1' onClick={handleEdit}>
           $ {doublePrecisionFormatString(centsToDollars(transaction.amount))}
         </Typography>
       )}

@@ -27,6 +27,8 @@ export const createCategory = (name) => (dispatch) => {
     slug: generateSlug(name),
     name,
     parentId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
   };
   dispatch(addCategoryAction(category));
   return category;
@@ -41,6 +43,8 @@ export const createSubcategory = (parentId, name) => (dispatch) => {
     slug: generateSlug(name),
     name,
     parentId,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
   };
   dispatch(addCategoryAction(subcategory));
   return subcategory;

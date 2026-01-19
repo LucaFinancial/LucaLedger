@@ -10,7 +10,7 @@ export const useAccountBalances = (accounts) => {
   // Get all transactions for the provided accounts
   const accountIds = useMemo(() => accounts.map((a) => a.id), [accounts]);
   const allRelevantTransactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountIds(accountIds)
+    transactionSelectors.selectTransactionsByAccountIds(accountIds),
   );
 
   return useMemo(() => {
@@ -29,12 +29,12 @@ export const useAccountBalances = (accounts) => {
     };
 
     const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
-      transactionConstants.TransactionStatusEnum;
+      transactionConstants.TransactionStateEnum;
 
     const processedAccounts = accounts.map((account) => {
       // Filter transactions for this specific account
       const transactions = allRelevantTransactions.filter(
-        (t) => t.accountId === account.id
+        (t) => t.accountId === account.id,
       );
 
       const balances = {
@@ -78,6 +78,6 @@ export const useAccountBalances = (accounts) => {
 
 const calculateBalance = (transactions, statuses) => {
   return transactions
-    .filter((tx) => statuses.includes(tx.status))
+    .filter((tx) => statuses.includes(tx.transactionState))
     .reduce((acc, tx) => acc + Number(tx.amount), 0);
 };

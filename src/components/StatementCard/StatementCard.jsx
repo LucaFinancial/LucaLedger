@@ -38,16 +38,16 @@ export default function StatementCard({
   compact = false,
 }) {
   const issues = useSelector(
-    statementSelectors.selectStatementIssues(statement.id)
+    statementSelectors.selectStatementIssues(statement.id),
   );
 
   // Get statement with both stored and calculated values
   const statementDataSelector = useMemo(
     () => statementSelectors.selectStatementWithCalculations(statement.id),
-    [statement.id]
+    [statement.id],
   );
   const statementData = useSelector(statementDataSelector);
-  const { stored, isOutOfSync } = statementData;
+  const { stored, calculated, isOutOfSync } = statementData;
 
   // Display stored values
   const { startingBalance, endingBalance, totalCharges, totalPayments } =
@@ -59,18 +59,18 @@ export default function StatementCard({
   ].join(' · ');
 
   const periodStartFormatted = format(
-    parseISO(statement.periodStart.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    parseISO(statement.startDate.replace(/\//g, '-')),
+    'MMM d, yyyy',
   );
   const periodEndFormatted = format(
-    parseISO(statement.periodEnd.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    parseISO(statement.endDate.replace(/\//g, '-')),
+    'MMM d, yyyy',
   );
 
-  // Format statement period as "Month YYYY" (e.g., "November 2025")
-  const statementPeriodFormatted = statement.statementPeriod
-    ? format(parseISO(`${statement.statementPeriod}-01`), 'MMMM yyyy')
-    : null;
+  const statementPeriodFormatted = format(
+    parseISO(statement.endDate.replace(/\//g, '-')),
+    'MMMM yyyy',
+  );
 
   return (
     <Card
@@ -82,8 +82,8 @@ export default function StatementCard({
           statement.status === 'current'
             ? 'primary.main'
             : statement.status === 'locked'
-            ? 'error.main'
-            : 'grey.300',
+              ? 'error.main'
+              : 'grey.300',
       }}
     >
       <CardContent sx={{ py: compact ? 1 : 2, '&:last-child': { pb: 1.5 } }}>
@@ -93,12 +93,7 @@ export default function StatementCard({
           alignItems='flex-start'
         >
           <Box flex={1}>
-            <Box
-              display='flex'
-              alignItems='center'
-              gap={1}
-              mb={0.5}
-            >
+            <Box display='flex' alignItems='center' gap={1} mb={0.5}>
               <Box>
                 <Typography
                   variant={compact ? 'body2' : 'h6'}
@@ -107,14 +102,9 @@ export default function StatementCard({
                   {statementPeriodFormatted ||
                     `${periodStartFormatted} - ${periodEndFormatted}`}
                 </Typography>
-                {statementPeriodFormatted && (
-                  <Typography
-                    variant='caption'
-                    color='text.secondary'
-                  >
-                    {periodStartFormatted} - {periodEndFormatted}
-                  </Typography>
-                )}
+                <Typography variant='caption' color='text.secondary'>
+                  {periodStartFormatted} - {periodEndFormatted}
+                </Typography>
               </Box>
               <StatementStatusBadge
                 status={statement.status}
@@ -174,45 +164,24 @@ export default function StatementCard({
               color='text.secondary'
               sx={{ mb: compact ? 0.5 : 1 }}
             >
-              {statement.transactionIds.length} transaction
-              {statement.transactionIds.length !== 1 ? 's' : ''}
+              {calculated.transactionIds.length} transaction
+              {calculated.transactionIds.length !== 1 ? 's' : ''}
             </Typography>
 
-            <Typography
-              variant={compact ? 'body1' : 'h6'}
-              fontWeight='bold'
-            >
+            <Typography variant={compact ? 'body1' : 'h6'} fontWeight='bold'>
               Ending Balance: {formatCurrency(endingBalance)}
             </Typography>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-              sx={{ mt: 0.5 }}
-            >
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
               {summaryText}
             </Typography>
 
-            {(statement.isStartDateModified || statement.isEndDateModified) && (
-              <Typography
-                variant='caption'
-                color='warning.main'
-                sx={{ mt: 0.5, display: 'block' }}
-              >
-                ⚠️ Manually modified
-              </Typography>
-            )}
+            {null}
           </Box>
 
-          <Box
-            display='flex'
-            gap={0.5}
-          >
+          <Box display='flex' gap={0.5}>
             {onView && (
               <Tooltip title='View Details'>
-                <IconButton
-                  size='small'
-                  onClick={() => onView(statement)}
-                >
+                <IconButton size='small' onClick={() => onView(statement)}>
                   <Visibility fontSize='small' />
                 </IconButton>
               </Tooltip>
@@ -232,10 +201,7 @@ export default function StatementCard({
 
             {statement.status === 'locked' && (
               <Tooltip title='Locked'>
-                <IconButton
-                  size='small'
-                  disabled
-                >
+                <IconButton size='small' disabled>
                   <Lock fontSize='small' />
                 </IconButton>
               </Tooltip>
@@ -251,19 +217,13 @@ StatementCard.propTypes = {
   statement: PropTypes.shape({
     id: PropTypes.string.isRequired,
     accountId: PropTypes.string.isRequired,
-    closingDate: PropTypes.string.isRequired,
-    periodStart: PropTypes.string.isRequired,
-    periodEnd: PropTypes.string.isRequired,
-    transactionIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+    startDate: PropTypes.string.isRequired,
+    endDate: PropTypes.string.isRequired,
     startingBalance: PropTypes.number,
     endingBalance: PropTypes.number,
     totalCharges: PropTypes.number,
     totalPayments: PropTypes.number,
     status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
-    isStartDateModified: PropTypes.bool.isRequired,
-    isEndDateModified: PropTypes.bool.isRequired,
-    isTotalModified: PropTypes.bool,
-    statementPeriod: PropTypes.string,
   }).isRequired,
   onView: PropTypes.func,
   onLock: PropTypes.func,

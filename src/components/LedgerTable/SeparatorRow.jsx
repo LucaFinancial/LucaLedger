@@ -3,6 +3,7 @@ import { IconButton, TableCell, TableRow } from '@mui/material';
 import { format, getYear, parseISO } from 'date-fns';
 import PropTypes from 'prop-types';
 import YearControls from './YearControls';
+import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 
 export default function SeparatorRow({
   transaction,
@@ -13,6 +14,7 @@ export default function SeparatorRow({
   onExpandYear,
   onCollapseYear,
   selectedCount,
+  monthKey,
 }) {
   const date = parseISO(transaction.date.replace(/\//g, '-'));
   const formatStr = isYear ? 'yyyy' : 'MMMM yyyy';
@@ -25,7 +27,7 @@ export default function SeparatorRow({
       : format(parseISO(transaction.date.replace(/\//g, '-')), 'MMyyyy') ===
         format(
           parseISO(previousTransaction.date.replace(/\//g, '-')),
-          'MMyyyy'
+          'MMyyyy',
         ))
   ) {
     return null;
@@ -33,6 +35,7 @@ export default function SeparatorRow({
 
   return (
     <TableRow
+      data-month-key={monthKey}
       sx={{
         '& td': {
           borderBottom: 'unset',
@@ -49,16 +52,13 @@ export default function SeparatorRow({
       }}
     >
       <TableCell
-        colSpan={8}
+        colSpan={LEDGER_COLUMN_COUNT}
         sx={{
           paddingLeft: isYear ? '16px' : '32px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <IconButton
-            size='small'
-            onClick={onToggleCollapse}
-          >
+          <IconButton size='small' onClick={onToggleCollapse}>
             {isCollapsed ? (
               <KeyboardArrowRight fontSize='small' />
             ) : (
@@ -93,6 +93,7 @@ SeparatorRow.propTypes = {
   onExpandYear: PropTypes.func,
   onCollapseYear: PropTypes.func,
   selectedCount: PropTypes.number,
+  monthKey: PropTypes.string,
 };
 
 SeparatorRow.defaultProps = {

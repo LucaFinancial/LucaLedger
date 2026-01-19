@@ -3,17 +3,14 @@ import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
 import { StatementStatusEnum } from './constants';
-import { validateStatementSync } from '@/validation/validator';
-import { calculateStatementPeriod } from './utils';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Generates a new statement with default values
  * @param {Object} initialData - Initial data to populate the statement
  * @param {string} initialData.accountId - Required: Account ID
- * @param {string} initialData.closingDate - Required: Statement closing date
- * @param {string} initialData.periodStart - Required: Period start date
- * @param {string} initialData.periodEnd - Required: Period end date
- * @param {Array<string>} initialData.transactionIds - Optional: Transaction IDs
+ * @param {string} initialData.startDate - Required: Period start date
+ * @param {string} initialData.endDate - Required: Period end date
  * @param {number} initialData.total - Optional legacy total (falls back to endingBalance)
  * @param {string} initialData.status - Optional: Statement status
  * @returns {Object|null} The generated statement or null if validation fails
@@ -21,23 +18,17 @@ import { calculateStatementPeriod } from './utils';
 export const generateStatement = (initialData = {}) => {
   const now = new Date().toISOString();
 
-  const closingDate =
-    initialData.closingDate || format(new Date(), config.dateFormatString);
-
-  // Calculate statementPeriod from closingDate to ensure consistency
-  const statementPeriod = calculateStatementPeriod(closingDate);
+  const endDate =
+    initialData.endDate ||
+    format(subDays(new Date(), 1), config.dateFormatString);
 
   const statement = {
     id: uuid(),
     accountId: initialData.accountId || null,
-    closingDate,
-    periodStart:
-      initialData.periodStart ||
+    startDate:
+      initialData.startDate ||
       format(subMonths(new Date(), 1), config.dateFormatString),
-    periodEnd:
-      initialData.periodEnd ||
-      format(subDays(new Date(), 1), config.dateFormatString),
-    transactionIds: initialData.transactionIds || [],
+    endDate,
     startingBalance:
       typeof initialData.startingBalance === 'number'
         ? initialData.startingBalance
@@ -46,8 +37,8 @@ export const generateStatement = (initialData = {}) => {
       typeof initialData.endingBalance === 'number'
         ? initialData.endingBalance
         : typeof initialData.total === 'number'
-        ? initialData.total
-        : 0,
+          ? initialData.total
+          : 0,
     totalCharges:
       typeof initialData.totalCharges === 'number'
         ? initialData.totalCharges
@@ -57,15 +48,10 @@ export const generateStatement = (initialData = {}) => {
         ? initialData.totalPayments
         : 0,
     status: initialData.status || StatementStatusEnum.DRAFT,
-    isStartDateModified: initialData.isStartDateModified || false,
-    isEndDateModified: initialData.isEndDateModified || false,
-    isTotalModified: initialData.isTotalModified || false,
     createdAt: now,
     updatedAt: now,
-    lockedAt: initialData.lockedAt || null,
-    // Spread initialData but ensure statementPeriod is never overwritten
+    // Spread initialData last to allow overrides for startDate/endDate
     ...initialData,
-    statementPeriod, // Always use calculated value from closingDate
   };
 
   if (typeof statement.startingBalance !== 'number') {
@@ -79,7 +65,7 @@ export const generateStatement = (initialData = {}) => {
   }
 
   try {
-    validateStatementSync(statement);
+    validateSchemaSync('statement', statement);
     return statement;
   } catch (error) {
     console.error('Statement validation failed:', error);

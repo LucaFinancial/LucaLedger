@@ -15,20 +15,33 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 3;
+const DB_VERSION = 5;
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
 
 // Define schema with multi-user support
-// Version 3 adds users table for multi-user authentication
+// Version 4 adds recurring transactions and occurrences
 db.version(DB_VERSION).stores({
   users: 'id, username', // User table with unique usernames
   accounts: 'id, userId', // Per-user accounts
   transactions: 'id, userId', // Per-user transactions
   categories: 'id, userId', // Per-user categories
   statements: 'id, userId', // Per-user statements
+  recurringTransactions: 'id, userId', // Per-user recurring transactions
+  recurringTransactionEvents: 'id, userId', // Per-user recurring transaction events
+  transactionSplits: 'id, userId', // Per-user transaction splits
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
+});
+
+// Upgrade from version 2 to 3 - add userId to existing records
+db.version(3).stores({
+  users: 'id, username',
+  accounts: 'id, userId',
+  transactions: 'id, userId',
+  categories: 'id, userId',
+  statements: 'id, userId',
+  metadata: 'key',
 });
 
 // Upgrade from version 2 to 3 - add userId to existing records
@@ -94,7 +107,7 @@ export async function getAllEncryptedRecords(storeName, dek) {
       const iv = base64ToUint8Array(record.iv);
       const ciphertext = base64ToArrayBuffer(record.ciphertext);
       return decrypt(ciphertext, iv, dek);
-    })
+    }),
   );
 
   return decryptedRecords;
@@ -175,7 +188,7 @@ export async function batchStoreEncryptedRecords(storeName, records, dek) {
         iv: uint8ArrayToBase64(iv),
         ciphertext: arrayBufferToBase64(ciphertext),
       };
-    })
+    }),
   );
 
   await db[storeName].bulkPut(encryptedRecords);
@@ -203,7 +216,7 @@ export async function createUser(
   wrappedDEK,
   wrappedDEKIV,
   sentinel,
-  sentinelIV
+  sentinelIV,
 ) {
   // Check if username already exists
   const existingUser = await db.users
@@ -295,7 +308,7 @@ export async function storeUserEncryptedRecord(
   id,
   data,
   dek,
-  userId
+  userId,
 ) {
   const { ciphertext, iv } = await encrypt(data, dek);
 
@@ -324,7 +337,7 @@ export async function getUserEncryptedRecords(storeName, dek, userId) {
       const iv = base64ToUint8Array(record.iv);
       const ciphertext = base64ToArrayBuffer(record.ciphertext);
       return decrypt(ciphertext, iv, dek);
-    })
+    }),
   );
 
   return decryptedRecords;
@@ -342,7 +355,7 @@ export async function batchStoreUserEncryptedRecords(
   storeName,
   records,
   dek,
-  userId
+  userId,
 ) {
   const encryptedRecords = await Promise.all(
     records.map(async ({ id, data }) => {
@@ -353,7 +366,7 @@ export async function batchStoreUserEncryptedRecords(
         iv: uint8ArrayToBase64(iv),
         ciphertext: arrayBufferToBase64(ciphertext),
       };
-    })
+    }),
   );
 
   await db[storeName].bulkPut(encryptedRecords);

@@ -18,14 +18,17 @@ const categories = createSlice({
     updateCategory: (state, action) => {
       const index = state.findIndex((cat) => cat.id === action.payload.id);
       if (index !== -1) {
-        state[index] = action.payload;
+        state[index] = {
+          ...action.payload,
+          updatedAt: new Date().toISOString(),
+        };
       }
     },
     removeCategory: (state, action) => {
       const categoryId = action.payload;
       // Remove the category and all its children
       return state.filter(
-        (cat) => cat.id !== categoryId && cat.parentId !== categoryId
+        (cat) => cat.id !== categoryId && cat.parentId !== categoryId,
       );
     },
   },

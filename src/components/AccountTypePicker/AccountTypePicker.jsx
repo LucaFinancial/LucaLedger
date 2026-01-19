@@ -18,15 +18,19 @@ export default function AccountTypePicker({ account }) {
     const { value } = event.target;
     setType(value);
     if (value === constants.AccountType.CREDIT_CARD) {
-      const updatedAccount = { ...account, type: value, statementDay: 1 };
+      const updatedAccount = {
+        ...account,
+        type: value,
+        statementClosingDay: 1,
+      };
       dispatch(actions.updateAccount(updatedAccount));
     } else {
       dispatch(
         actions.updateAccountProperty(
           account,
           constants.AccountFields.TYPE,
-          value
-        )
+          value,
+        ),
       );
     }
   };
@@ -43,10 +47,7 @@ export default function AccountTypePicker({ account }) {
         style={{ width: '150px' }}
       >
         {Object.keys(constants.AccountType).map((key) => (
-          <MenuItem
-            key={key}
-            value={constants.AccountType[key]}
-          >
+          <MenuItem key={key} value={constants.AccountType[key]}>
             {constants.AccountType[key]}
           </MenuItem>
         ))}

@@ -16,16 +16,14 @@ export default function StatementsPanel({ accountId }) {
 
   // Get all statements for this account
   const accountStatements = useSelector(
-    statementSelectors.selectStatementsByAccountId(accountId)
+    statementSelectors.selectStatementsByAccountId(accountId),
   );
 
-  // Sort by closing date descending
+  // Sort by end date descending
   const statements = useMemo(
     () =>
-      [...accountStatements].sort((a, b) =>
-        b.closingDate.localeCompare(a.closingDate)
-      ),
-    [accountStatements]
+      [...accountStatements].sort((a, b) => b.endDate.localeCompare(a.endDate)),
+    [accountStatements],
   );
 
   const handleView = (statement) => {
@@ -59,17 +57,10 @@ export default function StatementsPanel({ accountId }) {
   if (statements.length === 0) {
     return (
       <Paper sx={{ p: 3, textAlign: 'center' }}>
-        <Typography
-          variant='body1'
-          color='text.secondary'
-          gutterBottom
-        >
+        <Typography variant='body1' color='text.secondary' gutterBottom>
           No statements available
         </Typography>
-        <Typography
-          variant='body2'
-          color='text.secondary'
-        >
+        <Typography variant='body2' color='text.secondary'>
           Statements will be automatically generated when you view this account
         </Typography>
       </Paper>

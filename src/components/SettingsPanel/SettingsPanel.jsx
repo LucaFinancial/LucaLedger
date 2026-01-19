@@ -10,10 +10,11 @@ import {
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo, useState } from 'react';
-import { format, parseISO, endOfYear, isBefore, isSameDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 import BalanceDisplay from '@/components/BalanceDisplay';
+import RecurringTransactionsPanel from '@/components/RecurringTransactionsPanel';
 import {
   selectors as transactionSelectors,
   constants as transactionConstants,
@@ -24,13 +25,13 @@ import { centsToDollars } from '@/utils';
 
 export default function SettingsPanel({ account, selectedYear }) {
   const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(account.id)
+    transactionSelectors.selectTransactionsByAccountId(account.id),
   );
   const categories = useSelector(categorySelectors.selectAllCategories);
 
   // Month selector state for category spending
   const [selectedMonth, setSelectedMonth] = useState(
-    format(new Date(), 'yyyy-MM')
+    format(new Date(), 'yyyy-MM'),
   );
 
   // View selector state for category spending (current, pending, scheduled)
@@ -39,42 +40,45 @@ export default function SettingsPanel({ account, selectedYear }) {
   // Filter transactions by selected year for income/expense/category stats
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
+    if (selectedYear === 'rolling') {
+      // For rolling view stats, default to current year or handle differently
+      // For now, let's use current year to show relevant stats
+      const currentYear = format(new Date(), 'yyyy');
+      return transactions.filter(
+        (t) =>
+          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === currentYear,
+      );
+    }
     return transactions.filter(
       (t) =>
-        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
+        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear,
     );
   }, [transactions, selectedYear]);
 
-  // For balances, use ALL transactions up to the end of the selected year
+  // For balances, use ALL transactions regardless of selected year
   const balanceTransactions = useMemo(() => {
-    if (selectedYear === 'all') return transactions;
-    // Use parseISO to properly parse the date string and avoid timezone issues
-    const endOfYearDate = endOfYear(parseISO(`${selectedYear}-01-01`));
-    return transactions.filter((t) => {
-      const txDate = parseISO(t.date.replace(/\//g, '-'));
-      return (
-        isBefore(txDate, endOfYearDate) || isSameDay(txDate, endOfYearDate)
-      );
-    });
-  }, [transactions, selectedYear]);
+    return transactions;
+  }, [transactions]);
 
   // Calculate balances with correct status values (no trailing spaces)
   const currentBalance = useMemo(() => {
-    return balanceTransactions
+    const initialBalance = account.initialBalance || 0;
+    const transactionSum = balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.COMPLETE
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED,
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
-  }, [balanceTransactions]);
+    return initialBalance + transactionSum;
+  }, [balanceTransactions, account.initialBalance]);
 
   const pendingAmount = useMemo(() => {
     return balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.PENDING
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.PENDING,
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
   }, [balanceTransactions]);
@@ -87,8 +91,8 @@ export default function SettingsPanel({ account, selectedYear }) {
     return balanceTransactions
       .filter(
         (transaction) =>
-          transaction.status ===
-          transactionConstants.TransactionStatusEnum.SCHEDULED
+          transaction.transactionState ===
+          transactionConstants.TransactionStateEnum.SCHEDULED,
       )
       .reduce((acc, transaction) => acc + Number(transaction.amount), 0);
   }, [balanceTransactions]);
@@ -104,7 +108,7 @@ export default function SettingsPanel({ account, selectedYear }) {
 
     // For credit cards, expenses are positive amounts; for checking/savings, they're negative
     let expenses = yearFilteredTransactions.filter((t) =>
-      isCreditCard ? Number(t.amount) > 0 : Number(t.amount) < 0
+      isCreditCard ? Number(t.amount) > 0 : Number(t.amount) < 0,
     );
 
     // Apply month filter first
@@ -121,20 +125,27 @@ export default function SettingsPanel({ account, selectedYear }) {
     let rankingTransactions = expenses;
     if (selectedView === 'current') {
       rankingTransactions = expenses.filter(
-        (t) => t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+        (t) =>
+          t.transactionState ===
+          transactionConstants.TransactionStateEnum.COMPLETED,
       );
     } else if (selectedView === 'pending') {
       rankingTransactions = expenses.filter(
         (t) =>
-          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
-          t.status === transactionConstants.TransactionStatusEnum.PENDING
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.COMPLETED ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.PENDING,
       );
     } else if (selectedView === 'scheduled') {
       rankingTransactions = expenses.filter(
         (t) =>
-          t.status === transactionConstants.TransactionStatusEnum.COMPLETE ||
-          t.status === transactionConstants.TransactionStatusEnum.PENDING ||
-          t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.COMPLETED ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.PENDING ||
+          t.transactionState ===
+            transactionConstants.TransactionStateEnum.SCHEDULED,
       );
     }
 
@@ -154,26 +165,26 @@ export default function SettingsPanel({ account, selectedYear }) {
     // Now calculate separate amounts by status for all categories
     const categoryDetails = allCategoryIds.map((categoryId) => {
       const categoryTransactions = expenses.filter(
-        (t) => t.categoryId === categoryId
+        (t) => t.categoryId === categoryId,
       );
 
       const completedTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStatusEnum.COMPLETE
+            t.status === transactionConstants.TransactionStateEnum.COMPLETED,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const pendingTotal = categoryTransactions
         .filter(
-          (t) => t.status === transactionConstants.TransactionStatusEnum.PENDING
+          (t) => t.status === transactionConstants.TransactionStateEnum.PENDING,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const scheduledTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStatusEnum.SCHEDULED
+            t.status === transactionConstants.TransactionStateEnum.SCHEDULED,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
@@ -215,14 +226,19 @@ export default function SettingsPanel({ account, selectedYear }) {
         flexDirection: 'column',
         py: 2,
         px: 0.5,
+        overflow: 'hidden',
       }}
     >
+      {/* Recurring Transactions Panel */}
+      <Box sx={{ px: 1.5, flexShrink: 0, mb: 2 }}>
+        <RecurringTransactionsPanel accountId={account.id} />
+      </Box>
+
+      <Divider sx={{ flexShrink: 0 }} />
+
       {/* Balances */}
-      <Box sx={{ px: 1.5, flexShrink: 0 }}>
-        <BalanceDisplay
-          label='Current Balance'
-          balance={currentBalance}
-        />
+      <Box sx={{ px: 1.5, flexShrink: 0, mt: 2 }}>
+        <BalanceDisplay label='Current Balance' balance={currentBalance} />
         <BalanceDisplay
           label='Pending Balance'
           balance={pendingBalance}
@@ -282,10 +298,7 @@ export default function SettingsPanel({ account, selectedYear }) {
             >
               <MenuItem value='all'>All Year</MenuItem>
               {availableMonths.map((month) => (
-                <MenuItem
-                  key={month}
-                  value={month}
-                >
+                <MenuItem key={month} value={month}>
                   {format(parseISO(month + '-01'), 'MMMM yyyy')}
                 </MenuItem>
               ))}
@@ -354,10 +367,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                 flexShrink: 0,
               }}
             >
-              <ResponsiveContainer
-                width='100%'
-                height='100%'
-              >
+              <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
                   <Pie
                     data={
@@ -397,10 +407,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                         );
                       })
                     ) : (
-                      <Cell
-                        key='no-data'
-                        fill='#e0e0e0'
-                      />
+                      <Cell key='no-data' fill='#e0e0e0' />
                     )}
                   </Pie>
                   {topCategories.length > 0 && (
@@ -442,7 +449,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                   {topCategories.map((cat, index) => {
                     const total = topCategories.reduce(
                       (sum, c) => sum + c.rankingTotal,
-                      0
+                      0,
                     );
                     const percentage = (
                       (cat.rankingTotal / total) *
@@ -548,10 +555,10 @@ export default function SettingsPanel({ account, selectedYear }) {
                                 selectedView === 'current'
                                   ? cat.completedTotal
                                   : selectedView === 'pending'
-                                  ? cat.completedTotal + cat.pendingTotal
-                                  : cat.completedTotal +
-                                    cat.pendingTotal +
-                                    cat.scheduledTotal
+                                    ? cat.completedTotal + cat.pendingTotal
+                                    : cat.completedTotal +
+                                      cat.pendingTotal +
+                                      cat.scheduledTotal,
                               ).toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
@@ -617,7 +624,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                                   >
                                     $
                                     {centsToDollars(
-                                      cat.pendingTotal
+                                      cat.pendingTotal,
                                     ).toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,
@@ -669,7 +676,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                                   >
                                     $
                                     {centsToDollars(
-                                      cat.scheduledTotal
+                                      cat.scheduledTotal,
                                     ).toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,

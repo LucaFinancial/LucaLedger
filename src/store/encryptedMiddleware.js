@@ -52,7 +52,7 @@ async function flushWriteQueue() {
         id,
         data,
         currentDEK,
-        currentUserId
+        currentUserId,
       );
     }
   } catch (error) {
@@ -66,7 +66,7 @@ async function flushWriteQueue() {
 function queueWrite(storeName, id, data) {
   // Add or update in queue
   const existingIndex = writeQueue.findIndex(
-    (item) => item.storeName === storeName && item.id === id
+    (item) => item.storeName === storeName && item.id === id,
   );
 
   if (existingIndex >= 0) {
@@ -129,7 +129,7 @@ function handleEncryptedPersistence(action, state) {
           'accounts',
           accountRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist accounts to IndexedDB:', error);
         });
@@ -160,7 +160,7 @@ function handleEncryptedPersistence(action, state) {
           'transactions',
           transactionRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist transactions to IndexedDB:', error);
         });
@@ -197,7 +197,7 @@ function handleEncryptedPersistence(action, state) {
     });
     // Delete all subcategories (children) of this category
     const children = state.categories.filter(
-      (cat) => cat.parentId === categoryId
+      (cat) => cat.parentId === categoryId,
     );
     children.forEach((child) => {
       db.categories.delete(child.id).catch((error) => {
@@ -217,7 +217,7 @@ function handleEncryptedPersistence(action, state) {
           'categories',
           categoryRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist categories to IndexedDB:', error);
         });
@@ -252,7 +252,7 @@ function handleEncryptedPersistence(action, state) {
           'statements',
           statementRecords,
           currentDEK,
-          currentUserId
+          currentUserId,
         ).catch((error) => {
           console.error('Failed to persist statements to IndexedDB:', error);
         });
@@ -263,6 +263,126 @@ function handleEncryptedPersistence(action, state) {
     const statementId = action.payload;
     db.statements.delete(statementId).catch((error) => {
       console.error('Failed to delete statement from IndexedDB:', error);
+    });
+  }
+
+  // Handle recurring transaction actions
+  if (action.type === 'recurringTransactions/addRecurringTransaction') {
+    queueWrite('recurringTransactions', action.payload.id, action.payload);
+  } else if (
+    action.type === 'recurringTransactions/updateRecurringTransaction'
+  ) {
+    queueWrite('recurringTransactions', action.payload.id, action.payload);
+  } else if (action.type === 'recurringTransactions/setRecurringTransactions') {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((rt) => ({
+          id: rt.id,
+          data: rt,
+        }));
+        batchStoreUserEncryptedRecords(
+          'recurringTransactions',
+          records,
+          currentDEK,
+          currentUserId,
+        ).catch((error) => {
+          console.error(
+            'Failed to persist recurring transactions to IndexedDB:',
+            error,
+          );
+        });
+      });
+    }
+  } else if (
+    action.type === 'recurringTransactions/removeRecurringTransaction'
+  ) {
+    const id = action.payload;
+    db.recurringTransactions.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete recurring transaction from IndexedDB:',
+        error,
+      );
+    });
+  }
+
+  // Handle recurring transaction event actions
+  if (
+    action.type === 'recurringTransactionEvents/addRecurringTransactionEvent'
+  ) {
+    queueWrite('recurringTransactionEvents', action.payload.id, action.payload);
+  } else if (
+    action.type === 'recurringTransactionEvents/setRecurringTransactionEvents'
+  ) {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((event) => ({
+          id: event.id,
+          data: event,
+        }));
+        batchStoreUserEncryptedRecords(
+          'recurringTransactionEvents',
+          records,
+          currentDEK,
+          currentUserId,
+        ).catch((error) => {
+          console.error(
+            'Failed to persist recurring transaction events to IndexedDB:',
+            error,
+          );
+        });
+      });
+    }
+  } else if (
+    action.type === 'recurringTransactionEvents/removeRecurringTransactionEvent'
+  ) {
+    const id = action.payload;
+    db.recurringTransactionEvents.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete recurring transaction event from IndexedDB:',
+        error,
+      );
+    });
+  }
+
+  // Handle transaction split actions
+  if (action.type === 'transactionSplits/addTransactionSplit') {
+    queueWrite('transactionSplits', action.payload.id, action.payload);
+  } else if (action.type === 'transactionSplits/updateTransactionSplit') {
+    queueWrite('transactionSplits', action.payload.id, action.payload);
+  } else if (action.type === 'transactionSplits/setTransactionSplits') {
+    if (currentDEK && currentUserId) {
+      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
+        const records = action.payload.map((split) => ({
+          id: split.id,
+          data: split,
+        }));
+        batchStoreUserEncryptedRecords(
+          'transactionSplits',
+          records,
+          currentDEK,
+          currentUserId,
+        ).catch((error) => {
+          console.error(
+            'Failed to persist transaction splits to IndexedDB:',
+            error,
+          );
+        });
+      });
+    }
+  } else if (
+    action.type === 'transactionSplits/setTransactionSplitsForTransaction'
+  ) {
+    const { splits } = action.payload;
+    splits.forEach((split) => {
+      queueWrite('transactionSplits', split.id, split);
+    });
+  } else if (action.type === 'transactionSplits/removeTransactionSplit') {
+    const id = action.payload;
+    db.transactionSplits.delete(id).catch((error) => {
+      console.error(
+        'Failed to delete transaction split from IndexedDB:',
+        error,
+      );
     });
   }
 }

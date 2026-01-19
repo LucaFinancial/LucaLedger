@@ -8,13 +8,14 @@ import { useParams } from 'react-router-dom';
 
 import config from '@/config';
 import { actions, constants } from '@/store/transactions';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function DateCell({ transaction }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [dateValue, setDateValue] = useState(
-    parseISO(transaction.date.replace(/\//g, '-'))
+    parseISO(transaction.date.replace(/\//g, '-')),
   );
 
   // Sync local state when transaction.date changes (e.g., from bulk edit)
@@ -29,8 +30,8 @@ export default function DateCell({ transaction }) {
           accountId,
           transaction,
           constants.TransactionFields.DATE,
-          format(value, config.dateFormatString)
-        )
+          format(value, config.dateFormatString),
+        ),
       );
     }
   };
@@ -51,7 +52,7 @@ export default function DateCell({ transaction }) {
   };
 
   return (
-    <TableCell style={{ cursor: 'pointer', width: '160px' }}>
+    <TableCell sx={LEDGER_COLUMN_STYLES.date}>
       {isOpen ? (
         <DatePicker
           open={isOpen}

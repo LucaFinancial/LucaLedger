@@ -1,19 +1,16 @@
 import { TableCell } from '@mui/material';
 import PropTypes from 'prop-types';
 
-import TransactionStatusSelect from '@/components/TransactionStatusSelect';
+import TransactionStateSelect from '@/components/TransactionStateSelect';
+import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
-export default function StatusCell({ transaction, isSelected }) {
+export default function StatusCell({ transaction, isSelected, isVirtual }) {
   return (
-    <TableCell
-      style={{
-        width: '130px',
-        paddingLeft: '10px',
-      }}
-    >
-      <TransactionStatusSelect
+    <TableCell sx={LEDGER_COLUMN_STYLES.status}>
+      <TransactionStateSelect
         transaction={transaction}
         isSelected={isSelected}
+        isVirtual={isVirtual}
       />
     </TableCell>
   );
@@ -22,4 +19,5 @@ export default function StatusCell({ transaction, isSelected }) {
 StatusCell.propTypes = {
   transaction: PropTypes.object.isRequired,
   isSelected: PropTypes.bool,
+  isVirtual: PropTypes.bool,
 };

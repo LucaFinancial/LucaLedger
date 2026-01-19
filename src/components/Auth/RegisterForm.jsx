@@ -15,6 +15,8 @@ import {
   InputAdornment,
   IconButton,
   Link,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Visibility,
@@ -27,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '@/auth';
 import { generateSecurePassword } from '@/crypto/encryption';
+import TermsOfServiceModal from '../TermsOfServiceModal';
 
 export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
   const { register, isUsernameAvailable } = useAuth();
@@ -39,6 +42,8 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
+  const [showTosModal, setShowTosModal] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef(null);
 
@@ -108,6 +113,7 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
     if (password.length < 8) return false;
     if (password !== confirmPassword) return false;
     if (isGenerated && !passwordCopied) return false;
+    if (!agreedToDisclaimer) return false;
     return true;
   };
 
@@ -159,19 +165,12 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
           >
             Luca Ledger
           </Typography>
-          <Typography
-            variant='body2'
-            color='text.secondary'
-          >
+          <Typography variant='body2' color='text.secondary'>
             Create a new account to get started
           </Typography>
         </Box>
 
-        <Alert
-          severity='warning'
-          icon={<WarningIcon />}
-          sx={{ mb: 3 }}
-        >
+        <Alert severity='warning' icon={<WarningIcon />} sx={{ mb: 3 }}>
           <Typography variant='body2'>
             <strong>Important:</strong> Your password cannot be recovered if
             lost. All your financial data is encrypted with your password and
@@ -180,10 +179,7 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
         </Alert>
 
         {error && (
-          <Alert
-            severity='error'
-            sx={{ mb: 2 }}
-          >
+          <Alert severity='error' sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
@@ -250,7 +246,54 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
                 ? 'Passwords do not match'
                 : ''
             }
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={agreedToDisclaimer}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setShowTosModal(true);
+                  } else {
+                    setAgreedToDisclaimer(false);
+                  }
+                }}
+                color='primary'
+                size='small'
+              />
+            }
+            label={
+              <Typography variant='caption' color='text.secondary'>
+                I have read and agree to the{' '}
+                <Link
+                  component='button'
+                  variant='caption'
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowTosModal(true);
+                  }}
+                >
+                  Terms of Service
+                </Link>
+                .
+              </Typography>
+            }
+            sx={{ mb: 2 }}
+          />
+
+          <TermsOfServiceModal
+            open={showTosModal}
+            onClose={() => setShowTosModal(false)}
+            onAgree={
+              !agreedToDisclaimer
+                ? () => {
+                    setAgreedToDisclaimer(true);
+                    setShowTosModal(false);
+                  }
+                : undefined
+            }
           />
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
@@ -275,20 +318,17 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
               {isLoading
                 ? 'Creating...'
                 : isGenerated && !passwordCopied && countdown === 0
-                ? 'Copy Password to Enable'
-                : isGenerated && passwordCopied && countdown > 0
-                ? `Create in ${countdown}s`
-                : 'Create Account'}
+                  ? 'Copy Password to Enable'
+                  : isGenerated && passwordCopied && countdown > 0
+                    ? `Create in ${countdown}s`
+                    : 'Create Account'}
             </Button>
           </Box>
         </form>
 
         {showBackToLogin && (
           <Box sx={{ textAlign: 'center', mt: 2 }}>
-            <Typography
-              variant='body2'
-              color='text.secondary'
-            >
+            <Typography variant='body2' color='text.secondary'>
               Already have an account?{' '}
               <Link
                 component='button'

@@ -25,12 +25,7 @@ const parseDateSafe = (dateStr) => {
 };
 
 const getSortDate = (statement, overrideStart) => {
-  const candidates = [
-    overrideStart,
-    statement.periodStart,
-    statement.periodEnd,
-    statement.closingDate,
-  ];
+  const candidates = [overrideStart, statement.startDate, statement.endDate];
   for (const candidate of candidates) {
     const parsed = parseDateSafe(candidate);
     if (parsed) {
@@ -65,7 +60,7 @@ const getPreviousEndingBalance = (statements, closingDate) => {
 
   let balance = 0;
   statements.forEach((stmt) => {
-    const stmtClosing = parseDateSafe(stmt.closingDate);
+    const stmtClosing = parseDateSafe(stmt.endDate);
     if (stmtClosing && stmtClosing < closing) {
       balance = getStatementEndingBalance(stmt);
     }
@@ -75,42 +70,38 @@ const getPreviousEndingBalance = (statements, closingDate) => {
 
 /**
  * Creates a new statement for an account
- * @param {Object} statementData - Statement data (accountId, closingDate, periodStart, periodEnd, etc.)
+ * @param {Object} statementData - Statement data (accountId, startDate, endDate, etc.)
  */
 export const createNewStatement = (statementData) => (dispatch, getState) => {
   const state = getState();
   const transactions = state.transactions;
   const accountStatements = state.statements.filter(
-    (s) => s.accountId === statementData.accountId
+    (s) => s.accountId === statementData.accountId,
   );
 
   const accountTransactions = transactions.filter(
-    (t) => t.accountId === statementData.accountId
+    (t) => t.accountId === statementData.accountId,
   );
-  const transactionIds =
-    statementData.transactionIds && statementData.transactionIds.length > 0
-      ? statementData.transactionIds
-      : getTransactionsInPeriod(
-          accountTransactions,
-          statementData.periodStart,
-          statementData.periodEnd
-        );
+  const transactionIds = getTransactionsInPeriod(
+    accountTransactions,
+    statementData.startDate,
+    statementData.endDate,
+  );
 
   const { totalCharges, totalPayments } = summarizeStatementTransactions(
     transactions,
-    transactionIds
+    transactionIds,
   );
 
   const startingBalance = getPreviousEndingBalance(
     accountStatements,
-    statementData.closingDate
+    statementData.endDate,
   );
 
   const endingBalance = startingBalance + totalCharges - totalPayments;
 
   const enrichedStatement = {
     ...statementData,
-    transactionIds,
     totalCharges,
     totalPayments,
     startingBalance,
@@ -126,7 +117,7 @@ export const createNewStatement = (statementData) => (dispatch, getState) => {
 
 /**
  * Updates a statement property
- * If periodStart or periodEnd changes, automatically adjusts adjacent statements to prevent overlaps
+ * If startDate or endDate changes, automatically adjusts adjacent statements to prevent overlaps
  * @param {string} statementId - Statement ID
  * @param {Object} updates - Object with properties to update
  */
@@ -147,14 +138,14 @@ export const updateStatementProperty =
     }
 
     const accountStatements = state.statements.filter(
-      (s) => s.accountId === statement.accountId
+      (s) => s.accountId === statement.accountId,
     );
 
     const sortedStatements = accountStatements
       .map((s) => {
         const overrideStart =
-          s.id === statementId && updates.periodStart
-            ? updates.periodStart
+          s.id === statementId && updates.startDate
+            ? updates.startDate
             : undefined;
         const sortDate = getSortDate(s, overrideStart);
         return {
@@ -165,7 +156,7 @@ export const updateStatementProperty =
       .sort((a, b) => a.__sortValue - b.__sortValue);
 
     const currentIndex = sortedStatements.findIndex(
-      (s) => s.id === statementId
+      (s) => s.id === statementId,
     );
     const previousStatement =
       currentIndex > 0
@@ -176,8 +167,8 @@ export const updateStatementProperty =
         ? stripSortMetadata(sortedStatements[currentIndex + 1])
         : null;
 
-    // Check if periodStart changed
-    if (updates.periodStart && updates.periodStart !== statement.periodStart) {
+    // Check if startDate changed
+    if (updates.startDate && updates.startDate !== statement.startDate) {
       if (!previousStatement) {
         console.warn('No previous statement found to adjust');
       }
@@ -187,15 +178,15 @@ export const updateStatementProperty =
         if (previousStatement.status === 'locked') {
           console.error(
             'Cannot update statement: previous statement is locked',
-            previousStatement.id
+            previousStatement.id,
           );
           return;
         }
 
         // Calculate the new end date for previous statement (one day before new start)
-        const newStartDate = parseDateSafe(updates.periodStart);
+        const newStartDate = parseDateSafe(updates.startDate);
         if (!newStartDate) {
-          console.error('Invalid new periodStart provided');
+          console.error('Invalid new startDate provided');
           return;
         }
         const newPrevEndDate = format(subDays(newStartDate, 1), 'yyyy/MM/dd');
@@ -204,30 +195,29 @@ export const updateStatementProperty =
         dispatch(
           updateStatementNormalized({
             ...previousStatement,
-            periodEnd: newPrevEndDate,
-            isEndDateModified: true,
+            endDate: newPrevEndDate,
             updatedAt: new Date().toISOString(),
-          })
+          }),
         );
       }
     }
 
-    // Check if periodEnd changed
-    if (updates.periodEnd && updates.periodEnd !== statement.periodEnd) {
+    // Check if endDate changed
+    if (updates.endDate && updates.endDate !== statement.endDate) {
       if (nextStatement) {
         // Check if next statement is locked
         if (nextStatement.status === 'locked') {
           console.error(
             'Cannot update statement: next statement is locked',
-            nextStatement.id
+            nextStatement.id,
           );
           return;
         }
 
         // Calculate the new start date for next statement (one day after new end)
-        const newEndDate = parseDateSafe(updates.periodEnd);
+        const newEndDate = parseDateSafe(updates.endDate);
         if (!newEndDate) {
-          console.error('Invalid new periodEnd provided');
+          console.error('Invalid new endDate provided');
           return;
         }
         const newNextStartDate = format(addDays(newEndDate, 1), 'yyyy/MM/dd');
@@ -236,10 +226,9 @@ export const updateStatementProperty =
         dispatch(
           updateStatementNormalized({
             ...nextStatement,
-            periodStart: newNextStartDate,
-            isStartDateModified: true,
+            startDate: newNextStartDate,
             updatedAt: new Date().toISOString(),
-          })
+          }),
         );
       }
     }
@@ -308,10 +297,10 @@ export const fixStatementIssue =
   (currentStatementId, adjacentStatementId) => (dispatch, getState) => {
     const state = getState();
     const currentStmt = state.statements.find(
-      (s) => s.id === currentStatementId
+      (s) => s.id === currentStatementId,
     );
     const adjacentStmt = state.statements.find(
-      (s) => s.id === adjacentStatementId
+      (s) => s.id === adjacentStatementId,
     );
 
     if (!currentStmt || !adjacentStmt) {
@@ -320,38 +309,34 @@ export const fixStatementIssue =
     }
 
     // Determine which statement comes first chronologically
-    const currentStart = parseISO(currentStmt.periodStart.replace(/\//g, '-'));
-    const adjacentStart = parseISO(
-      adjacentStmt.periodStart.replace(/\//g, '-')
-    );
+    const currentStart = parseISO(currentStmt.startDate.replace(/\//g, '-'));
+    const adjacentStart = parseISO(adjacentStmt.startDate.replace(/\//g, '-'));
 
     if (currentStart < adjacentStart) {
       // Current statement is before adjacent - adjust adjacent's start date
       const newAdjacentStart = format(
-        addDays(parseISO(currentStmt.periodEnd.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd'
+        addDays(parseISO(currentStmt.endDate.replace(/\//g, '-')), 1),
+        'yyyy/MM/dd',
       );
       dispatch(
         updateStatementNormalized({
           ...adjacentStmt,
-          periodStart: newAdjacentStart,
-          isStartDateModified: true,
+          startDate: newAdjacentStart,
           updatedAt: new Date().toISOString(),
-        })
+        }),
       );
     } else {
       // Current statement is after adjacent - adjust adjacent's end date
       const newAdjacentEnd = format(
-        subDays(parseISO(currentStmt.periodStart.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd'
+        subDays(parseISO(currentStmt.startDate.replace(/\//g, '-')), 1),
+        'yyyy/MM/dd',
       );
       dispatch(
         updateStatementNormalized({
           ...adjacentStmt,
-          periodEnd: newAdjacentEnd,
-          isEndDateModified: true,
+          endDate: newAdjacentEnd,
           updatedAt: new Date().toISOString(),
-        })
+        }),
       );
     }
   };
@@ -366,20 +351,20 @@ export const autoGenerateStatements = (accountId) => (dispatch, getState) => {
   const state = getState();
   const account = state.accounts.data.find((a) => a.id === accountId);
 
-  if (!account || !account.statementDay) {
+  if (!account || !account.statementClosingDay) {
     return []; // Not a credit card or no statement day configured
   }
 
   const statements = state.statements.filter((s) => s.accountId === accountId);
   const transactions = state.transactions.filter(
-    (t) => t.accountId === accountId
+    (t) => t.accountId === accountId,
   );
 
   // Get all missing periods (includes current)
   const missingPeriods = getMissingStatementPeriods(
     account,
     statements,
-    transactions
+    transactions,
   );
 
   // Create statements for each missing period
@@ -414,7 +399,7 @@ export const syncStatement = (statementId) => (dispatch, getState) => {
     statement,
     state.transactions,
     state.statements,
-    true // Force recalculation even if locked
+    true, // Force recalculation even if locked
   );
 
   // Update the statement with fresh calculated values

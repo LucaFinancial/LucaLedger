@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { validateTransactionSync } from '@/validation/validator';
+import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
  * Sanitizes transaction data before validation
@@ -8,9 +8,9 @@ import { validateTransactionSync } from '@/validation/validator';
 const sanitizeTransaction = (transaction) => {
   const sanitized = { ...transaction };
 
-  // Remove trailing spaces from status (legacy data cleanup)
-  if (typeof sanitized.status === 'string') {
-    sanitized.status = sanitized.status.trim();
+  // Remove trailing spaces from transactionState (legacy data cleanup)
+  if (typeof sanitized.transactionState === 'string') {
+    sanitized.transactionState = sanitized.transactionState.trim();
   }
 
   return sanitized;
@@ -25,7 +25,7 @@ const cleanTransaction = (transaction) => {
     // Sanitize first to fix legacy data issues
     const sanitized = sanitizeTransaction(transaction);
     // Then validate to remove invalid properties
-    return validateTransactionSync(sanitized);
+    return validateSchemaSync('transaction', sanitized);
   } catch (error) {
     console.error('Invalid transaction data:', error);
     // Return the sanitized version even if validation fails
@@ -50,6 +50,7 @@ const transactions = createSlice({
       const updatedTransaction = cleanTransaction(action.payload);
       const index = state.findIndex((t) => t.id === updatedTransaction.id);
       if (index !== -1) {
+        updatedTransaction.updatedAt = new Date().toISOString();
         state[index] = { ...state[index], ...updatedTransaction };
       }
     },
@@ -61,7 +62,11 @@ const transactions = createSlice({
       transactionIds.forEach((id) => {
         const index = state.findIndex((t) => t.id === id);
         if (index !== -1) {
-          const merged = { ...state[index], ...updates };
+          const merged = {
+            ...state[index],
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          };
           state[index] = cleanTransaction(merged);
         }
       });

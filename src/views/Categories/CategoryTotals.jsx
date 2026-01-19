@@ -14,6 +14,7 @@ import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
   parseISO,
@@ -48,6 +49,9 @@ const COLORS = [
  */
 export default function CategoryTotals({ category }) {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectTransactionSplits,
+  );
   const [timePeriod, setTimePeriod] = useState('month');
 
   // Calculate totals for this category and all its subcategories
@@ -81,14 +85,60 @@ export default function CategoryTotals({ category }) {
       ...category.subcategories.map((sub) => sub.id),
     ]);
 
+    const splitsByTransaction = new Map();
+    transactionSplits.forEach((split) => {
+      if (!splitsByTransaction.has(split.transactionId)) {
+        splitsByTransaction.set(split.transactionId, []);
+      }
+      splitsByTransaction.get(split.transactionId).push(split);
+    });
+
+    // Helper function to get amount for a specific category from a transaction
+    const getAmountForCategory = (transaction, targetCategoryId) => {
+      const splits = splitsByTransaction.get(transaction.id) || [];
+      if (splits.length > 0) {
+        return splits
+          .filter((split) => split.categoryId === targetCategoryId)
+          .reduce((sum, split) => sum + split.amount, 0);
+      }
+      return transaction.categoryId === targetCategoryId
+        ? transaction.amount
+        : 0;
+    };
+
     // Filter transactions by category and date range
+    // Include transaction if it has the category in main categoryId OR in any split
     const categoryTransactions = allTransactions.filter((transaction) => {
+      // Check if transaction has category in splits
+      const splits = splitsByTransaction.get(transaction.id) || [];
+      if (splits.length > 0) {
+        const hasCategoryInSplits = splits.some((split) =>
+          categoryIds.has(split.categoryId),
+        );
+        if (hasCategoryInSplits) {
+          // Still need to check date range
+          if (startDate && endDate) {
+            const transactionDate = startOfDay(
+              parseISO(transaction.date.replace(/\//g, '-')),
+            );
+            if (
+              isBefore(transactionDate, startDate) ||
+              isAfter(transactionDate, endDate)
+            ) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+
+      // Check main categoryId
       if (!categoryIds.has(transaction.categoryId)) return false;
 
       // For date filtering, only include transactions within the time period
       if (startDate && endDate) {
         const transactionDate = startOfDay(
-          parseISO(transaction.date.replace(/\//g, '-'))
+          parseISO(transaction.date.replace(/\//g, '-')),
         );
         if (
           isBefore(transactionDate, startDate) ||
@@ -113,41 +163,56 @@ export default function CategoryTotals({ category }) {
       return isAfter(transactionDate, today);
     });
 
-    // Calculate totals
+    // Calculate totals - sum amounts from all category IDs in this category
     const pastTotal = centsToDollars(
-      pastTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+      pastTransactions.reduce((sum, t) => {
+        const categoryAmount = Array.from(categoryIds).reduce(
+          (catSum, catId) => catSum + getAmountForCategory(t, catId),
+          0,
+        );
+        return sum + categoryAmount;
+      }, 0),
     );
     const futureTotal = centsToDollars(
-      futureTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+      futureTransactions.reduce((sum, t) => {
+        const categoryAmount = Array.from(categoryIds).reduce(
+          (catSum, catId) => catSum + getAmountForCategory(t, catId),
+          0,
+        );
+        return sum + categoryAmount;
+      }, 0),
     );
     const total = pastTotal + futureTotal;
     const count = categoryTransactions.length;
 
     // Calculate subcategory breakdown
     const subTotals = category.subcategories.map((subcategory) => {
-      const subTransactions = categoryTransactions.filter(
-        (t) => t.categoryId === subcategory.id
-      );
-      const subPastTransactions = subTransactions.filter((t) => {
-        const transactionDate = startOfDay(
-          parseISO(t.date.replace(/\//g, '-'))
-        );
-        return (
-          isBefore(transactionDate, today) || isSameDay(transactionDate, today)
-        );
-      });
-      const subFutureTransactions = subTransactions.filter((t) => {
-        const transactionDate = startOfDay(
-          parseISO(t.date.replace(/\//g, '-'))
-        );
-        return isAfter(transactionDate, today);
+      // Get unique transactions that have this subcategory in splits or categoryId
+      const subTransactionsSet = new Set();
+      categoryTransactions.forEach((t) => {
+        if (getAmountForCategory(t, subcategory.id) !== 0) {
+          subTransactionsSet.add(t.id);
+        }
       });
 
+      const subPastTransactions = pastTransactions.filter(
+        (t) => getAmountForCategory(t, subcategory.id) !== 0,
+      );
+      const subFutureTransactions = futureTransactions.filter(
+        (t) => getAmountForCategory(t, subcategory.id) !== 0,
+      );
+
       const pastTotal = centsToDollars(
-        subPastTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+        subPastTransactions.reduce(
+          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
+          0,
+        ),
       );
       const futureTotal = centsToDollars(
-        subFutureTransactions.reduce((sum, t) => sum + Number(t.amount), 0)
+        subFutureTransactions.reduce(
+          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
+          0,
+        ),
       );
 
       return {
@@ -156,7 +221,7 @@ export default function CategoryTotals({ category }) {
         pastTotal,
         futureTotal,
         total: pastTotal + futureTotal,
-        count: subTransactions.length,
+        count: subTransactionsSet.size, // Use unique count
       };
     });
 
@@ -167,7 +232,7 @@ export default function CategoryTotals({ category }) {
       totals: { pastTotal, futureTotal, total, count },
       subcategoryTotals: subTotals,
     };
-  }, [allTransactions, category, timePeriod]);
+  }, [allTransactions, category, timePeriod, transactionSplits]);
 
   const handleTimePeriodChange = (event, newPeriod) => {
     if (newPeriod !== null) {
@@ -187,10 +252,7 @@ export default function CategoryTotals({ category }) {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography
-            variant='subtitle2'
-            sx={{ fontWeight: 600 }}
-          >
+          <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
             Category Totals
           </Typography>
           <ToggleButtonGroup
@@ -239,10 +301,7 @@ export default function CategoryTotals({ category }) {
           zIndex: 2,
         }}
       >
-        <Typography
-          variant='subtitle2'
-          sx={{ fontWeight: 600 }}
-        >
+        <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
           Category Totals
         </Typography>
         <ToggleButtonGroup
@@ -274,10 +333,7 @@ export default function CategoryTotals({ category }) {
             height: 220,
           }}
         >
-          <ResponsiveContainer
-            width='100%'
-            height='100%'
-          >
+          <ResponsiveContainer width='100%' height='100%'>
             <PieChart>
               <Pie
                 data={subcategoryTotals
@@ -413,22 +469,13 @@ export default function CategoryTotals({ category }) {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Past
                   </TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Future
                   </TableCell>
-                  <TableCell
-                    align='right'
-                    sx={{ fontWeight: 700 }}
-                  >
+                  <TableCell align='right' sx={{ fontWeight: 700 }}>
                     Total
                   </TableCell>
                 </TableRow>
@@ -491,7 +538,7 @@ CategoryTotals.propTypes = {
         id: PropTypes.string.isRequired,
         slug: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-      })
+      }),
     ).isRequired,
   }).isRequired,
 };

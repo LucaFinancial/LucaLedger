@@ -34,10 +34,7 @@ export default function ProtectedRoute({ children }) {
         }}
       >
         <CircularProgress size={60} />
-        <Typography
-          variant='h6'
-          sx={{ mt: 2 }}
-        >
+        <Typography variant='h6' sx={{ mt: 2 }}>
           Loading...
         </Typography>
       </Box>

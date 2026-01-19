@@ -82,20 +82,12 @@ export default function BulkEditModal({
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        maxWidth='sm'
-        fullWidth
-      >
+      <Dialog open={open} onClose={handleClose} maxWidth='sm' fullWidth>
         <DialogTitle>
           Edit {selectedCount} Transaction{selectedCount !== 1 ? 's' : ''}
         </DialogTitle>
         <DialogContent>
-          <FormControl
-            fullWidth
-            sx={{ mt: 2 }}
-          >
+          <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel id='bulk-edit-state-label'>Select new state</InputLabel>
             <Select
               labelId='bulk-edit-state-label'
@@ -104,20 +96,14 @@ export default function BulkEditModal({
               label='Select new state'
               onChange={(e) => setSelectedState(e.target.value)}
             >
-              {Object.keys(constants.TransactionStatusEnum).map((key) => (
-                <MenuItem
-                  key={key}
-                  value={constants.TransactionStatusEnum[key]}
-                >
-                  {constants.TransactionStatusEnum[key]}
+              {Object.keys(constants.TransactionStateEnum).map((key) => (
+                <MenuItem key={key} value={constants.TransactionStateEnum[key]}>
+                  {constants.TransactionStateEnum[key]}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <FormControl
-            fullWidth
-            sx={{ mt: 3 }}
-          >
+          <FormControl fullWidth sx={{ mt: 3 }}>
             <Typography sx={{ mb: 1 }}>Select new date</Typography>
             <DatePicker
               value={selectedDate}
@@ -129,10 +115,7 @@ export default function BulkEditModal({
               }}
             />
           </FormControl>
-          <FormControl
-            fullWidth
-            sx={{ mt: 3 }}
-          >
+          <FormControl fullWidth sx={{ mt: 3 }}>
             <Typography sx={{ mb: 1 }}>Select new category</Typography>
             <CategorySelect
               value={selectedCategory}
@@ -142,11 +125,7 @@ export default function BulkEditModal({
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
-          <Button
-            onClick={handleDeleteClick}
-            color='error'
-            variant='outlined'
-          >
+          <Button onClick={handleDeleteClick} color='error' variant='outlined'>
             Delete Selected
           </Button>
           <Box sx={{ display: 'flex', gap: 1 }}>

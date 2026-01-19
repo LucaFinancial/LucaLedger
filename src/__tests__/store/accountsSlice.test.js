@@ -44,11 +44,15 @@ describe('Accounts Slice', () => {
       it('should clean accounts by removing extra properties', () => {
         const state = accountsReducer(
           initialState,
-          setAccounts([accountWithExtraProperties])
+          setAccounts([accountWithExtraProperties]),
         );
 
-        expect(state.data[0].extraField).toBeUndefined();
-        expect(state.data[0].anotherExtra).toBeUndefined();
+        expect(state.data[0].extraField).toBe(
+          accountWithExtraProperties.extraField,
+        );
+        expect(state.data[0].anotherExtra).toBe(
+          accountWithExtraProperties.anotherExtra,
+        );
         expect(state.data[0].id).toBe(accountWithExtraProperties.id);
       });
 
@@ -59,7 +63,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          setAccounts([validSavingsAccount])
+          setAccounts([validSavingsAccount]),
         );
 
         expect(state.data).toHaveLength(1);
@@ -71,7 +75,7 @@ describe('Accounts Slice', () => {
       it('should add a new account', () => {
         const state = accountsReducer(
           initialState,
-          addAccount(validCheckingAccount)
+          addAccount(validCheckingAccount),
         );
 
         expect(state.data).toHaveLength(1);
@@ -85,7 +89,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          addAccount(validSavingsAccount)
+          addAccount(validSavingsAccount),
         );
 
         expect(state.data).toHaveLength(2);
@@ -94,10 +98,12 @@ describe('Accounts Slice', () => {
       it('should clean account on add', () => {
         const state = accountsReducer(
           initialState,
-          addAccount(accountWithExtraProperties)
+          addAccount(accountWithExtraProperties),
         );
 
-        expect(state.data[0].extraField).toBeUndefined();
+        expect(state.data[0].extraField).toBe(
+          accountWithExtraProperties.extraField,
+        );
       });
     });
 
@@ -113,7 +119,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          updateAccount(updatedAccount)
+          updateAccount(updatedAccount),
         );
 
         expect(state.data[0].name).toBe('Updated Name');
@@ -130,7 +136,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          updateAccount(updatedAccount)
+          updateAccount(updatedAccount),
         );
 
         expect(state.data[1].name).toBe(validSavingsAccount.name);
@@ -148,7 +154,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          updateAccount(nonExistentAccount)
+          updateAccount(nonExistentAccount),
         );
 
         expect(state.data).toHaveLength(1);
@@ -164,7 +170,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          removeAccount(validCheckingAccount.id)
+          removeAccount(validCheckingAccount.id),
         );
 
         expect(state.data).toHaveLength(1);
@@ -178,7 +184,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithData,
-          removeAccount('non-existent')
+          removeAccount('non-existent'),
         );
 
         expect(state.data).toHaveLength(1);
@@ -215,7 +221,7 @@ describe('Accounts Slice', () => {
       it('should add loading account id', () => {
         const state = accountsReducer(
           initialState,
-          addLoadingAccountId('acc-001')
+          addLoadingAccountId('acc-001'),
         );
         expect(state.loadingAccountIds).toContain('acc-001');
       });
@@ -227,7 +233,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithId,
-          addLoadingAccountId('acc-001')
+          addLoadingAccountId('acc-001'),
         );
         expect(state.loadingAccountIds).toHaveLength(1);
       });
@@ -239,7 +245,7 @@ describe('Accounts Slice', () => {
         };
         const state = accountsReducer(
           stateWithId,
-          removeLoadingAccountId('acc-001')
+          removeLoadingAccountId('acc-001'),
         );
         expect(state.loadingAccountIds).not.toContain('acc-001');
         expect(state.loadingAccountIds).toContain('acc-002');

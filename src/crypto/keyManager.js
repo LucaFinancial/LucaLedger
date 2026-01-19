@@ -86,11 +86,11 @@ export async function initializeEncryption(password, stayLoggedIn = false) {
     const sessionPassword = crypto.randomUUID();
     const sessionKWK = await deriveKeyFromPassword(
       sessionPassword,
-      sessionSalt
+      sessionSalt,
     );
     const { wrappedKey: sessionWrappedDEK, iv: sessionIV } = await wrapKey(
       dek,
-      sessionKWK
+      sessionKWK,
     );
 
     const sessionToken = {
@@ -147,11 +147,11 @@ export async function unlockEncryption(password, stayLoggedIn = false) {
     const sessionPassword = crypto.randomUUID();
     const sessionKWK = await deriveKeyFromPassword(
       sessionPassword,
-      sessionSalt
+      sessionSalt,
     );
     const { wrappedKey: sessionWrappedDEK, iv: sessionIV } = await wrapKey(
       dek,
-      sessionKWK
+      sessionKWK,
     );
 
     const sessionToken = {
@@ -199,7 +199,7 @@ export async function restoreSessionFromToken() {
 
     const sessionKWK = await deriveKeyFromPassword(
       token.sessionPassword,
-      sessionSalt
+      sessionSalt,
     );
 
     const dek = await unwrapKey(sessionWrappedDEK, sessionIV, sessionKWK);

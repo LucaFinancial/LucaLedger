@@ -38,7 +38,7 @@ export const selectTransactions = (state) => state.transactions;
  */
 export const selectTransactionsByAccountId = (accountId) =>
   createSelector([selectTransactions, () => accountId], (transactions, id) =>
-    transactions.filter((transaction) => transaction.accountId === id)
+    transactions.filter((transaction) => transaction.accountId === id),
   );
 
 /**
@@ -51,7 +51,7 @@ export const selectTransactionById = (transactionId) =>
   createSelector(
     [selectTransactions, () => transactionId],
     (transactions, id) =>
-      transactions.find((transaction) => transaction.id === id)
+      transactions.find((transaction) => transaction.id === id),
   );
 
 /**
@@ -66,9 +66,9 @@ export const selectTransactionsByAccountIds = (accountIds) =>
     (transactions, ids) => {
       const accountIdsSet = new Set(ids);
       return transactions.filter((transaction) =>
-        accountIdsSet.has(transaction.accountId)
+        accountIdsSet.has(transaction.accountId),
       );
-    }
+    },
   );
 
 /**
@@ -89,7 +89,7 @@ export const selectTransactionsInPeriod = (periodStart, periodEnd) =>
         const txDate = new Date(t.date.replace(/\//g, '-'));
         return txDate >= startDate && txDate <= endDate;
       });
-    }
+    },
   );
 
 /**
@@ -103,7 +103,7 @@ export const selectTransactionsInPeriod = (periodStart, periodEnd) =>
 export const selectAccountTransactionsInPeriod = (
   accountId,
   periodStart,
-  periodEnd
+  periodEnd,
 ) =>
   createSelector(
     [selectTransactions, () => accountId, () => periodStart, () => periodEnd],
@@ -116,5 +116,5 @@ export const selectAccountTransactionsInPeriod = (
         const txDate = new Date(t.date.replace(/\//g, '-'));
         return txDate >= startDate && txDate <= endDate;
       });
-    }
+    },
   );

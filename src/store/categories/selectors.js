@@ -10,7 +10,7 @@ export const selectAllCategories = (state) => state.categories;
  */
 export const selectParentCategories = createSelector(
   [selectAllCategories],
-  (categories) => categories.filter((cat) => !cat.parentId)
+  (categories) => categories.filter((cat) => !cat.parentId),
 );
 
 /**
@@ -18,7 +18,7 @@ export const selectParentCategories = createSelector(
  */
 export const selectSubcategoriesByParent = (parentId) =>
   createSelector([selectAllCategories], (categories) =>
-    categories.filter((cat) => cat.parentId === parentId)
+    categories.filter((cat) => cat.parentId === parentId),
   );
 
 /**
@@ -40,5 +40,5 @@ export const selectCategoriesHierarchical = createSelector(
       ...parent,
       subcategories: categories.filter((cat) => cat.parentId === parent.id),
     }));
-  }
+  },
 );

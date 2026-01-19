@@ -67,7 +67,7 @@ export default function Categories() {
 
         // Check if any subcategory name matches
         return category.subcategories.some((sub) =>
-          sub.name.toLowerCase().includes(query)
+          sub.name.toLowerCase().includes(query),
         );
       });
     }
@@ -77,7 +77,7 @@ export default function Categories() {
       .map((category) => ({
         ...category,
         subcategories: [...category.subcategories].sort((a, b) =>
-          a.name.localeCompare(b.name)
+          a.name.localeCompare(b.name),
         ),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -136,7 +136,7 @@ export default function Categories() {
   const handleDeleteSubcategory = (parentId, subcategoryId) => {
     const parentCategory = categories.find((cat) => cat.id === parentId);
     const subcategory = parentCategory?.subcategories?.find(
-      (sub) => sub.id === subcategoryId
+      (sub) => sub.id === subcategoryId,
     );
     setDeletingCategory({
       id: subcategoryId,
@@ -255,10 +255,7 @@ export default function Categories() {
         </Box>
         {searchQuery && (
           <Box sx={{ px: 3, pb: 2 }}>
-            <Typography
-              variant='caption'
-              sx={{ color: 'text.secondary' }}
-            >
+            <Typography variant='caption' sx={{ color: 'text.secondary' }}>
               Showing {filteredCategories.length} of {categories.length}{' '}
               {filteredCategories.length === 1 ? 'category' : 'categories'}
             </Typography>
@@ -272,10 +269,7 @@ export default function Categories() {
           <Box sx={{ mb: 3 }}>
             {filteredCategories.length === 0 ? (
               <Paper sx={{ p: 3, textAlign: 'center' }}>
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                >
+                <Typography variant='body1' color='text.secondary'>
                   No categories found matching &quot;{searchQuery}&quot;
                 </Typography>
               </Paper>
@@ -299,11 +293,7 @@ export default function Categories() {
                         width: '100%',
                       }}
                     >
-                      <Typography
-                        variant='h6'
-                        component='h2'
-                        sx={{ flex: 1 }}
-                      >
+                      <Typography variant='h6' component='h2' sx={{ flex: 1 }}>
                         {category.name}
                       </Typography>
                       <Chip
@@ -383,7 +373,7 @@ export default function Categories() {
                                       onClick={() =>
                                         handleEditSubcategory(
                                           category.id,
-                                          subcategory
+                                          subcategory,
                                         )
                                       }
                                       title='Edit subcategory'
@@ -397,7 +387,7 @@ export default function Categories() {
                                       onClick={() =>
                                         handleDeleteSubcategory(
                                           category.id,
-                                          subcategory.id
+                                          subcategory.id,
                                         )
                                       }
                                       title='Delete subcategory'
@@ -446,10 +436,7 @@ export default function Categories() {
         <>
           {/* Tree View */}
           <Paper sx={{ p: 2, mb: 3 }}>
-            <Typography
-              variant='body2'
-              sx={{ mb: 2, color: '#666' }}
-            >
+            <Typography variant='body2' sx={{ mb: 2, color: '#666' }}>
               Click on category nodes to expand or collapse their subcategories.
               Use keyboard navigation (Enter or Space) to toggle nodes when
               focused. Scroll to zoom, or click and drag to pan the tree.

@@ -29,11 +29,12 @@ import {
   selectors as statementSelectors,
   actions as statementActions,
 } from '@/store/statements';
+import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 
 export default function StatementSeparatorRow({
   statementDate,
-  periodStart,
-  periodEnd,
+  startDate,
+  endDate,
   transactions,
   accountId,
 }) {
@@ -41,21 +42,21 @@ export default function StatementSeparatorRow({
   const [modalOpen, setModalOpen] = useState(false);
 
   // Convert date format from YYYY-MM-DD to YYYY/MM/DD for matching with Redux
-  const closingDateWithSlashes = statementDate.replace(/-/g, '/');
+  const statementEndDate = statementDate;
 
   // Find the actual statement from Redux
   const statement = useSelector(
-    statementSelectors.selectStatementByAccountIdAndClosingDate(
+    statementSelectors.selectStatementByAccountIdAndEndDate(
       accountId,
-      closingDateWithSlashes
-    )
+      statementEndDate,
+    ),
   );
 
   // Get issue information for this statement
   const issues = useSelector(
     statement
       ? statementSelectors.selectStatementIssues(statement.id)
-      : () => null
+      : () => null,
   );
 
   // Get statement with both stored and calculated values
@@ -81,10 +82,10 @@ export default function StatementSeparatorRow({
 
   // For pending/scheduled display, calculate from passed transactions
   const pendingCharges = transactions
-    .filter((t) => t.status?.trim() === 'pending')
+    .filter((t) => t.transactionState?.trim() === 'PENDING')
     .reduce((sum, t) => sum + Number(t.amount), 0);
   const scheduledCharges = transactions
-    .filter((t) => t.status?.trim() === 'scheduled')
+    .filter((t) => t.transactionState?.trim() === 'SCHEDULED')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   // Display the stored ending balance
@@ -102,18 +103,18 @@ export default function StatementSeparatorRow({
   };
 
   // Format date range - use statement dates if available, otherwise use calculated dates
-  const displayPeriodStart = statement?.periodStart || periodStart;
-  const displayPeriodEnd = statement?.periodEnd || periodEnd;
+  const displayPeriodStart = statement?.startDate || startDate;
+  const displayPeriodEnd = statement?.endDate || endDate;
 
-  const startDate = format(
+  const formattedStartDate = format(
     parseISO(displayPeriodStart.replace(/\//g, '-')),
-    'MMM d'
+    'MMM d',
   );
-  const endDate = format(
+  const formattedEndDate = format(
     parseISO(displayPeriodEnd.replace(/\//g, '-')),
-    'MMM d, yyyy'
+    'MMM d, yyyy',
   );
-  const dateRange = `${startDate} - ${endDate}`;
+  const dateRange = `${formattedStartDate} - ${formattedEndDate}`;
 
   const handleView = () => {
     setModalOpen(true);
@@ -155,13 +156,10 @@ export default function StatementSeparatorRow({
     dispatch(
       statementActions.createNewStatement({
         accountId,
-        closingDate: closingDateWithSlashes,
-        periodStart,
-        periodEnd,
-        transactionIds: transactions.map((t) => t.id),
-        total: displayTotal,
+        startDate,
+        endDate,
         status: 'draft',
-      })
+      }),
     );
   };
 
@@ -169,7 +167,7 @@ export default function StatementSeparatorRow({
     <>
       <TableRow>
         <TableCell
-          colSpan={8}
+          colSpan={LEDGER_COLUMN_COUNT}
           style={{ backgroundColor: '#f5f5f5', padding: '8px 16px' }}
         >
           <Box
@@ -180,21 +178,8 @@ export default function StatementSeparatorRow({
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography
-                component='span'
-                sx={{ fontWeight: 'bold' }}
-              >
+              <Typography component='span' sx={{ fontWeight: 'bold' }}>
                 Statement {statementDate} ({dateRange})
-                {statement &&
-                  (statement.isStartDateModified ||
-                    statement.isEndDateModified) && (
-                    <Typography
-                      component='span'
-                      sx={{ color: 'warning.main', ml: 1, fontSize: '0.9em' }}
-                    >
-                      ⚠️
-                    </Typography>
-                  )}
               </Typography>
               <StatementStatusBadge status={statement?.status || 'draft'} />
               {issues?.hasDuplicate && (
@@ -235,18 +220,12 @@ export default function StatementSeparatorRow({
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {pendingCharges > 0 && (
-                <Typography
-                  component='span'
-                  sx={{ color: '#cc8800' }}
-                >
+                <Typography component='span' sx={{ color: '#cc8800' }}>
                   Pending: ${formatAmount(pendingCharges)}
                 </Typography>
               )}
               {scheduledCharges > 0 && (
-                <Typography
-                  component='span'
-                  sx={{ color: '#0066cc' }}
-                >
+                <Typography component='span' sx={{ color: '#0066cc' }}>
                   Scheduled: ${formatAmount(scheduledCharges)}
                 </Typography>
               )}
@@ -333,8 +312,8 @@ export default function StatementSeparatorRow({
 
 StatementSeparatorRow.propTypes = {
   statementDate: PropTypes.string.isRequired,
-  periodStart: PropTypes.string.isRequired,
-  periodEnd: PropTypes.string.isRequired,
+  startDate: PropTypes.string.isRequired,
+  endDate: PropTypes.string.isRequired,
   accountId: PropTypes.string.isRequired,
   transactions: PropTypes.arrayOf(
     PropTypes.shape({
@@ -343,6 +322,6 @@ StatementSeparatorRow.propTypes = {
         .isRequired,
       description: PropTypes.string.isRequired,
       status: PropTypes.string,
-    })
+    }),
   ).isRequired,
 };

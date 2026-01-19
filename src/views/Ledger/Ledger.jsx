@@ -11,6 +11,8 @@ import {
   selectors as transactionSelectors,
 } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
+import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
+import { selectors as settingsSelectors } from '@/store/settings';
 import { actions as statementActions } from '@/store/statements';
 import {
   Box,
@@ -27,7 +29,17 @@ import {
   Drawer,
 } from '@mui/material';
 import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
-import { format, parseISO, addMonths, compareDesc } from 'date-fns';
+import {
+  format,
+  parseISO,
+  add,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  compareDesc,
+  isWithinInterval,
+} from 'date-fns';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -49,11 +61,24 @@ export default function Ledger() {
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(format(new Date(), 'yyyy'));
+  const [selectedYear, setSelectedYear] = useState('rolling');
   const account = useSelector(accountSelectors.selectAccountById(accountId));
-  const transactions = useSelector(
-    transactionSelectors.selectTransactionsByAccountId(accountId)
+
+  const selectAccountTransactions = useMemo(
+    () => transactionSelectors.selectTransactionsByAccountId(accountId),
+    [accountId],
   );
+  const transactions = useSelector(selectAccountTransactions);
+
+  const selectAccountRecurringTransactions = useMemo(
+    () =>
+      recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
+        accountId,
+      ),
+    [accountId],
+  );
+  const recurringTransactions = useSelector(selectAccountRecurringTransactions);
+
   const flatCategories = useSelector(categorySelectors.selectAllCategories);
 
   // Find transactions with invalid categories
@@ -69,26 +94,91 @@ export default function Ledger() {
     return transactions.filter((transaction) => !transaction.categoryId).length;
   }, [transactions]);
 
-  // Get available years from transactions
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection,
+  );
+
+  // Get available years from transactions and recurring transactions
   const availableYears = useMemo(() => {
-    const years = [
-      ...new Set(
-        transactions.map((t) =>
-          format(parseISO(t.date.replace(/\//g, '-')), 'yyyy')
-        )
-      ),
-    ];
+    const transactionYears = transactions.map((t) =>
+      format(parseISO(t.date.replace(/\//g, '-')), 'yyyy'),
+    );
+
+    // Calculate projection limit once
+    const projectionDate = add(new Date(), {
+      [recurringProjection.unit]: recurringProjection.amount,
+    });
+    const projectionYear = parseInt(format(projectionDate, 'yyyy'), 10);
+
+    const recurringYears = recurringTransactions.flatMap((rt) => {
+      try {
+        const startYear = parseInt(
+          format(parseISO(rt.startDate.replace(/\//g, '-')), 'yyyy'),
+          10,
+        );
+
+        const rtEndYear = rt.endDate
+          ? parseInt(
+              format(parseISO(rt.endDate.replace(/\//g, '-')), 'yyyy'),
+              10,
+            )
+          : projectionYear;
+
+        // Cap the end year at the projection limit, regardless of transaction end date
+        const endYear = Math.min(rtEndYear, projectionYear);
+
+        const years = [];
+        // Limit to a reasonable range to prevent performance issues with bad data
+        // e.g., if someone puts start date 1900
+        const safeStartYear = Math.max(startYear, 2000);
+        // Allow years up to the calculated end date, but cap extremely far future dates (e.g. 2100)
+        // to prevent rendering issues if someone enters a typo like year 3000
+        const safeEndYear = Math.min(endYear, 2100);
+
+        for (let y = safeStartYear; y <= safeEndYear; y++) {
+          years.push(y.toString());
+        }
+        return years;
+      } catch (e) {
+        console.warn('Error parsing recurring transaction dates', e);
+        return [];
+      }
+    });
+
+    const years = [...new Set([...transactionYears, ...recurringYears])];
     return years.sort((a, b) => b.localeCompare(a)); // Sort descending
-  }, [transactions]);
+  }, [transactions, recurringTransactions, recurringProjection]);
+
+  // Calculate rolling date range (3 months ago to 3 months ahead)
+  const rollingDateRange = useMemo(() => {
+    const today = new Date();
+    const startDate = startOfMonth(subMonths(today, 3));
+    const endDate = endOfMonth(addMonths(today, 3));
+    return { startDate, endDate };
+  }, []);
 
   // Filter transactions by selected year
   const yearFilteredTransactions = useMemo(() => {
     if (selectedYear === 'all') return transactions;
+    if (selectedYear === 'rolling') {
+      // Filter transactions within the rolling date range
+      return transactions.filter((t) => {
+        try {
+          const transactionDate = parseISO(t.date.replace(/\//g, '-'));
+          return isWithinInterval(transactionDate, {
+            start: rollingDateRange.startDate,
+            end: rollingDateRange.endDate,
+          });
+        } catch {
+          return false;
+        }
+      });
+    }
     return transactions.filter(
       (t) =>
-        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear
+        format(parseISO(t.date.replace(/\//g, '-')), 'yyyy') === selectedYear,
     );
-  }, [transactions, selectedYear]);
+  }, [transactions, selectedYear, rollingDateRange]);
 
   // Calculate filtered transactions for "Select All (Filtered)" button
   // Only include transactions that match the filter (not already-selected ones)
@@ -111,7 +201,7 @@ export default function Ledger() {
 
         // Check category name
         const category = flatCategories.find(
-          (cat) => cat.id === transaction.categoryId
+          (cat) => cat.id === transaction.categoryId,
         );
         const matchesCategory = category?.name
           .toLowerCase()
@@ -137,32 +227,63 @@ export default function Ledger() {
     flatCategories,
   ]);
 
-  const allMonths = transactions?.length
-    ? [
-        ...new Set(
-          transactions.map((t) => {
-            const date = parseISO(t.date.replace(/\//g, '-'));
-            return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
-          })
-        ),
-      ].sort((a, b) => {
-        const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
-        const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
-        return compareDesc(aDate, bDate);
-      })
-    : [];
+  const allMonths = useMemo(() => {
+    return transactions?.length
+      ? [
+          ...new Set(
+            transactions.map((t) => {
+              const date = parseISO(t.date.replace(/\//g, '-'));
+              return `${format(date, 'yyyy')}-${format(date, 'MMMM')}`;
+            }),
+          ),
+        ].sort((a, b) => {
+          const aDate = parseISO(a.split('-').reverse().join('-') + '-01');
+          const bDate = parseISO(b.split('-').reverse().join('-') + '-01');
+          return compareDesc(aDate, bDate);
+        })
+      : [];
+  }, [transactions]);
 
   const getDefaultCollapsedGroups = () => {
     const current = new Date();
+    const previous = subMonths(current, 1);
     const next = addMonths(current, 1);
+
+    const previousMonthStr = `${format(previous, 'yyyy')}-${format(
+      previous,
+      'MMMM',
+    )}`;
     const currentMonthStr = `${format(current, 'yyyy')}-${format(
       current,
-      'MMMM'
+      'MMMM',
     )}`;
     const nextMonthStr = `${format(next, 'yyyy')}-${format(next, 'MMMM')}`;
     const currentYear = format(current, 'yyyy');
 
-    // Return both year identifiers and month identifiers for collapsing
+    // For rolling view, expand previous, current, and next months
+    if (selectedYear === 'rolling') {
+      return [
+        ...allMonths.filter((month) => {
+          return (
+            month !== previousMonthStr &&
+            month !== currentMonthStr &&
+            month !== nextMonthStr
+          );
+        }),
+        // Also collapse years that don't contain the expanded months
+        ...allMonths
+          .map((month) => month.split('-')[0])
+          .filter((year) => {
+            const prevYear = format(previous, 'yyyy');
+            const nextYear = format(next, 'yyyy');
+            return (
+              year !== currentYear && year !== prevYear && year !== nextYear
+            );
+          }),
+      ];
+    }
+
+    // Default behavior for non-rolling views
     return [
       ...allMonths.filter((month) => {
         const [year] = month.split('-');
@@ -178,14 +299,30 @@ export default function Ledger() {
   };
 
   const [collapsedGroups, setCollapsedGroups] = useState(() =>
-    getDefaultCollapsedGroups()
+    getDefaultCollapsedGroups(),
   );
   const hasGeneratedStatements = useRef(new Set());
+  const prevAllMonthsLength = useRef(allMonths.length);
+
+  // Update collapsed groups when selectedYear or accountId changes
+  useEffect(() => {
+    setCollapsedGroups(getDefaultCollapsedGroups());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, accountId]);
+
+  // Update collapsed groups when data loads (0 -> N months)
+  useEffect(() => {
+    if (prevAllMonthsLength.current === 0 && allMonths.length > 0) {
+      setCollapsedGroups(getDefaultCollapsedGroups());
+    }
+    prevAllMonthsLength.current = allMonths.length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMonths]);
 
   useEffect(() => {
     if (!account) {
       navigate('/accounts');
-    } else if (account.type === 'Credit Card' && account.statementDay) {
+    } else if (account.type === 'Credit Card' && account.statementClosingDay) {
       // Check if we've already generated for this account
       if (hasGeneratedStatements.current.has(accountId)) {
         return;
@@ -197,6 +334,29 @@ export default function Ledger() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId]); // Only re-run if accountId changes (navigating to different account)
+
+  // Auto-scroll to current month when Rolling is selected
+  useEffect(() => {
+    if (selectedYear === 'rolling') {
+      // Delay to ensure DOM is rendered
+      setTimeout(() => {
+        const currentMonthStr = `${format(new Date(), 'yyyy')}-${format(
+          new Date(),
+          'MMMM',
+        )}`;
+        // Find the month separator row for current month
+        const monthElement = document.querySelector(
+          `[data-month-key="${currentMonthStr}"]`,
+        );
+        if (monthElement) {
+          monthElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }, 100);
+    }
+  }, [selectedYear]);
 
   if (!account) {
     return null;
@@ -242,8 +402,8 @@ export default function Ledger() {
     dispatch(
       transactionActions.updateMultipleTransactionsFields(
         Array.from(selectedTransactions),
-        updates
-      )
+        updates,
+      ),
     );
     setSelectedTransactions(new Set());
     setBulkEditModalOpen(false);
@@ -258,8 +418,8 @@ export default function Ledger() {
         dispatch(
           transactionActions.removeTransactionById(
             transaction.accountId,
-            transaction
-          )
+            transaction,
+          ),
         );
       }
     });
@@ -310,8 +470,8 @@ export default function Ledger() {
       dispatch(
         transactionActions.updateMultipleTransactionsFields(
           transactionsToUpdate,
-          { categoryId: null }
-        )
+          { categoryId: null },
+        ),
       );
     }
   };
@@ -352,10 +512,7 @@ export default function Ledger() {
         }}
       >
         {sidebarOpen && (
-          <SettingsPanel
-            account={account}
-            selectedYear={selectedYear}
-          />
+          <SettingsPanel account={account} selectedYear={selectedYear} />
         )}
       </Box>
 
@@ -397,10 +554,7 @@ export default function Ledger() {
 
           {/* Center Section: Year Filter + Search */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-            <FormControl
-              size='small'
-              sx={{ minWidth: 120 }}
-            >
+            <FormControl size='small' sx={{ minWidth: 120 }}>
               <InputLabel id='year-filter-label'>Year</InputLabel>
               <Select
                 labelId='year-filter-label'
@@ -409,12 +563,10 @@ export default function Ledger() {
                 label='Year'
                 onChange={(e) => setSelectedYear(e.target.value)}
               >
+                <MenuItem value='rolling'>Rolling</MenuItem>
                 <MenuItem value='all'>All Years</MenuItem>
                 {availableYears.map((year) => (
-                  <MenuItem
-                    key={year}
-                    value={year}
-                  >
+                  <MenuItem key={year} value={year}>
                     {year}
                   </MenuItem>
                 ))}
@@ -483,7 +635,7 @@ export default function Ledger() {
           {/* Right Section: Action Buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Statements Button - Only for credit cards */}
-            {account.type === 'Credit Card' && account.statementDay && (
+            {account.type === 'Credit Card' && account.statementClosingDay && (
               <Tooltip title='View Statements'>
                 <IconButton
                   onClick={() => setStatementsDrawerOpen(true)}
@@ -568,6 +720,7 @@ export default function Ledger() {
             selectedTransactions={selectedTransactions}
             onSelectionChange={handleSelectionChange}
             selectedYear={selectedYear}
+            rollingDateRange={rollingDateRange}
           />
         </Box>
         <RepeatedTransactionsModal
