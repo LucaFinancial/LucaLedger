@@ -3,30 +3,33 @@ export const LEDGER_COLUMN_STYLES = {
     width: '20px',
     padding: '2px 10px',
     textAlign: 'center',
+    whiteSpace: 'nowrap',
   },
   quickAction: {
     width: '12px',
     padding: '2px 0px',
     textAlign: 'center',
+    whiteSpace: 'nowrap',
   },
   status: {
     width: '50px',
     padding: '0px 0px 0px 10px',
+    whiteSpace: 'nowrap',
   },
   date: {
     width: '60px',
     cursor: 'pointer',
     padding: '2px 0px 2px 5px',
     textAlign: 'center',
+    whiteSpace: 'nowrap',
   },
   category: {
     width: '120px',
     padding: '2px 0px',
+    whiteSpace: 'nowrap',
   },
   description: {
-    minWidth: '120px',
-    maxWidth: '500px',
-    width: '100%',
+    width: 'auto',
     padding: '2px 0px 2px 10px',
     cursor: 'pointer',
     overflow: 'hidden',
@@ -38,16 +41,19 @@ export const LEDGER_COLUMN_STYLES = {
     cursor: 'pointer',
     padding: '2px 10px 2px 0px',
     textAlign: 'right',
+    whiteSpace: 'nowrap',
   },
   balance: {
     width: '75px',
     padding: '2px 10px 2px 0px',
     textAlign: 'right',
+    whiteSpace: 'nowrap',
   },
   actionMenu: {
     width: '20px',
     textAlign: 'center',
     padding: '2px 0px',
+    whiteSpace: 'nowrap',
   },
 };
 
