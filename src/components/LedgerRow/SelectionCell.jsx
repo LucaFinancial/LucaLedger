@@ -20,7 +20,7 @@ export default function SelectionCell({
         onChange={(e) => onSelectionChange(transaction.id, e.target.checked)}
         size='small'
         sx={{
-          padding: '0px 2px',
+          padding: '0px',
           color: isSelected ? 'white' : 'inherit',
           '&.Mui-checked': {
             color: isSelected ? 'white' : 'primary.main',
