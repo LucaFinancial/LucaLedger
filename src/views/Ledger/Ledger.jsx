@@ -5,6 +5,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import LedgerSettingsMenu from '@/components/LedgerSettingsMenu';
 import AccountSettingsModal from '@/components/AccountSettingsModal';
 import StatementsPanel from '@/components/StatementsPanel';
+import RecurringTransactionsPanel from '@/components/RecurringTransactionsPanel';
 import { selectors as accountSelectors } from '@/store/accounts';
 import {
   actions as transactionActions,
@@ -28,7 +29,7 @@ import {
   InputLabel,
   Drawer,
 } from '@mui/material';
-import { Clear, MoreVert, Edit, Menu, Receipt } from '@mui/icons-material';
+import { Clear, MoreVert, Edit, Menu, Receipt, Repeat } from '@mui/icons-material';
 import {
   format,
   parseISO,
@@ -61,6 +62,7 @@ export default function Ledger() {
   const [repeatedTransactionsModalOpen, setRepeatedTransactionsModalOpen] =
     useState(false);
   const [statementsDrawerOpen, setStatementsDrawerOpen] = useState(false);
+  const [recurringDrawerOpen, setRecurringDrawerOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState('rolling');
   const account = useSelector(accountSelectors.selectAccountById(accountId));
 
@@ -634,6 +636,18 @@ export default function Ledger() {
 
           {/* Right Section: Action Buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Recurring Transactions Button */}
+            <Tooltip title='View Recurring Transactions'>
+              <IconButton
+                onClick={() => setRecurringDrawerOpen(true)}
+                size='medium'
+                aria-label='view recurring transactions'
+                color='primary'
+              >
+                <Repeat />
+              </IconButton>
+            </Tooltip>
+
             {/* Statements Button - Only for credit cards */}
             {account.type === 'Credit Card' && account.statementClosingDay && (
               <Tooltip title='View Statements'>
@@ -761,6 +775,15 @@ export default function Ledger() {
         >
           <Box sx={{ width: 500, p: 3, mt: 8 }}>
             <StatementsPanel accountId={accountId} />
+          </Box>
+        </Drawer>
+        <Drawer
+          anchor='right'
+          open={recurringDrawerOpen}
+          onClose={() => setRecurringDrawerOpen(false)}
+        >
+          <Box sx={{ width: 500, p: 3, mt: 8 }}>
+            <RecurringTransactionsPanel accountId={accountId} />
           </Box>
         </Drawer>
       </Box>
