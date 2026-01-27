@@ -39,6 +39,8 @@ import {
   endOfMonth,
   compareDesc,
   isWithinInterval,
+  getDate,
+  getDaysInMonth,
 } from 'date-fns';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -248,6 +250,7 @@ export default function Ledger() {
     const current = new Date();
     const previous = subMonths(current, 1);
     const next = addMonths(current, 1);
+    const monthAfterNext = addMonths(current, 2);
 
     const previousMonthStr = `${format(previous, 'yyyy')}-${format(
       previous,
@@ -258,26 +261,44 @@ export default function Ledger() {
       'MMMM',
     )}`;
     const nextMonthStr = `${format(next, 'yyyy')}-${format(next, 'MMMM')}`;
+    const monthAfterNextStr = `${format(monthAfterNext, 'yyyy')}-${format(
+      monthAfterNext,
+      'MMMM',
+    )}`;
     const currentYear = format(current, 'yyyy');
 
-    // For rolling view, expand previous, current, and next months
+    // For rolling view, implement dynamic expansion based on current date
     if (selectedYear === 'rolling') {
+      const currentDay = getDate(current);
+      const daysInCurrentMonth = getDaysInMonth(current);
+
+      // Determine which months should be expanded
+      const expandedMonths = new Set([currentMonthStr, nextMonthStr]);
+
+      // First 5 days: expand previous month
+      if (currentDay <= 5) {
+        expandedMonths.add(previousMonthStr);
+      }
+
+      // Last 5 days: expand month after next
+      if (currentDay > daysInCurrentMonth - 5) {
+        expandedMonths.add(monthAfterNextStr);
+      }
+
       return [
-        ...allMonths.filter((month) => {
-          return (
-            month !== previousMonthStr &&
-            month !== currentMonthStr &&
-            month !== nextMonthStr
-          );
-        }),
+        ...allMonths.filter((month) => !expandedMonths.has(month)),
         // Also collapse years that don't contain the expanded months
         ...allMonths
           .map((month) => month.split('-')[0])
           .filter((year) => {
             const prevYear = format(previous, 'yyyy');
             const nextYear = format(next, 'yyyy');
+            const monthAfterNextYear = format(monthAfterNext, 'yyyy');
             return (
-              year !== currentYear && year !== prevYear && year !== nextYear
+              year !== currentYear &&
+              year !== prevYear &&
+              year !== nextYear &&
+              year !== monthAfterNextYear
             );
           }),
       ];
