@@ -259,23 +259,27 @@ export default function CategorySelect({
             />
           );
         }}
-        renderOption={(props, option) => (
-          <Box
-            component='li'
-            {...props}
-            sx={{
-              pl: option.isParent ? 2 : 4,
-              fontWeight: option.isParent ? 'bold' : 'normal',
-              color: option.isCreateOption ? 'primary.main' : 'inherit',
-              fontStyle: option.isCreateOption ? 'italic' : 'normal',
-            }}
-          >
-            {option.isCreateOption && (
-              <AddIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
-            )}
-            {option.name}
-          </Box>
-        )}
+        renderOption={(props, option) => {
+          const { key, ...otherProps } = props;
+          return (
+            <Box
+              component='li'
+              key={key}
+              {...otherProps}
+              sx={{
+                pl: option.isParent ? 2 : 4,
+                fontWeight: option.isParent ? 'bold' : 'normal',
+                color: option.isCreateOption ? 'primary.main' : 'inherit',
+                fontStyle: option.isCreateOption ? 'italic' : 'normal',
+              }}
+            >
+              {option.isCreateOption && (
+                <AddIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
+              )}
+              {option.name}
+            </Box>
+          );
+        }}
         renderGroup={(params) => (
           <li key={params.key}>
             {params.group !== 'Create' && (
