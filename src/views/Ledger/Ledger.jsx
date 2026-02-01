@@ -392,7 +392,7 @@ export default function Ledger() {
         if (monthElement) {
           monthElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'start',
+            block: 'center',
           });
         }
       }, 100);
