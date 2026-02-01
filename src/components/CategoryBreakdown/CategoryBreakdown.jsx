@@ -9,7 +9,7 @@ import {
   TableRow,
   IconButton,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -361,6 +361,9 @@ export default function CategoryBreakdown() {
           sx={{
             flex: 1,
             minHeight: 300,
+            minWidth: 300,
+            width: '100%',
+            position: 'relative',
           }}
         >
           <Typography
@@ -421,6 +424,9 @@ export default function CategoryBreakdown() {
           sx={{
             flex: 1,
             minHeight: 300,
+            minWidth: 300,
+            width: '100%',
+            position: 'relative',
           }}
         >
           <Typography
@@ -500,9 +506,8 @@ export default function CategoryBreakdown() {
                   cat.subcategories && cat.subcategories.length > 0;
 
                 return (
-                  <>
+                  <React.Fragment key={cat.id}>
                     <TableRow
-                      key={cat.id}
                       onClick={() =>
                         hasSubcategories &&
                         setExpandedCategoryId(isExpanded ? null : cat.id)
@@ -633,7 +638,7 @@ export default function CategoryBreakdown() {
                           </TableRow>
                         );
                       })}
-                  </>
+                  </React.Fragment>
                 );
               })}
             </TableBody>

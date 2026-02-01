@@ -11,9 +11,9 @@ import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfi
 
 export default function QuickActionCell({
   transaction,
-  isVirtual,
-  recurringTransaction,
-  occurrenceDate,
+  isVirtual = false,
+  recurringTransaction = null,
+  occurrenceDate = null,
 }) {
   const dispatch = useDispatch();
 
@@ -112,10 +112,4 @@ QuickActionCell.propTypes = {
   isVirtual: PropTypes.bool,
   recurringTransaction: PropTypes.object,
   occurrenceDate: PropTypes.string,
-};
-
-QuickActionCell.defaultProps = {
-  isVirtual: false,
-  recurringTransaction: null,
-  occurrenceDate: null,
 };

@@ -104,7 +104,12 @@ export default function App() {
       <Provider store={store}>
         <AuthProvider>
           <CssBaseline />
-          <Router>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
             <Routes>
               {/* Public routes */}
               <Route path='/' element={<RootRedirect />} />

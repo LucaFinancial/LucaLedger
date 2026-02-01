@@ -27,11 +27,11 @@ export default function LedgerSettingsMenu({
   onReset,
   onAccountSettings,
   onClearInvalidCategories,
-  invalidCategoryCount,
+  invalidCategoryCount = 0,
   onCreateRepeatedTransactions,
   showUncategorizedOnly,
   onToggleUncategorized,
-  uncategorizedCount,
+  uncategorizedCount = 0,
 }) {
   const handleMenuItemClick = (callback) => {
     callback();
@@ -146,9 +146,4 @@ LedgerSettingsMenu.propTypes = {
   showUncategorizedOnly: PropTypes.bool.isRequired,
   onToggleUncategorized: PropTypes.func.isRequired,
   uncategorizedCount: PropTypes.number,
-};
-
-LedgerSettingsMenu.defaultProps = {
-  invalidCategoryCount: 0,
-  uncategorizedCount: 0,
 };

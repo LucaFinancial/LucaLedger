@@ -4,6 +4,22 @@ Luca Ledger is a React-based personal finance management application for trackin
 
 **ALWAYS** reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
+## Code Quality and Transparency Policy
+
+**CRITICAL - NEVER SUPPRESS OR HIDE WARNINGS/ERRORS:**
+
+- **NEVER** suppress console warnings or errors of any kind
+- **NEVER** hide linting errors or warnings
+- **NEVER** hide formatting errors or warnings
+- **NEVER** suppress real warnings or errors from libraries/frameworks
+- **NEVER** use `// eslint-disable` comments to hide issues
+- **NEVER** use `console.log` suppression or overrides
+- **ALWAYS** fix the root cause of warnings and errors
+- **ALWAYS** address issues properly rather than hiding them
+- If a warning cannot be fixed, document WHY in comments and leave it visible
+
+Warnings and errors are valuable feedback. Hiding them creates technical debt and masks real problems.
+
 ## Working Effectively
 
 ### Bootstrap and Development Setup

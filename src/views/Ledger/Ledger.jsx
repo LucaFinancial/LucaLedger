@@ -29,7 +29,14 @@ import {
   InputLabel,
   Drawer,
 } from '@mui/material';
-import { Clear, MoreVert, Edit, Menu, Receipt, Repeat } from '@mui/icons-material';
+import {
+  Clear,
+  MoreVert,
+  Edit,
+  Menu,
+  Receipt,
+  Repeat,
+} from '@mui/icons-material';
 import {
   format,
   parseISO,
@@ -114,16 +121,18 @@ export default function Ledger() {
 
     const recurringYears = recurringTransactions.flatMap((rt) => {
       try {
+        // Skip if no start date is defined
+        if (!rt.startOn) {
+          return [];
+        }
+
         const startYear = parseInt(
-          format(parseISO(rt.startDate.replace(/\//g, '-')), 'yyyy'),
+          format(parseISO(rt.startOn.replace(/\//g, '-')), 'yyyy'),
           10,
         );
 
-        const rtEndYear = rt.endDate
-          ? parseInt(
-              format(parseISO(rt.endDate.replace(/\//g, '-')), 'yyyy'),
-              10,
-            )
+        const rtEndYear = rt.endOn
+          ? parseInt(format(parseISO(rt.endOn.replace(/\//g, '-')), 'yyyy'), 10)
           : projectionYear;
 
         // Cap the end year at the projection limit, regardless of transaction end date
