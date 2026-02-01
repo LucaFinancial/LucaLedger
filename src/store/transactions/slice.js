@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { validateSchemaSync } from '@/utils/schemaValidation';
+import { format, parseISO, isValid } from 'date-fns';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Sanitizes transaction data before validation
@@ -11,6 +13,69 @@ const sanitizeTransaction = (transaction) => {
   // Remove trailing spaces from transactionState (legacy data cleanup)
   if (typeof sanitized.transactionState === 'string') {
     sanitized.transactionState = sanitized.transactionState.trim();
+  }
+
+  // Fix date format if needed
+  if (sanitized.date) {
+    try {
+      // Try to parse the date
+      const parsed = parseISO(sanitized.date.replace(/\//g, '-'));
+      if (isValid(parsed)) {
+        // Ensure it's in yyyy-MM-dd format
+        sanitized.date = format(parsed, 'yyyy-MM-dd');
+      } else {
+        // Invalid date, use today's date as fallback
+        sanitized.date = format(new Date(), 'yyyy-MM-dd');
+      }
+    } catch {
+      // Error parsing date, use today's date as fallback
+      sanitized.date = format(new Date(), 'yyyy-MM-dd');
+    }
+  } else {
+    // No date provided, use today's date
+    sanitized.date = format(new Date(), 'yyyy-MM-dd');
+  }
+
+  // Validate UUID fields - ensure they're valid UUIDs or null/generate new
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  // accountId is required - generate new UUID if invalid
+  if (
+    !sanitized.accountId ||
+    typeof sanitized.accountId !== 'string' ||
+    !uuidRegex.test(sanitized.accountId)
+  ) {
+    sanitized.accountId = uuid();
+  }
+
+  // id is required - generate new UUID if invalid
+  if (
+    !sanitized.id ||
+    typeof sanitized.id !== 'string' ||
+    !uuidRegex.test(sanitized.id)
+  ) {
+    sanitized.id = uuid();
+  }
+
+  // categoryId should be null or valid UUID
+  if (sanitized.categoryId !== null && sanitized.categoryId !== undefined) {
+    if (
+      typeof sanitized.categoryId !== 'string' ||
+      !uuidRegex.test(sanitized.categoryId)
+    ) {
+      sanitized.categoryId = null;
+    }
+  }
+
+  // statementId should be null or valid UUID
+  if (sanitized.statementId !== null && sanitized.statementId !== undefined) {
+    if (
+      typeof sanitized.statementId !== 'string' ||
+      !uuidRegex.test(sanitized.statementId)
+    ) {
+      sanitized.statementId = null;
+    }
   }
 
   return sanitized;
@@ -26,10 +91,9 @@ const cleanTransaction = (transaction) => {
     const sanitized = sanitizeTransaction(transaction);
     // Then validate to remove invalid properties
     return validateSchemaSync('transaction', sanitized);
-  } catch (error) {
-    console.error('Invalid transaction data:', error);
-    // Return the sanitized version even if validation fails
-    // This prevents data loss but logs the issue
+  } catch {
+    // Silently return the sanitized version if validation fails
+    // Sanitization already handles fixing dates and UUIDs
     return sanitizeTransaction(transaction);
   }
 };

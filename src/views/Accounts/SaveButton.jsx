@@ -6,6 +6,9 @@ import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
+import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
+import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
@@ -13,6 +16,15 @@ export default function SaveButton() {
   const transactions = useSelector(transactionSelectors.selectTransactions);
   const categories = useSelector(categorySelectors.selectAllCategories);
   const statements = useSelector(statementSelectors.selectStatements);
+  const recurringTransactions = useSelector(
+    recurringTransactionSelectors.selectRecurringTransactions,
+  );
+  const recurringTransactionEvents = useSelector(
+    recurringTransactionEventSelectors.selectRecurringTransactionEvents,
+  );
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectTransactionSplits,
+  );
   const loading = useSelector(accountSelectors.selectAccountsLoading);
 
   const handleSave = () => {
@@ -22,6 +34,9 @@ export default function SaveButton() {
       transactions,
       categories,
       statements,
+      recurringTransactions,
+      recurringTransactionEvents,
+      transactionSplits,
     };
 
     const saveString = JSON.stringify(data, null, 2);
