@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { validateSchemaSync } from '@/utils/schemaValidation';
 import { calculateStatementPeriod } from './utils';
+import { format, parseISO, isValid } from 'date-fns';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Validates and cleans a statement object
@@ -11,11 +13,34 @@ const cleanStatement = (statement) => {
   try {
     const normalized = { ...statement };
 
+    // Fix dates first
+    if (normalized.startDate) {
+      const parsed = parseISO(normalized.startDate.replace(/\//g, '-'));
+      if (isValid(parsed)) {
+        normalized.startDate = format(parsed, 'yyyy-MM-dd');
+      }
+    }
+    if (normalized.endDate) {
+      const parsed = parseISO(normalized.endDate.replace(/\//g, '-'));
+      if (isValid(parsed)) {
+        normalized.endDate = format(parsed, 'yyyy-MM-dd');
+      }
+    }
+
     if (!normalized.startDate && normalized.periodStart) {
-      normalized.startDate = normalized.periodStart;
+      const parsed = parseISO(normalized.periodStart.replace(/\//g, '-'));
+      if (isValid(parsed)) {
+        normalized.startDate = format(parsed, 'yyyy-MM-dd');
+      }
     }
     if (!normalized.endDate) {
-      normalized.endDate = normalized.periodEnd || normalized.closingDate;
+      const dateToUse = normalized.periodEnd || normalized.closingDate;
+      if (dateToUse) {
+        const parsed = parseISO(dateToUse.replace(/\//g, '-'));
+        if (isValid(parsed)) {
+          normalized.endDate = format(parsed, 'yyyy-MM-dd');
+        }
+      }
     }
 
     delete normalized.periodStart;
@@ -36,6 +61,26 @@ const cleanStatement = (statement) => {
     }
     delete normalized.total;
 
+    // Validate UUID fields
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    if (
+      !normalized.id ||
+      typeof normalized.id !== 'string' ||
+      !uuidRegex.test(normalized.id)
+    ) {
+      normalized.id = uuid();
+    }
+
+    if (
+      !normalized.accountId ||
+      typeof normalized.accountId !== 'string' ||
+      !uuidRegex.test(normalized.accountId)
+    ) {
+      normalized.accountId = uuid();
+    }
+
     const validated = validateSchemaSync('statement', normalized);
 
     if (typeof validated.endingBalance !== 'number') {
@@ -53,8 +98,7 @@ const cleanStatement = (statement) => {
     }
 
     return validated;
-  } catch (error) {
-    console.error('Invalid statement data:', error);
+  } catch {
     // Return the original statement even if validation fails
     // This prevents data loss but logs the issue
     return statement;

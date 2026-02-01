@@ -505,8 +505,27 @@ export default function LedgerTable({
     >
       <Table
         stickyHeader
-        sx={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' }}
+        sx={{
+          tableLayout: 'fixed',
+          width: '100%',
+          borderCollapse: 'collapse',
+          '& .MuiTableCell-root': {
+            padding: 0,
+            boxSizing: 'border-box',
+          },
+        }}
       >
+        <colgroup>
+          <col style={{ width: '25px' }} />
+          <col style={{ width: '20px' }} />
+          <col style={{ width: '125px' }} />
+          <col style={{ width: '110px' }} />
+          <col style={{ width: '260px' }} />
+          <col />
+          <col style={{ width: '100px' }} />
+          <col style={{ width: '100px' }} />
+          <col style={{ width: '40px' }} />
+        </colgroup>
         <LedgerHeader />
         <TableBody>
           {Object.keys(groupedData).map((year) => {
