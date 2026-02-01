@@ -245,10 +245,6 @@ export default function EncryptionProvider() {
             activeDEK,
             currentUser.id,
           );
-        } else {
-          console.log(
-            `Loaded ${categoriesToLoad.length} custom categories from encrypted storage`,
-          );
         }
 
         // Replace entire state
