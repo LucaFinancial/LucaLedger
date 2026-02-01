@@ -23,6 +23,7 @@ import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvent
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
 import categoriesData from '@/config/categories.json';
 import { migrateDataToSchema } from '@/utils/dataMigration';
+import { format } from 'date-fns';
 
 export default function EncryptionProvider() {
   const dispatch = useDispatch();
@@ -85,6 +86,15 @@ export default function EncryptionProvider() {
           ),
         ]);
 
+        // IMMEDIATELY filter out past recurring transaction events before ANY processing
+        const today = format(new Date(), 'yyyy-MM-dd');
+        if (encryptedRecurringTransactionEvents) {
+          encryptedRecurringTransactionEvents =
+            encryptedRecurringTransactionEvents.filter(
+              (event) => event.expectedDate >= today,
+            );
+        }
+
         const migrationTimestamp = new Date().toISOString();
         const migration = migrateDataToSchema(
           {
@@ -112,6 +122,14 @@ export default function EncryptionProvider() {
           encryptedRecurringTransactionEvents =
             migration.data.recurringTransactionEvents;
           encryptedTransactionSplits = migration.data.transactionSplits;
+
+          // Filter past events from migrated data immediately
+          if (encryptedRecurringTransactionEvents) {
+            encryptedRecurringTransactionEvents =
+              encryptedRecurringTransactionEvents.filter(
+                (event) => event.expectedDate >= today,
+              );
+          }
 
           const recordWrites = [];
 

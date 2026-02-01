@@ -1,6 +1,7 @@
 import { Box, Button, CircularProgress } from '@mui/material';
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { format } from 'date-fns';
 
 import { actions, selectors } from '@/store/accounts';
 import CategoryImportConfirmModal from '@/components/CategoryImportConfirmModal';
@@ -22,6 +23,18 @@ export default function LoadButton() {
     reader.onload = async () => {
       try {
         const json = JSON.parse(reader.result);
+
+        // IMMEDIATELY remove past recurring transaction events
+        const today = format(new Date(), 'yyyy-MM-dd');
+        if (
+          json.recurringTransactionEvents &&
+          Array.isArray(json.recurringTransactionEvents)
+        ) {
+          json.recurringTransactionEvents =
+            json.recurringTransactionEvents.filter(
+              (event) => event.expectedDate >= today,
+            );
+        }
 
         // Check if the file contains categories
         if (json.categories && Object.keys(json.categories).length > 0) {

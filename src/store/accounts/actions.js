@@ -98,15 +98,15 @@ export const loadAccount =
       let transactionSplitsToLoad = [];
       let shouldLoadCategories = false;
 
-      if (parsedSchemaVersion.major === 2 && parsedSchemaVersion.minor === 1) {
-        // Schema 2.1.x: includes categories
+      // Support schema 2.1.x and newer (2.2.x, 2.3.x, etc.)
+      if (parsedSchemaVersion.major === 2 && parsedSchemaVersion.minor >= 1) {
+        // Schema 2.1.x+: includes categories and all fields
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
         categoriesToLoad = data.categories;
         statementsToLoad = Array.isArray(data.statements)
           ? data.statements
           : [];
-        // New fields (may not be present in older 2.1.0 exports)
         recurringTransactionsToLoad = Array.isArray(data.recurringTransactions)
           ? data.recurringTransactions
           : [];

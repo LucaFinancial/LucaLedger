@@ -113,12 +113,25 @@ export const removeTransactionById =
   (accountId, transaction) => async (dispatch, getState) => {
     const state = getState();
 
+    // Check if this transaction is linked to a recurring transaction event
+    const recurringEvent = state.recurringTransactionEvents?.find(
+      (event) => event.transactionId === transaction.id,
+    );
+
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
       const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord('transactions', transaction.id);
+
+        // Also delete the linked recurring transaction event if it exists
+        if (recurringEvent) {
+          await deleteEncryptedRecord(
+            'recurringTransactionEvents',
+            recurringEvent.id,
+          );
+        }
       } catch (error) {
         console.error('Failed to delete encrypted transaction:', error);
         // Don't proceed with Redux state update if encrypted deletion fails
@@ -126,7 +139,15 @@ export const removeTransactionById =
       }
     }
 
+    // Remove the transaction from state
     dispatch(removeTransaction(transaction.id));
+
+    // Remove the linked recurring transaction event if it exists
+    if (recurringEvent) {
+      const { removeRecurringTransactionEvent } =
+        await import('@/store/recurringTransactionEvents/slice');
+      dispatch(removeRecurringTransactionEvent(recurringEvent.id));
+    }
   };
 
 export const updateMultipleTransactionsStatus =
