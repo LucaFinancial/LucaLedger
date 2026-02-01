@@ -70,10 +70,10 @@ export function calculateStatementDates(dateStr, statementDay) {
   const periodStart = new Date(prevClosingDate);
   periodStart.setDate(periodStart.getDate() + 1);
 
-  // Convert to YYYY/MM/DD format with slashes
+  // Convert to YYYY-MM-DD format (schema requires hyphens, not slashes)
   return {
-    startDate: format(periodStart, 'yyyy/MM/dd'),
-    endDate: format(periodEnd, 'yyyy/MM/dd'),
+    startDate: format(periodStart, 'yyyy-MM-dd'),
+    endDate: format(periodEnd, 'yyyy-MM-dd'),
   };
 }
 
@@ -451,6 +451,15 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   const missingPeriods = [];
   const earliestDate = getEarliestStatementDate(account, transactions);
   const currentPeriod = getCurrentPeriod(statementClosingDay);
+
+  // Generate statements up to 6 months in the future (to match recurring transaction projection)
+  const futureEndDate = addMonths(new Date(), 6);
+  const futureLimit = calculateStatementDates(
+    format(futureEndDate, 'yyyy-MM-dd'),
+    statementClosingDay,
+  );
+  const futureLimitClosing = parseISO(futureLimit.endDate.replace(/\//g, '-'));
+
   const accountStatements = statements
     .filter((s) => s.accountId === account.id)
     .sort((a, b) => (a.endDate || '').localeCompare(b.endDate || ''));
@@ -470,13 +479,12 @@ export function getMissingStatementPeriods(account, statements, transactions) {
     accountStatements,
     firstPeriodStartDate,
   );
-  const currentClosing = parseISO(currentPeriod.endDate.replace(/\//g, '-'));
 
   while (true) {
     const periodClosing = parseISO(period.endDate.replace(/\//g, '-'));
 
-    // Stop if we've gone beyond the current period (use >= to include current)
-    if (isAfter(periodClosing, currentClosing)) {
+    // Stop if we've gone beyond the future limit
+    if (isAfter(periodClosing, futureLimitClosing)) {
       break;
     }
 
