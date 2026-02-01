@@ -43,6 +43,6 @@ export default function StatementStatusBadge({ status, size = 'small' }) {
 }
 
 StatementStatusBadge.propTypes = {
-  status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
+  status: PropTypes.oneOf(['draft', 'current', 'past']), // Computed field from selectors
   size: PropTypes.oneOf(['small', 'medium']),
 };

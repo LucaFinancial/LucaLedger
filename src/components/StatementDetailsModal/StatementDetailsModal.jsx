@@ -413,7 +413,8 @@ StatementDetailsModal.propTypes = {
     endingBalance: PropTypes.number,
     totalCharges: PropTypes.number,
     totalPayments: PropTypes.number,
-    status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
+    isLocked: PropTypes.bool,
+    status: PropTypes.oneOf(['draft', 'current', 'past']), // Computed field from selectors
   }),
   onSave: PropTypes.func,
   onLock: PropTypes.func,
