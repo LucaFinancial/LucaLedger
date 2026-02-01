@@ -27,7 +27,7 @@ const sanitizeTransaction = (transaction) => {
         // Invalid date, use today's date as fallback
         sanitized.date = format(new Date(), 'yyyy-MM-dd');
       }
-    } catch (error) {
+    } catch {
       // Error parsing date, use today's date as fallback
       sanitized.date = format(new Date(), 'yyyy-MM-dd');
     }
@@ -91,7 +91,7 @@ const cleanTransaction = (transaction) => {
     const sanitized = sanitizeTransaction(transaction);
     // Then validate to remove invalid properties
     return validateSchemaSync('transaction', sanitized);
-  } catch (error) {
+  } catch {
     // Silently return the sanitized version if validation fails
     // Sanitization already handles fixing dates and UUIDs
     return sanitizeTransaction(transaction);
