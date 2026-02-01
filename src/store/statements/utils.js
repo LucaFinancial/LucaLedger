@@ -413,30 +413,6 @@ export function getEarliestStatementDate(account, transactions) {
  * @param {string} periodEnd - Period end date in YYYY/MM/DD format
  * @returns {string} - 'past', 'current', or 'draft'
  */
-export function determineStatementStatus(periodStart, periodEnd) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const start = parseISO(periodStart.replace(/\//g, '-'));
-  start.setHours(0, 0, 0, 0);
-
-  const end = parseISO(periodEnd.replace(/\//g, '-'));
-  end.setHours(0, 0, 0, 0);
-
-  // If today is before the period starts, it's a future/draft statement
-  if (isBefore(today, start)) {
-    return 'draft';
-  }
-  // If today is after the period ends, it's a past statement
-  else if (isAfter(today, end)) {
-    return 'past';
-  }
-  // If today is within the period (inclusive), it's current
-  else {
-    return 'current';
-  }
-}
-
 /**
  * Generate all missing statements for an account from earliest date to current period
  * @param {object} account - Account object
@@ -452,13 +428,9 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   const earliestDate = getEarliestStatementDate(account, transactions);
   const currentPeriod = getCurrentPeriod(statementClosingDay);
 
-  // Generate statements up to 6 months in the future (to match recurring transaction projection)
-  const futureEndDate = addMonths(new Date(), 6);
-  const futureLimit = calculateStatementDates(
-    format(futureEndDate, 'yyyy-MM-dd'),
-    statementClosingDay,
-  );
-  const futureLimitClosing = parseISO(futureLimit.endDate.replace(/\//g, '-'));
+  // Only generate statements up to and including current period
+  // Future "draft" statements are shown in UI only, not stored in database
+  const currentClosing = parseISO(currentPeriod.endDate.replace(/\//g, '-'));
 
   const accountStatements = statements
     .filter((s) => s.accountId === account.id)
@@ -483,8 +455,8 @@ export function getMissingStatementPeriods(account, statements, transactions) {
   while (true) {
     const periodClosing = parseISO(period.endDate.replace(/\//g, '-'));
 
-    // Stop if we've gone beyond the future limit
-    if (isAfter(periodClosing, futureLimitClosing)) {
+    // Stop after current period (don't create future statements)
+    if (isAfter(periodClosing, currentClosing)) {
       break;
     }
 
@@ -512,9 +484,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
       }
       const endingBalance = startingBalance + totalCharges - totalPayments;
 
-      // Determine status based on whether today falls in this period
-      const status = determineStatementStatus(period.startDate, period.endDate);
-
+      // New statements are unlocked by default
       missingPeriods.push({
         accountId: account.id,
         startDate: period.startDate,
@@ -523,7 +493,7 @@ export function getMissingStatementPeriods(account, statements, transactions) {
         endingBalance,
         totalCharges,
         totalPayments,
-        status,
+        isLocked: false,
       });
 
       lastKnownEndingBalance = endingBalance;

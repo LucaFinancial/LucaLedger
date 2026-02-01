@@ -131,6 +131,25 @@ const normalizeStatement = (statement, timestamp) => {
   let changed = false;
   const normalized = { ...statement };
 
+  // Migrate old status field to isLocked boolean (schema 2.2.0+)
+  if ('status' in normalized && !('isLocked' in normalized)) {
+    normalized.isLocked = normalized.status === 'locked';
+    changed = true;
+  }
+
+  // Remove old status field if it exists
+  if ('status' in normalized) {
+    delete normalized.status;
+    changed = true;
+  }
+
+  // Ensure isLocked exists and is boolean
+  if (typeof normalized.isLocked !== 'boolean') {
+    normalized.isLocked = false;
+    changed = true;
+  }
+
+  // Migrate old date field names
   if (!normalized.startDate && normalized.periodStart) {
     normalized.startDate = normalized.periodStart;
     changed = true;
@@ -141,11 +160,7 @@ const normalizeStatement = (statement, timestamp) => {
     changed = true;
   }
 
-  if (typeof normalized.status === 'undefined') {
-    normalized.status = 'draft';
-    changed = true;
-  }
-
+  // Ensure numeric fields exist
   if (typeof normalized.startingBalance !== 'number') {
     normalized.startingBalance = 0;
     changed = true;
@@ -167,46 +182,26 @@ const normalizeStatement = (statement, timestamp) => {
     changed = true;
   }
 
-  if ('periodStart' in normalized) {
-    delete normalized.periodStart;
-    changed = true;
-  }
-  if ('periodEnd' in normalized) {
-    delete normalized.periodEnd;
-    changed = true;
-  }
-  if ('closingDate' in normalized) {
-    delete normalized.closingDate;
-    changed = true;
-  }
-  if ('statementPeriod' in normalized) {
-    delete normalized.statementPeriod;
-    changed = true;
-  }
-  if ('transactionIds' in normalized) {
-    delete normalized.transactionIds;
-    changed = true;
-  }
-  if ('isStartDateModified' in normalized) {
-    delete normalized.isStartDateModified;
-    changed = true;
-  }
-  if ('isEndDateModified' in normalized) {
-    delete normalized.isEndDateModified;
-    changed = true;
-  }
-  if ('isTotalModified' in normalized) {
-    delete normalized.isTotalModified;
-    changed = true;
-  }
-  if ('lockedAt' in normalized) {
-    delete normalized.lockedAt;
-    changed = true;
-  }
-  if ('total' in normalized) {
-    delete normalized.total;
-    changed = true;
-  }
+  // Remove deprecated fields
+  const deprecatedFields = [
+    'periodStart',
+    'periodEnd',
+    'closingDate',
+    'statementPeriod',
+    'transactionIds',
+    'isStartDateModified',
+    'isEndDateModified',
+    'isTotalModified',
+    'lockedAt',
+    'total',
+  ];
+
+  deprecatedFields.forEach((field) => {
+    if (field in normalized) {
+      delete normalized[field];
+      changed = true;
+    }
+  });
 
   const common = ensureCommonFields(normalized, timestamp);
   return {

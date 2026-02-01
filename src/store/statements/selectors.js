@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { parseISO, differenceInDays } from 'date-fns';
+import { parseISO, differenceInDays, isBefore, isAfter } from 'date-fns';
 import { selectTransactions } from '../transactions/selectors';
 import { calculateStatementPeriod } from './utils';
 
@@ -14,8 +14,36 @@ import { calculateStatementPeriod } from './utils';
 export const selectStatements = (state) => state.statements;
 
 /**
- * Memoized selector factory for statements by account ID
- * Returns a memoized selector that filters statements for a specific account.
+ * Helper function to compute statement status dynamically based on current date
+ */
+const computeStatementStatus = (statement) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = parseISO(statement.startDate.replace(/\//g, '-'));
+  start.setHours(0, 0, 0, 0);
+
+  const end = parseISO(statement.endDate.replace(/\//g, '-'));
+  end.setHours(0, 0, 0, 0);
+
+  // If today is before the period starts, it's a future/draft statement
+  if (isBefore(today, start)) {
+    return 'draft';
+  }
+  // If today is after the period ends, it's a past statement
+  else if (isAfter(today, end)) {
+    return 'past';
+  }
+  // If today is within the period (inclusive), it's current
+  else {
+    return 'current';
+  }
+};
+
+/**
+ * Memoized selector factory for statements by account ID with computed status
+ * Returns a memoized selector that filters statements for a specific account
+ * and recalculates status dynamically.
  *
  * Usage in components:
  *   const statements = useSelector(selectStatementsByAccountId(accountId));
@@ -24,23 +52,33 @@ export const selectStatements = (state) => state.statements;
  */
 export const selectStatementsByAccountId = (accountId) =>
   createSelector([selectStatements, () => accountId], (statements, id) =>
-    statements.filter((statement) => statement.accountId === id),
+    statements
+      .filter((statement) => statement.accountId === id)
+      .map((statement) => ({
+        ...statement,
+        status: computeStatementStatus(statement),
+      })),
   );
 
 /**
- * Memoized selector for a single statement by ID
+ * Memoized selector for a single statement by ID with computed status
  * Returns the statement matching the given ID, or undefined if not found.
  *
  * The selector properly memoizes based on both the statements array AND the statementId.
  */
 export const selectStatementById = (statementId) =>
-  createSelector([selectStatements, () => statementId], (statements, id) =>
-    statements.find((statement) => statement.id === id),
-  );
+  createSelector([selectStatements, () => statementId], (statements, id) => {
+    const statement = statements.find((statement) => statement.id === id);
+    if (!statement) return undefined;
+    return {
+      ...statement,
+      status: computeStatementStatus(statement),
+    };
+  });
 
 /**
  * Memoized selector factory for statements by account ID and status
- * Returns statements for a specific account filtered by status.
+ * Returns statements for a specific account filtered by dynamically computed status.
  *
  * Usage:
  *   const currentStatements = useSelector(selectStatementsByAccountIdAndStatus(accountId, 'current'));
@@ -49,10 +87,13 @@ export const selectStatementsByAccountIdAndStatus = (accountId, status) =>
   createSelector(
     [selectStatements, () => accountId, () => status],
     (statements, id, statusValue) =>
-      statements.filter(
-        (statement) =>
-          statement.accountId === id && statement.status === statusValue,
-      ),
+      statements
+        .filter((statement) => statement.accountId === id)
+        .map((statement) => ({
+          ...statement,
+          status: computeStatementStatus(statement),
+        }))
+        .filter((statement) => statement.status === statusValue),
   );
 
 /**
