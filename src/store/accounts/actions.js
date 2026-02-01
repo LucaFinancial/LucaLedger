@@ -40,6 +40,17 @@ import {
   updateAccount as updateAccountNormalized,
 } from './slice';
 
+const parseSchemaVersion = (version) => {
+  if (typeof version !== 'string') return null;
+  const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+  };
+};
+
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
     uuid(),
@@ -64,10 +75,17 @@ export const loadAccount =
 
       // Determine schema version - must be present
       const schemaVersion = data.schemaVersion;
+      const parsedSchemaVersion = parseSchemaVersion(schemaVersion);
 
       if (!schemaVersion) {
         throw new Error(
           'Invalid file format: No schema version found. File must contain a "schemaVersion" field.',
+        );
+      }
+
+      if (!parsedSchemaVersion) {
+        throw new Error(
+          `Invalid schema version format: ${schemaVersion}. Expected a semantic version like 2.1.0.`,
         );
       }
 
@@ -80,8 +98,8 @@ export const loadAccount =
       let transactionSplitsToLoad = [];
       let shouldLoadCategories = false;
 
-      if (schemaVersion === '2.1.0') {
-        // Schema 2.1.0+: includes categories
+      if (parsedSchemaVersion.major === 2 && parsedSchemaVersion.minor === 1) {
+        // Schema 2.1.x: includes categories
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
         categoriesToLoad = data.categories;
@@ -124,7 +142,11 @@ export const loadAccount =
             shouldLoadCategories = true;
           }
         }
-      } else if (schemaVersion === '2.0.2' || schemaVersion === '2.0.1') {
+      } else if (
+        parsedSchemaVersion.major === 2 &&
+        parsedSchemaVersion.minor === 0 &&
+        parsedSchemaVersion.patch >= 1
+      ) {
         // Schema 2.0.1+: amounts in cents, no categories
         accountsToLoad = data.accounts;
         transactionsToLoad = data.transactions;
@@ -132,7 +154,9 @@ export const loadAccount =
           ? data.statements
           : [];
       } else if (
-        schemaVersion === '2.0.0' &&
+        parsedSchemaVersion.major === 2 &&
+        parsedSchemaVersion.minor === 0 &&
+        parsedSchemaVersion.patch === 0 &&
         data.accounts &&
         data.transactions
       ) {
