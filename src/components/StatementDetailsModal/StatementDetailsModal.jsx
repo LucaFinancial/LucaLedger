@@ -170,7 +170,10 @@ export default function StatementDetailsModal({
           <Typography variant='h6' component='span'>
             Statement Details
           </Typography>
-          <StatementStatusBadge status={statement.status} />
+          <StatementStatusBadge
+            status={statement.status}
+            isLocked={statement.isLocked}
+          />
         </Box>
       </DialogTitle>
 
@@ -191,7 +194,7 @@ export default function StatementDetailsModal({
           </Alert>
         )}
 
-        {isOutOfSync && statement.status === 'locked' && (
+        {isOutOfSync && statement.isLocked && (
           <Alert
             severity='warning'
             sx={{ mb: 2 }}

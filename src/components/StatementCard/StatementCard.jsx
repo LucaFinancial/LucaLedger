@@ -108,9 +108,10 @@ export default function StatementCard({
               </Box>
               <StatementStatusBadge
                 status={statement.status}
+                isLocked={statement.isLocked}
                 size={compact ? 'small' : 'medium'}
               />
-              {isOutOfSync && statement.status === 'locked' && (
+              {isOutOfSync && statement.isLocked && (
                 <Tooltip title='Statement data is out of sync with transactions'>
                   <Chip
                     icon={<Sync />}
