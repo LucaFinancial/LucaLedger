@@ -17,6 +17,11 @@ export const selectStatements = (state) => state.statements;
  * Helper function to compute statement status dynamically based on current date
  */
 const computeStatementStatus = (statement) => {
+  // Handle missing date fields gracefully
+  if (!statement.startDate || !statement.endDate) {
+    return 'draft';
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

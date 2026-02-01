@@ -13,7 +13,6 @@ import {
   statementExistsForPeriod,
   getTransactionsInPeriod,
   summarizeStatementTransactions,
-  determineStatementStatus,
 } from '@/store/statements/utils';
 
 describe('Statement Utils', () => {
@@ -40,35 +39,35 @@ describe('Statement Utils', () => {
     describe('with statement day 15', () => {
       it('should calculate dates for date before statement day', () => {
         const result = calculateStatementDates('2024/01/10', 15);
-        expect(result.endDate).toBe('2024/01/15');
-        expect(result.startDate).toBe('2023/12/16');
-        expect(result.endDate).toBe('2024/01/15');
+        expect(result.endDate).toBe('2024-01-15');
+        expect(result.startDate).toBe('2023-12-16');
+        expect(result.endDate).toBe('2024-01-15');
       });
 
       it('should calculate dates for date on statement day', () => {
         const result = calculateStatementDates('2024/01/15', 15);
-        expect(result.endDate).toBe('2024/01/15');
-        expect(result.startDate).toBe('2023/12/16');
-        expect(result.endDate).toBe('2024/01/15');
+        expect(result.endDate).toBe('2024-01-15');
+        expect(result.startDate).toBe('2023-12-16');
+        expect(result.endDate).toBe('2024-01-15');
       });
 
       it('should calculate dates for date after statement day', () => {
         const result = calculateStatementDates('2024/01/20', 15);
-        expect(result.endDate).toBe('2024/02/15');
-        expect(result.startDate).toBe('2024/01/16');
-        expect(result.endDate).toBe('2024/02/15');
+        expect(result.endDate).toBe('2024-02-15');
+        expect(result.startDate).toBe('2024-01-16');
+        expect(result.endDate).toBe('2024-02-15');
       });
     });
 
     describe('with statement day 1', () => {
       it('should calculate dates for first of month', () => {
         const result = calculateStatementDates('2024/02/01', 1);
-        expect(result.endDate).toBe('2024/02/01');
+        expect(result.endDate).toBe('2024-02-01');
       });
 
       it('should calculate dates for mid month', () => {
         const result = calculateStatementDates('2024/02/15', 1);
-        expect(result.endDate).toBe('2024/03/01');
+        expect(result.endDate).toBe('2024-03-01');
       });
     });
 
@@ -77,12 +76,12 @@ describe('Statement Utils', () => {
         // February
         const result = calculateStatementDates('2024/02/15', 31);
         // Should use the last day of February (29 in 2024 leap year)
-        expect(result.endDate).toBe('2024/02/29');
+        expect(result.endDate).toBe('2024-02-29');
       });
 
       it('should use 31 for months with 31 days', () => {
         const result = calculateStatementDates('2024/01/15', 31);
-        expect(result.endDate).toBe('2024/01/31');
+        expect(result.endDate).toBe('2024-01-31');
       });
     });
   });
@@ -95,16 +94,16 @@ describe('Statement Utils', () => {
       const result = getPreviousPeriod('2024/01/15', 15);
       // Going back one day (Jan 14) still falls in the current statement period
       // which ends on Jan 15, so the calculated closing is still Jan 15
-      expect(result.endDate).toBe('2024/01/15');
+      expect(result.endDate).toBe('2024-01-15');
     });
   });
 
   describe('getNextPeriod', () => {
     it('should get next period from closing date', () => {
       const result = getNextPeriod('2024/01/15', 15);
-      expect(result.endDate).toBe('2024/02/15');
-      expect(result.startDate).toBe('2024/01/16');
-      expect(result.endDate).toBe('2024/02/15');
+      expect(result.endDate).toBe('2024-02-15');
+      expect(result.startDate).toBe('2024-01-16');
+      expect(result.endDate).toBe('2024-02-15');
     });
   });
 
@@ -271,45 +270,6 @@ describe('Statement Utils', () => {
     });
   });
 
-  describe('determineStatementStatus', () => {
-    beforeEach(() => {
-      // Mock current date for consistent testing - use UTC noon to avoid timezone issues
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2024-01-20T12:00:00.000Z'));
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('should return "past" for period ending before today', () => {
-      const result = determineStatementStatus('2024/01/01', '2024/01/15');
-      expect(result).toBe('past');
-    });
-
-    it('should return "current" for period containing today', () => {
-      const result = determineStatementStatus('2024/01/16', '2024/02/15');
-      expect(result).toBe('current');
-    });
-
-    it('should return "draft" for period starting after today', () => {
-      const result = determineStatementStatus('2024/02/16', '2024/03/15');
-      expect(result).toBe('draft');
-    });
-
-    it('should return "current" when today equals period start', () => {
-      const result = determineStatementStatus('2024/01/20', '2024/02/19');
-      expect(result).toBe('current');
-    });
-
-    it('should return "past" when today equals period end + 1', () => {
-      // Reset system time within this test - use noon UTC to avoid timezone issues
-      vi.setSystemTime(new Date('2024-01-16T12:00:00.000Z'));
-      const result = determineStatementStatus('2023/12/16', '2024/01/15');
-      expect(result).toBe('past');
-    });
-  });
-
   describe('getCurrentPeriod', () => {
     beforeEach(() => {
       vi.useFakeTimers();
@@ -323,7 +283,7 @@ describe('Statement Utils', () => {
     it('should return current period for given statement day', () => {
       const result = getCurrentPeriod(15);
       // Jan 20 is after the 15th, so closing is Feb 15
-      expect(result.endDate).toBe('2024/02/15');
+      expect(result.endDate).toBe('2024-02-15');
     });
   });
 });

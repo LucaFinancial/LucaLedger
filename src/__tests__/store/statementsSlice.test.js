@@ -12,7 +12,6 @@ import statementsReducer, {
   lockStatement,
   unlockStatement,
 } from '@/store/statements/slice';
-import { StatementStatusEnum } from '@/store/statements/constants';
 import {
   validCurrentStatement,
   validPastStatement,
@@ -227,14 +226,14 @@ describe('Statements Slice', () => {
     });
 
     describe('lockStatement', () => {
-      it('should set status to locked', () => {
+      it('should set isLocked to true', () => {
         const stateWithData = [validPastStatement];
         const state = statementsReducer(
           stateWithData,
           lockStatement(validPastStatement.id),
         );
 
-        expect(state[0].status).toBe(StatementStatusEnum.LOCKED);
+        expect(state[0].isLocked).toBe(true);
       });
 
       it('should update updatedAt timestamp', () => {
@@ -254,19 +253,19 @@ describe('Statements Slice', () => {
           lockStatement('non-existent'),
         );
 
-        expect(state[0].status).toBe(validCurrentStatement.status);
+        expect(state[0].isLocked).toBe(validCurrentStatement.isLocked);
       });
     });
 
     describe('unlockStatement', () => {
-      it('should set status to past', () => {
+      it('should set isLocked to false', () => {
         const stateWithData = [validLockedStatement];
         const state = statementsReducer(
           stateWithData,
           unlockStatement(validLockedStatement.id),
         );
 
-        expect(state[0].status).toBe(StatementStatusEnum.PAST);
+        expect(state[0].isLocked).toBe(false);
       });
 
       it('should update updatedAt timestamp', () => {
@@ -286,7 +285,7 @@ describe('Statements Slice', () => {
           unlockStatement('non-existent'),
         );
 
-        expect(state[0].status).toBe(StatementStatusEnum.LOCKED);
+        expect(state[0].isLocked).toBe(validLockedStatement.isLocked);
       });
     });
   });

@@ -18,7 +18,6 @@ import {
   isSameDay,
   add,
   subMonths,
-  isWithinInterval,
 } from 'date-fns';
 import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
@@ -37,7 +36,6 @@ export default function LedgerTable({
   selectedTransactions,
   onSelectionChange,
   selectedYear,
-  rollingDateRange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
@@ -165,7 +163,6 @@ export default function LedgerTable({
     selectedTransactions,
     selectedYear,
     categories,
-    rollingDateRange,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -472,7 +469,6 @@ export default function LedgerTable({
     getYearIdentifier,
     getMonthIdentifier,
     getYearMonthKey,
-    selectedYear,
   ]);
 
   return (
@@ -603,8 +599,4 @@ LedgerTable.propTypes = {
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
   selectedYear: PropTypes.string.isRequired,
-  rollingDateRange: PropTypes.shape({
-    startDate: PropTypes.instanceOf(Date),
-    endDate: PropTypes.instanceOf(Date),
-  }),
 };
