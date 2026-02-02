@@ -29,7 +29,7 @@
 
   6.  Validate again
   7.  **If validation errors remain:** display validation errors to the user **with a list of failures**, prompt for action, and provide:
-      - A **"Download CSV of invalid objects"** option
+      - A **"Download JSON of invalid objects"** option
       - A **user-facing** action labeled to convey **"remove invalid objects"** (wording TBD, but should not say "remove all failed objects")
       - A **Cancel** action that warns the user invalid data may cause further problems if they proceed without fixing
 
@@ -80,10 +80,10 @@
   - Keep only merge/upsert logic into Redux collections and loading/error state handling.
   - Do not display validation errors here; this action only accepts cleaned data.
 
-## 6) Implement validation error UI and CSV export
+## 6) Implement validation error UI and JSON export
 
 - **Files:** new UI component + shared CSV export helper (exact location TBD)
 - **Required behavior:**
   - Render a list of validation failures (collection, id, field, message).
-  - Provide buttons: **Download CSV**, **Remove invalid objects**, **Cancel (with warning)**.
+  - Provide buttons: **Download JSON**, **Remove invalid objects**, **Cancel (with warning)**.
   - Ensure both file-import and IndexedDB flows can invoke this UI.
