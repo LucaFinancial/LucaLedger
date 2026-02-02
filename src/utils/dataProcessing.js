@@ -334,10 +334,7 @@ export const processLoadedData = (rawData, options = {}) => {
     transactionSplits: rawData.transactionSplits || [],
   };
 
-  // 2. Validate collections
-  let validation = validateAllCollections(data);
-
-  // 3. Migrate if needed
+  // 2. Migrate if needed
   if (compareVersions(parsedVersion, currentVersion) < 0) {
     const migrated = migrateDataToSchema(data, {
       timestamp: new Date().toISOString(),
@@ -348,10 +345,10 @@ export const processLoadedData = (rawData, options = {}) => {
     }
   }
 
-  // 4. Validate again
-  validation = validateAllCollections(data);
+  // 3. Validate collections
+  let validation = validateAllCollections(data);
 
-  // 5. If validation still fails, strip invalid fields (and apply defaults if permitted)
+  // 4. If validation still fails, strip invalid fields (and apply defaults if permitted)
   if (!validation.valid) {
     const stripped = stripInvalidFieldsFromErrors(data);
     if (stripped.changed) {
@@ -378,7 +375,7 @@ export const processLoadedData = (rawData, options = {}) => {
     }
   }
 
-  // 6. Validate again
+  // 5. Validate again
   const finalValidation = validateAllCollections(data);
 
   return {
