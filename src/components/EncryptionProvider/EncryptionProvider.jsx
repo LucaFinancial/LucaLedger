@@ -63,9 +63,11 @@ export default function EncryptionProvider() {
       let current = result;
 
       while (current.errors.length > 0) {
+        setLoading(false);
         const action = await openValidationDialog(current.errors);
 
         if (action === 'apply-defaults') {
+          setLoading(true);
           current = processLoadedData(current.data, {
             schemaVersion,
             applyDefaults: true,
@@ -74,6 +76,7 @@ export default function EncryptionProvider() {
         }
 
         if (action === 'remove-invalid') {
+          setLoading(true);
           const removal = removeInvalidObjects(current.data, current.errors);
           current = processLoadedData(removal.data, { schemaVersion });
           continue;
@@ -324,43 +327,43 @@ export default function EncryptionProvider() {
   }, [currentUser, dispatch]);
 
   // Show loading progress
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          zIndex: 9999,
-        }}
-      >
-        <CircularProgress size={60} />
-        <Typography variant='h6' sx={{ mt: 2, color: 'white' }}>
-          {loadingMessage}
-        </Typography>
-        <Typography variant='body2' sx={{ mt: 1, color: 'white' }}>
-          Please wait...
-        </Typography>
-        <ValidationErrorsDialog
-          open={validationState.open}
-          errors={validationState.errors}
-          onDownloadJson={() =>
-            downloadValidationErrorsJson(validationState.errors)
-          }
-          onApplyDefaults={() => closeValidationDialog('apply-defaults')}
-          onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
-          onCancel={() => closeValidationDialog('cancel')}
-        />
-      </Box>
-    );
-  }
-
-  return null;
+  return (
+    <>
+      {loading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress size={60} />
+          <Typography variant='h6' sx={{ mt: 2, color: 'white' }}>
+            {loadingMessage}
+          </Typography>
+          <Typography variant='body2' sx={{ mt: 1, color: 'white' }}>
+            Please wait...
+          </Typography>
+        </Box>
+      )}
+      <ValidationErrorsDialog
+        open={validationState.open}
+        errors={validationState.errors}
+        onDownloadJson={() =>
+          downloadValidationErrorsJson(validationState.errors)
+        }
+        onApplyDefaults={() => closeValidationDialog('apply-defaults')}
+        onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
+        onCancel={() => closeValidationDialog('cancel')}
+      />
+    </>
+  );
 }
