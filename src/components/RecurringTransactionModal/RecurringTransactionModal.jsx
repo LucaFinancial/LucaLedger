@@ -12,6 +12,8 @@ import {
   MenuItem,
   Box,
   InputAdornment,
+  Grid,
+  Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format, parseISO, addYears } from 'date-fns';
@@ -20,28 +22,22 @@ import CategorySelect from '@/components/CategorySelect';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
 import config from '@/config';
 
-const BI_WEEKLY_OPTION = 'BI_WEEKLY';
-
 const frequencyOptions = [
   {
     value: recurringTransactionConstants.RecurringFrequencyEnum.DAY,
-    label: 'Daily',
+    label: 'Days',
   },
   {
     value: recurringTransactionConstants.RecurringFrequencyEnum.WEEK,
-    label: 'Weekly',
-  },
-  {
-    value: BI_WEEKLY_OPTION,
-    label: 'Bi-Weekly',
+    label: 'Weeks',
   },
   {
     value: recurringTransactionConstants.RecurringFrequencyEnum.MONTH,
-    label: 'Monthly',
+    label: 'Months',
   },
   {
     value: recurringTransactionConstants.RecurringFrequencyEnum.YEAR,
-    label: 'Yearly',
+    label: 'Years',
   },
 ];
 
@@ -59,6 +55,7 @@ export default function RecurringTransactionModal({
   const [frequency, setFrequency] = useState(
     recurringTransactionConstants.RecurringFrequencyEnum.MONTH,
   );
+  const [interval, setInterval] = useState(1);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
   const [hasEndDate, setHasEndDate] = useState(false);
@@ -74,16 +71,11 @@ export default function RecurringTransactionModal({
       );
       setCategoryId(transaction.categoryId || null);
 
-      let freq =
+      const freq =
         transaction.frequency ||
         recurringTransactionConstants.RecurringFrequencyEnum.MONTH;
-      if (
-        freq === recurringTransactionConstants.RecurringFrequencyEnum.WEEK &&
-        transaction.interval === 2
-      ) {
-        freq = BI_WEEKLY_OPTION;
-      }
       setFrequency(freq);
+      setInterval(transaction.interval || 1);
 
       setStartDate(
         transaction.startOn
@@ -103,6 +95,7 @@ export default function RecurringTransactionModal({
       setAmount('');
       setCategoryId(null);
       setFrequency(recurringTransactionConstants.RecurringFrequencyEnum.MONTH);
+      setInterval(1);
       setStartDate(new Date());
       setEndDate(null);
       setHasEndDate(false);
@@ -113,21 +106,12 @@ export default function RecurringTransactionModal({
     const amountValue = parseFloat(amount) || 0;
     const amountInCents = Math.round(amountValue * 100);
 
-    let finalFrequency = frequency;
-    let interval = 1;
-
-    if (frequency === BI_WEEKLY_OPTION) {
-      finalFrequency =
-        recurringTransactionConstants.RecurringFrequencyEnum.WEEK;
-      interval = 2;
-    }
-
     const data = {
       description: description.trim(),
       amount: amountInCents,
       categoryId,
-      frequency: finalFrequency,
-      interval,
+      frequency,
+      interval: parseInt(interval, 10) || 1,
       startOn: format(startDate, config.dateFormatString),
       endOn:
         hasEndDate && endDate ? format(endDate, config.dateFormatString) : null,
@@ -180,21 +164,43 @@ export default function RecurringTransactionModal({
             onChange={(newValue) => setCategoryId(newValue)}
           />
 
-          <FormControl fullWidth>
-            <InputLabel id='frequency-label'>Frequency</InputLabel>
-            <Select
-              labelId='frequency-label'
-              value={frequency}
-              label='Frequency'
-              onChange={(e) => setFrequency(e.target.value)}
-            >
-              {frequencyOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography gutterBottom>Every</Typography>
+              <TextField
+                fullWidth
+                type='number'
+                value={interval}
+                onChange={(e) => {
+                  const newValue = parseInt(e.target.value, 10);
+                  if (!isNaN(newValue) && newValue > 0) {
+                    setInterval(newValue);
+                  } else if (e.target.value === '') {
+                    setInterval(1);
+                  }
+                }}
+                inputProps={{ min: 1 }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Typography gutterBottom>Frequency</Typography>
+              <FormControl fullWidth>
+                <InputLabel id='frequency-label'>Choose Frequency</InputLabel>
+                <Select
+                  labelId='frequency-label'
+                  value={frequency}
+                  label='Choose Frequency'
+                  onChange={(e) => setFrequency(e.target.value)}
+                >
+                  {frequencyOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
 
           <DatePicker
             label='Start Date'
