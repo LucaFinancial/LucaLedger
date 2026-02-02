@@ -399,14 +399,8 @@ export default function CategoryBreakdown() {
                     tooltip: {
                       callbacks: {
                         label: function (context) {
-                          const label = context.label || '';
                           const value = context.parsed || 0;
-                          const total = context.dataset.data.reduce(
-                            (a, b) => a + b,
-                            0,
-                          );
-                          const percentage = ((value / total) * 100).toFixed(1);
-                          return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                          return formatCurrency(value);
                         },
                       },
                     },
@@ -469,14 +463,8 @@ export default function CategoryBreakdown() {
                   tooltip: {
                     callbacks: {
                       label: function (context) {
-                        const label = context.label || '';
                         const value = context.parsed || 0;
-                        const total = context.dataset.data.reduce(
-                          (a, b) => a + b,
-                          0,
-                        );
-                        const percentage = ((value / total) * 100).toFixed(1);
-                        return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                        return formatCurrency(value);
                       },
                     },
                   },
