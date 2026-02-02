@@ -22,3 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - React Redux v9 is mature and stable (released 14+ months ago)
 - This is a low-risk upgrade with no code changes required
 - Application verified to function normally in all views
+- Peer dependency warning about Redux v5 is expected and safe to ignore
+  - @reduxjs/toolkit v1.9.7 includes Redux v4.2.1 as a direct dependency
+  - React Redux v9 works correctly with Redux v4 via Redux Toolkit
+  - Future upgrade to Redux Toolkit v2.x will resolve this warning
