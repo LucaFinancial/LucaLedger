@@ -46,6 +46,25 @@ const getSchemaProperties = (schemaKey) => {
   return { ...commonProps, ...properties };
 };
 
+const getSchemaRequiredFields = (schemaKey) => {
+  const schema = schemas?.[schemaKey];
+  if (!schema) return [];
+  const required = Array.isArray(schema.required) ? schema.required : [];
+  const hasCommon = Array.isArray(schema.allOf)
+    ? schema.allOf.some((entry) =>
+        typeof entry?.$ref === 'string'
+          ? entry.$ref.includes('common.json')
+          : false,
+      )
+    : false;
+
+  if (!hasCommon) return required;
+  const commonRequired = Array.isArray(schemas?.common?.required)
+    ? schemas.common.required
+    : [];
+  return [...commonRequired, ...required];
+};
+
 const applyDefaultsFromSchema = (schemaKey, entity, fieldsToDefault = null) => {
   if (entity === null || entity === undefined) return {};
   if (typeof entity !== 'object' || Array.isArray(entity)) return entity;
@@ -181,10 +200,58 @@ const applyDefaultsToInvalidValues = (data, errors) => {
         return entity;
       }
       const fieldsToDefault = invalidFields.get(index);
+      const normalizedFields =
+        fieldsToDefault && fieldsToDefault.size > 0 ? fieldsToDefault : null;
       const withDefaults = applyDefaultsFromSchema(
         schemaKey,
         entity,
-        fieldsToDefault,
+        normalizedFields,
+      );
+      if (JSON.stringify(withDefaults) !== JSON.stringify(entity)) {
+        changed = true;
+      }
+      return withDefaults;
+    });
+  });
+
+  return { data: cleaned, changed };
+};
+
+const applyDefaultsForMissingRequiredFields = (data) => {
+  let changed = false;
+  const cleaned = { ...data };
+
+  Object.entries(LUCA_SCHEMAS).forEach(([collectionName, schemaKey]) => {
+    const collection = data[collectionName] || [];
+    if (collection.length === 0) {
+      cleaned[collectionName] = collection;
+      return;
+    }
+
+    const requiredFields = getSchemaRequiredFields(schemaKey);
+    const properties = getSchemaProperties(schemaKey);
+
+    cleaned[collectionName] = collection.map((entity) => {
+      if (!entity || typeof entity !== 'object' || Array.isArray(entity)) {
+        return entity;
+      }
+
+      const missingWithDefaults = new Set(
+        requiredFields.filter(
+          (field) =>
+            entity[field] === undefined &&
+            Object.prototype.hasOwnProperty.call(properties[field] || {}, 'default'),
+        ),
+      );
+
+      if (missingWithDefaults.size === 0) {
+        return entity;
+      }
+
+      const withDefaults = applyDefaultsFromSchema(
+        schemaKey,
+        entity,
+        missingWithDefaults,
       );
       if (JSON.stringify(withDefaults) !== JSON.stringify(entity)) {
         changed = true;
@@ -291,6 +358,12 @@ export const processLoadedData = (rawData, options = {}) => {
       changed = true;
     }
     data = stripped.data;
+
+    const autoDefaults = applyDefaultsForMissingRequiredFields(data);
+    if (autoDefaults.changed) {
+      changed = true;
+    }
+    data = autoDefaults.data;
 
     const postStripValidation = validateAllCollections(data);
     if (!postStripValidation.valid && options.applyDefaults) {
