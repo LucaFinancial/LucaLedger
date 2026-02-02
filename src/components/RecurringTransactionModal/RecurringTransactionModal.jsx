@@ -176,20 +176,21 @@ export default function RecurringTransactionModal({
                   if (!isNaN(newValue) && newValue > 0) {
                     setInterval(newValue);
                   } else if (e.target.value === '') {
-                    setInterval(1);
+                    setInterval('');
                   }
                 }}
-                inputProps={{ min: 1 }}
+                inputProps={{ min: 1, 'aria-label': 'Interval count' }}
+                placeholder='1'
               />
             </Grid>
             <Grid item xs={6}>
               <Typography gutterBottom>Frequency</Typography>
               <FormControl fullWidth>
-                <InputLabel id='frequency-label'>Choose Frequency</InputLabel>
+                <InputLabel id='frequency-label'>Frequency</InputLabel>
                 <Select
                   labelId='frequency-label'
                   value={frequency}
-                  label='Choose Frequency'
+                  label='Frequency'
                   onChange={(e) => setFrequency(e.target.value)}
                 >
                   {frequencyOptions.map((option) => (
