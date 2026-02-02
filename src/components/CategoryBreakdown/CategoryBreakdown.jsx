@@ -399,7 +399,7 @@ export default function CategoryBreakdown() {
                     tooltip: {
                       callbacks: {
                         label: function (context) {
-                          const value = context.parsed || 0;
+                          const value = context.parsed ?? 0;
                           return formatCurrency(value);
                         },
                       },
@@ -463,7 +463,7 @@ export default function CategoryBreakdown() {
                   tooltip: {
                     callbacks: {
                       label: function (context) {
-                        const value = context.parsed || 0;
+                        const value = context.parsed ?? 0;
                         return formatCurrency(value);
                       },
                     },

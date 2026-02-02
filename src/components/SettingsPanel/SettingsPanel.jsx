@@ -415,7 +415,7 @@ export default function SettingsPanel({ account, selectedYear }) {
                       enabled: topCategories.length > 0,
                       callbacks: {
                         label: function (context) {
-                          const value = context.parsed || 0;
+                          const value = context.parsed ?? 0;
                           return `$${value.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,

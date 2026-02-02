@@ -368,7 +368,7 @@ export default function CategoryTotals({ category }) {
                 tooltip: {
                   callbacks: {
                     label: function (context) {
-                      const value = context.parsed || 0;
+                      const value = context.parsed ?? 0;
                       return `$${doublePrecisionFormatString(value)}`;
                     },
                   },
