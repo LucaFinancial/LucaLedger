@@ -27,7 +27,16 @@ import {
   isAfter,
   isSameDay,
 } from 'date-fns';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Colors for pie chart segments
 const COLORS = [
@@ -333,41 +342,46 @@ export default function CategoryTotals({ category }) {
             height: 220,
           }}
         >
-          <ResponsiveContainer width='100%' height='100%'>
-            <PieChart>
-              <Pie
-                data={subcategoryTotals
-                  .filter((sub) => sub.count > 0)
-                  .map((sub) => ({
-                    name: sub.name,
-                    value: Math.abs(sub.total),
-                  }))}
-                cx='50%'
-                cy='50%'
-                labelLine={false}
-                outerRadius={55}
-                fill='#8884d8'
-                dataKey='value'
-                label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
-                }
-              >
-                {subcategoryTotals
-                  .filter((sub) => sub.count > 0)
-                  .map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-              </Pie>
-              <Tooltip
-                formatter={(value) =>
-                  `$${doublePrecisionFormatString(Number(value))}`
-                }
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <Pie
+            data={{
+              labels: subcategoryTotals
+                .filter((sub) => sub.count > 0)
+                .map((sub) => sub.name),
+              datasets: [
+                {
+                  data: subcategoryTotals
+                    .filter((sub) => sub.count > 0)
+                    .map((sub) => Math.abs(sub.total)),
+                  backgroundColor: COLORS,
+                  borderColor: '#fff',
+                  borderWidth: 2,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      const label = context.label || '';
+                      const value = context.parsed || 0;
+                      const total = context.dataset.data.reduce(
+                        (a, b) => a + b,
+                        0,
+                      );
+                      const percentage = ((value / total) * 100).toFixed(0);
+                      return `${label}: $${doublePrecisionFormatString(value)} (${percentage}%)`;
+                    },
+                  },
+                },
+              },
+            }}
+          />
         </Box>
 
         {/* Past/Future/Total Summary */}

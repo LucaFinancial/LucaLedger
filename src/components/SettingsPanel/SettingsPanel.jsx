@@ -11,7 +11,16 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 import BalanceDisplay from '@/components/BalanceDisplay';
 import {
@@ -359,61 +368,64 @@ export default function SettingsPanel({ account, selectedYear }) {
                 flexShrink: 0,
               }}
             >
-              <ResponsiveContainer width='100%' height='100%'>
-                <PieChart>
-                  <Pie
-                    data={
-                      topCategories.length > 0
-                        ? topCategories.map((cat) => ({
-                            name: cat.categoryName,
-                            value: centsToDollars(cat.rankingTotal),
-                          }))
-                        : [{ name: 'No Data', value: 1 }]
-                    }
-                    cx='50%'
-                    cy='50%'
-                    outerRadius={70}
-                    dataKey='value'
-                  >
-                    {topCategories.length > 0 ? (
-                      topCategories.map((entry, index) => {
-                        const colors = [
-                          '#1976d2', // blue
-                          '#f57c00', // orange
-                          '#388e3c', // green
-                          '#d32f2f', // red
-                          '#7b1fa2', // purple
-                          '#0097a7', // cyan
-                          '#fbc02d', // yellow
-                          '#c2185b', // pink
-                          '#5d4037', // brown
-                          '#455a64', // blue grey
-                          '#512da8', // deep purple
-                          '#00796b', // teal
-                        ];
-                        return (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={colors[index % colors.length]}
-                          />
-                        );
-                      })
-                    ) : (
-                      <Cell key='no-data' fill='#e0e0e0' />
-                    )}
-                  </Pie>
-                  {topCategories.length > 0 && (
-                    <Tooltip
-                      formatter={(value) =>
-                        `$${Number(value).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}`
-                      }
-                    />
-                  )}
-                </PieChart>
-              </ResponsiveContainer>
+              <Pie
+                data={{
+                  labels:
+                    topCategories.length > 0
+                      ? topCategories.map((cat) => cat.categoryName)
+                      : ['No Data'],
+                  datasets: [
+                    {
+                      data:
+                        topCategories.length > 0
+                          ? topCategories.map((cat) =>
+                              centsToDollars(cat.rankingTotal),
+                            )
+                          : [1],
+                      backgroundColor:
+                        topCategories.length > 0
+                          ? [
+                              '#1976d2', // blue
+                              '#f57c00', // orange
+                              '#388e3c', // green
+                              '#d32f2f', // red
+                              '#7b1fa2', // purple
+                              '#0097a7', // cyan
+                              '#fbc02d', // yellow
+                              '#c2185b', // pink
+                              '#5d4037', // brown
+                              '#455a64', // blue grey
+                              '#512da8', // deep purple
+                              '#00796b', // teal
+                            ]
+                          : ['#e0e0e0'],
+                      borderColor: '#fff',
+                      borderWidth: 2,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                    tooltip: {
+                      enabled: topCategories.length > 0,
+                      callbacks: {
+                        label: function (context) {
+                          const value = context.parsed || 0;
+                          return `$${value.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`;
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
             </Box>
 
             {/* Category List - Scrollable */}
