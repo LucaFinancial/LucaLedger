@@ -21,7 +21,6 @@ import {
   setTransactionSplits,
   selectors as transactionSplitSelectors,
 } from '@/store/transactionSplits';
-import { migrateDataToSchema } from '@/utils/dataMigration';
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import {
@@ -35,17 +34,6 @@ import {
   updateAccount as updateAccountNormalized,
 } from './slice';
 
-const parseSchemaVersion = (version) => {
-  if (typeof version !== 'string') return null;
-  const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
-  if (!match) return null;
-  return {
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
-  };
-};
-
 export const createNewAccount = () => (dispatch) => {
   const account = generateAccountObject(
     uuid(),
@@ -57,7 +45,7 @@ export const createNewAccount = () => (dispatch) => {
   dispatch(addAccount(account));
 };
 
-export const loadAccount =
+export const loadData =
   (data, shouldOverwriteCategories = null) =>
   async (dispatch, getState) => {
     try {
@@ -68,132 +56,15 @@ export const loadAccount =
       // Add a small delay to ensure UI updates before processing
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Determine schema version - must be present
-      const schemaVersion = data.schemaVersion;
-      const parsedSchemaVersion = parseSchemaVersion(schemaVersion);
-
-      if (!schemaVersion) {
-        throw new Error(
-          'Invalid file format: No schema version found. File must contain a "schemaVersion" field.',
-        );
-      }
-
-      if (!parsedSchemaVersion) {
-        throw new Error(
-          `Invalid schema version format: ${schemaVersion}. Expected a semantic version like 2.1.0.`,
-        );
-      }
-
-      let accountsToLoad = [];
-      let transactionsToLoad = [];
-      let categoriesToLoad = null;
-      let statementsToLoad = [];
-      let recurringTransactionsToLoad = [];
-      let recurringTransactionEventsToLoad = [];
-      let transactionSplitsToLoad = [];
-      let shouldLoadCategories = false;
-
-      // Support schema 2.1.x and newer (2.2.x, 2.3.x, etc.)
-      if (parsedSchemaVersion.major === 2 && parsedSchemaVersion.minor >= 1) {
-        // Schema 2.1.x+: includes categories and all fields
-        accountsToLoad = data.accounts;
-        transactionsToLoad = data.transactions;
-        categoriesToLoad = data.categories;
-        statementsToLoad = Array.isArray(data.statements)
-          ? data.statements
-          : [];
-        recurringTransactionsToLoad = Array.isArray(data.recurringTransactions)
-          ? data.recurringTransactions
-          : [];
-        recurringTransactionEventsToLoad = Array.isArray(
-          data.recurringTransactionEvents,
-        )
-          ? data.recurringTransactionEvents
-          : [];
-        transactionSplitsToLoad = Array.isArray(data.transactionSplits)
-          ? data.transactionSplits
-          : [];
-
-        // Check if user wants to import categories
-        if (categoriesToLoad && categoriesToLoad.length > 0) {
-          const currentState = getState();
-          const existingCategories = currentState.categories;
-
-          // If user has existing categories, use the provided decision or ask
-          if (existingCategories && existingCategories.length > 0) {
-            if (shouldOverwriteCategories !== null) {
-              // Decision was already made (from UI modal)
-              shouldLoadCategories = shouldOverwriteCategories;
-            } else {
-              // Fallback to window.confirm for backwards compatibility
-              shouldLoadCategories = window.confirm(
-                'This file contains category data. Do you want to overwrite your existing categories with the categories from this file?\n\n' +
-                  'Click "OK" to replace your current categories with the imported ones.\n' +
-                  'Click "Cancel" to keep your current categories.',
-              );
-            }
-          } else {
-            // No existing categories, load them automatically
-            shouldLoadCategories = true;
-          }
-        }
-      } else if (
-        parsedSchemaVersion.major === 2 &&
-        parsedSchemaVersion.minor === 0 &&
-        parsedSchemaVersion.patch >= 1
-      ) {
-        // Schema 2.0.1+: amounts in cents, no categories
-        accountsToLoad = data.accounts;
-        transactionsToLoad = data.transactions;
-        statementsToLoad = Array.isArray(data.statements)
-          ? data.statements
-          : [];
-      } else if (
-        parsedSchemaVersion.major === 2 &&
-        parsedSchemaVersion.minor === 0 &&
-        parsedSchemaVersion.patch === 0 &&
-        data.accounts &&
-        data.transactions
-      ) {
-        // Schema 2.0.0: amounts in dollars, no categories
-        accountsToLoad = data.accounts;
-        transactionsToLoad = data.transactions;
-        statementsToLoad = Array.isArray(data.statements)
-          ? data.statements
-          : [];
-      } else {
-        throw new Error(
-          `Unsupported schema version: ${schemaVersion}. Please export data from a supported version.`,
-        );
-      }
-
-      const migrationTimestamp = new Date().toISOString();
-      const migrated = migrateDataToSchema(
-        {
-          accounts: accountsToLoad,
-          transactions: transactionsToLoad,
-          categories: categoriesToLoad || [],
-          statements: statementsToLoad,
-          recurringTransactions: recurringTransactionsToLoad,
-          recurringTransactionEvents: recurringTransactionEventsToLoad,
-          transactionSplits: transactionSplitsToLoad,
-        },
-        {
-          // ...existing code...
-          timestamp: migrationTimestamp,
-        },
-      );
-
-      accountsToLoad = migrated.data.accounts;
-      transactionsToLoad = migrated.data.transactions;
-      statementsToLoad = migrated.data.statements;
-      recurringTransactionsToLoad = migrated.data.recurringTransactions;
-      recurringTransactionEventsToLoad =
-        migrated.data.recurringTransactionEvents;
-      transactionSplitsToLoad = migrated.data.transactionSplits;
-      if (categoriesToLoad) {
-        categoriesToLoad = migrated.data.categories;
-      }
+      const accountsToLoad = data.accounts || [];
+      const transactionsToLoad = data.transactions || [];
+      const categoriesToLoad = data.categories || [];
+      const statementsToLoad = data.statements || [];
+      const recurringTransactionsToLoad = data.recurringTransactions || [];
+      const recurringTransactionEventsToLoad =
+        data.recurringTransactionEvents || [];
+      const transactionSplitsToLoad = data.transactionSplits || [];
+      const shouldLoadCategories = shouldOverwriteCategories === true;
 
       // Get current state for idempotent merge
       const currentState = getState();
@@ -299,16 +170,16 @@ export const loadAccount =
         );
       }
 
-      // Load categories if user confirmed or no existing categories
-      if (shouldLoadCategories && categoriesToLoad) {
+      // Load categories if user confirmed
+      if (shouldLoadCategories && categoriesToLoad.length > 0) {
         dispatch(setCategories(categoriesToLoad));
       }
 
       dispatch(clearLoadingAccountIds());
       dispatch(setLoading(false));
     } catch (error) {
-      console.error('Error loading account:', error);
-      dispatch(setError(error.message || 'Failed to load account'));
+      console.error('Error loading data:', error);
+      dispatch(setError(error.message || 'Failed to load data'));
       dispatch(clearLoadingAccountIds());
       dispatch(setLoading(false));
       throw error;

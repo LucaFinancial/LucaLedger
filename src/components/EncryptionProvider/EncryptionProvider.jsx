@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { CircularProgress, Box, Typography } from '@mui/material';
 import { useAuth } from '@/auth';
@@ -23,7 +23,13 @@ import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvent
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
 import categoriesData from '@/config/categories.json';
 import { migrateDataToSchema } from '@/utils/dataMigration';
-import { format } from 'date-fns';
+import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
+import {
+  processLoadedData,
+  removeInvalidObjects,
+} from '@/utils/dataProcessing';
+import { downloadValidationErrorsJson } from '@/utils/validationErrorsJson';
 
 export default function EncryptionProvider() {
   const dispatch = useDispatch();
@@ -31,6 +37,55 @@ export default function EncryptionProvider() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [validationState, setValidationState] = useState({
+    open: false,
+    errors: [],
+  });
+  const validationResolveRef = useRef(null);
+
+  const openValidationDialog = useCallback((errors) => {
+    return new Promise((resolve) => {
+      validationResolveRef.current = resolve;
+      setValidationState({ open: true, errors });
+    });
+  }, []);
+
+  const closeValidationDialog = useCallback((action) => {
+    if (validationResolveRef.current) {
+      validationResolveRef.current(action);
+    }
+    validationResolveRef.current = null;
+    setValidationState({ open: false, errors: [] });
+  }, []);
+
+  const runValidationFlow = useCallback(
+    async (result, schemaVersion) => {
+      let current = result;
+
+      while (current.errors.length > 0) {
+        const action = await openValidationDialog(current.errors);
+
+        if (action === 'apply-defaults') {
+          current = processLoadedData(current.data, {
+            schemaVersion,
+            applyDefaults: true,
+          });
+          continue;
+        }
+
+        if (action === 'remove-invalid') {
+          const removal = removeInvalidObjects(current.data, current.errors);
+          current = processLoadedData(removal.data, { schemaVersion });
+          continue;
+        }
+
+        return null;
+      }
+
+      return current;
+    },
+    [openValidationDialog],
+  );
 
   // Load user data when authenticated
   useEffect(() => {
@@ -86,159 +141,110 @@ export default function EncryptionProvider() {
           ),
         ]);
 
-        // IMMEDIATELY filter out past recurring transaction events before ANY processing
-        const today = format(new Date(), 'yyyy-MM-dd');
-        if (encryptedRecurringTransactionEvents) {
-          encryptedRecurringTransactionEvents =
-            encryptedRecurringTransactionEvents.filter(
-              (event) => event.expectedDate >= today,
-            );
-        }
+        const rawData = {
+          schemaVersion: CURRENT_SCHEMA_VERSION,
+          accounts: encryptedAccounts || [],
+          transactions: encryptedTransactions || [],
+          categories: encryptedCategories || [],
+          statements: encryptedStatements || [],
+          recurringTransactions: encryptedRecurringTransactions || [],
+          recurringTransactionEvents: encryptedRecurringTransactionEvents || [],
+          transactionSplits: encryptedTransactionSplits || [],
+        };
 
-        const migrationTimestamp = new Date().toISOString();
-        const migration = migrateDataToSchema(
-          {
-            accounts: encryptedAccounts || [],
-            transactions: encryptedTransactions || [],
-            categories: encryptedCategories || [],
-            statements: encryptedStatements || [],
-            recurringTransactions: encryptedRecurringTransactions || [],
-            recurringTransactionEvents:
-              encryptedRecurringTransactionEvents || [],
-            transactionSplits: encryptedTransactionSplits || [],
-          },
-          {
-            // ...existing code...
-            timestamp: migrationTimestamp,
-          },
+        const processed = await runValidationFlow(
+          processLoadedData(rawData, { schemaVersion: CURRENT_SCHEMA_VERSION }),
+          CURRENT_SCHEMA_VERSION,
         );
 
-        if (migration.changed) {
-          encryptedAccounts = migration.data.accounts;
-          encryptedTransactions = migration.data.transactions;
-          encryptedCategories = migration.data.categories;
-          encryptedStatements = migration.data.statements;
-          encryptedRecurringTransactions = migration.data.recurringTransactions;
-          encryptedRecurringTransactionEvents =
-            migration.data.recurringTransactionEvents;
-          encryptedTransactionSplits = migration.data.transactionSplits;
+        if (!processed) {
+          setLoading(false);
+          return;
+        }
 
-          // Filter past events from migrated data immediately
-          if (encryptedRecurringTransactionEvents) {
-            encryptedRecurringTransactionEvents =
-              encryptedRecurringTransactionEvents.filter(
-                (event) => event.expectedDate >= today,
-              );
-          }
+        encryptedAccounts = processed.data.accounts;
+        encryptedTransactions = processed.data.transactions;
+        encryptedCategories = processed.data.categories;
+        encryptedStatements = processed.data.statements;
+        encryptedRecurringTransactions = processed.data.recurringTransactions;
+        encryptedRecurringTransactionEvents =
+          processed.data.recurringTransactionEvents;
+        encryptedTransactionSplits = processed.data.transactionSplits;
 
-          const recordWrites = [];
-
-          if (migration.changes.accounts) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'accounts',
-                encryptedAccounts.map((account) => ({
-                  id: account.id,
-                  data: account,
-                })),
-                activeDEK,
-                currentUser.id,
+        if (processed.changed) {
+          const recordWrites = [
+            batchStoreUserEncryptedRecords(
+              'accounts',
+              encryptedAccounts.map((account) => ({
+                id: account.id,
+                data: account,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'transactions',
+              encryptedTransactions.map((transaction) => ({
+                id: transaction.id,
+                data: transaction,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'categories',
+              encryptedCategories.map((category) => ({
+                id: category.id,
+                data: category,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'statements',
+              encryptedStatements.map((statement) => ({
+                id: statement.id,
+                data: statement,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'recurringTransactions',
+              encryptedRecurringTransactions.map((recurringTransaction) => ({
+                id: recurringTransaction.id,
+                data: recurringTransaction,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'recurringTransactionEvents',
+              encryptedRecurringTransactionEvents.map(
+                (recurringTransactionEvent) => ({
+                  id: recurringTransactionEvent.id,
+                  data: recurringTransactionEvent,
+                }),
               ),
-            );
-          }
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'transactionSplits',
+              encryptedTransactionSplits.map((transactionSplit) => ({
+                id: transactionSplit.id,
+                data: transactionSplit,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+          ];
 
-          if (migration.changes.transactions) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'transactions',
-                encryptedTransactions.map((transaction) => ({
-                  id: transaction.id,
-                  data: transaction,
-                })),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (migration.changes.categories) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'categories',
-                encryptedCategories.map((category) => ({
-                  id: category.id,
-                  data: category,
-                })),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (migration.changes.statements) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'statements',
-                encryptedStatements.map((statement) => ({
-                  id: statement.id,
-                  data: statement,
-                })),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (migration.changes.recurringTransactions) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'recurringTransactions',
-                encryptedRecurringTransactions.map((recurringTransaction) => ({
-                  id: recurringTransaction.id,
-                  data: recurringTransaction,
-                })),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (migration.changes.recurringTransactionEvents) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'recurringTransactionEvents',
-                encryptedRecurringTransactionEvents.map(
-                  (recurringTransactionEvent) => ({
-                    id: recurringTransactionEvent.id,
-                    data: recurringTransactionEvent,
-                  }),
-                ),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (migration.changes.transactionSplits) {
-            recordWrites.push(
-              batchStoreUserEncryptedRecords(
-                'transactionSplits',
-                encryptedTransactionSplits.map((transactionSplit) => ({
-                  id: transactionSplit.id,
-                  data: transactionSplit,
-                })),
-                activeDEK,
-                currentUser.id,
-              ),
-            );
-          }
-
-          if (recordWrites.length > 0) {
-            await Promise.all(recordWrites);
-          }
+          await Promise.all(recordWrites);
         }
 
         // Initialize categories with defaults if none exist
+        const migrationTimestamp = new Date().toISOString();
         let categoriesToLoad = encryptedCategories || [];
         if (categoriesToLoad.length === 0) {
           const defaultCategories = migrateDataToSchema(
@@ -297,6 +303,7 @@ export default function EncryptionProvider() {
     sessionExpiresAt,
     dataLoaded,
     dispatch,
+    runValidationFlow,
   ]);
 
   // Reset data loaded state when user changes
@@ -341,6 +348,16 @@ export default function EncryptionProvider() {
         <Typography variant='body2' sx={{ mt: 1, color: 'white' }}>
           Please wait...
         </Typography>
+        <ValidationErrorsDialog
+          open={validationState.open}
+          errors={validationState.errors}
+          onDownloadJson={() =>
+            downloadValidationErrorsJson(validationState.errors)
+          }
+          onApplyDefaults={() => closeValidationDialog('apply-defaults')}
+          onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
+          onCancel={() => closeValidationDialog('cancel')}
+        />
       </Box>
     );
   }

@@ -33,6 +33,7 @@ export default function ValidationErrorsDialog({
   open,
   errors,
   onDownloadJson,
+  onApplyDefaults,
   onRemoveInvalid,
   onCancel,
 }) {
@@ -67,6 +68,7 @@ export default function ValidationErrorsDialog({
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <Button onClick={onDownloadJson}>Download JSON</Button>
+        <Button onClick={onApplyDefaults}>Apply Defaults</Button>
         <Button onClick={onCancel}>Cancel</Button>
         <Button variant='contained' color='warning' onClick={onRemoveInvalid}>
           Remove Invalid Objects
@@ -80,6 +82,7 @@ ValidationErrorsDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   errors: PropTypes.arrayOf(PropTypes.object).isRequired,
   onDownloadJson: PropTypes.func.isRequired,
+  onApplyDefaults: PropTypes.func.isRequired,
   onRemoveInvalid: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
 };

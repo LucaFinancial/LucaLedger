@@ -1,10 +1,15 @@
 import { Box, Button, CircularProgress } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { format } from 'date-fns';
 
 import { actions, selectors } from '@/store/accounts';
 import CategoryImportConfirmModal from '@/components/CategoryImportConfirmModal';
+import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
+import {
+  processLoadedData,
+  removeInvalidObjects,
+} from '@/utils/dataProcessing';
+import { downloadValidationErrorsJson } from '@/utils/validationErrorsJson';
 
 export default function LoadButton() {
   const dispatch = useDispatch();
@@ -14,6 +19,82 @@ export default function LoadButton() {
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingData, setPendingData] = useState(null);
   const [categoriesCount, setCategoriesCount] = useState(0);
+  const [validationState, setValidationState] = useState({
+    open: false,
+    errors: [],
+  });
+  const validationResolveRef = useRef(null);
+
+  const openValidationDialog = useCallback((errors) => {
+    return new Promise((resolve) => {
+      validationResolveRef.current = resolve;
+      setValidationState({ open: true, errors });
+    });
+  }, []);
+
+  const closeValidationDialog = useCallback((action) => {
+    if (validationResolveRef.current) {
+      validationResolveRef.current(action);
+    }
+    validationResolveRef.current = null;
+    setValidationState({ open: false, errors: [] });
+  }, []);
+
+  const runValidationFlow = useCallback(
+    async (result, schemaVersion) => {
+      let current = result;
+
+      while (current.errors.length > 0) {
+        const action = await openValidationDialog(current.errors);
+
+        if (action === 'apply-defaults') {
+          current = processLoadedData(current.data, {
+            schemaVersion,
+            applyDefaults: true,
+          });
+          continue;
+        }
+
+        if (action === 'remove-invalid') {
+          const removal = removeInvalidObjects(current.data, current.errors);
+          current = processLoadedData(removal.data, { schemaVersion });
+          continue;
+        }
+
+        return null;
+      }
+
+      return current;
+    },
+    [openValidationDialog],
+  );
+
+  const processAndLoad = useCallback(
+    async (rawData, shouldOverwriteCategories) => {
+      try {
+        const result = processLoadedData(rawData, {
+          schemaVersion: rawData.schemaVersion,
+        });
+
+        const resolved = await runValidationFlow(result, rawData.schemaVersion);
+        if (!resolved) {
+          return;
+        }
+
+        await dispatch(
+          actions.loadData(resolved.data, shouldOverwriteCategories),
+        );
+      } catch (error) {
+        console.error('Error processing file:', error);
+        dispatch(
+          actions.setError(
+            error.message || 'Failed to load file. Please try again.',
+          ),
+        );
+      }
+    },
+    [dispatch, runValidationFlow],
+  );
 
   const handleChange = async (event) => {
     const file = event.target.files[0];
@@ -24,36 +105,28 @@ export default function LoadButton() {
       try {
         const json = JSON.parse(reader.result);
 
-        // IMMEDIATELY remove past recurring transaction events
-        const today = format(new Date(), 'yyyy-MM-dd');
-        if (
-          json.recurringTransactionEvents &&
-          Array.isArray(json.recurringTransactionEvents)
-        ) {
-          json.recurringTransactionEvents =
-            json.recurringTransactionEvents.filter(
-              (event) => event.expectedDate >= today,
-            );
-        }
-
         // Check if the file contains categories
-        if (json.categories && Object.keys(json.categories).length > 0) {
+        if (Array.isArray(json.categories) && json.categories.length > 0) {
           // Store the data and show confirmation modal
           setPendingData(json);
-          setCategoriesCount(Object.keys(json.categories).length);
+          setCategoriesCount(json.categories.length);
           setModalOpen(true);
         } else {
           // No categories, load directly
-          await dispatch(actions.loadAccount(json));
+          await processAndLoad(json, false);
         }
       } catch (error) {
         console.error('Error parsing file:', error);
-        alert('Failed to load file. Please ensure it is a valid JSON file.');
+        dispatch(
+          actions.setError(
+            'Failed to load file. Please ensure it is a valid JSON file.',
+          ),
+        );
       }
     };
     reader.onerror = () => {
       console.error('Error reading file:', reader.error);
-      alert('Failed to read file. Please try again.');
+      dispatch(actions.setError('Failed to read file. Please try again.'));
     };
     reader.readAsText(file);
 
@@ -64,17 +137,17 @@ export default function LoadButton() {
   const handleConfirmLoad = async () => {
     if (pendingData) {
       setModalOpen(false);
-      await dispatch(actions.loadAccount(pendingData, true)); // true = overwrite categories
+      await processAndLoad(pendingData, true); // true = overwrite categories
       setPendingData(null);
       setCategoriesCount(0);
     }
   };
 
-  const handleCancelLoad = () => {
+  const handleCancelLoad = async () => {
     if (pendingData) {
       // Load without categories
       setModalOpen(false);
-      dispatch(actions.loadAccount(pendingData, false)); // false = don't overwrite categories
+      await processAndLoad(pendingData, false); // false = don't overwrite categories
       setPendingData(null);
       setCategoriesCount(0);
     }
@@ -111,6 +184,16 @@ export default function LoadButton() {
         onConfirm={handleConfirmLoad}
         onCancel={handleCancelLoad}
         categoriesCount={categoriesCount}
+      />
+      <ValidationErrorsDialog
+        open={validationState.open}
+        errors={validationState.errors}
+        onDownloadJson={() =>
+          downloadValidationErrorsJson(validationState.errors)
+        }
+        onApplyDefaults={() => closeValidationDialog('apply-defaults')}
+        onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
+        onCancel={() => closeValidationDialog('cancel')}
       />
     </Box>
   );
