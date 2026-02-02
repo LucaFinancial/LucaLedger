@@ -4,29 +4,24 @@ import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { setCategories } from '@/store/categories';
 import {
-  setRecurringTransactions,
-  selectors as recurringTransactionSelectors,
-} from '@/store/recurringTransactions';
-import {
-  setRecurringTransactionEvents,
   selectors as recurringTransactionEventSelectors,
+  setRecurringTransactionEvents,
 } from '@/store/recurringTransactionEvents';
+import {
+  selectors as recurringTransactionSelectors,
+  setRecurringTransactions,
+} from '@/store/recurringTransactions';
 import {
   setStatements,
   selectors as statementSelectors,
 } from '@/store/statements';
 import { selectors as transactionSelectors } from '@/store/transactions';
-import {
-  addTransaction,
-  removeTransaction,
-  setTransactions,
-} from '@/store/transactions/slice';
+import { removeTransaction, setTransactions } from '@/store/transactions/slice';
 import {
   setTransactionSplits,
   selectors as transactionSplitSelectors,
 } from '@/store/transactionSplits';
 import { migrateDataToSchema } from '@/utils/dataMigration';
-import { validateSchema } from '@/utils/schemaValidation';
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import {
@@ -319,45 +314,6 @@ export const loadAccount =
       throw error;
     }
   };
-
-const loadAccountFromFile = async () => {
-  const [fileHandle] = await window.showOpenFilePicker();
-  const file = await fileHandle.getFile();
-  const fileContent = await file.text();
-  return JSON.parse(fileContent);
-};
-
-export const loadAccountAsync = () => async (dispatch) => {
-  const data = await loadAccountFromFile();
-  if (!data) return;
-  const account = generateAccountObject(
-    data.id,
-    data.name,
-    data.type || AccountType.CHECKING,
-    data.statementClosingDay ||
-      (data.type === AccountType.CREDIT_CARD ? 1 : null),
-  );
-
-  const validationResult = await validateSchema('account', account);
-  if (!validationResult.valid) {
-    console.error(validationResult.errors);
-    return;
-  }
-
-  const transactions = data.transactions
-    ? data.transactions.map((t) => ({
-        ...t,
-        amount: parseFloat(t.amount),
-        accountId: account.id,
-      }))
-    : [];
-
-  dispatch(addAccount(account));
-
-  transactions.forEach((transaction) => {
-    dispatch(addTransaction(transaction));
-  });
-};
 
 export const removeAccountById = (id) => async (dispatch, getState) => {
   const state = getState();
