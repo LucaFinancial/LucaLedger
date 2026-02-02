@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateStatement } from '@/store/statements/generators';
-import { StatementStatusEnum } from '@/store/statements/constants';
 
 describe('Statement Generators', () => {
   describe('generateStatement', () => {
@@ -48,25 +47,25 @@ describe('Statement Generators', () => {
       expect(stmt1.id).not.toBe(stmt2.id);
     });
 
-    it('should set default status to DRAFT', () => {
+    it('should set default isLocked to false', () => {
       const statement = generateStatement({
         accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
       });
 
-      expect(statement.status).toBe(StatementStatusEnum.DRAFT);
+      expect(statement.isLocked).toBe(false);
     });
 
-    it('should accept custom status', () => {
+    it('should accept custom isLocked', () => {
       const statement = generateStatement({
         accountId: '00000000-0000-0000-0000-000000000003',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
-        status: StatementStatusEnum.CURRENT,
+        isLocked: true,
       });
 
-      expect(statement.status).toBe(StatementStatusEnum.CURRENT);
+      expect(statement.isLocked).toBe(true);
     });
 
     it('should set default numeric fields to 0', () => {
@@ -136,12 +135,11 @@ describe('Statement Generators', () => {
     });
 
     it('should return null for invalid statement data', () => {
-      // Invalid status
+      // Invalid accountId (not a UUID)
       const statement = generateStatement({
-        accountId: '00000000-0000-0000-0000-000000000003',
+        accountId: 'not-a-uuid',
         startDate: '2024-05-16',
         endDate: '2024-06-15',
-        status: 'invalid_status',
       });
 
       expect(statement).toBeNull();

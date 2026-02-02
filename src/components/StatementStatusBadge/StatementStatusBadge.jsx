@@ -25,8 +25,14 @@ const statusConfig = {
   },
 };
 
-export default function StatementStatusBadge({ status, size = 'small' }) {
-  const config = statusConfig[status] || statusConfig.draft;
+export default function StatementStatusBadge({
+  status,
+  isLocked = false,
+  size = 'small',
+}) {
+  // If locked, show locked status regardless of computed status
+  const displayStatus = isLocked ? 'locked' : status;
+  const config = statusConfig[displayStatus] || statusConfig.draft;
   const IconComponent = config.icon;
 
   return (
@@ -43,6 +49,7 @@ export default function StatementStatusBadge({ status, size = 'small' }) {
 }
 
 StatementStatusBadge.propTypes = {
-  status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
+  status: PropTypes.oneOf(['draft', 'current', 'past']), // Computed field from selectors
+  isLocked: PropTypes.bool, // Locked state from stored field
   size: PropTypes.oneOf(['small', 'medium']),
 };

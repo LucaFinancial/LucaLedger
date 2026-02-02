@@ -153,7 +153,7 @@ const statements = createSlice({
       const statementId = action.payload;
       const index = state.findIndex((s) => s.id === statementId);
       if (index !== -1) {
-        state[index].status = 'locked';
+        state[index].isLocked = true;
         state[index].updatedAt = new Date().toISOString();
       }
     },
@@ -161,8 +161,7 @@ const statements = createSlice({
       const statementId = action.payload;
       const index = state.findIndex((s) => s.id === statementId);
       if (index !== -1) {
-        // Restore to 'past' status when unlocking
-        state[index].status = 'past';
+        state[index].isLocked = false;
         state[index].updatedAt = new Date().toISOString();
       }
     },

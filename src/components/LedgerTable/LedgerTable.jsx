@@ -18,7 +18,6 @@ import {
   isSameDay,
   add,
   subMonths,
-  isWithinInterval,
 } from 'date-fns';
 import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
@@ -37,7 +36,6 @@ export default function LedgerTable({
   selectedTransactions,
   onSelectionChange,
   selectedYear,
-  rollingDateRange,
 }) {
   const { accountId } = useParams();
   const account = useSelector(accountSelectors.selectAccountById(accountId));
@@ -103,21 +101,13 @@ export default function LedgerTable({
     // Start with all transactions with balance
     let filtered = transactionsWithBalance;
 
-    // Apply year filter
-    if (selectedYear !== 'all') {
+    // Apply year filter (but not for 'all' or 'rolling')
+    if (selectedYear !== 'all' && selectedYear !== 'rolling') {
       filtered = filtered.filter((t) => {
         if (!t.date) return false;
         try {
           const parsed = parseISO(t.date.replace(/\//g, '-'));
           if (isNaN(parsed.getTime())) return false;
-
-          if (selectedYear === 'rolling' && rollingDateRange) {
-            return isWithinInterval(parsed, {
-              start: rollingDateRange.startDate,
-              end: rollingDateRange.endDate,
-            });
-          }
-
           return format(parsed, 'yyyy') === selectedYear;
         } catch {
           return false;
@@ -173,7 +163,6 @@ export default function LedgerTable({
     selectedTransactions,
     selectedYear,
     categories,
-    rollingDateRange,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -308,12 +297,14 @@ export default function LedgerTable({
             return;
           }
 
-          // Skip statement dividers that don't belong to the selected year
-          if (selectedYear !== 'all') {
-            const statementYear = format(closingDate, 'yyyy');
-            if (statementYear !== selectedYear) {
-              return;
-            }
+          // Determine which month group this statement belongs to
+          const year = format(closingDate, 'yyyy');
+          const month = format(closingDate, 'MMMM');
+          const yearMonthKey = `${year}-${month}`;
+
+          // Only insert divider if the group exists (from filtered transactions)
+          if (!groups[year] || !groups[year][yearMonthKey]) {
+            return;
           }
 
           // Get transactions in this statement period
@@ -333,23 +324,6 @@ export default function LedgerTable({
               return false;
             }
           });
-
-          // Determine which month group this statement belongs to
-          const year = format(closingDate, 'yyyy');
-          const month = format(closingDate, 'MMMM');
-          const yearMonthKey = `${year}-${month}`;
-
-          // Ensure the group exists
-          if (!groups[year]) {
-            groups[year] = {};
-          }
-          if (!groups[year][yearMonthKey]) {
-            groups[year][yearMonthKey] = {
-              month,
-              firstTransactionDate: statement.endDate,
-              items: [],
-            };
-          }
 
           // Find correct insertion point for statement divider
           const items = groups[year][yearMonthKey].items;
@@ -495,7 +469,6 @@ export default function LedgerTable({
     getYearIdentifier,
     getMonthIdentifier,
     getYearMonthKey,
-    selectedYear,
   ]);
 
   return (
@@ -626,8 +599,4 @@ LedgerTable.propTypes = {
   selectedTransactions: PropTypes.instanceOf(Set),
   onSelectionChange: PropTypes.func,
   selectedYear: PropTypes.string.isRequired,
-  rollingDateRange: PropTypes.shape({
-    startDate: PropTypes.instanceOf(Date),
-    endDate: PropTypes.instanceOf(Date),
-  }),
 };

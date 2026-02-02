@@ -8,7 +8,7 @@ import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 export default function SeparatorRow({
   transaction,
   previousTransaction,
-  isYear,
+  isYear = false,
   isCollapsed,
   onToggleCollapse,
   onExpandYear,
@@ -94,8 +94,4 @@ SeparatorRow.propTypes = {
   onCollapseYear: PropTypes.func,
   selectedCount: PropTypes.number,
   monthKey: PropTypes.string,
-};
-
-SeparatorRow.defaultProps = {
-  isYear: false,
 };

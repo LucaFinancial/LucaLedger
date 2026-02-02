@@ -43,9 +43,9 @@ export default function LedgerRow({
   balance,
   isSelected,
   onSelectionChange,
-  isVirtual,
-  recurringTransaction,
-  occurrenceDate,
+  isVirtual = false,
+  recurringTransaction = null,
+  occurrenceDate = null,
 }) {
   const bgColor = getStatusBackground(
     row.transactionState,
@@ -101,10 +101,4 @@ LedgerRow.propTypes = {
   isVirtual: PropTypes.bool,
   recurringTransaction: PropTypes.object,
   occurrenceDate: PropTypes.string,
-};
-
-LedgerRow.defaultProps = {
-  isVirtual: false,
-  recurringTransaction: null,
-  occurrenceDate: null,
 };

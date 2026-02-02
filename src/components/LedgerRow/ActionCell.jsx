@@ -7,7 +7,7 @@ import { actions as transactionActions } from '@/store/transactions';
 import { MoreVert, Delete } from '@mui/icons-material';
 import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
-export default function ActionCell({ transaction, isVirtual }) {
+export default function ActionCell({ transaction, isVirtual = false }) {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -54,8 +54,4 @@ export default function ActionCell({ transaction, isVirtual }) {
 ActionCell.propTypes = {
   transaction: PropTypes.object.isRequired,
   isVirtual: PropTypes.bool,
-};
-
-ActionCell.defaultProps = {
-  isVirtual: false,
 };

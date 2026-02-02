@@ -3,8 +3,6 @@
  * Reusable test data for statement-related tests
  */
 
-import { StatementStatusEnum } from '@/store/statements/constants';
-
 // Valid current statement
 export const validCurrentStatement = {
   id: '00000000-0000-0000-0000-000000000001',
@@ -15,7 +13,7 @@ export const validCurrentStatement = {
   endingBalance: 12499, // $124.99
   totalCharges: 17499, // $174.99
   totalPayments: 5000, // $50.00
-  status: StatementStatusEnum.CURRENT,
+  isLocked: false,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-15T00:00:00.000Z',
 };
@@ -30,7 +28,7 @@ export const validPastStatement = {
   endingBalance: 0,
   totalCharges: 0,
   totalPayments: 25000,
-  status: StatementStatusEnum.PAST,
+  isLocked: false,
   createdAt: '2023-12-01T00:00:00.000Z',
   updatedAt: '2023-12-15T00:00:00.000Z',
 };
@@ -45,7 +43,7 @@ export const validLockedStatement = {
   endingBalance: 25000,
   totalCharges: 15000,
   totalPayments: 0,
-  status: StatementStatusEnum.LOCKED,
+  isLocked: true,
   createdAt: '2023-11-01T00:00:00.000Z',
   updatedAt: '2023-11-30T00:00:00.000Z',
 };
@@ -60,7 +58,7 @@ export const validDraftStatement = {
   endingBalance: 12499,
   totalCharges: 0,
   totalPayments: 0,
-  status: StatementStatusEnum.DRAFT,
+  isLocked: false,
   createdAt: '2024-01-16T00:00:00.000Z',
   updatedAt: '2024-01-16T00:00:00.000Z',
 };
@@ -75,7 +73,7 @@ export const validStatementWithModifiedDates = {
   endingBalance: 10000,
   totalCharges: 5000,
   totalPayments: 0,
-  status: StatementStatusEnum.PAST,
+  isLocked: false,
   createdAt: '2023-10-01T00:00:00.000Z',
   updatedAt: '2023-10-20T00:00:00.000Z',
 };
@@ -100,7 +98,7 @@ export const legacyStatementWithTotal = {
   startingBalance: 0,
   totalCharges: 15000,
   totalPayments: 0,
-  status: StatementStatusEnum.PAST,
+  isLocked: false,
   createdAt: '2023-09-01T00:00:00.000Z',
   updatedAt: '2023-09-15T00:00:00.000Z',
 };

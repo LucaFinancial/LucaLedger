@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { actions, selectors } from '@/store/accounts';
 
-export default function CreateNewButton() {
+export default function CreateNewAccountButton() {
   const dispatch = useDispatch();
   const loading = useSelector(selectors.selectAccountsLoading);
 

@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isBefore, isAfter } from 'date-fns';
 import {
   Visibility,
   Lock,
@@ -94,6 +94,38 @@ export default function StatementSeparatorRow({
     ? stored.endingBalance
     : transactions.reduce((sum, t) => sum + Number(t.amount), 0);
 
+  // Compute status for display - handles both existing statements and missing statements
+  const computedStatus = (() => {
+    if (statement) {
+      // Use computed status from selector if available, otherwise compute it
+      return (
+        statement.status ||
+        (() => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const start = parseISO(statement.startDate.replace(/\//g, '-'));
+          start.setHours(0, 0, 0, 0);
+          const end = parseISO(statement.endDate.replace(/\//g, '-'));
+          end.setHours(0, 0, 0, 0);
+          if (isBefore(today, start)) return 'draft';
+          if (isAfter(today, end)) return 'past';
+          return 'current';
+        })()
+      );
+    } else {
+      // No statement exists - compute status based on the period dates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const start = parseISO(startDate.replace(/\//g, '-'));
+      start.setHours(0, 0, 0, 0);
+      const end = parseISO(endDate.replace(/\//g, '-'));
+      end.setHours(0, 0, 0, 0);
+      if (isBefore(today, start)) return 'draft';
+      if (isAfter(today, end)) return 'past';
+      return 'current';
+    }
+  })();
+
   const formatAmount = (amountInCents) => {
     const amountInDollars = centsToDollars(amountInCents);
     return Math.abs(amountInDollars).toLocaleString(undefined, {
@@ -153,12 +185,12 @@ export default function StatementSeparatorRow({
 
   const handleCreateStatement = () => {
     // Create a new statement for this period
+    // Note: status is computed dynamically, not stored
     dispatch(
       statementActions.createNewStatement({
         accountId,
         startDate,
         endDate,
-        status: 'draft',
       }),
     );
   };
@@ -181,7 +213,10 @@ export default function StatementSeparatorRow({
               <Typography component='span' sx={{ fontWeight: 'bold' }}>
                 Statement {statementDate} ({dateRange})
               </Typography>
-              <StatementStatusBadge status={statement?.status || 'draft'} />
+              <StatementStatusBadge
+                status={computedStatus}
+                isLocked={statement?.isLocked}
+              />
               {issues?.hasDuplicate && (
                 <Tooltip title='Duplicate statement period detected'>
                   <Chip
@@ -257,21 +292,18 @@ export default function StatementSeparatorRow({
                   >
                     <Visibility fontSize='small' />
                   </IconButton>
-                  {statement.status === 'past' && (
+                  {computedStatus === 'past' && (
                     <IconButton
                       size='small'
-                      onClick={handleLock}
+                      onClick={statement.isLocked ? handleUnlock : handleLock}
                       title={
-                        statement.status === 'locked'
-                          ? 'Statement Locked'
+                        statement.isLocked
+                          ? 'Unlock Statement'
                           : 'Lock Statement'
                       }
-                      color={
-                        statement.status === 'locked' ? 'default' : 'error'
-                      }
-                      disabled={statement.status === 'locked'}
+                      color={statement.isLocked ? 'default' : 'error'}
                     >
-                      {statement.status === 'locked' ? (
+                      {statement.isLocked ? (
                         <Lock fontSize='small' />
                       ) : (
                         <LockOpen fontSize='small' />
@@ -303,7 +335,7 @@ export default function StatementSeparatorRow({
           onLock={handleLock}
           onUnlock={handleUnlock}
           onDelete={handleDelete}
-          readOnly={statement.status === 'locked'}
+          readOnly={statement.isLocked}
         />
       )}
     </>

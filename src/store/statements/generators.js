@@ -2,7 +2,6 @@ import { format, subMonths, subDays } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 
 import config from '@/config';
-import { StatementStatusEnum } from './constants';
 import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
@@ -12,7 +11,7 @@ import { validateSchemaSync } from '@/utils/schemaValidation';
  * @param {string} initialData.startDate - Required: Period start date
  * @param {string} initialData.endDate - Required: Period end date
  * @param {number} initialData.total - Optional legacy total (falls back to endingBalance)
- * @param {string} initialData.status - Optional: Statement status
+ * @param {boolean} initialData.isLocked - Optional: Whether statement is locked
  * @returns {Object|null} The generated statement or null if validation fails
  */
 export const generateStatement = (initialData = {}) => {
@@ -47,11 +46,9 @@ export const generateStatement = (initialData = {}) => {
       typeof initialData.totalPayments === 'number'
         ? initialData.totalPayments
         : 0,
-    status: initialData.status || StatementStatusEnum.DRAFT,
+    isLocked: initialData.isLocked === true ? true : false,
     createdAt: now,
     updatedAt: now,
-    // Spread initialData last to allow overrides for startDate/endDate
-    ...initialData,
   };
 
   if (typeof statement.startingBalance !== 'number') {

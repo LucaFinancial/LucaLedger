@@ -1,8 +1,8 @@
-export const StatementStatusEnum = Object.freeze({
-  DRAFT: 'draft',
-  CURRENT: 'current',
-  PAST: 'past',
-  LOCKED: 'locked',
+// Display states for UI (computed from dates, not stored)
+export const StatementDisplayState = Object.freeze({
+  DRAFT: 'draft', // Future statement (not yet started)
+  CURRENT: 'current', // Active statement period (today is within dates)
+  PAST: 'past', // Closed statement (today is after end date)
 });
 
 export const StatementFields = Object.freeze({
@@ -14,7 +14,7 @@ export const StatementFields = Object.freeze({
   ENDING_BALANCE: 'endingBalance',
   TOTAL_CHARGES: 'totalCharges',
   TOTAL_PAYMENTS: 'totalPayments',
-  STATUS: 'status',
+  IS_LOCKED: 'isLocked',
   CREATED_AT: 'createdAt',
   UPDATED_AT: 'updatedAt',
 });
