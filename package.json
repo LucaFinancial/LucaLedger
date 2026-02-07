@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -19,11 +19,11 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@luca-financial/luca-schema": "^2.3.1",
+    "@luca-financial/luca-schema": "^2.3.4",
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
     "@mui/system": "^5.18.0",
-    "@mui/x-date-pickers": "^8.26.0",
+    "@mui/x-date-pickers": "^8.27.0",
     "@reduxjs/toolkit": "^1.9.7",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/react": "^18.3.27",
+    "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/coverage-v8": "^4.0.18",
