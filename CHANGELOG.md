@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 - Add changelog.
 - Update README React version to match current dependencies.
+- Add pull request template.
 
 ### Dependencies
 
