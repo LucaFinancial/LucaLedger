@@ -181,6 +181,160 @@ const buildInvalidFieldMap = (errors) =>
     return acc;
   }, {});
 
+const decodePointerToken = (token) =>
+  token.replace(/~1/g, '/').replace(/~0/g, '~');
+
+const cloneEntity = (value) => {
+  if (typeof structuredClone === 'function') return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+};
+
+const setValueAtInstancePath = (target, instancePath, value) => {
+  if (!instancePath) return false;
+  if (typeof instancePath !== 'string' || !instancePath.startsWith('/')) {
+    return false;
+  }
+
+  const tokens = instancePath
+    .slice(1)
+    .split('/')
+    .filter((token) => token.length > 0)
+    .map(decodePointerToken);
+
+  if (tokens.length === 0) return false;
+
+  let current = target;
+  for (let i = 0; i < tokens.length - 1; i += 1) {
+    const token = tokens[i];
+
+    if (Array.isArray(current)) {
+      const index = Number.parseInt(token, 10);
+      if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+        return false;
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (!current || typeof current !== 'object') return false;
+    if (!(token in current)) return false;
+    current = current[token];
+  }
+
+  const lastToken = tokens[tokens.length - 1];
+  if (Array.isArray(current)) {
+    const index = Number.parseInt(lastToken, 10);
+    if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+      return false;
+    }
+    if (current[index] === value) return false;
+    current[index] = value;
+    return true;
+  }
+
+  if (!current || typeof current !== 'object' || !(lastToken in current)) {
+    return false;
+  }
+
+  if (current[lastToken] === value) return false;
+  current[lastToken] = value;
+  return true;
+};
+
+const getFixOperations = (error) => {
+  const operations = [];
+  const metadata = error?.metadata;
+
+  if (Array.isArray(metadata?.fixOperations)) {
+    metadata.fixOperations.forEach((operation) => {
+      if (!operation || operation.fixable !== true) return;
+      if (operation.type !== 'set-value') return;
+      if (typeof operation.instancePath !== 'string') return;
+      operations.push(operation);
+    });
+  }
+
+  if (Array.isArray(metadata?.dateFormatIssues)) {
+    metadata.dateFormatIssues.forEach((issue) => {
+      if (!issue || issue.fixable !== true) return;
+      if (typeof issue.instancePath !== 'string') return;
+      if (typeof issue.normalizedValue !== 'string') return;
+      operations.push({
+        type: 'set-value',
+        instancePath: issue.instancePath,
+        value: issue.normalizedValue,
+        fixable: true,
+      });
+    });
+  }
+
+  return operations;
+};
+
+export const fixDateFormatIssues = (data, errors, options = {}) => {
+  if (!data || typeof data !== 'object' || !Array.isArray(errors)) {
+    return { data, changed: false };
+  }
+
+  const selectedErrorIndexes = Array.isArray(options.errorIndexes)
+    ? new Set(options.errorIndexes)
+    : null;
+
+  const nextData = { ...data };
+  const copiedCollections = new Set();
+  let changed = false;
+
+  errors.forEach((error, errorIndex) => {
+    if (selectedErrorIndexes && !selectedErrorIndexes.has(errorIndex)) return;
+
+    const collectionName = error?.collection;
+    if (typeof collectionName !== 'string') return;
+    const collection = nextData[collectionName];
+    if (!Array.isArray(collection)) return;
+
+    const entityIndex = error?.index;
+    if (!Number.isInteger(entityIndex)) return;
+    if (entityIndex < 0 || entityIndex >= collection.length) return;
+
+    const operations = getFixOperations(error);
+    if (operations.length === 0) return;
+
+    const originalEntity = collection[entityIndex];
+    if (!originalEntity || typeof originalEntity !== 'object') return;
+
+    let workingEntity = originalEntity;
+    let entityChanged = false;
+
+    operations.forEach((operation) => {
+      if (!entityChanged) {
+        workingEntity = cloneEntity(originalEntity);
+      }
+
+      const operationChanged = setValueAtInstancePath(
+        workingEntity,
+        operation.instancePath,
+        operation.value,
+      );
+
+      if (operationChanged) {
+        entityChanged = true;
+      }
+    });
+
+    if (!entityChanged) return;
+
+    if (!copiedCollections.has(collectionName)) {
+      nextData[collectionName] = [...collection];
+      copiedCollections.add(collectionName);
+    }
+
+    nextData[collectionName][entityIndex] = workingEntity;
+    changed = true;
+  });
+
+  return { data: nextData, changed };
+};
+
 const applyDefaultsToInvalidValues = (data, errors) => {
   const invalidFieldsByCollection = buildInvalidFieldMap(errors);
 
@@ -240,7 +394,10 @@ const applyDefaultsForMissingRequiredFields = (data) => {
         requiredFields.filter(
           (field) =>
             entity[field] === undefined &&
-            Object.prototype.hasOwnProperty.call(properties[field] || {}, 'default'),
+            Object.prototype.hasOwnProperty.call(
+              properties[field] || {},
+              'default',
+            ),
         ),
       );
 
