@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-02-14
+
+### Changed
+
+- Resolved merge conflicts after integrating `main` into `copilot/upgrade-react-redux-v9`.
+- Kept the React Redux v9 and Luca schema v3 upgrade line intact (`react-redux@^9.2.0`, `@luca-financial/luca-schema@^3.0.2`).
+- Added and retained repository updates merged from `main`, including the PR template and README updates.
+
+### Documentation
+
+- Consolidated changelog history into stable release entries without RC sections.
+- Bumped application version to `2.2.2` to reflect post-merge reconciliation changes.
+
 ## [2.2.1] - 2026-02-14
 
 ### Changed

@@ -12,7 +12,7 @@ Luca Ledger is a client-side personal finance manager built with React, Vite, an
 
 ## Tech Stack
 
-- React 18.2 with hooks and context
+- React 18.3 with hooks and context
 - Vite 4.x for dev/prod builds
 - Material UI 5.x + Emotion for theming
 - Redux Toolkit for state + encrypted middleware
