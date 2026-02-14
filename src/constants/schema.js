@@ -1,3 +1,6 @@
-import lucaSchemaPackage from '@luca-financial/luca-schema/package.json';
+import { lucaSchema } from '@luca-financial/luca-schema';
 
-export const CURRENT_SCHEMA_VERSION = lucaSchemaPackage.version;
+const contractVersion = lucaSchema?.properties?.schemaVersion?.const;
+
+export const CURRENT_SCHEMA_VERSION =
+  typeof contractVersion === 'string' ? contractVersion : '3.0.0';

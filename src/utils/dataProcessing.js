@@ -8,6 +8,9 @@ import { format } from 'date-fns';
 import { migrateDataToSchema } from '@/utils/dataMigration';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
+const CANONICAL_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const SLASH_DATE_PATTERN = /^(\d{4})\/(\d{2})\/(\d{2})$/;
+
 const LUCA_SCHEMAS = Object.entries(lucaSchema?.properties || {}).reduce(
   (acc, [collectionName, definition]) => {
     if (collectionName === 'schemaVersion') return acc;
@@ -114,10 +117,15 @@ const validateAllCollections = (data) => {
     if (!result.valid) {
       allValid = false;
       result.errors.forEach((error) => {
+        const metadata = buildRepairMetadata(
+          error.errors,
+          collection[error.index],
+        );
         allErrors.push({
           collection: collectionName,
           schemaKey,
           entity: collection[error.index],
+          metadata,
           ...error,
         });
       });
@@ -183,6 +191,126 @@ const buildInvalidFieldMap = (errors) =>
 
 const decodePointerToken = (token) =>
   token.replace(/~1/g, '/').replace(/~0/g, '~');
+
+const isValidDateParts = (year, month, day) => {
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+
+  const candidate = new Date(Date.UTC(year, month - 1, day));
+  return (
+    candidate.getUTCFullYear() === year &&
+    candidate.getUTCMonth() === month - 1 &&
+    candidate.getUTCDate() === day
+  );
+};
+
+const parseDateParts = (value, pattern) => {
+  const match = value.match(pattern);
+  if (!match) return null;
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+
+  if (!isValidDateParts(year, month, day)) return null;
+  return { year, month, day };
+};
+
+const normalizeDateString = (value) => {
+  if (typeof value !== 'string') return null;
+
+  const canonicalParts = parseDateParts(value, CANONICAL_DATE_PATTERN);
+  if (canonicalParts) return value;
+
+  const slashParts = parseDateParts(value, SLASH_DATE_PATTERN);
+  if (!slashParts) return null;
+
+  return `${slashParts.year.toString().padStart(4, '0')}-${slashParts.month
+    .toString()
+    .padStart(2, '0')}-${slashParts.day.toString().padStart(2, '0')}`;
+};
+
+const isDateStringFixable = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = normalizeDateString(value);
+  return normalized !== null && normalized !== value;
+};
+
+const getValueAtInstancePath = (data, instancePath) => {
+  if (!instancePath) return data;
+  if (typeof instancePath !== 'string' || !instancePath.startsWith('/')) {
+    return undefined;
+  }
+
+  const tokens = instancePath
+    .slice(1)
+    .split('/')
+    .filter((token) => token.length > 0)
+    .map(decodePointerToken);
+
+  let current = data;
+  for (const token of tokens) {
+    if (current === null || current === undefined) return undefined;
+    if (Array.isArray(current)) {
+      const index = Number.parseInt(token, 10);
+      if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+        return undefined;
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (typeof current !== 'object') return undefined;
+    current = current[token];
+  }
+
+  return current;
+};
+
+const buildRepairMetadata = (errors, entity) => {
+  const details = Array.isArray(errors) ? errors : [];
+  const dateFormatIssues = [];
+  const fixOperations = [];
+
+  details.forEach((detail) => {
+    if (!detail || detail.keyword !== 'format') return;
+    if (detail.params?.format !== 'date') return;
+
+    const instancePath =
+      typeof detail.instancePath === 'string' ? detail.instancePath : '';
+    const value = getValueAtInstancePath(entity, instancePath);
+    const normalizedValue = normalizeDateString(value);
+    const fixable = isDateStringFixable(value);
+
+    dateFormatIssues.push({
+      instancePath,
+      schemaPath:
+        typeof detail.schemaPath === 'string' ? detail.schemaPath : '',
+      keyword: 'format',
+      format: 'date',
+      value,
+      fixable,
+      normalizedValue: fixable ? normalizedValue : null,
+    });
+
+    if (fixable && typeof normalizedValue === 'string') {
+      fixOperations.push({
+        type: 'set-value',
+        instancePath,
+        value: normalizedValue,
+        fixable: true,
+      });
+    }
+  });
+
+  const hasFixableIssues = fixOperations.length > 0;
+  return {
+    fixOperations,
+    dateFormatIssues,
+    hasFixableIssues,
+    hasFixableDateFormatIssues: hasFixableIssues,
+  };
+};
 
 const cloneEntity = (value) => {
   if (typeof structuredClone === 'function') return structuredClone(value);

@@ -13,10 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `@luca-financial/luca-schema` dependency to `^3.0.1`.
 - Standardized statement date producers to canonical `YYYY-MM-DD` format.
-- Kept date consumers tolerant of legacy slash-form inputs while preferring canonical matching.
 - Added validation fix action plumbing in error dialogs with per-item and bulk hooks.
-- Added metadata-driven validation repair in import/load and decrypt flows with per-error and bulk fix support.
+- Added ledger-owned date repair metadata generation in import/load and decrypt validation flows.
+- Updated `CURRENT_SCHEMA_VERSION` to use the schema contract version from `lucaSchema`.
 - Made validation dialog fixability checks generic (`hasFixableIssues` with date-metadata fallback) so future fixable categories do not require UI rewiring.
+- Removed selector-level date normalization for statement and transaction date comparisons.
 
 ### Fixed
 
