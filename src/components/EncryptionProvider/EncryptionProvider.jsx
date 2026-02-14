@@ -26,6 +26,7 @@ import { migrateDataToSchema } from '@/utils/dataMigration';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
 import {
+  fixDateFormatIssues,
   processLoadedData,
   removeInvalidObjects,
 } from '@/utils/dataProcessing';
@@ -79,6 +80,22 @@ export default function EncryptionProvider() {
           setLoading(true);
           const removal = removeInvalidObjects(current.data, current.errors);
           current = processLoadedData(removal.data, { schemaVersion });
+          continue;
+        }
+
+        if (action === 'fix-dates-all') {
+          setLoading(true);
+          const fixed = fixDateFormatIssues(current.data, current.errors);
+          current = processLoadedData(fixed.data, { schemaVersion });
+          continue;
+        }
+
+        if (action?.type === 'fix-date-one') {
+          setLoading(true);
+          const fixed = fixDateFormatIssues(current.data, current.errors, {
+            errorIndexes: [action.errorIndex],
+          });
+          current = processLoadedData(fixed.data, { schemaVersion });
           continue;
         }
 
@@ -362,6 +379,10 @@ export default function EncryptionProvider() {
         }
         onApplyDefaults={() => closeValidationDialog('apply-defaults')}
         onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
+        onFixAllDates={() => closeValidationDialog('fix-dates-all')}
+        onFixError={(errorIndex) =>
+          closeValidationDialog({ type: 'fix-date-one', errorIndex })
+        }
         onCancel={() => closeValidationDialog('cancel')}
       />
     </>

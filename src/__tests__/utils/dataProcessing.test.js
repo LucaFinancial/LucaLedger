@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { addDays, format } from 'date-fns';
 
-import { processLoadedData } from '@/utils/dataProcessing';
+import { fixDateFormatIssues, processLoadedData } from '@/utils/dataProcessing';
 import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 const buildRecurringTransaction = (accountId, categoryId) => ({
@@ -123,5 +123,102 @@ describe('processLoadedData', () => {
     expect(result.data.transactions[0].recurringTransaction).toBeUndefined();
     expect(result.data.transactions[0].recurringTransactionId).toBeUndefined();
     expect(result.data.transactions[0].balance).toBeUndefined();
+  });
+});
+
+describe('fixDateFormatIssues', () => {
+  const baseData = {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    accounts: [],
+    categories: [],
+    statements: [
+      {
+        id: '00000000-0000-0000-0000-000000000301',
+        accountId: '00000000-0000-0000-0000-000000000001',
+        startDate: '2024/01/01',
+        endDate: '2024/01/31',
+        startingBalance: 0,
+        endingBalance: 0,
+        totalCharges: 0,
+        totalPayments: 0,
+        isLocked: false,
+        createdAt: '2024-01-31T00:00:00.000Z',
+        updatedAt: null,
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000302',
+        accountId: '00000000-0000-0000-0000-000000000001',
+        startDate: '2024/02/01',
+        endDate: '2024/02/29',
+        startingBalance: 0,
+        endingBalance: 0,
+        totalCharges: 0,
+        totalPayments: 0,
+        isLocked: false,
+        createdAt: '2024-02-29T00:00:00.000Z',
+        updatedAt: null,
+      },
+    ],
+    transactions: [],
+    recurringTransactions: [],
+    recurringTransactionEvents: [],
+    transactionSplits: [],
+  };
+
+  const fixableErrors = [
+    {
+      collection: 'statements',
+      index: 0,
+      metadata: {
+        hasFixableDateFormatIssues: true,
+        dateFormatIssues: [
+          {
+            fixable: true,
+            instancePath: '/startDate',
+            normalizedValue: '2024-01-01',
+          },
+          {
+            fixable: true,
+            instancePath: '/endDate',
+            normalizedValue: '2024-01-31',
+          },
+        ],
+      },
+    },
+    {
+      collection: 'statements',
+      index: 1,
+      metadata: {
+        hasFixableDateFormatIssues: false,
+        dateFormatIssues: [
+          {
+            fixable: false,
+            instancePath: '/startDate',
+            normalizedValue: null,
+          },
+        ],
+      },
+    },
+  ];
+
+  it('fixes only the selected error when errorIndexes are provided', () => {
+    const result = fixDateFormatIssues(baseData, fixableErrors, {
+      errorIndexes: [0],
+    });
+
+    expect(result.changed).toBe(true);
+    expect(result.data.statements[0].startDate).toBe('2024-01-01');
+    expect(result.data.statements[0].endDate).toBe('2024-01-31');
+    expect(result.data.statements[1].startDate).toBe('2024/02/01');
+  });
+
+  it('fixes all fixable errors and leaves non-fixable errors unchanged', () => {
+    const result = fixDateFormatIssues(baseData, fixableErrors);
+
+    expect(result.changed).toBe(true);
+    expect(result.data.statements[0].startDate).toBe('2024-01-01');
+    expect(result.data.statements[0].endDate).toBe('2024-01-31');
+    expect(result.data.statements[1].startDate).toBe('2024/02/01');
+    expect(result.data.statements[1].endDate).toBe('2024/02/29');
   });
 });

@@ -5,7 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { actions, selectors } from '@/store/accounts';
 import CategoryImportConfirmModal from '@/components/CategoryImportConfirmModal';
 import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
+import { setError } from '@/store/accounts/slice';
 import {
+  fixDateFormatIssues,
   processLoadedData,
   removeInvalidObjects,
 } from '@/utils/dataProcessing';
@@ -61,6 +63,20 @@ export default function LoadButton() {
           continue;
         }
 
+        if (action === 'fix-dates-all') {
+          const fixed = fixDateFormatIssues(current.data, current.errors);
+          current = processLoadedData(fixed.data, { schemaVersion });
+          continue;
+        }
+
+        if (action?.type === 'fix-date-one') {
+          const fixed = fixDateFormatIssues(current.data, current.errors, {
+            errorIndexes: [action.errorIndex],
+          });
+          current = processLoadedData(fixed.data, { schemaVersion });
+          continue;
+        }
+
         return null;
       }
 
@@ -87,9 +103,7 @@ export default function LoadButton() {
       } catch (error) {
         console.error('Error processing file:', error);
         dispatch(
-          actions.setError(
-            error.message || 'Failed to load file. Please try again.',
-          ),
+          setError(error.message || 'Failed to load file. Please try again.'),
         );
       }
     },
@@ -118,7 +132,7 @@ export default function LoadButton() {
       } catch (error) {
         console.error('Error parsing file:', error);
         dispatch(
-          actions.setError(
+          setError(
             'Failed to load file. Please ensure it is a valid JSON file.',
           ),
         );
@@ -126,7 +140,7 @@ export default function LoadButton() {
     };
     reader.onerror = () => {
       console.error('Error reading file:', reader.error);
-      dispatch(actions.setError('Failed to read file. Please try again.'));
+      dispatch(setError('Failed to read file. Please try again.'));
     };
     reader.readAsText(file);
 
@@ -193,6 +207,10 @@ export default function LoadButton() {
         }
         onApplyDefaults={() => closeValidationDialog('apply-defaults')}
         onRemoveInvalid={() => closeValidationDialog('remove-invalid')}
+        onFixAllDates={() => closeValidationDialog('fix-dates-all')}
+        onFixError={(errorIndex) =>
+          closeValidationDialog({ type: 'fix-date-one', errorIndex })
+        }
         onCancel={() => closeValidationDialog('cancel')}
       />
     </Box>
