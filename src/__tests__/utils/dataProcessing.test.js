@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { addDays, format } from 'date-fns';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 
 import { fixDateFormatIssues, processLoadedData } from '@/utils/dataProcessing';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 const buildRecurringTransaction = (accountId, categoryId) => ({
   id: '00000000-0000-0000-0000-000000000111',
@@ -30,6 +30,44 @@ const buildRecurringEvent = (id, expectedDate, transactionId) => ({
 });
 
 describe('processLoadedData', () => {
+  const buildBaseRawData = (schemaVersion = SCHEMA_VERSION) => ({
+    schemaVersion,
+    accounts: [
+      {
+        id: '00000000-0000-0000-0000-000000000001',
+        name: 'Primary Checking',
+        type: 'CHECKING',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: null,
+      },
+    ],
+    transactions: [],
+    categories: [
+      {
+        id: '00000000-0000-0000-0000-000000000101',
+        slug: 'test-parent',
+        name: 'Test Parent Category',
+        parentId: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: null,
+      },
+    ],
+    statements: [],
+    recurringTransactions: [
+      buildRecurringTransaction(
+        '00000000-0000-0000-0000-000000000001',
+        '00000000-0000-0000-0000-000000000101',
+      ),
+    ],
+    recurringTransactionEvents: [],
+    transactionSplits: [],
+  });
+
+  const bumpPatchVersion = (version) => {
+    const parts = version.split('.').map((part) => Number.parseInt(part, 10));
+    return `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
+  };
+
   it('strips invalid fields and removes past recurring events', () => {
     const today = new Date();
     const yesterday = format(addDays(today, -1), 'yyyy-MM-dd');
@@ -83,7 +121,7 @@ describe('processLoadedData', () => {
     };
 
     const rawData = {
-      schemaVersion: CURRENT_SCHEMA_VERSION,
+      schemaVersion: SCHEMA_VERSION,
       accounts: [validCheckingAccount],
       transactions: [transactionWithInvalidField],
       categories: [validParentCategory],
@@ -110,7 +148,7 @@ describe('processLoadedData', () => {
     };
 
     const result = processLoadedData(rawData, {
-      schemaVersion: CURRENT_SCHEMA_VERSION,
+      schemaVersion: SCHEMA_VERSION,
     });
 
     expect(result.errors.length).toBeGreaterThan(0);
@@ -124,11 +162,98 @@ describe('processLoadedData', () => {
     expect(result.data.transactions[0].recurringTransactionId).toBeUndefined();
     expect(result.data.transactions[0].balance).toBeUndefined();
   });
+
+  it('accepts schema version suffixes by parsing core semver only', () => {
+    const rawData = buildBaseRawData(`${SCHEMA_VERSION}-rc.1`);
+
+    expect(() =>
+      processLoadedData(rawData, {
+        schemaVersion: rawData.schemaVersion,
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects malformed schema version values after normalization', () => {
+    const rawData = buildBaseRawData('3.0');
+
+    expect(() =>
+      processLoadedData(rawData, {
+        schemaVersion: rawData.schemaVersion,
+      }),
+    ).toThrow('Invalid schema version format: 3.0');
+  });
+
+  it('rejects files with newer schema versions than the app supports', () => {
+    const newerSchemaVersion = bumpPatchVersion(SCHEMA_VERSION);
+    const rawData = buildBaseRawData(newerSchemaVersion);
+
+    expect(() =>
+      processLoadedData(rawData, {
+        schemaVersion: rawData.schemaVersion,
+      }),
+    ).toThrow(`Unsupported schema version: ${newerSchemaVersion}`);
+  });
+
+  it('prunes past slash-format recurring event dates after normalization', () => {
+    const yesterdaySlash = format(addDays(new Date(), -1), 'yyyy/MM/dd');
+    const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const rawData = {
+      ...buildBaseRawData(),
+      recurringTransactionEvents: [
+        buildRecurringEvent(
+          '00000000-0000-0000-0000-000000000211',
+          yesterdaySlash,
+          null,
+        ),
+        buildRecurringEvent(
+          '00000000-0000-0000-0000-000000000212',
+          tomorrow,
+          null,
+        ),
+      ],
+    };
+
+    const result = processLoadedData(rawData, {
+      schemaVersion: rawData.schemaVersion,
+    });
+
+    expect(result.removedRecords).toBe(1);
+    expect(result.data.recurringTransactionEvents).toHaveLength(1);
+    expect(result.data.recurringTransactionEvents[0].expectedDate).toBe(
+      tomorrow,
+    );
+  });
+
+  it('keeps recurring events with invalid dates for validation remediation', () => {
+    const rawData = {
+      ...buildBaseRawData(),
+      recurringTransactionEvents: [
+        buildRecurringEvent(
+          '00000000-0000-0000-0000-000000000213',
+          '2026/02/31',
+          null,
+        ),
+      ],
+    };
+
+    const result = processLoadedData(rawData, {
+      schemaVersion: rawData.schemaVersion,
+    });
+
+    expect(result.removedRecords).toBe(0);
+    expect(result.data.recurringTransactionEvents).toHaveLength(1);
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(
+      result.errors.some(
+        (error) => error.collection === 'recurringTransactionEvents',
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('fixDateFormatIssues', () => {
   const baseData = {
-    schemaVersion: CURRENT_SCHEMA_VERSION,
+    schemaVersion: SCHEMA_VERSION,
     accounts: [],
     categories: [],
     statements: [

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { CircularProgress, Box, Typography } from '@mui/material';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 import { useAuth } from '@/auth';
 import {
   setEncryptionStatus,
@@ -23,10 +24,10 @@ import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvent
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
 import categoriesData from '@/config/categories.json';
 import { migrateDataToSchema } from '@/utils/dataMigration';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
 import {
   fixDateFormatIssues,
+  isUnsupportedSchemaVersionError,
   processLoadedData,
   removeInvalidObjects,
 } from '@/utils/dataProcessing';
@@ -162,7 +163,7 @@ export default function EncryptionProvider() {
         ]);
 
         const rawData = {
-          schemaVersion: CURRENT_SCHEMA_VERSION,
+          schemaVersion: SCHEMA_VERSION,
           accounts: encryptedAccounts || [],
           transactions: encryptedTransactions || [],
           categories: encryptedCategories || [],
@@ -173,8 +174,8 @@ export default function EncryptionProvider() {
         };
 
         const processed = await runValidationFlow(
-          processLoadedData(rawData, { schemaVersion: CURRENT_SCHEMA_VERSION }),
-          CURRENT_SCHEMA_VERSION,
+          processLoadedData(rawData, { schemaVersion: SCHEMA_VERSION }),
+          SCHEMA_VERSION,
         );
 
         if (!processed) {
@@ -309,7 +310,10 @@ export default function EncryptionProvider() {
         setDataLoaded(true);
       } catch (error) {
         console.error('Failed to load user data:', error);
-        dispatch(setError('Failed to load your data: ' + error.message));
+        const errorMessage = isUnsupportedSchemaVersionError(error)
+          ? 'Failed to load your data: Your data was created with a newer app version. Please update Luca Ledger and try again.'
+          : 'Failed to load your data: ' + error.message;
+        dispatch(setError(errorMessage));
       } finally {
         setLoading(false);
       }

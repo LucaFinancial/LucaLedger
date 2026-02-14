@@ -1,4 +1,5 @@
 import {
+  SCHEMA_VERSION,
   lucaSchema,
   schemas,
   stripInvalidFields,
@@ -6,10 +7,11 @@ import {
 } from '@luca-financial/luca-schema';
 import { format } from 'date-fns';
 import { migrateDataToSchema } from '@/utils/dataMigration';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 const CANONICAL_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const SLASH_DATE_PATTERN = /^(\d{4})\/(\d{2})\/(\d{2})$/;
+export const UNSUPPORTED_SCHEMA_VERSION_ERROR =
+  'UNSUPPORTED_SCHEMA_VERSION_ERROR';
 
 const LUCA_SCHEMAS = Object.entries(lucaSchema?.properties || {}).reduce(
   (acc, [collectionName, definition]) => {
@@ -90,7 +92,10 @@ const applyDefaultsFromSchema = (schemaKey, entity, fieldsToDefault = null) => {
 
 const parseSchemaVersion = (version) => {
   if (typeof version !== 'string') return null;
-  const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
+  const normalizedVersion = version
+    .trim()
+    .replace(/^(\d+\.\d+\.\d+)(?:[-+][0-9A-Za-z.-]+)?$/, '$1');
+  const match = normalizedVersion.match(/^(\d+)\.(\d+)\.(\d+)$/);
   if (!match) return null;
   return {
     major: Number(match[1]),
@@ -104,6 +109,9 @@ const compareVersions = (v1, v2) => {
   if (v1.minor !== v2.minor) return v1.minor - v2.minor;
   return v1.patch - v2.patch;
 };
+
+export const isUnsupportedSchemaVersionError = (error) =>
+  error?.code === UNSUPPORTED_SCHEMA_VERSION_ERROR;
 
 const validateAllCollections = (data) => {
   const allErrors = [];
@@ -589,9 +597,17 @@ export const processLoadedData = (rawData, options = {}) => {
     );
   }
 
-  const currentVersion = parseSchemaVersion(CURRENT_SCHEMA_VERSION);
+  const currentVersion = parseSchemaVersion(SCHEMA_VERSION);
   if (!currentVersion) {
     throw new Error('Invalid current schema version configuration.');
+  }
+
+  if (compareVersions(parsedVersion, currentVersion) > 0) {
+    const error = new Error(
+      `Unsupported schema version: ${schemaVersion}. This file was created with a newer schema version than this app supports (${SCHEMA_VERSION}).`,
+    );
+    error.code = UNSUPPORTED_SCHEMA_VERSION_ERROR;
+    throw error;
   }
 
   let changed = false;
@@ -600,9 +616,14 @@ export const processLoadedData = (rawData, options = {}) => {
   // 1. Remove past recurring transaction events FIRST
   const today = format(new Date(), 'yyyy-MM-dd');
   const recurringEvents = rawData.recurringTransactionEvents || [];
-  const filteredEvents = recurringEvents.filter(
-    (event) => event.expectedDate >= today,
-  );
+  const filteredEvents = recurringEvents.filter((event) => {
+    const normalizedDate = normalizeDateString(event?.expectedDate);
+    if (normalizedDate === null) {
+      return true;
+    }
+
+    return normalizedDate >= today;
+  });
   removedRecords = recurringEvents.length - filteredEvents.length;
   if (removedRecords > 0) {
     changed = true;

@@ -8,6 +8,7 @@ import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
 import { setError } from '@/store/accounts/slice';
 import {
   fixDateFormatIssues,
+  isUnsupportedSchemaVersionError,
   processLoadedData,
   removeInvalidObjects,
 } from '@/utils/dataProcessing';
@@ -102,9 +103,10 @@ export default function LoadButton() {
         );
       } catch (error) {
         console.error('Error processing file:', error);
-        dispatch(
-          setError(error.message || 'Failed to load file. Please try again.'),
-        );
+        const errorMessage = isUnsupportedSchemaVersionError(error)
+          ? 'This file was created with a newer app version. Please update Luca Ledger and try again.'
+          : error.message || 'Failed to load file. Please try again.';
+        dispatch(setError(errorMessage));
       }
     },
     [dispatch, runValidationFlow],
