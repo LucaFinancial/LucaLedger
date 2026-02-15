@@ -37,7 +37,9 @@ const formatFrequency = (transaction) => {
     [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Years',
   };
 
-  const normalizedInterval = Number.isInteger(interval) && interval > 0 ? interval : 1;
+  const parsedInterval = Number.parseInt(interval, 10);
+  const normalizedInterval =
+    Number.isInteger(parsedInterval) && parsedInterval > 0 ? parsedInterval : 1;
   const unit =
     normalizedInterval === 1
       ? singularUnits[frequency] || frequency
