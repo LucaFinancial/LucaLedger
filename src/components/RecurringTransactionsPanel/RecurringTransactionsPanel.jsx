@@ -38,10 +38,10 @@ const formatFrequency = (transaction) => {
   };
 
   const intervalUnits = {
-    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'days',
-    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'weeks',
-    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'months',
-    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'years',
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Days',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weeks',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Months',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Years',
   };
 
   if (interval > 1) {
