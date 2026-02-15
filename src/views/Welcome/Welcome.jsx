@@ -28,9 +28,9 @@ import {
   Devices as DevicesIcon,
   Lock as LockIcon,
 } from '@mui/icons-material';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -604,7 +604,7 @@ export default function Welcome() {
                 mt: 1,
               }}
             >
-              App v{version} • Schema v{CURRENT_SCHEMA_VERSION}
+              App v{version} • Schema v{SCHEMA_VERSION}
             </Typography>
           </Box>
         </Container>

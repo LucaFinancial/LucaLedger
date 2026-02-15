@@ -39,6 +39,15 @@ function formatDate(dateStr) {
   return format(parseISO(dateStr.replace(/\//g, '-')), 'MMM d, yyyy');
 }
 
+function normalizeDateInput(value) {
+  if (typeof value !== 'string') return value;
+  const parsed = parseISO(value.replace(/\//g, '-'));
+  if (Number.isNaN(parsed.getTime())) {
+    return value.replace(/\//g, '-');
+  }
+  return format(parsed, 'yyyy-MM-dd');
+}
+
 export default function StatementDetailsModal({
   open,
   onClose,
@@ -101,9 +110,12 @@ export default function StatementDetailsModal({
   const handleSave = () => {
     if (!canEdit) return;
 
+    const normalizedStartDate = normalizeDateInput(periodStart);
+    const normalizedEndDate = normalizeDateInput(periodEnd);
+
     const updates = {
-      startDate: periodStart,
-      endDate: periodEnd,
+      startDate: normalizedStartDate,
+      endDate: normalizedEndDate,
     };
 
     onSave(statement.id, updates);
@@ -290,7 +302,7 @@ export default function StatementDetailsModal({
               disabled={!canEdit}
               size='small'
               fullWidth
-              helperText='Format: YYYY/MM/DD'
+              helperText='Format: YYYY-MM-DD'
             />
             <Typography>to</Typography>
             <TextField
@@ -300,7 +312,7 @@ export default function StatementDetailsModal({
               disabled={!canEdit}
               size='small'
               fullWidth
-              helperText='Format: YYYY/MM/DD'
+              helperText='Format: YYYY-MM-DD'
             />
           </Box>
         </Box>

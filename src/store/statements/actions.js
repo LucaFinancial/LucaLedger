@@ -189,7 +189,7 @@ export const updateStatementProperty =
           console.error('Invalid new startDate provided');
           return;
         }
-        const newPrevEndDate = format(subDays(newStartDate, 1), 'yyyy/MM/dd');
+        const newPrevEndDate = format(subDays(newStartDate, 1), 'yyyy-MM-dd');
 
         // Update previous statement's end date
         dispatch(
@@ -220,7 +220,7 @@ export const updateStatementProperty =
           console.error('Invalid new endDate provided');
           return;
         }
-        const newNextStartDate = format(addDays(newEndDate, 1), 'yyyy/MM/dd');
+        const newNextStartDate = format(addDays(newEndDate, 1), 'yyyy-MM-dd');
 
         // Update next statement's start date
         dispatch(
@@ -316,7 +316,7 @@ export const fixStatementIssue =
       // Current statement is before adjacent - adjust adjacent's start date
       const newAdjacentStart = format(
         addDays(parseISO(currentStmt.endDate.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd',
+        'yyyy-MM-dd',
       );
       dispatch(
         updateStatementNormalized({
@@ -329,7 +329,7 @@ export const fixStatementIssue =
       // Current statement is after adjacent - adjust adjacent's end date
       const newAdjacentEnd = format(
         subDays(parseISO(currentStmt.startDate.replace(/\//g, '-')), 1),
-        'yyyy/MM/dd',
+        'yyyy-MM-dd',
       );
       dispatch(
         updateStatementNormalized({

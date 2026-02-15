@@ -25,10 +25,10 @@ const computeStatementStatus = (statement) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const start = parseISO(statement.startDate.replace(/\//g, '-'));
+  const start = parseISO(statement.startDate);
   start.setHours(0, 0, 0, 0);
 
-  const end = parseISO(statement.endDate.replace(/\//g, '-'));
+  const end = parseISO(statement.endDate);
   end.setHours(0, 0, 0, 0);
 
   // If today is before the period starts, it's a future/draft statement
@@ -129,8 +129,8 @@ export const selectPreviousStatement = (accountId, startDate) =>
       // Find statement where endDate is one day before this startDate
       return accountStatements.find((s) => {
         // Parse dates and compare
-        const endDate = new Date(s.endDate.replace(/\//g, '-'));
-        const checkDate = new Date(startDate.replace(/\//g, '-'));
+        const endDate = parseISO(s.endDate);
+        const checkDate = parseISO(startDate);
         checkDate.setDate(checkDate.getDate() - 1);
         return endDate.getTime() === checkDate.getTime();
       });
@@ -149,8 +149,8 @@ export const selectNextStatement = (accountId, endDate) =>
       // Find statement where startDate is one day after this endDate
       return accountStatements.find((s) => {
         // Parse dates and compare
-        const startDate = new Date(s.startDate.replace(/\//g, '-'));
-        const checkDate = new Date(endDate.replace(/\//g, '-'));
+        const startDate = parseISO(s.startDate);
+        const checkDate = parseISO(endDate);
         checkDate.setDate(checkDate.getDate() + 1);
         return startDate.getTime() === checkDate.getTime();
       });
@@ -194,14 +194,14 @@ export const selectStatementIssues = (statementId) =>
     }
 
     // Parse dates for this statement
-    const thisStart = parseISO(statement.startDate.replace(/\//g, '-'));
-    const thisEnd = parseISO(statement.endDate.replace(/\//g, '-'));
+    const thisStart = parseISO(statement.startDate);
+    const thisEnd = parseISO(statement.endDate);
 
     let previousStatement = null;
     let nextStatement = null;
 
     accountStatements.forEach((otherStmt) => {
-      const otherStartDate = parseISO(otherStmt.startDate.replace(/\//g, '-'));
+      const otherStartDate = parseISO(otherStmt.startDate);
 
       if (otherStartDate < thisStart) {
         previousStatement = otherStmt;
@@ -216,8 +216,8 @@ export const selectStatementIssues = (statementId) =>
     const analyzeNeighbor = (neighbor, position) => {
       if (!neighbor) return;
 
-      const neighborStart = parseISO(neighbor.startDate.replace(/\//g, '-'));
-      const neighborEnd = parseISO(neighbor.endDate.replace(/\//g, '-'));
+      const neighborStart = parseISO(neighbor.startDate);
+      const neighborEnd = parseISO(neighbor.endDate);
 
       const overlaps =
         thisStart <= neighborEnd &&
@@ -387,20 +387,20 @@ export const selectStatementWithCalculations = (statementId) =>
       // Get transactions for this statement's period
       const periodTransactions = allTransactions.filter((t) => {
         if (t.accountId !== statement.accountId) return false;
-        const txDate = new Date(t.date.replace(/\//g, '-'));
-        const startDate = new Date(statement.startDate.replace(/\//g, '-'));
-        const endDate = new Date(statement.endDate.replace(/\//g, '-'));
+        const txDate = parseISO(t.date);
+        const startDate = parseISO(statement.startDate);
+        const endDate = parseISO(statement.endDate);
         return txDate >= startDate && txDate <= endDate;
       });
 
       // Calculate starting balance from previous statement
       let calculatedStartingBalance = 0;
       if (statement.endDate) {
-        const closingDate = new Date(statement.endDate.replace(/\//g, '-'));
+        const closingDate = parseISO(statement.endDate);
         const previousStatements = statements
           .filter((s) => s.accountId === statement.accountId && s.endDate)
           .filter((s) => {
-            const sClosingDate = new Date(s.endDate.replace(/\//g, '-'));
+            const sClosingDate = parseISO(s.endDate);
             return sClosingDate < closingDate;
           })
           .sort((a, b) => a.endDate.localeCompare(b.endDate));

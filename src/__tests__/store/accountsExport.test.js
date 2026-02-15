@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 import rootReducer from '@/store/rootReducer';
 import {
   saveAllAccounts,
@@ -136,7 +137,7 @@ describe('Account Export', () => {
 
     // Verify export data structure
     expect(capturedData).toBeDefined();
-    expect(capturedData.schemaVersion).toBeDefined();
+    expect(capturedData.schemaVersion).toBe(SCHEMA_VERSION);
     expect(capturedData.accounts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'acc1', name: 'Test Account' }),

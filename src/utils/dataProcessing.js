@@ -1,4 +1,5 @@
 import {
+  SCHEMA_VERSION,
   lucaSchema,
   schemas,
   stripInvalidFields,
@@ -6,7 +7,11 @@ import {
 } from '@luca-financial/luca-schema';
 import { format } from 'date-fns';
 import { migrateDataToSchema } from '@/utils/dataMigration';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
+
+const CANONICAL_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const SLASH_DATE_PATTERN = /^(\d{4})\/(\d{2})\/(\d{2})$/;
+export const UNSUPPORTED_SCHEMA_VERSION_ERROR =
+  'UNSUPPORTED_SCHEMA_VERSION_ERROR';
 
 const LUCA_SCHEMAS = Object.entries(lucaSchema?.properties || {}).reduce(
   (acc, [collectionName, definition]) => {
@@ -87,7 +92,10 @@ const applyDefaultsFromSchema = (schemaKey, entity, fieldsToDefault = null) => {
 
 const parseSchemaVersion = (version) => {
   if (typeof version !== 'string') return null;
-  const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
+  const normalizedVersion = version
+    .trim()
+    .replace(/^(\d+\.\d+\.\d+)(?:[-+][0-9A-Za-z.-]+)?$/, '$1');
+  const match = normalizedVersion.match(/^(\d+)\.(\d+)\.(\d+)$/);
   if (!match) return null;
   return {
     major: Number(match[1]),
@@ -102,6 +110,9 @@ const compareVersions = (v1, v2) => {
   return v1.patch - v2.patch;
 };
 
+export const isUnsupportedSchemaVersionError = (error) =>
+  error?.code === UNSUPPORTED_SCHEMA_VERSION_ERROR;
+
 const validateAllCollections = (data) => {
   const allErrors = [];
   let allValid = true;
@@ -114,10 +125,15 @@ const validateAllCollections = (data) => {
     if (!result.valid) {
       allValid = false;
       result.errors.forEach((error) => {
+        const metadata = buildRepairMetadata(
+          error.errors,
+          collection[error.index],
+        );
         allErrors.push({
           collection: collectionName,
           schemaKey,
           entity: collection[error.index],
+          metadata,
           ...error,
         });
       });
@@ -181,6 +197,280 @@ const buildInvalidFieldMap = (errors) =>
     return acc;
   }, {});
 
+const decodePointerToken = (token) =>
+  token.replace(/~1/g, '/').replace(/~0/g, '~');
+
+const isValidDateParts = (year, month, day) => {
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+
+  const candidate = new Date(Date.UTC(year, month - 1, day));
+  return (
+    candidate.getUTCFullYear() === year &&
+    candidate.getUTCMonth() === month - 1 &&
+    candidate.getUTCDate() === day
+  );
+};
+
+const parseDateParts = (value, pattern) => {
+  const match = value.match(pattern);
+  if (!match) return null;
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+
+  if (!isValidDateParts(year, month, day)) return null;
+  return { year, month, day };
+};
+
+const normalizeDateString = (value) => {
+  if (typeof value !== 'string') return null;
+
+  const canonicalParts = parseDateParts(value, CANONICAL_DATE_PATTERN);
+  if (canonicalParts) return value;
+
+  const slashParts = parseDateParts(value, SLASH_DATE_PATTERN);
+  if (!slashParts) return null;
+
+  return `${slashParts.year.toString().padStart(4, '0')}-${slashParts.month
+    .toString()
+    .padStart(2, '0')}-${slashParts.day.toString().padStart(2, '0')}`;
+};
+
+const isDateStringFixable = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = normalizeDateString(value);
+  return normalized !== null && normalized !== value;
+};
+
+const getValueAtInstancePath = (data, instancePath) => {
+  if (!instancePath) return data;
+  if (typeof instancePath !== 'string' || !instancePath.startsWith('/')) {
+    return undefined;
+  }
+
+  const tokens = instancePath
+    .slice(1)
+    .split('/')
+    .filter((token) => token.length > 0)
+    .map(decodePointerToken);
+
+  let current = data;
+  for (const token of tokens) {
+    if (current === null || current === undefined) return undefined;
+    if (Array.isArray(current)) {
+      const index = Number.parseInt(token, 10);
+      if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+        return undefined;
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (typeof current !== 'object') return undefined;
+    current = current[token];
+  }
+
+  return current;
+};
+
+const buildRepairMetadata = (errors, entity) => {
+  const details = Array.isArray(errors) ? errors : [];
+  const dateFormatIssues = [];
+  const fixOperations = [];
+
+  details.forEach((detail) => {
+    if (!detail || detail.keyword !== 'format') return;
+    if (detail.params?.format !== 'date') return;
+
+    const instancePath =
+      typeof detail.instancePath === 'string' ? detail.instancePath : '';
+    const value = getValueAtInstancePath(entity, instancePath);
+    const normalizedValue = normalizeDateString(value);
+    const fixable = isDateStringFixable(value);
+
+    dateFormatIssues.push({
+      instancePath,
+      schemaPath:
+        typeof detail.schemaPath === 'string' ? detail.schemaPath : '',
+      keyword: 'format',
+      format: 'date',
+      value,
+      fixable,
+      normalizedValue: fixable ? normalizedValue : null,
+    });
+
+    if (fixable && typeof normalizedValue === 'string') {
+      fixOperations.push({
+        type: 'set-value',
+        instancePath,
+        value: normalizedValue,
+        fixable: true,
+      });
+    }
+  });
+
+  const hasFixableIssues = fixOperations.length > 0;
+  return {
+    fixOperations,
+    dateFormatIssues,
+    hasFixableIssues,
+    hasFixableDateFormatIssues: hasFixableIssues,
+  };
+};
+
+const cloneEntity = (value) => {
+  if (typeof structuredClone === 'function') return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+};
+
+const setValueAtInstancePath = (target, instancePath, value) => {
+  if (!instancePath) return false;
+  if (typeof instancePath !== 'string' || !instancePath.startsWith('/')) {
+    return false;
+  }
+
+  const tokens = instancePath
+    .slice(1)
+    .split('/')
+    .filter((token) => token.length > 0)
+    .map(decodePointerToken);
+
+  if (tokens.length === 0) return false;
+
+  let current = target;
+  for (let i = 0; i < tokens.length - 1; i += 1) {
+    const token = tokens[i];
+
+    if (Array.isArray(current)) {
+      const index = Number.parseInt(token, 10);
+      if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+        return false;
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (!current || typeof current !== 'object') return false;
+    if (!(token in current)) return false;
+    current = current[token];
+  }
+
+  const lastToken = tokens[tokens.length - 1];
+  if (Array.isArray(current)) {
+    const index = Number.parseInt(lastToken, 10);
+    if (!Number.isInteger(index) || index < 0 || index >= current.length) {
+      return false;
+    }
+    if (current[index] === value) return false;
+    current[index] = value;
+    return true;
+  }
+
+  if (!current || typeof current !== 'object' || !(lastToken in current)) {
+    return false;
+  }
+
+  if (current[lastToken] === value) return false;
+  current[lastToken] = value;
+  return true;
+};
+
+const getFixOperations = (error) => {
+  const operations = [];
+  const metadata = error?.metadata;
+
+  if (Array.isArray(metadata?.fixOperations)) {
+    metadata.fixOperations.forEach((operation) => {
+      if (!operation || operation.fixable !== true) return;
+      if (operation.type !== 'set-value') return;
+      if (typeof operation.instancePath !== 'string') return;
+      operations.push(operation);
+    });
+  }
+
+  if (Array.isArray(metadata?.dateFormatIssues)) {
+    metadata.dateFormatIssues.forEach((issue) => {
+      if (!issue || issue.fixable !== true) return;
+      if (typeof issue.instancePath !== 'string') return;
+      if (typeof issue.normalizedValue !== 'string') return;
+      operations.push({
+        type: 'set-value',
+        instancePath: issue.instancePath,
+        value: issue.normalizedValue,
+        fixable: true,
+      });
+    });
+  }
+
+  return operations;
+};
+
+export const fixDateFormatIssues = (data, errors, options = {}) => {
+  if (!data || typeof data !== 'object' || !Array.isArray(errors)) {
+    return { data, changed: false };
+  }
+
+  const selectedErrorIndexes = Array.isArray(options.errorIndexes)
+    ? new Set(options.errorIndexes)
+    : null;
+
+  const nextData = { ...data };
+  const copiedCollections = new Set();
+  let changed = false;
+
+  errors.forEach((error, errorIndex) => {
+    if (selectedErrorIndexes && !selectedErrorIndexes.has(errorIndex)) return;
+
+    const collectionName = error?.collection;
+    if (typeof collectionName !== 'string') return;
+    const collection = nextData[collectionName];
+    if (!Array.isArray(collection)) return;
+
+    const entityIndex = error?.index;
+    if (!Number.isInteger(entityIndex)) return;
+    if (entityIndex < 0 || entityIndex >= collection.length) return;
+
+    const operations = getFixOperations(error);
+    if (operations.length === 0) return;
+
+    const originalEntity = collection[entityIndex];
+    if (!originalEntity || typeof originalEntity !== 'object') return;
+
+    let workingEntity = originalEntity;
+    let entityChanged = false;
+
+    operations.forEach((operation) => {
+      if (!entityChanged) {
+        workingEntity = cloneEntity(originalEntity);
+      }
+
+      const operationChanged = setValueAtInstancePath(
+        workingEntity,
+        operation.instancePath,
+        operation.value,
+      );
+
+      if (operationChanged) {
+        entityChanged = true;
+      }
+    });
+
+    if (!entityChanged) return;
+
+    if (!copiedCollections.has(collectionName)) {
+      nextData[collectionName] = [...collection];
+      copiedCollections.add(collectionName);
+    }
+
+    nextData[collectionName][entityIndex] = workingEntity;
+    changed = true;
+  });
+
+  return { data: nextData, changed };
+};
+
 const applyDefaultsToInvalidValues = (data, errors) => {
   const invalidFieldsByCollection = buildInvalidFieldMap(errors);
 
@@ -240,7 +530,10 @@ const applyDefaultsForMissingRequiredFields = (data) => {
         requiredFields.filter(
           (field) =>
             entity[field] === undefined &&
-            Object.prototype.hasOwnProperty.call(properties[field] || {}, 'default'),
+            Object.prototype.hasOwnProperty.call(
+              properties[field] || {},
+              'default',
+            ),
         ),
       );
 
@@ -304,9 +597,17 @@ export const processLoadedData = (rawData, options = {}) => {
     );
   }
 
-  const currentVersion = parseSchemaVersion(CURRENT_SCHEMA_VERSION);
+  const currentVersion = parseSchemaVersion(SCHEMA_VERSION);
   if (!currentVersion) {
     throw new Error('Invalid current schema version configuration.');
+  }
+
+  if (compareVersions(parsedVersion, currentVersion) > 0) {
+    const error = new Error(
+      `Unsupported schema version: ${schemaVersion}. This file was created with a newer schema version than this app supports (${SCHEMA_VERSION}).`,
+    );
+    error.code = UNSUPPORTED_SCHEMA_VERSION_ERROR;
+    throw error;
   }
 
   let changed = false;
@@ -315,9 +616,14 @@ export const processLoadedData = (rawData, options = {}) => {
   // 1. Remove past recurring transaction events FIRST
   const today = format(new Date(), 'yyyy-MM-dd');
   const recurringEvents = rawData.recurringTransactionEvents || [];
-  const filteredEvents = recurringEvents.filter(
-    (event) => event.expectedDate >= today,
-  );
+  const filteredEvents = recurringEvents.filter((event) => {
+    const normalizedDate = normalizeDateString(event?.expectedDate);
+    if (normalizedDate === null) {
+      return true;
+    }
+
+    return normalizedDate >= today;
+  });
   removedRecords = recurringEvents.length - filteredEvents.length;
   if (removedRecords > 0) {
     changed = true;

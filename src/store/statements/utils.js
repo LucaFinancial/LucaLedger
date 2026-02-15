@@ -16,7 +16,7 @@ import {
 /**
  * Calculate statement period string from closing date
  * This is the canonical implementation used everywhere
- * @param {string} endDate - Statement end date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY-MM-DD format (legacy slash input tolerated)
  * @returns {string} Period in YYYY-MM format
  */
 export function calculateStatementPeriod(endDate) {
@@ -26,9 +26,9 @@ export function calculateStatementPeriod(endDate) {
 
 /**
  * Calculate the statement period dates for a given date and statement day
- * @param {string} dateStr - Date in YYYY/MM/DD format
+ * @param {string} dateStr - Date in YYYY-MM-DD format (legacy slash input tolerated)
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY-MM-DD format
  */
 export function calculateStatementDates(dateStr, statementDay) {
   // Convert slash format to hyphen format for parseISO
@@ -80,41 +80,41 @@ export function calculateStatementDates(dateStr, statementDay) {
 /**
  * Get the current statement period for an account
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY-MM-DD format
  */
 export function getCurrentPeriod(statementDay) {
-  const today = format(new Date(), 'yyyy/MM/dd');
+  const today = format(new Date(), 'yyyy-MM-dd');
   return calculateStatementDates(today, statementDay);
 }
 
 /**
  * Get the previous statement period relative to a given closing date
- * @param {string} endDate - Statement end date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY-MM-DD format (legacy slash input tolerated)
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY-MM-DD format
  */
 export function getPreviousPeriod(endDate, statementDay) {
   // Parse the end date and go back one day to get into previous period
   const date = parseISO(endDate.replace(/\//g, '-'));
   const prevDate = new Date(date);
   prevDate.setDate(prevDate.getDate() - 1);
-  const prevDateStr = format(prevDate, 'yyyy/MM/dd');
+  const prevDateStr = format(prevDate, 'yyyy-MM-dd');
 
   return calculateStatementDates(prevDateStr, statementDay);
 }
 
 /**
  * Get the next statement period relative to a given closing date
- * @param {string} endDate - Statement end date in YYYY/MM/DD format
+ * @param {string} endDate - Statement end date in YYYY-MM-DD format (legacy slash input tolerated)
  * @param {number} statementDay - Day of month when statement closes (1-31)
- * @returns {object} - { startDate, endDate } in YYYY/MM/DD format
+ * @returns {object} - { startDate, endDate } in YYYY-MM-DD format
  */
 export function getNextPeriod(endDate, statementDay) {
   // Parse the end date and go forward one day to get into next period
   const date = parseISO(endDate.replace(/\//g, '-'));
   const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + 1);
-  const nextDateStr = format(nextDate, 'yyyy/MM/dd');
+  const nextDateStr = format(nextDate, 'yyyy-MM-dd');
 
   return calculateStatementDates(nextDateStr, statementDay);
 }
@@ -124,7 +124,7 @@ export function getNextPeriod(endDate, statementDay) {
  * Uses the statement end date to derive the period key
  * @param {Array} statements - Array of all statements
  * @param {string} accountId - Account ID
- * @param {string} endDate - Statement end date in YYYY/MM/DD format (used to calculate target period)
+ * @param {string} endDate - Statement end date in YYYY-MM-DD format (used to calculate target period)
  * @returns {boolean} - True if statement exists for this period
  */
 export function statementExistsForPeriod(statements, accountId, endDate) {
@@ -148,8 +148,8 @@ export function statementExistsForPeriod(statements, accountId, endDate) {
 /**
  * Get transactions that fall within a date range
  * @param {Array} transactions - Array of transactions (caller should pre-filter by account if needed)
- * @param {string} startDate - Period start date in YYYY/MM/DD format
- * @param {string} endDate - Period end date in YYYY/MM/DD format
+ * @param {string} startDate - Period start date in YYYY-MM-DD format
+ * @param {string} endDate - Period end date in YYYY-MM-DD format
  * @returns {Array} - Array of transaction IDs that fall in the period
  */
 export function getTransactionsInPeriod(transactions, startDate, endDate) {
@@ -376,7 +376,7 @@ export function isStatementOutOfSync(statement, transactions, allStatements) {
  * Determine the earliest date we should generate statements for an account
  * @param {object} account - Account object with createdAt timestamp
  * @param {Array} transactions - Array of transactions for this account
- * @returns {string} - Date in YYYY/MM/DD format
+ * @returns {string} - Date in YYYY-MM-DD format
  */
 export function getEarliestStatementDate(account, transactions) {
   // Get account creation date
@@ -390,7 +390,7 @@ export function getEarliestStatementDate(account, transactions) {
   );
 
   if (accountTransactions.length === 0) {
-    return format(accountCreated, 'yyyy/MM/dd');
+    return format(accountCreated, 'yyyy-MM-dd');
   }
 
   const earliestTxDate = accountTransactions.reduce(
@@ -403,14 +403,14 @@ export function getEarliestStatementDate(account, transactions) {
 
   // Use whichever is earlier
   const earliestDate = min([accountCreated, earliestTxDate]);
-  return format(earliestDate, 'yyyy/MM/dd');
+  return format(earliestDate, 'yyyy-MM-dd');
 }
 
 /**
  * Determine if a date is in the past, present, or future relative to today
  * A period is "current" if today falls between periodStart and periodEnd (inclusive)
- * @param {string} periodStart - Period start date in YYYY/MM/DD format
- * @param {string} periodEnd - Period end date in YYYY/MM/DD format
+ * @param {string} periodStart - Period start date in YYYY-MM-DD format
+ * @param {string} periodEnd - Period end date in YYYY-MM-DD format
  * @returns {string} - 'past', 'current', or 'draft'
  */
 /**

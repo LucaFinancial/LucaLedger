@@ -1,6 +1,7 @@
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
@@ -9,7 +10,6 @@ import { selectors as statementSelectors } from '@/store/statements';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -29,7 +29,7 @@ export default function SaveButton() {
 
   const handleSave = () => {
     const data = {
-      schemaVersion: CURRENT_SCHEMA_VERSION,
+      schemaVersion: SCHEMA_VERSION,
       accounts,
       transactions,
       categories,

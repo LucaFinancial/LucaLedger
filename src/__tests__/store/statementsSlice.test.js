@@ -75,6 +75,22 @@ describe('Statements Slice', () => {
         expect(state).toHaveLength(1);
         expect(state[0].id).toBe(validPastStatement.id);
       });
+
+      it('should normalize legacy slash dates to canonical format', () => {
+        const slashStatement = {
+          ...validCurrentStatement,
+          startDate: '2023/12/16',
+          endDate: '2024/01/15',
+        };
+
+        const state = statementsReducer(
+          initialState,
+          setStatements([slashStatement]),
+        );
+
+        expect(state[0].startDate).toBe('2023-12-16');
+        expect(state[0].endDate).toBe('2024-01-15');
+      });
     });
 
     describe('addStatement', () => {
