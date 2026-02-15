@@ -15,9 +15,9 @@ import {
   Alert,
 } from '@mui/material';
 import { Lock as LockIcon, Gavel as GavelIcon } from '@mui/icons-material';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 import { useAuth } from '@/auth';
 import { version } from '../../../package.json';
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import TermsOfServiceModal from '@/components/TermsOfServiceModal';
 import {
   actions as settingsActions,
@@ -203,7 +203,7 @@ export default function Settings() {
               <Typography variant='subtitle2' sx={{ color: 'text.secondary' }}>
                 Data Schema Version
               </Typography>
-              <Typography variant='body1'>{CURRENT_SCHEMA_VERSION}</Typography>
+              <Typography variant='body1'>{SCHEMA_VERSION}</Typography>
             </Box>
 
             <Box>

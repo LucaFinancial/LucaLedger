@@ -75,18 +75,18 @@ export const selectTransactionsByAccountIds = (accountIds) =>
  * Memoized selector factory for transactions within a date range
  * Returns transactions where the date falls between periodStart and periodEnd (inclusive)
  *
- * @param {string} periodStart - Start date in YYYY/MM/DD or YYYY-MM-DD format
- * @param {string} periodEnd - End date in YYYY/MM/DD or YYYY-MM-DD format
+ * @param {string} periodStart - Start date in YYYY-MM-DD format
+ * @param {string} periodEnd - End date in YYYY-MM-DD format
  */
 export const selectTransactionsInPeriod = (periodStart, periodEnd) =>
   createSelector(
     [selectTransactions, () => periodStart, () => periodEnd],
     (transactions, start, end) => {
-      const startDate = new Date(start.replace(/\//g, '-'));
-      const endDate = new Date(end.replace(/\//g, '-'));
+      const startDate = new Date(start);
+      const endDate = new Date(end);
 
       return transactions.filter((t) => {
-        const txDate = new Date(t.date.replace(/\//g, '-'));
+        const txDate = new Date(t.date);
         return txDate >= startDate && txDate <= endDate;
       });
     },
@@ -97,8 +97,8 @@ export const selectTransactionsInPeriod = (periodStart, periodEnd) =>
  * Returns transactions for a specific account where the date falls between periodStart and periodEnd (inclusive)
  *
  * @param {string} accountId - The account ID to filter by
- * @param {string} periodStart - Start date in YYYY/MM/DD or YYYY-MM-DD format
- * @param {string} periodEnd - End date in YYYY/MM/DD or YYYY-MM-DD format
+ * @param {string} periodStart - Start date in YYYY-MM-DD format
+ * @param {string} periodEnd - End date in YYYY-MM-DD format
  */
 export const selectAccountTransactionsInPeriod = (
   accountId,
@@ -108,12 +108,12 @@ export const selectAccountTransactionsInPeriod = (
   createSelector(
     [selectTransactions, () => accountId, () => periodStart, () => periodEnd],
     (transactions, accId, start, end) => {
-      const startDate = new Date(start.replace(/\//g, '-'));
-      const endDate = new Date(end.replace(/\//g, '-'));
+      const startDate = new Date(start);
+      const endDate = new Date(end);
 
       return transactions.filter((t) => {
         if (t.accountId !== accId) return false;
-        const txDate = new Date(t.date.replace(/\//g, '-'));
+        const txDate = new Date(t.date);
         return txDate >= startDate && txDate <= endDate;
       });
     },

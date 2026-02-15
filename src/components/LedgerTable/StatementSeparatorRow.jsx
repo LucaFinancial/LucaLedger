@@ -41,7 +41,7 @@ export default function StatementSeparatorRow({
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Convert date format from YYYY-MM-DD to YYYY/MM/DD for matching with Redux
+  // statementDate is canonical YYYY-MM-DD; selector remains tolerant of legacy slash data
   const statementEndDate = statementDate;
 
   // Find the actual statement from Redux
