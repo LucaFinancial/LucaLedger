@@ -29,14 +29,24 @@ const formatErrorDetail = (error) => {
   }));
 };
 
+const hasFixableIssues = (error) =>
+  Boolean(
+    error?.metadata?.hasFixableIssues ??
+    error?.metadata?.hasFixableDateFormatIssues,
+  );
+
 export default function ValidationErrorsDialog({
   open,
   errors,
   onDownloadJson,
   onApplyDefaults,
   onRemoveInvalid,
+  onFixAllDates,
+  onFixError,
   onCancel,
 }) {
+  const hasAnyFixableIssues = errors.some(hasFixableIssues);
+
   return (
     <Dialog open={open} maxWidth='md' fullWidth>
       <DialogTitle>Validation Errors Found</DialogTitle>
@@ -51,8 +61,23 @@ export default function ValidationErrorsDialog({
             const entityId = error.entity?.id
               ? ` (id: ${error.entity.id})`
               : '';
+            const canFix = hasFixableIssues(error);
             return details.map((detail, detailIndex) => (
-              <ListItem key={`${index}-${detailIndex}`} alignItems='flex-start'>
+              <ListItem
+                key={`${index}-${detailIndex}`}
+                alignItems='flex-start'
+                secondaryAction={
+                  detailIndex === 0 && canFix ? (
+                    <Button
+                      size='small'
+                      onClick={() => onFixError(index)}
+                      variant='outlined'
+                    >
+                      Fix
+                    </Button>
+                  ) : null
+                }
+              >
                 <ListItemText
                   primary={`${error.collection} [${error.index}]${entityId} ${detail.field || ''}`}
                   secondary={detail.message}
@@ -69,6 +94,9 @@ export default function ValidationErrorsDialog({
       <DialogActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <Button onClick={onDownloadJson}>Download JSON</Button>
         <Button onClick={onApplyDefaults}>Apply Defaults</Button>
+        <Button onClick={onFixAllDates} disabled={!hasAnyFixableIssues}>
+          Fix All Dates
+        </Button>
         <Button onClick={onCancel}>Cancel</Button>
         <Button variant='contained' color='warning' onClick={onRemoveInvalid}>
           Remove Invalid Objects
@@ -84,5 +112,7 @@ ValidationErrorsDialog.propTypes = {
   onDownloadJson: PropTypes.func.isRequired,
   onApplyDefaults: PropTypes.func.isRequired,
   onRemoveInvalid: PropTypes.func.isRequired,
+  onFixAllDates: PropTypes.func.isRequired,
+  onFixError: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
 };

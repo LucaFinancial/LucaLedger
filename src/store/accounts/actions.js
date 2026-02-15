@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
+import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 
-import { CURRENT_SCHEMA_VERSION } from '@/constants/schema';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { setCategories } from '@/store/categories';
 import {
@@ -243,7 +243,7 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const transactionSplits = state.transactionSplits;
 
   const data = {
-    schemaVersion: CURRENT_SCHEMA_VERSION,
+    schemaVersion: SCHEMA_VERSION,
     accounts,
     transactions,
     categories,
@@ -308,7 +308,7 @@ export const saveAccountWithTransactions =
     );
 
     const data = {
-      schemaVersion: CURRENT_SCHEMA_VERSION,
+      schemaVersion: SCHEMA_VERSION,
       accounts: [account],
       transactions,
       categories,
