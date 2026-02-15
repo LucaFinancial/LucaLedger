@@ -30,20 +30,25 @@ const formatFrequency = (transaction) => {
     return 'Bi-Weekly';
   }
 
-  const labels = {
+  const singularLabels = {
     [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Daily',
     [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weekly',
     [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Monthly',
     [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Yearly',
   };
 
+  const intervalUnits = {
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'days',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'weeks',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'months',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'years',
+  };
+
   if (interval > 1) {
-    // Simple pluralization logic
-    const label = labels[frequency] || frequency;
-    return `Every ${interval} ${label.replace(/ly$/, '')}s`;
+    return `Every ${interval} ${intervalUnits[frequency] || frequency}`;
   }
 
-  return labels[frequency] || frequency;
+  return singularLabels[frequency] || frequency;
 };
 
 const formatAmount = (amount) => {
