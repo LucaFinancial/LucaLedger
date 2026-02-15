@@ -23,27 +23,29 @@ import RecurringTransactionModal from '@/components/RecurringTransactionModal';
 const formatFrequency = (transaction) => {
   const { frequency, interval } = transaction;
 
-  if (
-    frequency === recurringTransactionConstants.RecurringFrequencyEnum.WEEK &&
-    interval === 2
-  ) {
-    return 'Bi-Weekly';
-  }
-
-  const labels = {
-    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Daily',
-    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weekly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Monthly',
-    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Yearly',
+  const singularUnits = {
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Day',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Week',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Month',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Year',
   };
 
-  if (interval > 1) {
-    // Simple pluralization logic
-    const label = labels[frequency] || frequency;
-    return `Every ${interval} ${label.replace(/ly$/, '')}s`;
-  }
+  const pluralUnits = {
+    [recurringTransactionConstants.RecurringFrequencyEnum.DAY]: 'Days',
+    [recurringTransactionConstants.RecurringFrequencyEnum.WEEK]: 'Weeks',
+    [recurringTransactionConstants.RecurringFrequencyEnum.MONTH]: 'Months',
+    [recurringTransactionConstants.RecurringFrequencyEnum.YEAR]: 'Years',
+  };
 
-  return labels[frequency] || frequency;
+  const parsedInterval = Number.parseInt(interval, 10);
+  const normalizedInterval =
+    Number.isInteger(parsedInterval) && parsedInterval > 0 ? parsedInterval : 1;
+  const unit =
+    normalizedInterval === 1
+      ? singularUnits[frequency] || frequency
+      : pluralUnits[frequency] || frequency;
+
+  return `Every ${normalizedInterval} ${unit}`;
 };
 
 const formatAmount = (amount) => {
