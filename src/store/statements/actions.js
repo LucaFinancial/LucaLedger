@@ -13,6 +13,7 @@ import {
   calculateStatementBalances,
 } from './utils';
 import { addDays, subDays, parseISO, format } from 'date-fns';
+import { deleteEncryptedRecord } from '@/crypto/database';
 
 const parseDateSafe = (dateStr) => {
   if (!dateStr) return null;
@@ -252,7 +253,6 @@ export const removeStatementById =
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
-      const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord('statements', statementId);
       } catch (error) {

@@ -4,6 +4,7 @@ import {
   updateRecurringTransaction as updateRecurringTransactionNormalized,
   removeRecurringTransaction,
 } from './slice';
+import { deleteEncryptedRecord } from '@/crypto/database';
 
 /**
  * Creates a new recurring transaction for an account
@@ -56,7 +57,6 @@ export const removeRecurringTransactionById =
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
-      const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord(
           'recurringTransactions',

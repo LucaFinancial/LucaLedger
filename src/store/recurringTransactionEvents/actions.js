@@ -6,6 +6,7 @@ import {
 import { generateTransaction } from '@/store/transactions/generators';
 import { addTransaction } from '@/store/transactions/slice';
 import { TransactionStateEnum } from '@/store/transactions/constants';
+import { deleteEncryptedRecord } from '@/crypto/database';
 
 export const realizeRecurringTransaction =
   (recurringTransaction, occurrenceDate) => (dispatch) => {
@@ -46,7 +47,6 @@ export const removeRecurringTransactionEventById =
     const state = getState();
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
-      const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord('recurringTransactionEvents', eventId);
       } catch (error) {
