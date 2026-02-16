@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
+import { deleteEncryptedRecord } from '@/crypto/database';
 
 import { selectors as accountSelectors } from '@/store/accounts';
 import { setCategories } from '@/store/categories';
@@ -194,7 +195,6 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
   // Handle encrypted data if enabled
   const isEncrypted = state.encryption?.status === 'encrypted';
   if (isEncrypted) {
-    const { deleteEncryptedRecord } = await import('@/crypto/database');
     try {
       // Delete account from encrypted database
       await deleteEncryptedRecord('accounts', id);

@@ -1,3 +1,4 @@
+import { deleteEncryptedRecord } from '@/crypto/database';
 import { generateRecurringTransactionEvent } from './generators';
 import {
   addRecurringTransactionEvent,
@@ -46,7 +47,6 @@ export const removeRecurringTransactionEventById =
     const state = getState();
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
-      const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord('recurringTransactionEvents', eventId);
       } catch (error) {

@@ -11,6 +11,8 @@ import {
 } from 'date-fns';
 
 import config from '@/config';
+import { deleteEncryptedRecord } from '@/crypto/database';
+import { removeRecurringTransactionEvent } from '@/store/recurringTransactionEvents/slice';
 import { generateTransaction } from './generators';
 import {
   addTransaction,
@@ -121,7 +123,6 @@ export const removeTransactionById =
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
-      const { deleteEncryptedRecord } = await import('@/crypto/database');
       try {
         await deleteEncryptedRecord('transactions', transaction.id);
 
@@ -144,8 +145,6 @@ export const removeTransactionById =
 
     // Remove the linked recurring transaction event if it exists
     if (recurringEvent) {
-      const { removeRecurringTransactionEvent } =
-        await import('@/store/recurringTransactionEvents/slice');
       dispatch(removeRecurringTransactionEvent(recurringEvent.id));
     }
   };

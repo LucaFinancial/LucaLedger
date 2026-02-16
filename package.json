@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "@mui/material": "^5.18.0",
     "@mui/system": "^5.18.0",
     "@mui/x-date-pickers": "^8.27.0",
-    "@reduxjs/toolkit": "^1.9.7",
+    "@reduxjs/toolkit": "^2.5.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "d3": "^7.9.0",

@@ -4,7 +4,11 @@
  * Updated for multi-user support
  */
 
-import { storeUserEncryptedRecord, db } from '@/crypto/database';
+import {
+  storeUserEncryptedRecord,
+  batchStoreUserEncryptedRecords,
+  db,
+} from '@/crypto/database';
 import { EncryptionStatus } from './encryption';
 
 let writeQueue = [];
@@ -120,19 +124,17 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'accounts/setAccounts') {
     // When setting all accounts (e.g., during import), persist all to IndexedDB
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const accountRecords = action.payload.map((account) => ({
-          id: account.id,
-          data: account,
-        }));
-        batchStoreUserEncryptedRecords(
-          'accounts',
-          accountRecords,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error('Failed to persist accounts to IndexedDB:', error);
-        });
+      const accountRecords = action.payload.map((account) => ({
+        id: account.id,
+        data: account,
+      }));
+      batchStoreUserEncryptedRecords(
+        'accounts',
+        accountRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error('Failed to persist accounts to IndexedDB:', error);
       });
     }
   } else if (action.type === 'accounts/removeAccount') {
@@ -151,19 +153,17 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'transactions/setTransactions') {
     // When setting all transactions (e.g., during import), persist all to IndexedDB
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const transactionRecords = action.payload.map((transaction) => ({
-          id: transaction.id,
-          data: transaction,
-        }));
-        batchStoreUserEncryptedRecords(
-          'transactions',
-          transactionRecords,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error('Failed to persist transactions to IndexedDB:', error);
-        });
+      const transactionRecords = action.payload.map((transaction) => ({
+        id: transaction.id,
+        data: transaction,
+      }));
+      batchStoreUserEncryptedRecords(
+        'transactions',
+        transactionRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error('Failed to persist transactions to IndexedDB:', error);
       });
     }
   } else if (action.type === 'transactions/updateMultipleTransactions') {
@@ -207,20 +207,18 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'categories/setCategories') {
     // When setting all categories, persist all to IndexedDB
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        // Note: Don't clear all user data, just update categories
-        const categoryRecords = action.payload.map((category) => ({
-          id: category.id,
-          data: category,
-        }));
-        batchStoreUserEncryptedRecords(
-          'categories',
-          categoryRecords,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error('Failed to persist categories to IndexedDB:', error);
-        });
+      // Note: Don't clear all user data, just update categories
+      const categoryRecords = action.payload.map((category) => ({
+        id: category.id,
+        data: category,
+      }));
+      batchStoreUserEncryptedRecords(
+        'categories',
+        categoryRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error('Failed to persist categories to IndexedDB:', error);
       });
     }
   }
@@ -243,19 +241,17 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'statements/setStatements') {
     // When setting all statements (e.g., during import/load), persist all to IndexedDB
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const statementRecords = action.payload.map((statement) => ({
-          id: statement.id,
-          data: statement,
-        }));
-        batchStoreUserEncryptedRecords(
-          'statements',
-          statementRecords,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error('Failed to persist statements to IndexedDB:', error);
-        });
+      const statementRecords = action.payload.map((statement) => ({
+        id: statement.id,
+        data: statement,
+      }));
+      batchStoreUserEncryptedRecords(
+        'statements',
+        statementRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error('Failed to persist statements to IndexedDB:', error);
       });
     }
   } else if (action.type === 'statements/removeStatement') {
@@ -275,22 +271,20 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('recurringTransactions', action.payload.id, action.payload);
   } else if (action.type === 'recurringTransactions/setRecurringTransactions') {
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const records = action.payload.map((rt) => ({
-          id: rt.id,
-          data: rt,
-        }));
-        batchStoreUserEncryptedRecords(
-          'recurringTransactions',
-          records,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error(
-            'Failed to persist recurring transactions to IndexedDB:',
-            error,
-          );
-        });
+      const records = action.payload.map((rt) => ({
+        id: rt.id,
+        data: rt,
+      }));
+      batchStoreUserEncryptedRecords(
+        'recurringTransactions',
+        records,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error(
+          'Failed to persist recurring transactions to IndexedDB:',
+          error,
+        );
       });
     }
   } else if (
@@ -314,22 +308,20 @@ function handleEncryptedPersistence(action, state) {
     action.type === 'recurringTransactionEvents/setRecurringTransactionEvents'
   ) {
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const records = action.payload.map((event) => ({
-          id: event.id,
-          data: event,
-        }));
-        batchStoreUserEncryptedRecords(
-          'recurringTransactionEvents',
-          records,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error(
-            'Failed to persist recurring transaction events to IndexedDB:',
-            error,
-          );
-        });
+      const records = action.payload.map((event) => ({
+        id: event.id,
+        data: event,
+      }));
+      batchStoreUserEncryptedRecords(
+        'recurringTransactionEvents',
+        records,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error(
+          'Failed to persist recurring transaction events to IndexedDB:',
+          error,
+        );
       });
     }
   } else if (
@@ -351,22 +343,20 @@ function handleEncryptedPersistence(action, state) {
     queueWrite('transactionSplits', action.payload.id, action.payload);
   } else if (action.type === 'transactionSplits/setTransactionSplits') {
     if (currentDEK && currentUserId) {
-      import('@/crypto/database').then(({ batchStoreUserEncryptedRecords }) => {
-        const records = action.payload.map((split) => ({
-          id: split.id,
-          data: split,
-        }));
-        batchStoreUserEncryptedRecords(
-          'transactionSplits',
-          records,
-          currentDEK,
-          currentUserId,
-        ).catch((error) => {
-          console.error(
-            'Failed to persist transaction splits to IndexedDB:',
-            error,
-          );
-        });
+      const records = action.payload.map((split) => ({
+        id: split.id,
+        data: split,
+      }));
+      batchStoreUserEncryptedRecords(
+        'transactionSplits',
+        records,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error(
+          'Failed to persist transaction splits to IndexedDB:',
+          error,
+        );
       });
     }
   } else if (
