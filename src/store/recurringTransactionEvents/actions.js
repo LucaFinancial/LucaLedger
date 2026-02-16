@@ -1,3 +1,4 @@
+import { deleteEncryptedRecord } from '@/crypto/database';
 import { generateRecurringTransactionEvent } from './generators';
 import {
   addRecurringTransactionEvent,

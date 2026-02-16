@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import RecentActivitySection from './components/RecentActivitySection';
 import UpcomingActivitySection from './components/UpcomingActivitySection';
 import CurrentMonthOverviewSection from './components/CurrentMonthOverview';
-import PlaceholderCard from './components/PlaceholderCard';
+
 import { useDateRanges } from './hooks/useDateRanges';
 import { useCategoryFilters } from './hooks/useCategoryFilters';
 import { useFilteredTransactions } from './hooks/useFilteredTransactions';
@@ -106,25 +106,6 @@ export default function Dashboard() {
         formatCurrency={formatCurrency}
       />
 
-      {/* Placeholder for Monthly Summary */}
-      <Box sx={{ mb: 2 }}>
-        <PlaceholderCard
-          title='Monthly Summary — Coming Soon'
-          description='Compare spending and income across recent months'
-          color='#fb8c00'
-          backgroundColor='#fff3e0'
-          borderColor='#ff9800'
-        />
-      </Box>
-
-      {/* Placeholder for Tabbed Data View */}
-      <PlaceholderCard
-        title='Tabbed Data Views — Coming Soon'
-        description='Toggle between categories, date ranges, or account types for detailed analysis'
-        color='#039be5'
-        backgroundColor='#e1f5fe'
-        borderColor='#03a9f4'
-      />
     </Box>
   );
 }

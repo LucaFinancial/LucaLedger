@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.4] - 2026-02-15
+
+### Changed
+
+- Upgraded `@reduxjs/toolkit` from `^1.9.7` to `^2.5.0` (resolved to 2.11.2).
+- Converted dynamic `import()` calls to static imports for `deleteEncryptedRecord` and `batchStoreUserEncryptedRecords` across store action files and encrypted middleware.
+- Removed dashboard placeholder cards for Monthly Summary, Tabbed Data Views, and Balance Trend Chart.
+
+## [2.2.3] - 2026-02-14
+
+### Added
+
+- Added custom interval support to recurring transactions, replacing hardcoded frequency options with a flexible interval field.
+- Added interval number input field for specifying custom intervals (e.g., "Every 3 Weeks" or "Every 4 Days").
+
+### Changed
+
+- Updated frequency labels to plural forms (Days, Weeks, Months, Years).
+- Removed Bi-Weekly special case, now handled as "Every 2 Weeks".
+- Improved accessibility with aria-label on interval input and placeholder text.
+
 ## [2.2.2] - 2026-02-14
 
 ### Changed
