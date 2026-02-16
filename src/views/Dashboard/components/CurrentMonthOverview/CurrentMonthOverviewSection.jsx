@@ -2,7 +2,7 @@ import { Accordion, AccordionDetails } from '@mui/material';
 import PropTypes from 'prop-types';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
 import MonthOverviewSummary from './MonthOverviewSummary';
-import PlaceholderCard from '../PlaceholderCard';
+
 import MonthOverviewHeader from './MonthOverviewHeader';
 import MonthlyIncomeExpenseCards from './MonthlyIncomeExpenseCards';
 
@@ -48,14 +48,6 @@ export default function CurrentMonthOverviewSection({
         />
 
         <CategoryBreakdown />
-
-        <PlaceholderCard
-          title='Balance Trend Chart — Coming Soon'
-          description='Track your balance movement throughout the current month'
-          color='#9e9e9e'
-          backgroundColor='#f5f5f5'
-          borderColor='#bdbdbd'
-        />
       </AccordionDetails>
     </Accordion>
   );
