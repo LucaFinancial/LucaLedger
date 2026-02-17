@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-02-17
+
+### Changed
+
+- Upgraded `react-router-dom` from `^6.30.3` to `^7.13.0` for React 19 compatibility, improved performance, and latest features.
+
+## [2.3.1] - 2026-02-17
+
+### Fixed
+
+- Fixed bulk edit for transaction state.
+
 ## [2.3.0] - 2026-02-16
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^6.30.3",
+    "react-router-dom": "^7.13.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
