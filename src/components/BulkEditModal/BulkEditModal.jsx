@@ -43,7 +43,7 @@ export default function BulkEditModal({
 
     // Only include status if it was set
     if (selectedState) {
-      updates.status = selectedState;
+      updates.transactionState = selectedState;
     }
 
     // Only include date if it was set and is valid
