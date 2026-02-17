@@ -1,13 +1,12 @@
 import { deleteEncryptedRecord } from '@/crypto/database';
+import { TransactionStateEnum } from '@/store/transactions/constants';
+import { generateTransaction } from '@/store/transactions/generators';
+import { addTransaction } from '@/store/transactions/slice';
 import { generateRecurringTransactionEvent } from './generators';
 import {
   addRecurringTransactionEvent,
   removeRecurringTransactionEvent,
 } from './slice';
-import { generateTransaction } from '@/store/transactions/generators';
-import { addTransaction } from '@/store/transactions/slice';
-import { TransactionStateEnum } from '@/store/transactions/constants';
-import { deleteEncryptedRecord } from '@/crypto/database';
 
 export const realizeRecurringTransaction =
   (recurringTransaction, occurrenceDate) => (dispatch) => {
