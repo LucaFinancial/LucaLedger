@@ -179,20 +179,20 @@ export default function SettingsPanel({ account, selectedYear }) {
       const completedTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStateEnum.COMPLETED,
+            t.transactionState === transactionConstants.TransactionStateEnum.COMPLETED,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const pendingTotal = categoryTransactions
         .filter(
-          (t) => t.status === transactionConstants.TransactionStateEnum.PENDING,
+          (t) => t.transactionState === transactionConstants.TransactionStateEnum.PENDING,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
       const scheduledTotal = categoryTransactions
         .filter(
           (t) =>
-            t.status === transactionConstants.TransactionStateEnum.SCHEDULED,
+            t.transactionState === transactionConstants.TransactionStateEnum.SCHEDULED,
         )
         .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
