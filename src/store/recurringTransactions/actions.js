@@ -2,8 +2,8 @@ import { deleteEncryptedRecord } from '@/crypto/database';
 import { generateRecurringTransaction } from './generators';
 import {
   addRecurringTransaction,
-  updateRecurringTransaction as updateRecurringTransactionNormalized,
   removeRecurringTransaction,
+  updateRecurringTransaction as updateRecurringTransactionNormalized,
 } from './slice';
 
 /**

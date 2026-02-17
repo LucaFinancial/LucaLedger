@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-02-16
+
+### Changed
+
+- Migrated all pie charts from Recharts to Chart.js (react-chartjs-2) in CategoryBreakdown, SettingsPanel, and CategoryTotals.
+- Removed `recharts` dependency; added `chart.js` and `react-chartjs-2`.
+- Added `package-lock.json` to `.gitignore`.
+
+### Fixed
+
+- Fixed SettingsPanel category spending values showing $0.00 by correcting `t.status` to `t.transactionState`.
+- Fixed duplicate `deleteEncryptedRecord` imports in recurring transaction action files.
+
 ## [2.2.4] - 2026-02-15
 
 ### Changed

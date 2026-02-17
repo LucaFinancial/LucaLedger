@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.2.4",
+  "version": "2.3.0",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "@reduxjs/toolkit": "^2.5.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
+    "chart.js": "^4.5.1",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.3.0",
@@ -34,10 +35,10 @@
     "jszip": "^3.10.1",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.30.3",
-    "recharts": "^3.7.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

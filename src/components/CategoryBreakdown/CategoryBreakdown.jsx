@@ -29,14 +29,16 @@ import {
   isAfter,
   isSameDay,
 } from 'date-fns';
+import { Pie } from 'react-chartjs-2';
 import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
+  Chart as ChartJS,
+  ArcElement,
   Tooltip,
   Legend,
-} from 'recharts';
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Colors for pie chart segments
 const COLORS = [
@@ -373,37 +375,39 @@ export default function CategoryBreakdown() {
             Current Spending
           </Typography>
           {currentPieChartData.length > 0 ? (
-            <ResponsiveContainer width='100%' height={300}>
-              <PieChart>
-                <Pie
-                  data={currentPieChartData}
-                  cx='50%'
-                  cy='50%'
-                  labelLine={false}
-                  outerRadius={80}
-                  fill='#8884d8'
-                  dataKey='value'
-                  label={({ name, percent }) =>
-                    percent > 0.05
-                      ? `${name}: ${(percent * 100).toFixed(0)}%`
-                      : ''
-                  }
-                >
-                  {currentPieChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-current-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Legend
-                  verticalAlign='bottom'
-                  height={36}
-                  formatter={(value) => value}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <Box sx={{ height: 300, position: 'relative' }}>
+              <Pie
+                data={{
+                  labels: currentPieChartData.map((item) => item.name),
+                  datasets: [
+                    {
+                      data: currentPieChartData.map((item) => item.value),
+                      backgroundColor: COLORS,
+                      borderColor: '#fff',
+                      borderWidth: 2,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: true,
+                      position: 'bottom',
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          const value = context.parsed ?? 0;
+                          return formatCurrency(value);
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </Box>
           ) : (
             <Box
               sx={{
@@ -435,37 +439,39 @@ export default function CategoryBreakdown() {
           >
             Projected Spending
           </Typography>
-          <ResponsiveContainer width='100%' height={300}>
-            <PieChart>
-              <Pie
-                data={projectedPieChartData}
-                cx='50%'
-                cy='50%'
-                labelLine={false}
-                outerRadius={80}
-                fill='#8884d8'
-                dataKey='value'
-                label={({ name, percent }) =>
-                  percent > 0.05
-                    ? `${name}: ${(percent * 100).toFixed(0)}%`
-                    : ''
-                }
-              >
-                {projectedPieChartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-projected-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-              <Legend
-                verticalAlign='bottom'
-                height={36}
-                formatter={(value) => value}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <Box sx={{ height: 300, position: 'relative' }}>
+            <Pie
+              data={{
+                labels: projectedPieChartData.map((item) => item.name),
+                datasets: [
+                  {
+                    data: projectedPieChartData.map((item) => item.value),
+                    backgroundColor: COLORS,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'bottom',
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        const value = context.parsed ?? 0;
+                        return formatCurrency(value);
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          </Box>
         </Box>
       </Box>
       {/* Chart and Table */}
