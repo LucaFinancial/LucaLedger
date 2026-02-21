@@ -39,9 +39,6 @@ const initialState = {
   showPrompt: false,
   dismissUntil: loadDismissUntil(),
 
-  // Session management
-  sessionExpiresAt: null,
-
   // Error tracking
   error: null,
 };
@@ -71,9 +68,6 @@ const encryptionSlice = createSlice({
         localStorage.removeItem('encryptionPromptDismissUntil');
       }
     },
-    setSessionExpiresAt: (state, action) => {
-      state.sessionExpiresAt = action.payload;
-    },
     setError: (state, action) => {
       state.error = action.payload;
     },
@@ -89,7 +83,6 @@ export const {
   setAuthStatus,
   setShowPrompt,
   setDismissUntil,
-  setSessionExpiresAt,
   setError,
   clearError,
   resetEncryptionState,

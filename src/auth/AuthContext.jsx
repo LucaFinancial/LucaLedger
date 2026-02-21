@@ -43,10 +43,6 @@ import {
 // Sentinel value used to verify password is correct
 const SENTINEL_VALUE = 'LUCA_LEDGER_SENTINEL_V1';
 
-// Session token key
-const SESSION_TOKEN_KEY = 'lucaLedgerSessionToken';
-const SESSION_DURATION = 3 * 24 * 60 * 60 * 1000; // 3 days
-
 // Auth context
 const AuthContext = createContext(null);
 
@@ -58,7 +54,6 @@ export function AuthProvider({ children }) {
   const [activeDEK, setActiveDEK] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [authState, setAuthState] = useState('loading'); // 'loading', 'no-users', 'login', 'authenticated'
-  const [sessionExpiresAt, setSessionExpiresAt] = useState(null);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -78,12 +73,7 @@ export function AuthProvider({ children }) {
             setAuthState('no-users');
           }
         } else {
-          // Try to restore session from token
-          const restored = await tryRestoreSession();
-          if (!restored) {
-            // No valid session - show login
-            setAuthState('login');
-          }
+          setAuthState('login');
         }
 
         setIsInitialized(true);
@@ -96,54 +86,6 @@ export function AuthProvider({ children }) {
 
     initializeAuth();
   }, []);
-
-  /**
-   * Try to restore session from sessionStorage token
-   */
-  const tryRestoreSession = async () => {
-    const tokenString = sessionStorage.getItem(SESSION_TOKEN_KEY);
-    if (!tokenString) return false;
-
-    try {
-      const token = JSON.parse(tokenString);
-
-      if (token.expiresAt < Date.now()) {
-        sessionStorage.removeItem(SESSION_TOKEN_KEY);
-        return false;
-      }
-
-      if (!token.sessionWrappedDEK || !token.sessionPassword || !token.userId) {
-        sessionStorage.removeItem(SESSION_TOKEN_KEY);
-        return false;
-      }
-
-      // Unwrap DEK using session credentials
-      const sessionSalt = base64ToUint8Array(token.sessionSalt);
-      const sessionWrappedDEK = base64ToArrayBuffer(token.sessionWrappedDEK);
-      const sessionIV = base64ToUint8Array(token.sessionIV);
-
-      const sessionKWK = await deriveKeyFromPassword(
-        token.sessionPassword,
-        sessionSalt,
-      );
-      const dek = await unwrapKey(sessionWrappedDEK, sessionIV, sessionKWK);
-
-      // Set middleware user for persistence
-      setCurrentUserForMiddleware(token.userId, dek);
-
-      // Set active state
-      setActiveDEK(dek);
-      setCurrentUser({ id: token.userId, username: token.username });
-      setSessionExpiresAt(token.expiresAt);
-      setAuthState('authenticated');
-
-      return true;
-    } catch (error) {
-      console.error('Failed to restore session:', error);
-      sessionStorage.removeItem(SESSION_TOKEN_KEY);
-      return false;
-    }
-  };
 
   /**
    * Register a new user
@@ -194,9 +136,6 @@ export function AuthProvider({ children }) {
     setActiveDEK(dek);
     setCurrentUser({ id: userId, username });
     setAuthState('authenticated');
-
-    // Create session token
-    await createSessionToken(userId, username, dek);
 
     return { success: true };
   }, []);
@@ -250,43 +189,8 @@ export function AuthProvider({ children }) {
     setCurrentUser({ id: user.id, username: user.username });
     setAuthState('authenticated');
 
-    // Create session token
-    await createSessionToken(user.id, user.username, dek);
-
     return { success: true };
   }, []);
-
-  /**
-   * Create a session token for "stay logged in" functionality
-   */
-  const createSessionToken = async (userId, username, dek) => {
-    const expiresAt = Date.now() + SESSION_DURATION;
-
-    // Wrap DEK with a random session key
-    const sessionSalt = generateSalt();
-    const sessionPassword = crypto.randomUUID();
-    const sessionKWK = await deriveKeyFromPassword(
-      sessionPassword,
-      sessionSalt,
-    );
-    const { wrappedKey: sessionWrappedDEK, iv: sessionIV } = await wrapKey(
-      dek,
-      sessionKWK,
-    );
-
-    const sessionToken = {
-      userId,
-      username,
-      sessionWrappedDEK: arrayBufferToBase64(sessionWrappedDEK),
-      sessionSalt: uint8ArrayToBase64(sessionSalt),
-      sessionIV: uint8ArrayToBase64(sessionIV),
-      sessionPassword,
-      expiresAt,
-    };
-
-    sessionStorage.setItem(SESSION_TOKEN_KEY, JSON.stringify(sessionToken));
-    setSessionExpiresAt(expiresAt);
-  };
 
   /**
    * Logout current user
@@ -297,8 +201,6 @@ export function AuthProvider({ children }) {
 
     setActiveDEK(null);
     setCurrentUser(null);
-    setSessionExpiresAt(null);
-    sessionStorage.removeItem(SESSION_TOKEN_KEY);
     setAuthState('login');
   }, []);
 
@@ -345,7 +247,6 @@ export function AuthProvider({ children }) {
     activeDEK,
     isInitialized,
     authState,
-    sessionExpiresAt,
     register,
     login,
     logout,

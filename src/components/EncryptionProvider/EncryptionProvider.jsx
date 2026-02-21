@@ -6,7 +6,6 @@ import { useAuth } from '@/auth';
 import {
   setEncryptionStatus,
   setAuthStatus,
-  setSessionExpiresAt,
   setError,
   EncryptionStatus,
   AuthStatus,
@@ -35,7 +34,7 @@ import { downloadValidationErrorsJson } from '@/utils/validationErrorsJson';
 
 export default function EncryptionProvider() {
   const dispatch = useDispatch();
-  const { authState, currentUser, activeDEK, sessionExpiresAt } = useAuth();
+  const { authState, currentUser, activeDEK } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -127,9 +126,6 @@ export default function EncryptionProvider() {
         // Update encryption status
         dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
         dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
-        if (sessionExpiresAt) {
-          dispatch(setSessionExpiresAt(sessionExpiresAt));
-        }
 
         // Load encrypted data for this user
         let [
@@ -324,7 +320,6 @@ export default function EncryptionProvider() {
     authState,
     currentUser,
     activeDEK,
-    sessionExpiresAt,
     dataLoaded,
     dispatch,
     runValidationFlow,
