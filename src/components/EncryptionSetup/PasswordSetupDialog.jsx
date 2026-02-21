@@ -78,7 +78,7 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
   };
 
   const handleSubmit = () => {
-    onComplete(password, true); // Always stay logged in
+    onComplete(password);
   };
 
   const isValid = () => {

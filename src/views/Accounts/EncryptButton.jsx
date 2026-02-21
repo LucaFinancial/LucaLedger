@@ -8,7 +8,6 @@ import {
   EncryptionStatus,
   setEncryptionStatus,
   setAuthStatus,
-  setSessionExpiresAt,
   setError,
   AuthStatus,
 } from '@/store/encryption';
@@ -51,7 +50,7 @@ export default function EncryptButton() {
     setShowPasswordSetup(true);
   };
 
-  const handlePasswordSetupComplete = async (password, stayLoggedIn) => {
+  const handlePasswordSetupComplete = async (password) => {
     setShowPasswordSetup(false);
     setMigrating(true);
 
@@ -66,10 +65,7 @@ export default function EncryptButton() {
       });
 
       // Initialize encryption and get DEK
-      const { dek, expiresAt } = await initializeEncryption(
-        password,
-        stayLoggedIn,
-      );
+      const { dek } = await initializeEncryption(password);
 
       // Migrate data from localStorage to IndexedDB
       await migrateDataToEncrypted(dek);
@@ -81,9 +77,6 @@ export default function EncryptButton() {
       dispatch(setEncryptionStatus(EncryptionStatus.ENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.AUTHENTICATED));
       localStorage.setItem('encryptionActive', 'true');
-      if (expiresAt) {
-        dispatch(setSessionExpiresAt(expiresAt));
-      }
 
       // Clear loading indicators
       dispatch(clearLoadingAccountIds());

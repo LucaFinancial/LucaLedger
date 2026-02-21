@@ -16,7 +16,7 @@ export default function UnlockDialog({ open, onUnlock, error }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUnlock(password, true); // Always stay logged in
+    onUnlock(password);
   };
 
   return (

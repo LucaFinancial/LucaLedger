@@ -9,7 +9,6 @@ import encryptionReducer, {
   setAuthStatus,
   setShowPrompt,
   setDismissUntil,
-  setSessionExpiresAt,
   setError,
   clearError,
   resetEncryptionState,
@@ -23,7 +22,6 @@ describe('Encryption Slice', () => {
     authStatus: AuthStatus.UNAUTHENTICATED,
     showPrompt: false,
     dismissUntil: null,
-    sessionExpiresAt: null,
     error: null,
   };
 
@@ -135,28 +133,6 @@ describe('Encryption Slice', () => {
       });
     });
 
-    describe('setSessionExpiresAt', () => {
-      it('should set session expiration timestamp', () => {
-        const timestamp = Date.now() + 259200000; // +3 days
-        const state = encryptionReducer(
-          initialState,
-          setSessionExpiresAt(timestamp),
-        );
-
-        expect(state.sessionExpiresAt).toBe(timestamp);
-      });
-
-      it('should clear session expiration with null', () => {
-        const sessionState = { ...initialState, sessionExpiresAt: Date.now() };
-        const state = encryptionReducer(
-          sessionState,
-          setSessionExpiresAt(null),
-        );
-
-        expect(state.sessionExpiresAt).toBeNull();
-      });
-    });
-
     describe('setError', () => {
       it('should set error message', () => {
         const state = encryptionReducer(
@@ -188,7 +164,6 @@ describe('Encryption Slice', () => {
           authStatus: AuthStatus.AUTHENTICATED,
           showPrompt: true,
           dismissUntil: Date.now(),
-          sessionExpiresAt: Date.now() + 86400000,
           error: 'Some error',
         };
         const state = encryptionReducer(modifiedState, resetEncryptionState());
@@ -196,7 +171,6 @@ describe('Encryption Slice', () => {
         expect(state.status).toBe(EncryptionStatus.UNENCRYPTED);
         expect(state.authStatus).toBe(AuthStatus.UNAUTHENTICATED);
         expect(state.showPrompt).toBe(false);
-        expect(state.sessionExpiresAt).toBeNull();
         expect(state.error).toBeNull();
       });
     });

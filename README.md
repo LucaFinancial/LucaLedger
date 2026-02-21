@@ -27,7 +27,7 @@ Luca Ledger is a client-side personal finance manager built with React, Vite, an
 1. Password → PBKDF2 (100k iterations, SHA-256) → Key Wrapping Key (KWK)
 2. KWK unwraps a Data Encryption Key (DEK)
 3. Each record is encrypted with AES-256-GCM + unique IV before storage in IndexedDB
-4. Session tokens (3 days) store wrapped DEKs; exports remain unencrypted and must be protected manually
+4. DEKs are kept in memory only for the active app session; exports remain unencrypted and must be protected manually
 
 See `ENCRYPTION.md` and `src/crypto/` for implementation details.
 
@@ -35,7 +35,7 @@ See `ENCRYPTION.md` and `src/crypto/` for implementation details.
 
 - Auth states: `loading`, `no-users`, `login`, `authenticated`, `legacy-migration`
 - Users authenticate via username + password; legacy plaintext data migrates automatically
-- Sessions live in `sessionStorage` and expire after 72 hours
+- Users must re-authenticate after refresh/new tab because keys are not persisted in web storage
 
 ### Application Layout
 
