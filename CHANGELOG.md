@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-02-21
+
+### Changed
+
+- Removed session token persistence from `sessionStorage` so encryption keys are no longer restorable from web storage.
+- Updated authentication flow to require explicit login after refresh/new tab instead of auto-restoring encrypted sessions.
+- Simplified encryption setup/unlock flows by removing `stayLoggedIn` and `sessionExpiresAt` state plumbing.
+- Updated README and related tests to reflect in-memory key handling and re-authentication behavior.
+- Bumped application version to `2.4.0`. (#284)
+
 ## [2.3.2] - 2026-02-17
 
 ### Changed
