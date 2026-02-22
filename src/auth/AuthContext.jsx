@@ -38,6 +38,7 @@ import {
 import {
   setCurrentUserForMiddleware,
   clearCurrentUserFromMiddleware,
+  flushWriteQueueForCurrentSession,
 } from '@/store/encryptedMiddleware';
 
 // Sentinel value used to verify password is correct
@@ -195,13 +196,16 @@ export function AuthProvider({ children }) {
   /**
    * Logout current user
    */
-  const logout = useCallback(() => {
-    // Clear middleware user
-    clearCurrentUserFromMiddleware();
-
-    setActiveDEK(null);
-    setCurrentUser(null);
-    setAuthState('login');
+  const logout = useCallback(async () => {
+    try {
+      // Best-effort flush to reduce data loss on logout.
+      await flushWriteQueueForCurrentSession({ timeoutMs: 1500 });
+    } finally {
+      clearCurrentUserFromMiddleware();
+      setActiveDEK(null);
+      setCurrentUser(null);
+      setAuthState('login');
+    }
   }, []);
 
   /**
@@ -215,7 +219,7 @@ export function AuthProvider({ children }) {
 
       // If deleting current user, logout
       if (currentUser?.id === userId) {
-        logout();
+        await logout();
       }
 
       // Check if any users remain
