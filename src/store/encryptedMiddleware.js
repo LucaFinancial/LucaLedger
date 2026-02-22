@@ -7,7 +7,7 @@
 import {
   storeUserEncryptedRecord,
   batchStoreUserEncryptedRecords,
-  db,
+  deleteUserEncryptedRecord,
 } from '@/crypto/database';
 import { EncryptionStatus } from './encryption';
 
@@ -37,27 +37,27 @@ export function clearCurrentUserFromMiddleware() {
   currentDEK = null;
 }
 
+export function getCurrentUserForMiddleware() {
+  return {
+    userId: currentUserId,
+    dek: currentDEK,
+  };
+}
+
 /**
  * Flush the write queue to IndexedDB
  */
 async function flushWriteQueue() {
   if (writeQueue.length === 0) return;
 
-  if (!currentDEK || !currentUserId) return;
-
   const queue = [...writeQueue];
   writeQueue = [];
 
   try {
     // Process all queued writes
-    for (const { storeName, id, data } of queue) {
-      await storeUserEncryptedRecord(
-        storeName,
-        id,
-        data,
-        currentDEK,
-        currentUserId,
-      );
+    for (const { storeName, id, data, userId, dek } of queue) {
+      if (!userId || !dek) continue;
+      await storeUserEncryptedRecord(storeName, id, data, dek, userId);
     }
   } catch (error) {
     console.error('Failed to persist encrypted data:', error);
@@ -68,15 +68,32 @@ async function flushWriteQueue() {
  * Queue a write to IndexedDB (throttled)
  */
 function queueWrite(storeName, id, data) {
+  if (!currentUserId || !currentDEK) return;
+
   // Add or update in queue
   const existingIndex = writeQueue.findIndex(
-    (item) => item.storeName === storeName && item.id === id,
+    (item) =>
+      item.storeName === storeName &&
+      item.id === id &&
+      item.userId === currentUserId,
   );
 
   if (existingIndex >= 0) {
-    writeQueue[existingIndex] = { storeName, id, data };
+    writeQueue[existingIndex] = {
+      storeName,
+      id,
+      data,
+      userId: currentUserId,
+      dek: currentDEK,
+    };
   } else {
-    writeQueue.push({ storeName, id, data });
+    writeQueue.push({
+      storeName,
+      id,
+      data,
+      userId: currentUserId,
+      dek: currentDEK,
+    });
   }
 
   // Reset the timeout
@@ -140,9 +157,11 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'accounts/removeAccount') {
     // Delete from IndexedDB immediately
     const accountId = action.payload;
-    db.accounts.delete(accountId).catch((error) => {
-      console.error('Failed to delete account from IndexedDB:', error);
-    });
+    deleteUserEncryptedRecord('accounts', accountId, currentUserId).catch(
+      (error) => {
+        console.error('Failed to delete account from IndexedDB:', error);
+      },
+    );
   }
 
   // Handle transaction actions
@@ -178,7 +197,11 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'transactions/removeTransaction') {
     // Delete from IndexedDB immediately
     const transactionId = action.payload;
-    db.transactions.delete(transactionId).catch((error) => {
+    deleteUserEncryptedRecord(
+      'transactions',
+      transactionId,
+      currentUserId,
+    ).catch((error) => {
       console.error('Failed to delete transaction from IndexedDB:', error);
     });
   }
@@ -192,17 +215,21 @@ function handleEncryptedPersistence(action, state) {
     // Delete from IndexedDB immediately (category and all its children)
     const categoryId = action.payload;
     // Delete the category itself
-    db.categories.delete(categoryId).catch((error) => {
-      console.error('Failed to delete category from IndexedDB:', error);
-    });
+    deleteUserEncryptedRecord('categories', categoryId, currentUserId).catch(
+      (error) => {
+        console.error('Failed to delete category from IndexedDB:', error);
+      },
+    );
     // Delete all subcategories (children) of this category
     const children = state.categories.filter(
       (cat) => cat.parentId === categoryId,
     );
     children.forEach((child) => {
-      db.categories.delete(child.id).catch((error) => {
-        console.error('Failed to delete subcategory from IndexedDB:', error);
-      });
+      deleteUserEncryptedRecord('categories', child.id, currentUserId).catch(
+        (error) => {
+          console.error('Failed to delete subcategory from IndexedDB:', error);
+        },
+      );
     });
   } else if (action.type === 'categories/setCategories') {
     // When setting all categories, persist all to IndexedDB
@@ -257,9 +284,11 @@ function handleEncryptedPersistence(action, state) {
   } else if (action.type === 'statements/removeStatement') {
     // Delete from IndexedDB immediately
     const statementId = action.payload;
-    db.statements.delete(statementId).catch((error) => {
-      console.error('Failed to delete statement from IndexedDB:', error);
-    });
+    deleteUserEncryptedRecord('statements', statementId, currentUserId).catch(
+      (error) => {
+        console.error('Failed to delete statement from IndexedDB:', error);
+      },
+    );
   }
 
   // Handle recurring transaction actions
@@ -291,12 +320,14 @@ function handleEncryptedPersistence(action, state) {
     action.type === 'recurringTransactions/removeRecurringTransaction'
   ) {
     const id = action.payload;
-    db.recurringTransactions.delete(id).catch((error) => {
-      console.error(
-        'Failed to delete recurring transaction from IndexedDB:',
-        error,
-      );
-    });
+    deleteUserEncryptedRecord('recurringTransactions', id, currentUserId).catch(
+      (error) => {
+        console.error(
+          'Failed to delete recurring transaction from IndexedDB:',
+          error,
+        );
+      },
+    );
   }
 
   // Handle recurring transaction event actions
@@ -328,7 +359,11 @@ function handleEncryptedPersistence(action, state) {
     action.type === 'recurringTransactionEvents/removeRecurringTransactionEvent'
   ) {
     const id = action.payload;
-    db.recurringTransactionEvents.delete(id).catch((error) => {
+    deleteUserEncryptedRecord(
+      'recurringTransactionEvents',
+      id,
+      currentUserId,
+    ).catch((error) => {
       console.error(
         'Failed to delete recurring transaction event from IndexedDB:',
         error,
@@ -368,11 +403,13 @@ function handleEncryptedPersistence(action, state) {
     });
   } else if (action.type === 'transactionSplits/removeTransactionSplit') {
     const id = action.payload;
-    db.transactionSplits.delete(id).catch((error) => {
-      console.error(
-        'Failed to delete transaction split from IndexedDB:',
-        error,
-      );
-    });
+    deleteUserEncryptedRecord('transactionSplits', id, currentUserId).catch(
+      (error) => {
+        console.error(
+          'Failed to delete transaction split from IndexedDB:',
+          error,
+        );
+      },
+    );
   }
 }
