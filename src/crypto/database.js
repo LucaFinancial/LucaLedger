@@ -16,6 +16,15 @@ import {
 
 const DB_NAME = 'LucaLedgerEncrypted';
 const DB_VERSION = 5;
+const USER_OWNED_STORES = [
+  'accounts',
+  'transactions',
+  'categories',
+  'statements',
+  'recurringTransactions',
+  'recurringTransactionEvents',
+  'transactionSplits',
+];
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
@@ -285,10 +294,11 @@ export async function hasUsers() {
  */
 export async function deleteUser(userId) {
   // Delete all user-specific data
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  await Promise.all(
+    USER_OWNED_STORES.map((storeName) =>
+      db[storeName].where('userId').equals(userId).delete(),
+    ),
+  );
 
   // Delete the user record
   await db.users.delete(userId);
@@ -393,10 +403,11 @@ export async function deleteUserEncryptedRecord(storeName, id, userId) {
  * @returns {Promise<void>}
  */
 export async function clearUserData(userId) {
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  await Promise.all(
+    USER_OWNED_STORES.map((storeName) =>
+      db[storeName].where('userId').equals(userId).delete(),
+    ),
+  );
 }
 
 /**
