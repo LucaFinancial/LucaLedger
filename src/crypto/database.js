@@ -16,6 +16,7 @@ import {
 
 const DB_NAME = 'LucaLedgerEncrypted';
 const DB_VERSION = 5;
+const USER_SCHEMA_VERSION_KEY_PREFIX = 'userSchemaVersion:';
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
@@ -141,6 +142,39 @@ export async function storeMetadata(key, value) {
 export async function getMetadata(key) {
   const record = await db.metadata.get(key);
   return record ? record.value : null;
+}
+
+const getUserSchemaVersionKey = (userId) =>
+  `${USER_SCHEMA_VERSION_KEY_PREFIX}${userId}`;
+
+/**
+ * Store the Luca schema version for a specific user's encrypted dataset.
+ * @param {string} userId - User ID
+ * @param {string} schemaVersion - Luca schema version (for example 3.0.2)
+ * @returns {Promise<void>}
+ */
+export async function setUserSchemaVersion(userId, schemaVersion) {
+  if (!userId) {
+    throw new Error('setUserSchemaVersion requires userId');
+  }
+  if (!schemaVersion) {
+    throw new Error('setUserSchemaVersion requires schemaVersion');
+  }
+
+  await storeMetadata(getUserSchemaVersionKey(userId), schemaVersion);
+}
+
+/**
+ * Retrieve the Luca schema version for a specific user's encrypted dataset.
+ * @param {string} userId - User ID
+ * @returns {Promise<string|null>}
+ */
+export async function getUserSchemaVersion(userId) {
+  if (!userId) {
+    throw new Error('getUserSchemaVersion requires userId');
+  }
+
+  return getMetadata(getUserSchemaVersionKey(userId));
 }
 
 /**
@@ -292,6 +326,9 @@ export async function deleteUser(userId) {
 
   // Delete the user record
   await db.users.delete(userId);
+
+  // Delete user-specific metadata
+  await db.metadata.delete(getUserSchemaVersionKey(userId));
 }
 
 /**
