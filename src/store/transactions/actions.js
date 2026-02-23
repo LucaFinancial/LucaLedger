@@ -12,6 +12,7 @@ import {
 
 import config from '@/config';
 import { deleteEncryptedRecord } from '@/crypto/database';
+import { getCurrentUserForMiddleware } from '@/store/encryptedMiddleware';
 import { removeRecurringTransactionEvent } from '@/store/recurringTransactionEvents/slice';
 import { generateTransaction } from './generators';
 import {
@@ -123,14 +124,16 @@ export const removeTransactionById =
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
+      const { userId } = getCurrentUserForMiddleware();
       try {
-        await deleteEncryptedRecord('transactions', transaction.id);
+        await deleteEncryptedRecord('transactions', transaction.id, userId);
 
         // Also delete the linked recurring transaction event if it exists
         if (recurringEvent) {
           await deleteEncryptedRecord(
             'recurringTransactionEvents',
             recurringEvent.id,
+            userId,
           );
         }
       } catch (error) {

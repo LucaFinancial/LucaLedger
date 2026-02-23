@@ -15,15 +15,43 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 5;
+const DB_VERSION = 8;
+
+const USER_SCOPED_STORES = [
+  'accounts',
+  'transactions',
+  'categories',
+  'statements',
+  'recurringTransactions',
+  'recurringTransactionEvents',
+  'transactionSplits',
+];
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
 
-// Define schema with multi-user support
-// Version 4 adds recurring transactions and occurrences
-db.version(DB_VERSION).stores({
-  users: 'id, username', // User table with unique usernames
+// Initial encrypted stores.
+db.version(2).stores({
+  accounts: 'id',
+  transactions: 'id',
+  categories: 'id',
+  statements: 'id',
+  metadata: 'key',
+});
+
+// Upgrade from version 2 to 3 - add user table and userId indexes.
+db.version(3).stores({
+  users: 'id, username',
+  accounts: 'id, userId',
+  transactions: 'id, userId',
+  categories: 'id, userId',
+  statements: 'id, userId',
+  metadata: 'key',
+});
+
+// Version 5 had per-user fields but primary key remained id-only.
+db.version(5).stores({
+  users: 'id, username', // User table with username lookup index
   accounts: 'id, userId', // Per-user accounts
   transactions: 'id, userId', // Per-user transactions
   categories: 'id, userId', // Per-user categories
@@ -34,24 +62,94 @@ db.version(DB_VERSION).stores({
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
 });
 
-// Upgrade from version 2 to 3 - add userId to existing records
-db.version(3).stores({
-  users: 'id, username',
-  accounts: 'id, userId',
-  transactions: 'id, userId',
-  categories: 'id, userId',
-  statements: 'id, userId',
-  metadata: 'key',
-});
+// Version 7 keeps composite tenant keys and deduplicates usernames before
+// adding a DB-level unique username index.
+db.version(7)
+  .stores({
+    users: 'id, username',
+    accounts: '[userId+id], userId, id',
+    transactions: '[userId+id], userId, id',
+    categories: '[userId+id], userId, id',
+    statements: '[userId+id], userId, id',
+    recurringTransactions: '[userId+id], userId, id',
+    recurringTransactionEvents: '[userId+id], userId, id',
+    transactionSplits: '[userId+id], userId, id',
+    metadata: 'key',
+  })
+  .upgrade(async (tx) => {
+    const usersTable = tx.table('users');
+    const users = await usersTable.toArray();
+    if (users.length <= 1) return;
 
-// Upgrade from version 2 to 3 - add userId to existing records
-db.version(2).stores({
-  accounts: 'id',
-  transactions: 'id',
-  categories: 'id',
-  statements: 'id',
-  metadata: 'key',
-});
+    const usersByUsername = new Map();
+    for (const user of users) {
+      const username = user.username;
+      if (!username) continue;
+
+      const existing = usersByUsername.get(username);
+      if (!existing) {
+        usersByUsername.set(username, user);
+        continue;
+      }
+
+      const existingCreatedAt = existing.createdAt || '';
+      const currentCreatedAt = user.createdAt || '';
+      const shouldReplace =
+        currentCreatedAt < existingCreatedAt ||
+        (currentCreatedAt === existingCreatedAt && user.id < existing.id);
+
+      if (shouldReplace) {
+        usersByUsername.set(username, user);
+      }
+    }
+
+    const usernamesToKeep = new Set(
+      Array.from(usersByUsername.values()).map((user) => user.id),
+    );
+
+    const duplicateIds = users
+      .filter((user) => user.username && !usernamesToKeep.has(user.id))
+      .map((user) => user.id);
+
+    if (duplicateIds.length > 0) {
+      await usersTable.bulkDelete(duplicateIds);
+    }
+  });
+
+// Version 8 enforces DB-level uniqueness for usernames.
+db.version(DB_VERSION)
+  .stores({
+    users: 'id, &username',
+    accounts: '[userId+id], userId, id',
+    transactions: '[userId+id], userId, id',
+    categories: '[userId+id], userId, id',
+    statements: '[userId+id], userId, id',
+    recurringTransactions: '[userId+id], userId, id',
+    recurringTransactionEvents: '[userId+id], userId, id',
+    transactionSplits: '[userId+id], userId, id',
+    metadata: 'key',
+  })
+  .upgrade(async (tx) => {
+    const users = await tx.table('users').toArray();
+    const singleUserId = users.length === 1 ? users[0].id : null;
+
+    await Promise.all(
+      USER_SCOPED_STORES.map(async (storeName) => {
+        const table = tx.table(storeName);
+        const records = await table.toArray();
+        if (records.length === 0) return;
+
+        await table.clear();
+        await table.bulkPut(
+          records.map((record) => ({
+            ...record,
+            // Deterministic assignment for legacy rows when only one user exists.
+            userId: record.userId || singleUserId || null,
+          })),
+        );
+      }),
+    );
+  });
 
 /**
  * Store encrypted record in database
@@ -117,10 +215,16 @@ export async function getAllEncryptedRecords(storeName, dek) {
  * Delete a record from the database
  * @param {string} storeName - Name of the store
  * @param {string} id - Record ID
+ * @param {string} userId - User ID
  * @returns {Promise<void>}
  */
-export async function deleteEncryptedRecord(storeName, id) {
-  await db[storeName].delete(id);
+export async function deleteEncryptedRecord(storeName, id, userId) {
+  if (!userId) {
+    throw new Error(
+      `deleteEncryptedRecord requires userId for store "${storeName}"`,
+    );
+  }
+  await db[storeName].delete([userId, id]);
 }
 
 /**
@@ -285,10 +389,11 @@ export async function hasUsers() {
  */
 export async function deleteUser(userId) {
   // Delete all user-specific data
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  await Promise.all(
+    USER_SCOPED_STORES.map((storeName) =>
+      db[storeName].where('userId').equals(userId).delete(),
+    ),
+  );
 
   // Delete the user record
   await db.users.delete(userId);
@@ -380,11 +485,7 @@ export async function batchStoreUserEncryptedRecords(
  * @returns {Promise<void>}
  */
 export async function deleteUserEncryptedRecord(storeName, id, userId) {
-  // First verify the record belongs to the user
-  const record = await db[storeName].get(id);
-  if (record && record.userId === userId) {
-    await db[storeName].delete(id);
-  }
+  await db[storeName].delete([userId, id]);
 }
 
 /**
@@ -393,10 +494,11 @@ export async function deleteUserEncryptedRecord(storeName, id, userId) {
  * @returns {Promise<void>}
  */
 export async function clearUserData(userId) {
-  await db.accounts.where('userId').equals(userId).delete();
-  await db.transactions.where('userId').equals(userId).delete();
-  await db.categories.where('userId').equals(userId).delete();
-  await db.statements.where('userId').equals(userId).delete();
+  await Promise.all(
+    USER_SCOPED_STORES.map((storeName) =>
+      db[storeName].where('userId').equals(userId).delete(),
+    ),
+  );
 }
 
 /**
@@ -421,12 +523,11 @@ export async function hasLegacyEncryptedData() {
  */
 export async function migrateLegacyDataToUser(userId) {
   // Update all records without userId to have the specified userId
-  const stores = ['accounts', 'transactions', 'categories', 'statements'];
-
-  for (const storeName of stores) {
+  for (const storeName of USER_SCOPED_STORES) {
     const records = await db[storeName].filter((r) => !r.userId).toArray();
     for (const record of records) {
-      await db[storeName].update(record.id, { userId });
+      await db[storeName].delete([record.userId || null, record.id]);
+      await db[storeName].put({ ...record, userId });
     }
   }
 }

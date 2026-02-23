@@ -14,6 +14,7 @@ import {
 } from './utils';
 import { addDays, subDays, parseISO, format } from 'date-fns';
 import { deleteEncryptedRecord } from '@/crypto/database';
+import { getCurrentUserForMiddleware } from '@/store/encryptedMiddleware';
 
 const parseDateSafe = (dateStr) => {
   if (!dateStr) return null;
@@ -253,8 +254,9 @@ export const removeStatementById =
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
     if (isEncrypted) {
+      const { userId } = getCurrentUserForMiddleware();
       try {
-        await deleteEncryptedRecord('statements', statementId);
+        await deleteEncryptedRecord('statements', statementId, userId);
       } catch (error) {
         console.error('Failed to delete encrypted statement:', error);
         throw error;
