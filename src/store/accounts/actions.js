@@ -5,20 +5,24 @@ import { deleteEncryptedRecord } from '@/crypto/database';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { setCategories } from '@/store/categories';
 import {
+  removeRecurringTransactionEvent,
   selectors as recurringTransactionEventSelectors,
   setRecurringTransactionEvents,
 } from '@/store/recurringTransactionEvents';
 import {
+  removeRecurringTransaction,
   selectors as recurringTransactionSelectors,
   setRecurringTransactions,
 } from '@/store/recurringTransactions';
 import {
+  removeStatement,
   setStatements,
   selectors as statementSelectors,
 } from '@/store/statements';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { removeTransaction, setTransactions } from '@/store/transactions/slice';
 import {
+  removeTransactionSplit,
   setTransactionSplits,
   selectors as transactionSplitSelectors,
 } from '@/store/transactionSplits';
@@ -191,6 +195,27 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
   const state = getState();
   const transactions =
     transactionSelectors.selectTransactionsByAccountId(id)(state);
+  const statements = statementSelectors.selectStatementsByAccountId(id)(state);
+  const recurringTransactions =
+    recurringTransactionSelectors.selectRecurringTransactionsByAccountId(id)(
+      state,
+    );
+
+  const transactionIds = new Set(transactions.map((transaction) => transaction.id));
+  const recurringTransactionIds = new Set(
+    recurringTransactions.map((recurringTransaction) => recurringTransaction.id),
+  );
+
+  const recurringTransactionEvents =
+    recurringTransactionEventSelectors
+      .selectRecurringTransactionEvents(state)
+      .filter((event) =>
+        recurringTransactionIds.has(event.recurringTransactionId),
+      );
+
+  const transactionSplits = transactionSplitSelectors
+    .selectTransactionSplits(state)
+    .filter((split) => transactionIds.has(split.transactionId));
 
   // Handle encrypted data if enabled
   const isEncrypted = state.encryption?.status === 'encrypted';
@@ -205,12 +230,51 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
           deleteEncryptedRecord('transactions', transaction.id),
         ),
       );
+      await Promise.all(
+        statements.map((statement) =>
+          deleteEncryptedRecord('statements', statement.id),
+        ),
+      );
+      await Promise.all(
+        recurringTransactions.map((recurringTransaction) =>
+          deleteEncryptedRecord(
+            'recurringTransactions',
+            recurringTransaction.id,
+          ),
+        ),
+      );
+      await Promise.all(
+        recurringTransactionEvents.map((event) =>
+          deleteEncryptedRecord('recurringTransactionEvents', event.id),
+        ),
+      );
+      await Promise.all(
+        transactionSplits.map((split) =>
+          deleteEncryptedRecord('transactionSplits', split.id),
+        ),
+      );
     } catch (error) {
       console.error('Failed to delete encrypted data:', error);
       // Don't proceed with Redux state update if encrypted deletion fails
       throw error;
     }
   }
+
+  transactionSplits.forEach((split) => {
+    dispatch(removeTransactionSplit(split.id));
+  });
+
+  recurringTransactionEvents.forEach((event) => {
+    dispatch(removeRecurringTransactionEvent(event.id));
+  });
+
+  recurringTransactions.forEach((recurringTransaction) => {
+    dispatch(removeRecurringTransaction(recurringTransaction.id));
+  });
+
+  statements.forEach((statement) => {
+    dispatch(removeStatement(statement.id));
+  });
 
   transactions.forEach((transaction) => {
     dispatch(removeTransaction(transaction.id));
