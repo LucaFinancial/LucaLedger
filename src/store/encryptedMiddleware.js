@@ -18,6 +18,22 @@ const WRITE_DELAY = 1000; // 1 second throttle
 // Store for current user info - set by AuthContext
 let currentUserId = null;
 let currentDEK = null;
+let activeSessionId = 0;
+
+function clearScheduledFlush() {
+  if (writeTimeout) {
+    clearTimeout(writeTimeout);
+    writeTimeout = null;
+  }
+}
+
+/**
+ * Clear all queued writes and cancel any scheduled flush.
+ */
+export function clearWriteQueue() {
+  writeQueue = [];
+  clearScheduledFlush();
+}
 
 /**
  * Set the current user for middleware operations
@@ -25,6 +41,9 @@ let currentDEK = null;
  * @param {CryptoKey} dek - Data Encryption Key
  */
 export function setCurrentUserForMiddleware(userId, dek) {
+  // Start a fresh session scope for queued writes.
+  activeSessionId += 1;
+  clearWriteQueue();
   currentUserId = userId;
   currentDEK = dek;
 }
@@ -33,6 +52,8 @@ export function setCurrentUserForMiddleware(userId, dek) {
  * Clear current user info (on logout)
  */
 export function clearCurrentUserFromMiddleware() {
+  activeSessionId += 1;
+  clearWriteQueue();
   currentUserId = null;
   currentDEK = null;
 }
@@ -40,53 +61,89 @@ export function clearCurrentUserFromMiddleware() {
 /**
  * Flush the write queue to IndexedDB
  */
-async function flushWriteQueue() {
+async function flushWriteQueue({ sessionId, timeoutMs = null } = {}) {
   if (writeQueue.length === 0) return;
 
-  if (!currentDEK || !currentUserId) return;
+  const targetSessionId = sessionId ?? activeSessionId;
+  const queuedWrites = writeQueue.filter(
+    (item) => item.sessionId === targetSessionId,
+  );
+  if (queuedWrites.length === 0) return;
 
-  const queue = [...writeQueue];
-  writeQueue = [];
+  // Remove this session's writes from the queue up front to avoid replay.
+  writeQueue = writeQueue.filter((item) => item.sessionId !== targetSessionId);
+
+  // If auth context changed, drop stale queued writes for safety.
+  if (
+    !currentDEK ||
+    !currentUserId ||
+    targetSessionId !== activeSessionId ||
+    queuedWrites.some((item) => item.userId !== currentUserId)
+  ) {
+    return;
+  }
+
+  const persistWrites = async () => {
+    for (const { storeName, id, data } of queuedWrites) {
+      await storeUserEncryptedRecord(storeName, id, data, currentDEK, currentUserId);
+    }
+  };
 
   try {
-    // Process all queued writes
-    for (const { storeName, id, data } of queue) {
-      await storeUserEncryptedRecord(
-        storeName,
-        id,
-        data,
-        currentDEK,
-        currentUserId,
-      );
+    if (typeof timeoutMs === 'number' && timeoutMs > 0) {
+      await Promise.race([
+        persistWrites(),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Write queue flush timed out')), timeoutMs);
+        }),
+      ]);
+      return;
     }
+    await persistWrites();
   } catch (error) {
     console.error('Failed to persist encrypted data:', error);
   }
 }
 
 /**
+ * Best-effort flush for the active session.
+ * Used by logout to reduce data loss before auth state is cleared.
+ */
+export async function flushWriteQueueForCurrentSession({ timeoutMs = 1500 } = {}) {
+  const sessionId = activeSessionId;
+  await flushWriteQueue({ sessionId, timeoutMs });
+}
+
+/**
  * Queue a write to IndexedDB (throttled)
  */
 function queueWrite(storeName, id, data) {
+  const sessionId = activeSessionId;
+  const userId = currentUserId;
+
   // Add or update in queue
   const existingIndex = writeQueue.findIndex(
-    (item) => item.storeName === storeName && item.id === id,
+    (item) =>
+      item.sessionId === sessionId &&
+      item.storeName === storeName &&
+      item.id === id,
   );
 
   if (existingIndex >= 0) {
-    writeQueue[existingIndex] = { storeName, id, data };
+    writeQueue[existingIndex] = { sessionId, userId, storeName, id, data };
   } else {
-    writeQueue.push({ storeName, id, data });
+    writeQueue.push({ sessionId, userId, storeName, id, data });
   }
 
   // Reset the timeout
-  if (writeTimeout) {
-    clearTimeout(writeTimeout);
-  }
+  clearScheduledFlush();
 
   writeTimeout = setTimeout(() => {
-    flushWriteQueue();
-    writeTimeout = null;
+    flushWriteQueue({ sessionId }).finally(() => {
+      if (writeTimeout) {
+        writeTimeout = null;
+      }
+    });
   }, WRITE_DELAY);
 }
 
