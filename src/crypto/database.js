@@ -15,7 +15,7 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 6;
+const DB_VERSION = 8;
 
 const USER_SCOPED_STORES = [
   'accounts',
@@ -51,7 +51,7 @@ db.version(3).stores({
 
 // Version 5 had per-user fields but primary key remained id-only.
 db.version(5).stores({
-  users: 'id, username', // User table with unique usernames
+  users: 'id, username', // User table with username lookup index
   accounts: 'id, userId', // Per-user accounts
   transactions: 'id, userId', // Per-user transactions
   categories: 'id, userId', // Per-user categories
@@ -62,10 +62,64 @@ db.version(5).stores({
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
 });
 
-// Version 6 uses composite primary keys to enforce tenant isolation.
-db.version(DB_VERSION)
+// Version 7 keeps composite tenant keys and deduplicates usernames before
+// adding a DB-level unique username index.
+db.version(7)
   .stores({
     users: 'id, username',
+    accounts: '[userId+id], userId, id',
+    transactions: '[userId+id], userId, id',
+    categories: '[userId+id], userId, id',
+    statements: '[userId+id], userId, id',
+    recurringTransactions: '[userId+id], userId, id',
+    recurringTransactionEvents: '[userId+id], userId, id',
+    transactionSplits: '[userId+id], userId, id',
+    metadata: 'key',
+  })
+  .upgrade(async (tx) => {
+    const usersTable = tx.table('users');
+    const users = await usersTable.toArray();
+    if (users.length <= 1) return;
+
+    const usersByUsername = new Map();
+    for (const user of users) {
+      const username = user.username;
+      if (!username) continue;
+
+      const existing = usersByUsername.get(username);
+      if (!existing) {
+        usersByUsername.set(username, user);
+        continue;
+      }
+
+      const existingCreatedAt = existing.createdAt || '';
+      const currentCreatedAt = user.createdAt || '';
+      const shouldReplace =
+        currentCreatedAt < existingCreatedAt ||
+        (currentCreatedAt === existingCreatedAt && user.id < existing.id);
+
+      if (shouldReplace) {
+        usersByUsername.set(username, user);
+      }
+    }
+
+    const usernamesToKeep = new Set(
+      Array.from(usersByUsername.values()).map((user) => user.id),
+    );
+
+    const duplicateIds = users
+      .filter((user) => user.username && !usernamesToKeep.has(user.id))
+      .map((user) => user.id);
+
+    if (duplicateIds.length > 0) {
+      await usersTable.bulkDelete(duplicateIds);
+    }
+  });
+
+// Version 8 enforces DB-level uniqueness for usernames.
+db.version(DB_VERSION)
+  .stores({
+    users: 'id, &username',
     accounts: '[userId+id], userId, id',
     transactions: '[userId+id], userId, id',
     categories: '[userId+id], userId, id',

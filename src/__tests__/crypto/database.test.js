@@ -85,4 +85,12 @@ describe('Encrypted database user isolation', () => {
     expect(userOneRecords).toEqual([]);
     expect(userTwoRecords).toEqual([{ id: 'shared-id', amount: 200 }]);
   });
+
+  it('enforces unique usernames at the database level', async () => {
+    await db.users.add({ id: 'user-1', username: 'alex' });
+
+    await expect(
+      db.users.add({ id: 'user-2', username: 'alex' }),
+    ).rejects.toThrow();
+  });
 });
