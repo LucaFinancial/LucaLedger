@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.5.0]
+
+### Fixed
+
+- Ensured user deletion and user-data clearing now purge all encrypted user-owned stores, including recurring transactions, recurring transaction events, and transaction splits.
+- Added full account-deletion cascade cleanup so removing an account also removes dependent statements, recurring transactions/events, and transaction splits from both Redux state and encrypted storage.
+- Added regression coverage to verify exports no longer include orphaned dependent records after account deletion.
 
 ## [2.4.0] - 2026-02-21
 

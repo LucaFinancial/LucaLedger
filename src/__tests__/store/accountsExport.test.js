@@ -8,6 +8,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { SCHEMA_VERSION } from '@luca-financial/luca-schema';
 import rootReducer from '@/store/rootReducer';
 import {
+  removeAccountById,
   saveAllAccounts,
   saveAccountWithTransactions,
 } from '@/store/accounts/actions';
@@ -339,5 +340,141 @@ describe('Account Export', () => {
 
     // Categories should be included for all accounts (not filtered)
     expect(capturedData.categories).toHaveLength(1);
+  });
+
+  it('should not export orphaned dependent records after account deletion', async () => {
+    const store = configureStore({
+      reducer: rootReducer,
+      preloadedState: {
+        accounts: {
+          data: [
+            {
+              id: 'acc1',
+              name: 'Account 1',
+              type: 'checking',
+              createdAt: '2026-01-01T00:00:00.000Z',
+              updatedAt: null,
+            },
+            {
+              id: 'acc2',
+              name: 'Account 2',
+              type: 'savings',
+              createdAt: '2026-01-01T00:00:00.000Z',
+              updatedAt: null,
+            },
+          ],
+          loading: false,
+          error: null,
+          loadingAccountIds: [],
+        },
+        transactions: [
+          {
+            id: 'txn1',
+            accountId: 'acc1',
+            amount: 1000,
+            date: '2026-01-15',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'txn2',
+            accountId: 'acc2',
+            amount: 2000,
+            date: '2026-01-15',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        categories: [],
+        statements: [
+          {
+            id: 'stmt1',
+            accountId: 'acc1',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'stmt2',
+            accountId: 'acc2',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        recurringTransactions: [
+          {
+            id: 'rt1',
+            accountId: 'acc1',
+            amount: 500,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'rt2',
+            accountId: 'acc2',
+            amount: 600,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        recurringTransactionEvents: [
+          {
+            id: 'rte1',
+            recurringTransactionId: 'rt1',
+            expectedDate: '2026-02-01',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'rte2',
+            recurringTransactionId: 'rt2',
+            expectedDate: '2026-02-01',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        transactionSplits: [
+          {
+            id: 'split1',
+            transactionId: 'txn1',
+            amount: 500,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'split2',
+            transactionId: 'txn2',
+            amount: 1000,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        settings: {},
+        encryption: { status: 'uninitialized' },
+      },
+    });
+
+    let capturedData = null;
+    global.JSON.stringify = vi.fn((data, ...args) => {
+      if (data && data.schemaVersion) {
+        capturedData = data;
+      }
+      return originalStringify(data, ...args);
+    });
+
+    await store.dispatch(removeAccountById('acc1'));
+    store.dispatch(saveAllAccounts());
+
+    expect(capturedData.accounts.map((a) => a.id)).toEqual(['acc2']);
+    expect(capturedData.transactions.map((t) => t.id)).toEqual(['txn2']);
+    expect(capturedData.statements.map((s) => s.id)).toEqual(['stmt2']);
+    expect(capturedData.recurringTransactions.map((rt) => rt.id)).toEqual([
+      'rt2',
+    ]);
+    expect(capturedData.recurringTransactionEvents.map((e) => e.id)).toEqual([
+      'rte2',
+    ]);
+    expect(capturedData.transactionSplits.map((split) => split.id)).toEqual([
+      'split2',
+    ]);
   });
 });
