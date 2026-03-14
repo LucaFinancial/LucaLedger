@@ -6,6 +6,7 @@ import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import CurrentMonthOverviewSection from './components/CurrentMonthOverview';
+import SpendingHistorySection from './components/SpendingHistorySection/SpendingHistorySection';
 
 import { useDateRanges } from './hooks/useDateRanges';
 import { useCategoryFilters } from './hooks/useCategoryFilters';
@@ -69,6 +70,8 @@ export default function Dashboard() {
         remainingMonthTotals={remainingMonthTotals}
         formatCurrency={formatCurrency}
       />
+
+      <SpendingHistorySection />
     </Box>
   );
 }
