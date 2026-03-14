@@ -5,20 +5,13 @@ import { selectors as categorySelectors } from '@/store/categories';
 import { Box, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
-import RecentActivitySection from './components/RecentActivitySection';
-import UpcomingActivitySection from './components/UpcomingActivitySection';
 import CurrentMonthOverviewSection from './components/CurrentMonthOverview';
 
 import { useDateRanges } from './hooks/useDateRanges';
 import { useCategoryFilters } from './hooks/useCategoryFilters';
 import { useFilteredTransactions } from './hooks/useFilteredTransactions';
 import { useTransactionTotals } from './hooks/useTransactionTotals';
-import {
-  formatCurrency,
-  formatTransactionAmount,
-  getAccountName as getAccountNameUtil,
-  createAccountMap,
-} from './utils/dashboardUtils';
+import { formatCurrency, createAccountMap } from './utils/dashboardUtils';
 
 export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -28,7 +21,7 @@ export default function Dashboard() {
 
   // Use custom hooks for date ranges and category filtering
   const dateRanges = useDateRanges();
-  const { isTransferTransaction, getTransactionColor, categorizeTransaction } =
+  const { isTransferTransaction, categorizeTransaction } =
     useCategoryFilters(categories);
 
   // Create account lookup map for performance
@@ -48,52 +41,23 @@ export default function Dashboard() {
   );
 
   // Use custom hook for totals calculations
-  const {
-    currentMonthTotals,
-    futureTotals,
-    recentTotals,
-    remainingMonthTotals,
-    monthEndProjections,
-  } = useTransactionTotals({
-    recentTransactions,
-    futureTransactions,
-    currentMonthTransactions,
-    allMonthTransactions,
-    allTransactions,
-    dateRanges,
-    categorizeTransaction,
-    isTransferTransaction,
-  });
-
-  // Helper function to get account name
-  const getAccountName = (accountId) =>
-    getAccountNameUtil(accountMap, accountId);
+  const { currentMonthTotals, remainingMonthTotals, monthEndProjections } =
+    useTransactionTotals({
+      recentTransactions,
+      futureTransactions,
+      currentMonthTransactions,
+      allMonthTransactions,
+      allTransactions,
+      dateRanges,
+      categorizeTransaction,
+      isTransferTransaction,
+    });
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant='h4' sx={{ mb: 4, fontWeight: 'bold' }}>
         Financial Dashboard
       </Typography>
-
-      {/* Recent Activity Section */}
-      <RecentActivitySection
-        recentTransactions={recentTransactions}
-        recentTotals={recentTotals}
-        formatCurrency={formatCurrency}
-        formatTransactionAmount={formatTransactionAmount}
-        getTransactionColor={getTransactionColor}
-        getAccountName={getAccountName}
-      />
-
-      {/* Future Activity Section */}
-      <UpcomingActivitySection
-        futureTransactions={futureTransactions}
-        futureTotals={futureTotals}
-        formatCurrency={formatCurrency}
-        formatTransactionAmount={formatTransactionAmount}
-        getTransactionColor={getTransactionColor}
-        getAccountName={getAccountName}
-      />
 
       {/* Current Month Overview Section */}
       <CurrentMonthOverviewSection
@@ -105,7 +69,6 @@ export default function Dashboard() {
         remainingMonthTotals={remainingMonthTotals}
         formatCurrency={formatCurrency}
       />
-
     </Box>
   );
 }
