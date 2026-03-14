@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-03-14
+
+### Added
+
+- Added a new Spending History dashboard section for historical category-based spending analysis.
+- Added aggregate period views for Last 3 Months, YTD, and Last 12 Months.
+- Added historical month/year selectors based on available completed transactions.
+- Added category breakdown visuals, summary cards, and expandable parent/subcategory spending rows.
+- Added a dedicated `useHistoricalCategoryData` hook for period-based spending aggregation.
+
+### Changed
+
+- Refactored Dashboard composition to remove the Recent Activity and Upcoming Activity sections.
+- Updated Current Month Overview to be collapsed by default.
+- Bumped application version to `2.5.0`. (#287)
+
 ## [2.4.0] - 2026-02-21
 
 ### Changed
