@@ -17,7 +17,7 @@ export default function CurrentMonthOverviewSection({
 }) {
   return (
     <Accordion
-      defaultExpanded
+      defaultExpanded={false}
       sx={{
         mb: 3,
         borderLeft: '4px solid #2196f3',
