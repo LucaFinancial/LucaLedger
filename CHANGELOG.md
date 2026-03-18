@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-03-18
+
+### Changed
+
+- Upgraded core dependencies including `@luca-financial/luca-schema`, `@mui/x-date-pickers`, `@reduxjs/toolkit`, `react-router-dom`, `@eslint/js`, `eslint`, and `globals`.
+- Upgraded test and build tooling to `vitest@^4.1.0`, `@vitest/coverage-v8@^4.1.0`, `vite@^7.3.1`, and `@vitejs/plugin-react@^5.2.0` to keep the toolchain compatible.
+- Bumped application version to `2.5.1`. (#288)
+
 ## [2.5.0] - 2026-03-14
 
 ### Added
