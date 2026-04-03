@@ -2,8 +2,8 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import rootReducer from './rootReducer';
 import { encryptedPersistenceMiddleware } from './encryptedMiddleware';
-import categoriesData from '@/config/categories.json';
 import { migrateDataToSchema } from '@/utils/dataMigration';
+import { getDefaultCategories } from '@/utils/defaultCategories';
 
 // Check if encryption is enabled by looking at IndexedDB
 // This is an async check, so we'll use a synchronous approach via localStorage flag
@@ -27,7 +27,7 @@ const migrateState = (persistedState) => {
         loadingAccountIds: [],
       },
       transactions: [],
-      categories: isEncryptionActive ? [] : categoriesData.categories,
+      categories: isEncryptionActive ? [] : getDefaultCategories(),
       recurringTransactions: [],
       recurringTransactionEvents: [],
       transactionSplits: [],
@@ -89,7 +89,7 @@ const migrateState = (persistedState) => {
     !hasEncryptionActive &&
     (!state.categories || state.categories.length === 0)
   ) {
-    state.categories = categoriesData.categories;
+    state.categories = getDefaultCategories();
     console.log('Initialized default categories as user data');
     needsPersist = true;
   }

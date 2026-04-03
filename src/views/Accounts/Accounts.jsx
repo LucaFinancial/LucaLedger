@@ -26,7 +26,7 @@ export default function Accounts() {
         }}
       >
         {sortedAccounts.map((account) => (
-          <Grid key={account.id}>
+          <Grid key={account.id} size='auto'>
             <AccountCard account={account} />
           </Grid>
         ))}

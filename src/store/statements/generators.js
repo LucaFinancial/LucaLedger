@@ -64,8 +64,7 @@ export const generateStatement = (initialData = {}) => {
   try {
     validateSchemaSync('statement', statement);
     return statement;
-  } catch (error) {
-    console.error('Statement validation failed:', error);
+  } catch {
     return null;
   }
 };

@@ -16,7 +16,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
@@ -64,7 +64,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
@@ -112,7 +112,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
