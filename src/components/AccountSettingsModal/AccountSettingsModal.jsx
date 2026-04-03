@@ -41,6 +41,9 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [initialStatementDay, setInitialStatementDay] = useState(
     account.statementClosingDay || 1,
   );
+  const accountTypes = Object.values(constants.AccountType).sort((a, b) =>
+    formatAccountType(a).localeCompare(formatAccountType(b)),
+  );
 
   // Reset state when modal opens with new account
   useEffect(() => {
@@ -180,9 +183,9 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               fullWidth
               renderValue={(value) => formatAccountType(value)}
             >
-              {Object.keys(constants.AccountType).map((key) => (
-                <MenuItem key={key} value={constants.AccountType[key]}>
-                  {formatAccountType(constants.AccountType[key])}
+              {accountTypes.map((accountType) => (
+                <MenuItem key={accountType} value={accountType}>
+                  {formatAccountType(accountType)}
                 </MenuItem>
               ))}
             </Select>
