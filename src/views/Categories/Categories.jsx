@@ -32,9 +32,9 @@ import {
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryResetConfirmModal from '@/components/CategoryResetConfirmModal';
 import CategoryDeleteConfirmModal from '@/components/CategoryDeleteConfirmModal';
+import { getDefaultCategories } from '@/utils/defaultCategories';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
-import categoriesData from '@/config/categories.json';
 
 export default function Categories() {
   const dispatch = useDispatch();
@@ -159,7 +159,7 @@ export default function Categories() {
 
   const handleConfirmReset = () => {
     setResetModalOpen(false);
-    dispatch(setCategories([...categoriesData.categories]));
+    dispatch(setCategories(getDefaultCategories()));
   };
 
   const handleCancelReset = () => {

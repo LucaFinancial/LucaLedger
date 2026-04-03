@@ -31,7 +31,7 @@ export default function FrequencyField({
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Typography>Every</Typography>
         <TextField
           variant='filled'
@@ -42,7 +42,7 @@ export default function FrequencyField({
           disabled={isFrequencyCountDisabled}
         />
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Typography>Frequency</Typography>
         <FormControl fullWidth variant='filled'>
           <InputLabel id='frequency-label'>Choose Frequency</InputLabel>
@@ -62,4 +62,3 @@ export default function FrequencyField({
     </Grid>
   );
 }
-

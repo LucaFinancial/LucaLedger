@@ -40,8 +40,7 @@ export const generateRecurringTransaction = (initialData = {}) => {
   try {
     validateSchemaSync('recurringTransaction', recurringTransaction);
     return recurringTransaction;
-  } catch (error) {
-    console.error('Recurring transaction validation failed:', error);
+  } catch {
     return null;
   }
 };

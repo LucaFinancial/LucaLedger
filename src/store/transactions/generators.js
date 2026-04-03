@@ -22,8 +22,7 @@ export const generateTransaction = (initialData = {}) => {
   try {
     validateSchemaSync('transaction', transaction);
     return transaction;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return null;
   }
 };

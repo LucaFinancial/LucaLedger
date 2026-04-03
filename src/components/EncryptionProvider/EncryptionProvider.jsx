@@ -21,8 +21,7 @@ import { setStatements } from '@/store/statements/slice';
 import { setRecurringTransactions } from '@/store/recurringTransactions/slice';
 import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvents/slice';
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
-import categoriesData from '@/config/categories.json';
-import { migrateDataToSchema } from '@/utils/dataMigration';
+import { getDefaultCategories } from '@/utils/defaultCategories';
 import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
 import {
   fixDateFormatIssues,
@@ -264,15 +263,7 @@ export default function EncryptionProvider() {
         const migrationTimestamp = new Date().toISOString();
         let categoriesToLoad = encryptedCategories || [];
         if (categoriesToLoad.length === 0) {
-          const defaultCategories = migrateDataToSchema(
-            {
-              categories: categoriesData.categories,
-            },
-            {
-              timestamp: migrationTimestamp,
-            },
-          );
-          categoriesToLoad = defaultCategories.data.categories;
+          categoriesToLoad = getDefaultCategories(migrationTimestamp);
           console.log('Initialized default categories for encrypted storage');
 
           // Save default categories to encrypted storage
