@@ -5,11 +5,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
-  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -203,47 +201,6 @@ export default function AccountSettingsModal({ open, onClose, account }) {
           )}
         </Box>
 
-        <Box>
-          <Typography
-            variant='subtitle1'
-            sx={{ fontWeight: 'bold', mb: 1, color: 'text.secondary' }}
-          >
-            Recommended Settings (Coming Soon)
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}
-          >
-            These settings are placeholders and will be functional in a future
-            update.
-          </Typography>
-
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable automatic categorization'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Send monthly statement reminders'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Show balance projections'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable spending alerts'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Auto-archive old transactions'
-            sx={{ mb: 1 }}
-          />
-        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
