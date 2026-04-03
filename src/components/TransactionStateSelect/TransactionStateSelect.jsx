@@ -7,6 +7,11 @@ import { useParams } from 'react-router-dom';
 import { actions, constants } from '@/store/transactions';
 import { LEDGER_STATUS_SELECT_WIDTH } from '@/components/LedgerTable/ledgerColumnConfig';
 
+function formatTransactionState(state = '') {
+  const normalizedState = state.toLowerCase();
+  return normalizedState.charAt(0).toUpperCase() + normalizedState.slice(1);
+}
+
 export default function TransactionStateSelect({
   transaction,
   isSelected,
@@ -63,7 +68,6 @@ export default function TransactionStateSelect({
   };
 
   const selectStyle = {
-    textTransform: 'capitalize',
     color: isSelected ? 'white' : 'inherit',
     '& .MuiSelect-select': {
       display: 'flex',
@@ -87,17 +91,16 @@ export default function TransactionStateSelect({
         label='Status'
         onChange={handleChange}
         sx={selectStyle}
+        renderValue={(value) => formatTransactionState(value)}
       >
         {Object.keys(constants.TransactionStateEnum).map((key) => {
+          const value = constants.TransactionStateEnum[key];
           return (
             <MenuItem
               key={key}
-              value={constants.TransactionStateEnum[key]}
-              sx={{
-                textTransform: 'capitalize',
-              }}
+              value={value}
             >
-              {constants.TransactionStateEnum[key]}
+              {formatTransactionState(value)}
             </MenuItem>
           );
         })}
@@ -105,4 +108,3 @@ export default function TransactionStateSelect({
     </FormControl>
   );
 }
-
