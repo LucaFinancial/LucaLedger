@@ -18,6 +18,15 @@ import { useDispatch } from 'react-redux';
 
 import { actions, constants } from '@/store/accounts';
 
+function formatAccountType(accountType = '') {
+  return accountType
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function AccountSettingsModal({ open, onClose, account }) {
   const dispatch = useDispatch();
   const [name, setName] = useState(account.name);
@@ -169,10 +178,11 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               value={type}
               onChange={handleTypeChange}
               fullWidth
+              renderValue={(value) => formatAccountType(value)}
             >
               {Object.keys(constants.AccountType).map((key) => (
                 <MenuItem key={key} value={constants.AccountType[key]}>
-                  {constants.AccountType[key]}
+                  {formatAccountType(constants.AccountType[key])}
                 </MenuItem>
               ))}
             </Select>
@@ -245,4 +255,3 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     </Dialog>
   );
 }
-
