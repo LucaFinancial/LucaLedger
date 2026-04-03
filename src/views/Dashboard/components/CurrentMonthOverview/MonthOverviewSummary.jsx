@@ -60,7 +60,7 @@ export default function MonthOverviewSummary({
       {/* Three-column summary */}
       <Grid container spacing={2}>
         {/* Month-to-Date (Actuals) */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             sx={{
               p: 2,
@@ -137,7 +137,7 @@ export default function MonthOverviewSummary({
         </Grid>
 
         {/* Remaining Month (Scheduled/Planned) */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             sx={{
               p: 2,
@@ -197,7 +197,7 @@ export default function MonthOverviewSummary({
         </Grid>
 
         {/* Month-End Projection */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             sx={{
               p: 2,
@@ -261,4 +261,3 @@ export default function MonthOverviewSummary({
     </Paper>
   );
 }
-

@@ -164,7 +164,7 @@ export default function RecurringTransactionModal({
           />
 
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Typography gutterBottom>Every</Typography>
               <TextField
                 fullWidth
@@ -182,7 +182,7 @@ export default function RecurringTransactionModal({
                 placeholder='1'
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Typography gutterBottom>Frequency</Typography>
               <FormControl fullWidth>
                 <InputLabel id='frequency-label'>Frequency</InputLabel>
@@ -243,4 +243,3 @@ export default function RecurringTransactionModal({
     </Dialog>
   );
 }
-
