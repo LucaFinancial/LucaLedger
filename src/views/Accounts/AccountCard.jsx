@@ -14,6 +14,15 @@ import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
 
+function formatAccountType(accountType = '') {
+  return accountType
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
   const isLoading = useSelector(
@@ -61,7 +70,9 @@ export default function AccountCard({ account }) {
       )}
       <CardContent style={{ position: 'relative' }}>
         <Typography variant='h4'>{account.name}</Typography>
-        <Typography variant='subtitle1'>{account.type}</Typography>
+        <Typography variant='subtitle1'>
+          {formatAccountType(account.type)}
+        </Typography>
         <BalanceRow
           accountId={account.id}
           accountType={account.type}
@@ -102,4 +113,3 @@ export default function AccountCard({ account }) {
     </Card>
   );
 }
-
