@@ -1,5 +1,4 @@
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function MonthlyIncomeExpenseCards({
   currentMonthTotals,
@@ -166,16 +165,3 @@ export default function MonthlyIncomeExpenseCards({
   );
 }
 
-MonthlyIncomeExpenseCards.propTypes = {
-  currentMonthTotals: PropTypes.shape({
-    income: PropTypes.number.isRequired,
-    expenses: PropTypes.number.isRequired,
-    netFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  monthEndProjections: PropTypes.shape({
-    projectedIncome: PropTypes.number.isRequired,
-    projectedExpenses: PropTypes.number.isRequired,
-    projectedNetFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-};

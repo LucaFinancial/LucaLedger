@@ -8,7 +8,6 @@ import {
   Typography,
   Alert,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 export default function UnlockDialog({ open, onUnlock, error }) {
@@ -59,8 +58,3 @@ export default function UnlockDialog({ open, onUnlock, error }) {
   );
 }
 
-UnlockDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onUnlock: PropTypes.func.isRequired,
-  error: PropTypes.string,
-};

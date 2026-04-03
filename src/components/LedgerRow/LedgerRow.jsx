@@ -1,5 +1,4 @@
 import { TableRow } from '@mui/material';
-import PropTypes from 'prop-types';
 
 import { constants } from '@/store/transactions';
 import AmountCell from './AmountCell';
@@ -93,12 +92,3 @@ export default function LedgerRow({
   );
 }
 
-LedgerRow.propTypes = {
-  row: PropTypes.object.isRequired,
-  balance: PropTypes.number.isRequired,
-  isSelected: PropTypes.bool,
-  onSelectionChange: PropTypes.func,
-  isVirtual: PropTypes.bool,
-  recurringTransaction: PropTypes.object,
-  occurrenceDate: PropTypes.string,
-};

@@ -1,7 +1,6 @@
 import styled from '@emotion/styled';
 import { Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
 
 const StyledLink = styled(Link)`
   color: white;
@@ -33,7 +32,3 @@ export default function NavItem({ linkTo, navText }) {
   );
 }
 
-NavItem.propTypes = {
-  linkTo: PropTypes.string.isRequired,
-  navText: PropTypes.string.isRequired,
-};

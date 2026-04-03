@@ -5,7 +5,6 @@ import {
   Box,
   CircularProgress,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
@@ -104,10 +103,3 @@ export default function AccountCard({ account }) {
   );
 }
 
-AccountCard.propTypes = {
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-  }).isRequired,
-};

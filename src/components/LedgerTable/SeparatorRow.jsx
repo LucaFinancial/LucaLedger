@@ -1,7 +1,6 @@
 import { KeyboardArrowDown, KeyboardArrowRight } from '@mui/icons-material';
 import { IconButton, TableCell, TableRow } from '@mui/material';
 import { format, getYear, parseISO } from 'date-fns';
-import PropTypes from 'prop-types';
 import YearControls from './YearControls';
 import { LEDGER_COLUMN_COUNT } from './ledgerColumnConfig';
 
@@ -84,14 +83,3 @@ export default function SeparatorRow({
   );
 }
 
-SeparatorRow.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  previousTransaction: PropTypes.object,
-  isYear: PropTypes.bool,
-  isCollapsed: PropTypes.bool.isRequired,
-  onToggleCollapse: PropTypes.func.isRequired,
-  onExpandYear: PropTypes.func,
-  onCollapseYear: PropTypes.func,
-  selectedCount: PropTypes.number,
-  monthKey: PropTypes.string,
-};

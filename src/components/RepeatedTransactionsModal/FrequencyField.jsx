@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Select,
   MenuItem,
@@ -64,16 +63,3 @@ export default function FrequencyField({
   );
 }
 
-FrequencyField.propTypes = {
-  frequency: PropTypes.oneOf([
-    'Days',
-    'Weeks',
-    'Months',
-    'Years',
-    'Bi-Monthly',
-    null,
-  ]),
-  setFrequency: PropTypes.func.isRequired,
-  frequencyCount: PropTypes.number,
-  setFrequencyCount: PropTypes.func.isRequired,
-};

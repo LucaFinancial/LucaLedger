@@ -1,5 +1,4 @@
 import { Box, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 import { centsToDollars } from '@/utils';
 
 /**
@@ -40,9 +39,3 @@ export default function SplitSummary({
   );
 }
 
-SplitSummary.propTypes = {
-  totalAmount: PropTypes.number.isRequired,
-  splitsTotal: PropTypes.number.isRequired,
-  remaining: PropTypes.number.isRequired,
-  sumError: PropTypes.string,
-};

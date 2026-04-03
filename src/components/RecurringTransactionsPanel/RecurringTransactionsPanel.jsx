@@ -11,7 +11,6 @@ import {
   Chip,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   selectors as recurringTransactionSelectors,
@@ -234,6 +233,3 @@ export default function RecurringTransactionsPanel({ accountId }) {
   );
 }
 
-RecurringTransactionsPanel.propTypes = {
-  accountId: PropTypes.string.isRequired,
-};

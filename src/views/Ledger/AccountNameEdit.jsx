@@ -1,5 +1,4 @@
 import { Box, Button, TextField } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -62,10 +61,3 @@ export default function AccountNameEdit({ account, setIsEditing }) {
   );
 }
 
-AccountNameEdit.propTypes = {
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
-  setIsEditing: PropTypes.func.isRequired,
-};

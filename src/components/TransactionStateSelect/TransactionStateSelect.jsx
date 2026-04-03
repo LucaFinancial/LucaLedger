@@ -1,6 +1,5 @@
 import { FormControl, MenuItem, Select, Chip } from '@mui/material';
 import { Repeat } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -107,8 +106,3 @@ export default function TransactionStateSelect({
   );
 }
 
-TransactionStateSelect.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  isSelected: PropTypes.bool,
-  isVirtual: PropTypes.bool,
-};

@@ -7,7 +7,6 @@ import {
   Typography,
   Alert,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function CategoryImportConfirmModal({
   open,
@@ -56,9 +55,3 @@ export default function CategoryImportConfirmModal({
   );
 }
 
-CategoryImportConfirmModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  categoriesCount: PropTypes.number.isRequired,
-};

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { Button } from '@mui/material';
 
 export default function OpenModalButton({ handleOpen }) {
@@ -9,6 +8,3 @@ export default function OpenModalButton({ handleOpen }) {
   );
 }
 
-OpenModalButton.propTypes = {
-  handleOpen: PropTypes.func.isRequired,
-};

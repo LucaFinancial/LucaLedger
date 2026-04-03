@@ -13,7 +13,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -247,13 +246,3 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   );
 }
 
-AccountSettingsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    statementClosingDay: PropTypes.number,
-  }).isRequired,
-};

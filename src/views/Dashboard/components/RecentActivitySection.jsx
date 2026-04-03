@@ -15,7 +15,6 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HistoryIcon from '@mui/icons-material/History';
 import { format, parseISO } from 'date-fns';
-import PropTypes from 'prop-types';
 import { constants as transactionConstants } from '@/store/transactions';
 
 export default function RecentActivitySection({
@@ -193,14 +192,3 @@ export default function RecentActivitySection({
   );
 }
 
-RecentActivitySection.propTypes = {
-  recentTransactions: PropTypes.array.isRequired,
-  recentTotals: PropTypes.shape({
-    completed: PropTypes.number.isRequired,
-    pending: PropTypes.number.isRequired,
-  }).isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-  formatTransactionAmount: PropTypes.func.isRequired,
-  getTransactionColor: PropTypes.func.isRequired,
-  getAccountName: PropTypes.func.isRequired,
-};

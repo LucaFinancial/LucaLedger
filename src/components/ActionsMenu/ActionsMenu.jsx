@@ -5,7 +5,6 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -118,6 +117,3 @@ export default function ActionsMenu({ account }) {
   );
 }
 
-ActionsMenu.propTypes = {
-  account: PropTypes.object.isRequired,
-};

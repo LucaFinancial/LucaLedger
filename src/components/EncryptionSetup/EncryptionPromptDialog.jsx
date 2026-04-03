@@ -7,7 +7,6 @@ import {
   Typography,
   Alert,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function EncryptionPromptDialog({
   open,
@@ -60,9 +59,3 @@ export default function EncryptionPromptDialog({
   );
 }
 
-EncryptionPromptDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onEncryptNow: PropTypes.func.isRequired,
-  onRemindLater: PropTypes.func.isRequired,
-  onDismiss: PropTypes.func.isRequired,
-};

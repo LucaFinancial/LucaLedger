@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format, parseISO, addYears } from 'date-fns';
-import PropTypes from 'prop-types';
 import CategorySelect from '@/components/CategorySelect';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
 import config from '@/config';
@@ -245,9 +244,3 @@ export default function RecurringTransactionModal({
   );
 }
 
-RecurringTransactionModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSave: PropTypes.func.isRequired,
-  transaction: PropTypes.object,
-};

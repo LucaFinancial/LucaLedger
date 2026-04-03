@@ -1,5 +1,4 @@
 import { Box, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 import { centsToDollars } from '@/utils';
 
 export default function BalanceDisplay({
@@ -134,9 +133,3 @@ export default function BalanceDisplay({
   );
 }
 
-BalanceDisplay.propTypes = {
-  label: PropTypes.string.isRequired,
-  balance: PropTypes.number.isRequired,
-  difference: PropTypes.number,
-  accountType: PropTypes.string,
-};

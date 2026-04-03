@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { TextField, Typography } from '@mui/material';
 
 export default function DescriptionField({ description, setDescription }) {
@@ -19,7 +18,3 @@ export default function DescriptionField({ description, setDescription }) {
   );
 }
 
-DescriptionField.propTypes = {
-  description: PropTypes.string.isRequired,
-  setDescription: PropTypes.func.isRequired,
-};

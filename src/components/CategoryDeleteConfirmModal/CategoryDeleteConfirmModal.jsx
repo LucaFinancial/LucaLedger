@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -72,10 +71,3 @@ export default function CategoryDeleteConfirmModal({
   );
 }
 
-CategoryDeleteConfirmModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  categoryName: PropTypes.string,
-  isSubcategory: PropTypes.bool,
-};

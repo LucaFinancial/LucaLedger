@@ -9,7 +9,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { actions as categoryActions, selectors } from '@/store/categories';
@@ -233,12 +232,3 @@ export default function CategoryDialog({
   );
 }
 
-CategoryDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  category: PropTypes.object, // Parent category to edit
-  subcategory: PropTypes.object, // Subcategory to edit
-  parentId: PropTypes.string, // Parent ID when editing/creating subcategory
-  prePopulateName: PropTypes.string, // Pre-populate the name field
-  onCategoryCreated: PropTypes.func, // Callback when category is created
-};

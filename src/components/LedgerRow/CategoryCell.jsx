@@ -7,7 +7,6 @@ import {
   Typography,
 } from '@mui/material';
 import { CallSplit } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { actions as transactionActions } from '@/store/transactions';
@@ -116,7 +115,3 @@ export default function CategoryCell({ transaction, isSelected }) {
   );
 }
 
-CategoryCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  isSelected: PropTypes.bool,
-};

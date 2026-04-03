@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -104,9 +103,3 @@ export default function ModalDialog({ open, handleClose, reset, setReset }) {
   );
 }
 
-ModalDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired,
-  reset: PropTypes.bool.isRequired,
-  setReset: PropTypes.func.isRequired,
-};

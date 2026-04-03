@@ -1,5 +1,4 @@
 import { Accordion, AccordionDetails } from '@mui/material';
-import PropTypes from 'prop-types';
 import CategoryBreakdown from '@/components/CategoryBreakdown';
 import MonthOverviewSummary from './MonthOverviewSummary';
 
@@ -53,12 +52,3 @@ export default function CurrentMonthOverviewSection({
   );
 }
 
-CurrentMonthOverviewSection.propTypes = {
-  dateRanges: PropTypes.object.isRequired,
-  totals: PropTypes.object.isRequired,
-  creditCardTotals: PropTypes.object.isRequired,
-  currentMonthTotals: PropTypes.object.isRequired,
-  monthEndProjections: PropTypes.object.isRequired,
-  remainingMonthTotals: PropTypes.object.isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-};

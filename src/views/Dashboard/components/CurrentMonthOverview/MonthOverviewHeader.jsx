@@ -2,7 +2,6 @@ import { AccordionSummary, Box, Chip, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { format } from 'date-fns';
-import PropTypes from 'prop-types';
 
 export default function MonthOverviewHeader({
   dateRanges,
@@ -149,20 +148,3 @@ export default function MonthOverviewHeader({
   );
 }
 
-MonthOverviewHeader.propTypes = {
-  dateRanges: PropTypes.object.isRequired,
-  totals: PropTypes.shape({
-    current: PropTypes.number.isRequired,
-  }).isRequired,
-  creditCardTotals: PropTypes.shape({
-    current: PropTypes.number.isRequired,
-    pending: PropTypes.number.isRequired,
-  }).isRequired,
-  currentMonthTotals: PropTypes.shape({
-    netFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  monthEndProjections: PropTypes.shape({
-    projectedNetFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-};

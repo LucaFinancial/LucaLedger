@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { TextField, Typography } from '@mui/material';
 
 export default function OccurrencesField({ occurrences, setOccurrences }) {
@@ -25,7 +24,3 @@ export default function OccurrencesField({ occurrences, setOccurrences }) {
   );
 }
 
-OccurrencesField.propTypes = {
-  occurrences: PropTypes.number,
-  setOccurrences: PropTypes.func.isRequired,
-};

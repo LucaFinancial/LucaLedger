@@ -1,6 +1,5 @@
 import { Chip } from '@mui/material';
 import { Lock, CheckCircle, Schedule, EditNote } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 
 const statusConfig = {
   draft: {
@@ -48,8 +47,3 @@ export default function StatementStatusBadge({
   );
 }
 
-StatementStatusBadge.propTypes = {
-  status: PropTypes.oneOf(['draft', 'current', 'past']), // Computed field from selectors
-  isLocked: PropTypes.bool, // Locked state from stored field
-  size: PropTypes.oneOf(['small', 'medium']),
-};

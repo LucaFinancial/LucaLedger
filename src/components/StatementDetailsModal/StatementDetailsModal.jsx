@@ -16,7 +16,6 @@ import {
   AlertTitle,
 } from '@mui/material';
 import { format, parseISO } from 'date-fns';
-import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import {
@@ -416,24 +415,3 @@ export default function StatementDetailsModal({
   );
 }
 
-StatementDetailsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  statement: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    accountId: PropTypes.string.isRequired,
-    startDate: PropTypes.string.isRequired,
-    endDate: PropTypes.string.isRequired,
-    startingBalance: PropTypes.number,
-    endingBalance: PropTypes.number,
-    totalCharges: PropTypes.number,
-    totalPayments: PropTypes.number,
-    isLocked: PropTypes.bool,
-    status: PropTypes.oneOf(['draft', 'current', 'past']), // Computed field from selectors
-  }),
-  onSave: PropTypes.func,
-  onLock: PropTypes.func,
-  onUnlock: PropTypes.func,
-  onDelete: PropTypes.func,
-  readOnly: PropTypes.bool,
-};

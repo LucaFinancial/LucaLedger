@@ -1,5 +1,4 @@
 import { InputAdornment, TextField, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function AmountField({ amount, setAmount }) {
   const validNumberRegex = /^-?\d+(\.\d{1,2})?$|^-?\.\d{1,2}$|^-?\d+\.$|^-?$/;
@@ -33,7 +32,3 @@ export default function AmountField({ amount, setAmount }) {
   );
 }
 
-AmountField.propTypes = {
-  amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  setAmount: PropTypes.func.isRequired,
-};

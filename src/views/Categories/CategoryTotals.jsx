@@ -10,7 +10,6 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
@@ -536,17 +535,3 @@ export default function CategoryTotals({ category }) {
   );
 }
 
-CategoryTotals.propTypes = {
-  category: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    subcategories: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        slug: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-      }),
-    ).isRequired,
-  }).isRequired,
-};

@@ -1,5 +1,4 @@
 import { Checkbox, TableCell } from '@mui/material';
-import PropTypes from 'prop-types';
 import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
 export default function SelectionCell({
@@ -31,9 +30,3 @@ export default function SelectionCell({
   );
 }
 
-SelectionCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  isSelected: PropTypes.bool,
-  onSelectionChange: PropTypes.func,
-  isVirtual: PropTypes.bool,
-};

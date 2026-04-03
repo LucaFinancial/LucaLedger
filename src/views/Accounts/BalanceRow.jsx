@@ -1,5 +1,4 @@
 import { Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 
 import BalanceDifference from './BalanceDifference';
@@ -77,9 +76,3 @@ export default function BalanceRow({
   );
 }
 
-BalanceRow.propTypes = {
-  accountId: PropTypes.string.isRequired,
-  accountType: PropTypes.string.isRequired,
-  balanceType: PropTypes.string.isRequired,
-  filterArray: PropTypes.array.isRequired,
-};

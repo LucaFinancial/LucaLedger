@@ -7,7 +7,6 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
@@ -704,7 +703,3 @@ export default function SettingsPanel({ account, selectedYear }) {
   );
 }
 
-SettingsPanel.propTypes = {
-  account: PropTypes.object.isRequired,
-  selectedYear: PropTypes.string.isRequired,
-};

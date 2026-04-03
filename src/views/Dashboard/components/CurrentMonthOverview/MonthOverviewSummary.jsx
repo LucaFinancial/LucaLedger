@@ -1,5 +1,4 @@
 import { Box, Grid, Paper, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function MonthOverviewSummary({
   monthEndProjections,
@@ -263,28 +262,3 @@ export default function MonthOverviewSummary({
   );
 }
 
-MonthOverviewSummary.propTypes = {
-  monthEndProjections: PropTypes.shape({
-    currentDay: PropTypes.number.isRequired,
-    daysInMonth: PropTypes.number.isRequired,
-    daysRemaining: PropTypes.number.isRequired,
-    monthProgress: PropTypes.number.isRequired,
-    projectedIncome: PropTypes.number.isRequired,
-    projectedExpenses: PropTypes.number.isRequired,
-    projectedNetFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  currentMonthTotals: PropTypes.shape({
-    income: PropTypes.number.isRequired,
-    expenses: PropTypes.number.isRequired,
-  }).isRequired,
-  remainingMonthTotals: PropTypes.shape({
-    income: PropTypes.number.isRequired,
-    expenses: PropTypes.number.isRequired,
-    netFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  totals: PropTypes.shape({
-    current: PropTypes.number.isRequired,
-    pending: PropTypes.number.isRequired,
-  }).isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-};

@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { centsToDollars } from '@/utils';
 import SplitItem from './components/SplitItem';
 import SplitSummary from './components/SplitSummary';
@@ -126,9 +125,3 @@ export default function SplitEditorModal({
   );
 }
 
-SplitEditorModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  transaction: PropTypes.object,
-  onSave: PropTypes.func.isRequired,
-};

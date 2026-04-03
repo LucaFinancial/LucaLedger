@@ -1,7 +1,6 @@
 import { TableCell, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { parseISO, format, isValid } from 'date-fns';
-import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -70,6 +69,3 @@ export default function DateCell({ transaction }) {
   );
 }
 
-DateCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-};

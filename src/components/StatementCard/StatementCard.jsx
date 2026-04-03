@@ -17,7 +17,6 @@ import {
   Sync,
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import StatementStatusBadge from '@/components/StatementStatusBadge';
 import { selectors as statementSelectors } from '@/store/statements';
@@ -214,19 +213,3 @@ export default function StatementCard({
   );
 }
 
-StatementCard.propTypes = {
-  statement: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    accountId: PropTypes.string.isRequired,
-    startDate: PropTypes.string.isRequired,
-    endDate: PropTypes.string.isRequired,
-    startingBalance: PropTypes.number,
-    endingBalance: PropTypes.number,
-    totalCharges: PropTypes.number,
-    totalPayments: PropTypes.number,
-    status: PropTypes.oneOf(['draft', 'current', 'past', 'locked']).isRequired,
-  }).isRequired,
-  onView: PropTypes.func,
-  onLock: PropTypes.func,
-  compact: PropTypes.bool,
-};
