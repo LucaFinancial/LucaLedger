@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -97,8 +96,3 @@ export default function TermsOfServiceModal({ open, onClose, onAgree }) {
   );
 }
 
-TermsOfServiceModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onAgree: PropTypes.func,
-};

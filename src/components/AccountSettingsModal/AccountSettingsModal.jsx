@@ -5,19 +5,25 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
-  Switch,
   TextField,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { actions, constants } from '@/store/accounts';
+
+function formatAccountType(accountType = '') {
+  return accountType
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 export default function AccountSettingsModal({ open, onClose, account }) {
   const dispatch = useDispatch();
@@ -32,6 +38,9 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [initialType, setInitialType] = useState(account.type);
   const [initialStatementDay, setInitialStatementDay] = useState(
     account.statementClosingDay || 1,
+  );
+  const accountTypes = Object.values(constants.AccountType).sort((a, b) =>
+    formatAccountType(a).localeCompare(formatAccountType(b)),
   );
 
   // Reset state when modal opens with new account
@@ -170,10 +179,11 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               value={type}
               onChange={handleTypeChange}
               fullWidth
+              renderValue={(value) => formatAccountType(value)}
             >
-              {Object.keys(constants.AccountType).map((key) => (
-                <MenuItem key={key} value={constants.AccountType[key]}>
-                  {constants.AccountType[key]}
+              {accountTypes.map((accountType) => (
+                <MenuItem key={accountType} value={accountType}>
+                  {formatAccountType(accountType)}
                 </MenuItem>
               ))}
             </Select>
@@ -191,47 +201,6 @@ export default function AccountSettingsModal({ open, onClose, account }) {
           )}
         </Box>
 
-        <Box>
-          <Typography
-            variant='subtitle1'
-            sx={{ fontWeight: 'bold', mb: 1, color: 'text.secondary' }}
-          >
-            Recommended Settings (Coming Soon)
-          </Typography>
-          <Typography
-            variant='body2'
-            sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}
-          >
-            These settings are placeholders and will be functional in a future
-            update.
-          </Typography>
-
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable automatic categorization'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Send monthly statement reminders'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Show balance projections'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Enable spending alerts'
-            sx={{ mb: 1 }}
-          />
-          <FormControlLabel
-            control={<Switch disabled />}
-            label='Auto-archive old transactions'
-            sx={{ mb: 1 }}
-          />
-        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
@@ -246,14 +215,3 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     </Dialog>
   );
 }
-
-AccountSettingsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    statementClosingDay: PropTypes.number,
-  }).isRequired,
-};

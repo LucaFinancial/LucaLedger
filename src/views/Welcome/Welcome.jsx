@@ -73,7 +73,7 @@ export default function Welcome() {
         <Container maxWidth='lg'>
           <Grid container spacing={4} alignItems='center'>
             {/* Header row - in-flow title */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Typography
                 variant={isMobile ? 'h4' : 'h3'}
                 align='center'
@@ -88,7 +88,7 @@ export default function Welcome() {
               </Typography>
             </Grid>
             {/* Left side - Hero Text */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant={isMobile ? 'h3' : 'h2'}
                 component='h1'
@@ -137,7 +137,7 @@ export default function Welcome() {
             </Grid>
 
             {/* Right side - Login Form or CTA */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               {isMobile ? (
                 // Mobile: Show simple CTAs
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -293,7 +293,7 @@ export default function Welcome() {
 
         <Grid container spacing={4}>
           {/* Transaction Categories */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={2}
               sx={{
@@ -323,7 +323,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Encryption */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={2}
               sx={{
@@ -353,7 +353,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Multiple Accounts */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={2}
               sx={{
@@ -383,7 +383,7 @@ export default function Welcome() {
           </Grid>
 
           {/* Analytics */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={2}
               sx={{
@@ -443,7 +443,7 @@ export default function Welcome() {
           </Typography>
 
           <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <SecurityIcon sx={{ fontSize: 60, color: '#2196f3', mb: 2 }} />
                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
@@ -456,7 +456,7 @@ export default function Welcome() {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <DevicesIcon sx={{ fontSize: 60, color: '#4caf50', mb: 2 }} />
                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
@@ -469,7 +469,7 @@ export default function Welcome() {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <LockIcon sx={{ fontSize: 60, color: '#9c27b0', mb: 2 }} />
                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 1 }}>
@@ -544,7 +544,7 @@ export default function Welcome() {
       >
         <Container maxWidth='lg'>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Luca Ledger
               </Typography>
@@ -556,7 +556,7 @@ export default function Welcome() {
                 tracking your expenses.
               </Typography>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
                 Quick Links
               </Typography>

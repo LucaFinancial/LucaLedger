@@ -1,5 +1,4 @@
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function MonthlyIncomeExpenseCards({
   currentMonthTotals,
@@ -8,7 +7,7 @@ export default function MonthlyIncomeExpenseCards({
 }) {
   return (
     <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid item xs={12} sm={6} md={4}>
+      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Card
           sx={{
             borderTop: '3px solid #4caf50',
@@ -17,7 +16,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
@@ -56,7 +55,7 @@ export default function MonthlyIncomeExpenseCards({
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12} sm={6} md={4}>
+      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Card
           sx={{
             borderTop: '3px solid #f44336',
@@ -65,7 +64,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
@@ -104,7 +103,7 @@ export default function MonthlyIncomeExpenseCards({
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12} sm={6} md={4}>
+      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <Card
           sx={{
             borderTop: '3px solid #2196f3',
@@ -113,7 +112,7 @@ export default function MonthlyIncomeExpenseCards({
         >
           <CardContent>
             <Typography
-              color='textSecondary'
+              color='text.secondary'
               gutterBottom
               sx={{ textAlign: 'center' }}
             >
@@ -165,17 +164,3 @@ export default function MonthlyIncomeExpenseCards({
     </Grid>
   );
 }
-
-MonthlyIncomeExpenseCards.propTypes = {
-  currentMonthTotals: PropTypes.shape({
-    income: PropTypes.number.isRequired,
-    expenses: PropTypes.number.isRequired,
-    netFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  monthEndProjections: PropTypes.shape({
-    projectedIncome: PropTypes.number.isRequired,
-    projectedExpenses: PropTypes.number.isRequired,
-    projectedNetFlow: PropTypes.number.isRequired,
-  }).isRequired,
-  formatCurrency: PropTypes.func.isRequired,
-};

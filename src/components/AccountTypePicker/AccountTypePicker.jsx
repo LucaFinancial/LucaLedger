@@ -1,5 +1,4 @@
 import { Box, InputLabel, MenuItem, Select } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -56,10 +55,3 @@ export default function AccountTypePicker({ account }) {
   );
 }
 
-AccountTypePicker.propTypes = {
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-  }).isRequired,
-};

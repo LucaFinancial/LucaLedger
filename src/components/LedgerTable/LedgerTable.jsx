@@ -19,7 +19,6 @@ import {
   add,
   subMonths,
 } from 'date-fns';
-import PropTypes from 'prop-types';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -591,12 +590,3 @@ export default function LedgerTable({
   );
 }
 
-LedgerTable.propTypes = {
-  filterValue: PropTypes.string,
-  showUncategorizedOnly: PropTypes.bool,
-  collapsedGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setCollapsedGroups: PropTypes.func.isRequired,
-  selectedTransactions: PropTypes.instanceOf(Set),
-  onSelectionChange: PropTypes.func,
-  selectedYear: PropTypes.string.isRequired,
-};

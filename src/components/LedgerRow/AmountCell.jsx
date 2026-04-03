@@ -5,7 +5,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -135,6 +134,3 @@ export default function AmountCell({ transaction }) {
   );
 }
 
-AmountCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-};

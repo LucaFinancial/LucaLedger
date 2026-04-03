@@ -7,9 +7,8 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Pie } from 'react-chartjs-2';
 import {
@@ -36,11 +35,10 @@ export default function SettingsPanel({ account, selectedYear }) {
     transactionSelectors.selectTransactionsByAccountId(account.id),
   );
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const currentMonth = format(new Date(), 'yyyy-MM');
 
   // Month selector state for category spending
-  const [selectedMonth, setSelectedMonth] = useState(
-    format(new Date(), 'yyyy-MM'),
-  );
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
   // View selector state for category spending (current, pending, scheduled)
   const [selectedView, setSelectedView] = useState('current');
@@ -109,6 +107,33 @@ export default function SettingsPanel({ account, selectedYear }) {
     return pendingBalance + scheduledAmount;
   }, [pendingBalance, scheduledAmount]);
 
+  // Get available months from the year-filtered transactions
+  const availableMonths = useMemo(() => {
+    const months = new Set();
+    yearFilteredTransactions.forEach((t) => {
+      months.add(format(parseISO(t.date.replace(/\//g, '-')), 'yyyy-MM'));
+    });
+    return Array.from(months).sort().reverse();
+  }, [yearFilteredTransactions]);
+
+  const resolvedSelectedMonth = useMemo(() => {
+    if (selectedMonth === 'all' || availableMonths.includes(selectedMonth)) {
+      return selectedMonth;
+    }
+
+    if (availableMonths.includes(currentMonth)) {
+      return currentMonth;
+    }
+
+    return availableMonths[0] ?? 'all';
+  }, [availableMonths, currentMonth, selectedMonth]);
+
+  useEffect(() => {
+    if (selectedMonth !== resolvedSelectedMonth) {
+      setSelectedMonth(resolvedSelectedMonth);
+    }
+  }, [resolvedSelectedMonth, selectedMonth]);
+
   // Calculate top spending categories based on selected view and month
   const topCategories = useMemo(() => {
     const isCreditCard =
@@ -120,11 +145,11 @@ export default function SettingsPanel({ account, selectedYear }) {
     );
 
     // Apply month filter first
-    if (selectedMonth !== 'all') {
+    if (resolvedSelectedMonth !== 'all') {
       expenses = expenses.filter((t) => {
         return (
           format(parseISO(t.date.replace(/\//g, '-')), 'yyyy-MM') ===
-          selectedMonth
+          resolvedSelectedMonth
         );
       });
     }
@@ -211,19 +236,10 @@ export default function SettingsPanel({ account, selectedYear }) {
   }, [
     yearFilteredTransactions,
     categories,
-    selectedMonth,
+    resolvedSelectedMonth,
     selectedView,
     account.type,
   ]);
-
-  // Get available months from the year-filtered transactions
-  const availableMonths = useMemo(() => {
-    const months = new Set();
-    yearFilteredTransactions.forEach((t) => {
-      months.add(format(parseISO(t.date.replace(/\//g, '-')), 'yyyy-MM'));
-    });
-    return Array.from(months).sort().reverse();
-  }, [yearFilteredTransactions]);
 
   return (
     <Box
@@ -284,7 +300,7 @@ export default function SettingsPanel({ account, selectedYear }) {
 
             {/* Month Selector */}
             <Select
-              value={selectedMonth}
+              value={resolvedSelectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               size='small'
               fullWidth
@@ -703,8 +719,3 @@ export default function SettingsPanel({ account, selectedYear }) {
     </Box>
   );
 }
-
-SettingsPanel.propTypes = {
-  account: PropTypes.object.isRequired,
-  selectedYear: PropTypes.string.isRequired,
-};

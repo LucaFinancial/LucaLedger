@@ -7,7 +7,6 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 
 const style = {
   position: 'absolute',
@@ -64,6 +63,3 @@ export default function SaveModal({ closeCb }) {
   );
 }
 
-SaveModal.propTypes = {
-  closeCb: PropTypes.func.isRequired,
-};

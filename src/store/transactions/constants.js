@@ -1,14 +1,10 @@
 export const TransactionStateEnum = Object.freeze({
-  PLANNED: 'PLANNED',
-  ON_DECK: 'ON_DECK',
-  SCHEDULED: 'SCHEDULED',
-  PENDING: 'PENDING',
-  COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
-  FAILED: 'FAILED',
-  DISPUTED: 'DISPUTED',
+  COMPLETED: 'COMPLETED',
+  PENDING: 'PENDING',
+  PLANNED: 'PLANNED',
+  SCHEDULED: 'SCHEDULED',
   REFUNDED: 'REFUNDED',
-  DELETED: 'DELETED',
 });
 
 export const TransactionFields = Object.freeze({

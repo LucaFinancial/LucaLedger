@@ -1,5 +1,4 @@
 import { Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import AccountNameEdit from './AccountNameEdit';
@@ -30,9 +29,3 @@ export default function AccountName({ account }) {
   );
 }
 
-AccountName.propTypes = {
-  account: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
-};

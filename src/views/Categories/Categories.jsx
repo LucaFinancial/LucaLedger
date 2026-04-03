@@ -32,9 +32,9 @@ import {
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryResetConfirmModal from '@/components/CategoryResetConfirmModal';
 import CategoryDeleteConfirmModal from '@/components/CategoryDeleteConfirmModal';
+import { getDefaultCategories } from '@/utils/defaultCategories';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
-import categoriesData from '@/config/categories.json';
 
 export default function Categories() {
   const dispatch = useDispatch();
@@ -159,7 +159,7 @@ export default function Categories() {
 
   const handleConfirmReset = () => {
     setResetModalOpen(false);
-    dispatch(setCategories([...categoriesData.categories]));
+    dispatch(setCategories(getDefaultCategories()));
   };
 
   const handleCancelReset = () => {
@@ -280,53 +280,73 @@ export default function Categories() {
                   defaultExpanded={false}
                   sx={{ mb: 1 }}
                 >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={`${category.slug}-content`}
-                    id={`${category.slug}-header`}
-                  >
+                  <Box sx={{ position: 'relative' }}>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls={`${category.slug}-content`}
+                      id={`${category.slug}-header`}
+                      sx={{ pr: 14 }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          width: '100%',
+                        }}
+                      >
+                        <Typography variant='h6' component='h2' sx={{ flex: 1 }}>
+                          {category.name}
+                        </Typography>
+                        <Chip
+                          label={`${category.subcategories.length} ${
+                            category.subcategories.length === 1
+                              ? 'subcategory'
+                              : 'subcategories'
+                          }`}
+                          size='small'
+                          variant='outlined'
+                        />
+                      </Box>
+                    </AccordionSummary>
                     <Box
                       sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        right: 7,
+                        transform: 'translateY(-50%)',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 2,
-                        width: '100%',
+                        gap: 0.5,
+                        zIndex: 1,
                       }}
                     >
-                      <Typography variant='h6' component='h2' sx={{ flex: 1 }}>
-                        {category.name}
-                      </Typography>
-                      <Chip
-                        label={`${category.subcategories.length} ${
-                          category.subcategories.length === 1
-                            ? 'subcategory'
-                            : 'subcategories'
-                        }`}
-                        size='small'
-                        variant='outlined'
-                      />
                       <IconButton
                         size='small'
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           handleEditCategory(category);
                         }}
                         title='Edit category'
+                        aria-label='Edit category'
                       >
                         <EditIcon fontSize='small' />
                       </IconButton>
                       <IconButton
                         size='small'
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           handleDeleteCategory(category.id);
                         }}
                         title='Delete category'
+                        aria-label='Delete category'
                       >
                         <DeleteIcon fontSize='small' />
                       </IconButton>
                     </Box>
-                  </AccordionSummary>
+                  </Box>
                   <AccordionDetails>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       {/* Subcategories List */}

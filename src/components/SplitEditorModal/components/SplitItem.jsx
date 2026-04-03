@@ -7,7 +7,6 @@ import {
   Typography,
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import CategorySelect from '@/components/CategorySelect';
 import { centsToDollars } from '@/utils';
 
@@ -77,15 +76,3 @@ export default function SplitItem({
   );
 }
 
-SplitItem.propTypes = {
-  split: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    categoryId: PropTypes.string.isRequired,
-    amount: PropTypes.number.isRequired,
-  }).isRequired,
-  error: PropTypes.string,
-  onCategoryChange: PropTypes.func.isRequired,
-  onAmountChange: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
-  canRemove: PropTypes.bool.isRequired,
-};

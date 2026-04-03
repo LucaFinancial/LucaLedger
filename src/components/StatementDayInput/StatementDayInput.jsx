@@ -1,5 +1,4 @@
 import { Box, TextField } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -56,9 +55,3 @@ export default function StatementDayInput({ account }) {
   );
 }
 
-StatementDayInput.propTypes = {
-  account: PropTypes.shape({
-    statementClosingDay: PropTypes.number,
-    type: PropTypes.string.isRequired,
-  }).isRequired,
-};

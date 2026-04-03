@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   selectors as statementSelectors,
@@ -101,6 +100,3 @@ export default function StatementsPanel({ accountId }) {
   );
 }
 
-StatementsPanel.propTypes = {
-  accountId: PropTypes.string.isRequired,
-};

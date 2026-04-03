@@ -10,7 +10,6 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 
 const formatErrorDetail = (error) => {
   const details = Array.isArray(error.errors) ? error.errors : [];
@@ -106,13 +105,3 @@ export default function ValidationErrorsDialog({
   );
 }
 
-ValidationErrorsDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  errors: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onDownloadJson: PropTypes.func.isRequired,
-  onApplyDefaults: PropTypes.func.isRequired,
-  onRemoveInvalid: PropTypes.func.isRequired,
-  onFixAllDates: PropTypes.func.isRequired,
-  onFixError: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};

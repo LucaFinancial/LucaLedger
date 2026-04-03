@@ -1,5 +1,4 @@
 import { TableCell } from '@mui/material';
-import PropTypes from 'prop-types';
 import { centsToDollars } from '@/utils';
 import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
 
@@ -22,6 +21,3 @@ export default function BalanceCell({ amount }) {
   );
 }
 
-BalanceCell.propTypes = {
-  amount: PropTypes.number.isRequired,
-};

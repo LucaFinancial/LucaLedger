@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-04-03
+
+### Changed
+
+- Upgraded the frontend stack to `react@19`, `react-dom@19`, and Material UI `v7`, and updated related type/build dependencies for compatibility.
+- Removed `prop-types` usage across the app and aligned function components with React 19 expectations.
+- Updated account type and transaction state labels to render human-friendly text in account cards, account settings, and ledger status selectors.
+- Improved the account settings modal by alphabetizing account type options and removing the placeholder recommended settings section.
+- Normalized default category seed data through schema migration before loading or resetting categories.
+- Bumped application version to `2.6.0`. (#290)
+
+### Fixed
+
+- Fixed account sanitization to strip unsupported fields instead of surfacing validation noise during cleanup and tests.
+- Fixed the Settings panel month filter to avoid out-of-range select warnings when the current month is not present in available transaction data.
+- Fixed category accordion header actions to avoid invalid nested button markup and related hydration warnings.
+
 ## [2.5.1] - 2026-03-18
 
 ### Changed

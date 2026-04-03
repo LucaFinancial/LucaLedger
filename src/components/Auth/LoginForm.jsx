@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -159,6 +158,3 @@ export default function LoginForm({ onSwitchToRegister }) {
   );
 }
 
-LoginForm.propTypes = {
-  onSwitchToRegister: PropTypes.func.isRequired,
-};

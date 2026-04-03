@@ -1,5 +1,4 @@
 import { IconButton, TableCell, Tooltip } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import {
   actions as transactionActions,
@@ -107,9 +106,3 @@ export default function QuickActionCell({
   );
 }
 
-QuickActionCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  isVirtual: PropTypes.bool,
-  recurringTransaction: PropTypes.object,
-  occurrenceDate: PropTypes.string,
-};

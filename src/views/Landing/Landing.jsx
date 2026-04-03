@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -61,12 +60,6 @@ function Section({ title, children, defaultExpanded = true }) {
     </Accordion>
   );
 }
-
-Section.propTypes = {
-  title: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-  defaultExpanded: PropTypes.bool,
-};
 
 export default function Landing() {
   return (

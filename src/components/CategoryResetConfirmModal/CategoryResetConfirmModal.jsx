@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -64,8 +63,3 @@ export default function CategoryResetConfirmModal({
   );
 }
 
-CategoryResetConfirmModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};

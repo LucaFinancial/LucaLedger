@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { stripInvalidFields } from '@luca-financial/luca-schema';
 import { validateSchemaSync } from '@/utils/schemaValidation';
 
 /**
@@ -7,12 +8,11 @@ import { validateSchemaSync } from '@/utils/schemaValidation';
  */
 const cleanAccount = (account) => {
   try {
-    return validateSchemaSync('account', account);
-  } catch (error) {
-    console.error('Invalid account data:', error);
-    // Return the account as-is if validation fails
-    // This prevents data loss but logs the issue
-    return account;
+    const sanitized = stripInvalidFields('account', account);
+    return validateSchemaSync('account', sanitized);
+  } catch {
+    // Return the sanitized account if validation still fails.
+    return stripInvalidFields('account', account);
   }
 };
 

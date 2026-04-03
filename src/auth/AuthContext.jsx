@@ -10,7 +10,6 @@ import {
   useEffect,
   useCallback,
 } from 'react';
-import PropTypes from 'prop-types';
 import { v4 as uuid } from 'uuid';
 
 import {
@@ -258,10 +257,6 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 /**
  * Hook to use auth context

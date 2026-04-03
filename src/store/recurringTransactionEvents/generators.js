@@ -18,8 +18,7 @@ export const generateRecurringTransactionEvent = (initialData = {}) => {
   try {
     validateSchemaSync('recurringTransactionEvent', event);
     return event;
-  } catch (error) {
-    console.error('Recurring transaction event validation failed:', error);
+  } catch {
     return null;
   }
 };

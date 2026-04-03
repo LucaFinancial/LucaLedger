@@ -1,6 +1,5 @@
 import { Autocomplete, Box, TextField, Typography, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import PropTypes from 'prop-types';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectors as categorySelectors } from '@/store/categories';
@@ -328,16 +327,3 @@ export default function CategorySelect({
   );
 }
 
-CategorySelect.propTypes = {
-  value: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  size: PropTypes.oneOf(['small', 'medium']),
-  variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
-  label: PropTypes.string,
-  placeholder: PropTypes.string,
-  error: PropTypes.bool,
-  helperText: PropTypes.string,
-  fullWidth: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  sx: PropTypes.object,
-};

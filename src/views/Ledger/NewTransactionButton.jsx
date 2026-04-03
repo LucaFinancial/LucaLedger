@@ -1,6 +1,5 @@
 import { Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -34,6 +33,3 @@ export default function NewTransactionButton({ compact = false }) {
   );
 }
 
-NewTransactionButton.propTypes = {
-  compact: PropTypes.bool,
-};

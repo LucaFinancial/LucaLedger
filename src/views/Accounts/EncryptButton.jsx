@@ -21,7 +21,7 @@ import {
 } from '@/store/accounts/slice';
 import { initializeEncryption, clearActiveDEK } from '@/crypto/keyManager';
 import { batchStoreEncryptedRecords, clearAllData } from '@/crypto/database';
-import categoriesData from '@/config/categories.json';
+import { getDefaultCategories } from '@/utils/defaultCategories';
 
 export default function EncryptButton() {
   const dispatch = useDispatch();
@@ -109,7 +109,7 @@ export default function EncryptButton() {
     const categoriesToMigrate =
       Array.isArray(categories) && categories.length > 0
         ? categories
-        : categoriesData.categories;
+        : getDefaultCategories();
 
     // Prepare accounts, transactions, and categories for batch encryption
     const accountRecords = accountsArray.map((account) => ({

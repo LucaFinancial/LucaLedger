@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { constants as accountConstants } from '@/store/accounts';
@@ -75,8 +74,3 @@ export default function BalanceDifference({
   );
 }
 
-BalanceDifference.propTypes = {
-  accountId: PropTypes.string.isRequired,
-  accountType: PropTypes.string.isRequired,
-  filterArray: PropTypes.arrayOf(PropTypes.string).isRequired,
-};

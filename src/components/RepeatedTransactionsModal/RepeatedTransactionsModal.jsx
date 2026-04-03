@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import ModalDialog from './ModalDialog';
 
 export default function RepeatedTransactionsModal({ open, onClose }) {
@@ -22,7 +21,3 @@ export default function RepeatedTransactionsModal({ open, onClose }) {
   );
 }
 
-RepeatedTransactionsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-};

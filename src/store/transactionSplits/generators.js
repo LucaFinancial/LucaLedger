@@ -18,8 +18,7 @@ export const generateTransactionSplit = (initialData = {}) => {
   try {
     validateSchemaSync('transactionSplit', split);
     return split;
-  } catch (error) {
-    console.error('Transaction split validation failed:', error);
+  } catch {
     return null;
   }
 };

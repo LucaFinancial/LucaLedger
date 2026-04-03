@@ -198,6 +198,8 @@ export const sampleDefaultCategories = [
     slug: 'income',
     name: 'Income',
     parentId: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   // Income children
   {
@@ -205,12 +207,16 @@ export const sampleDefaultCategories = [
     slug: 'income-salary-wages',
     name: 'Salary & Wages',
     parentId: '00000001-0000-0000-0000-000000000000',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   {
     id: '00000001-0000-0000-0000-000000000002',
     slug: 'income-interest',
     name: 'Interest',
     parentId: '00000001-0000-0000-0000-000000000000',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   // Food parent
   {
@@ -218,6 +224,8 @@ export const sampleDefaultCategories = [
     slug: 'food',
     name: 'Food',
     parentId: null,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   // Food children
   {
@@ -225,12 +233,16 @@ export const sampleDefaultCategories = [
     slug: 'food-groceries',
     name: 'Groceries',
     parentId: '00000004-0000-0000-0000-000000000000',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
   {
     id: '00000004-0000-0000-0000-000000000002',
     slug: 'food-restaurants',
     name: 'Restaurants',
     parentId: '00000004-0000-0000-0000-000000000000',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: null,
   },
 ];
 

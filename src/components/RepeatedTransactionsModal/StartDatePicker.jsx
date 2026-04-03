@@ -1,6 +1,5 @@
 import { Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import PropTypes from 'prop-types';
 
 export default function StartDatePicker({ startDate, setStartDate }) {
   const onDateChange = (newValue) => {
@@ -15,7 +14,3 @@ export default function StartDatePicker({ startDate, setStartDate }) {
   );
 }
 
-StartDatePicker.propTypes = {
-  startDate: PropTypes.object.isRequired,
-  setStartDate: PropTypes.func.isRequired,
-};

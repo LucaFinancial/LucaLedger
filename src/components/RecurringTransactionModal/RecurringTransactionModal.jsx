@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format, parseISO, addYears } from 'date-fns';
-import PropTypes from 'prop-types';
 import CategorySelect from '@/components/CategorySelect';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
 import config from '@/config';
@@ -165,7 +164,7 @@ export default function RecurringTransactionModal({
           />
 
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Typography gutterBottom>Every</Typography>
               <TextField
                 fullWidth
@@ -183,7 +182,7 @@ export default function RecurringTransactionModal({
                 placeholder='1'
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Typography gutterBottom>Frequency</Typography>
               <FormControl fullWidth>
                 <InputLabel id='frequency-label'>Frequency</InputLabel>
@@ -244,10 +243,3 @@ export default function RecurringTransactionModal({
     </Dialog>
   );
 }
-
-RecurringTransactionModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSave: PropTypes.func.isRequired,
-  transaction: PropTypes.object,
-};

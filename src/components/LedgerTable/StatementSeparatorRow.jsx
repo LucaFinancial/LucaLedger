@@ -8,7 +8,6 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { format, parseISO, isBefore, isAfter } from 'date-fns';
 import {
   Visibility,
@@ -342,18 +341,3 @@ export default function StatementSeparatorRow({
   );
 }
 
-StatementSeparatorRow.propTypes = {
-  statementDate: PropTypes.string.isRequired,
-  startDate: PropTypes.string.isRequired,
-  endDate: PropTypes.string.isRequired,
-  accountId: PropTypes.string.isRequired,
-  transactions: PropTypes.arrayOf(
-    PropTypes.shape({
-      date: PropTypes.string.isRequired,
-      amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-        .isRequired,
-      description: PropTypes.string.isRequired,
-      status: PropTypes.string,
-    }),
-  ).isRequired,
-};

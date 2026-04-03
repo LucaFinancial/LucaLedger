@@ -16,7 +16,6 @@ import {
   Repeat,
   FilterList,
 } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 
 export default function LedgerSettingsMenu({
   anchorEl,
@@ -132,18 +131,3 @@ export default function LedgerSettingsMenu({
   );
 }
 
-LedgerSettingsMenu.propTypes = {
-  anchorEl: PropTypes.object,
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onCollapseAll: PropTypes.func.isRequired,
-  onExpandAll: PropTypes.func.isRequired,
-  onReset: PropTypes.func.isRequired,
-  onAccountSettings: PropTypes.func.isRequired,
-  onClearInvalidCategories: PropTypes.func.isRequired,
-  invalidCategoryCount: PropTypes.number,
-  onCreateRepeatedTransactions: PropTypes.func.isRequired,
-  showUncategorizedOnly: PropTypes.bool.isRequired,
-  onToggleUncategorized: PropTypes.func.isRequired,
-  uncategorizedCount: PropTypes.number,
-};

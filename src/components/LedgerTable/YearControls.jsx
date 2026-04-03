@@ -1,6 +1,5 @@
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { IconButton, Stack, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 
 export default function YearControls({ yearId, onExpandYear, onCollapseYear }) {
   return (
@@ -17,8 +16,3 @@ export default function YearControls({ yearId, onExpandYear, onCollapseYear }) {
   );
 }
 
-YearControls.propTypes = {
-  yearId: PropTypes.string.isRequired,
-  onExpandYear: PropTypes.func.isRequired,
-  onCollapseYear: PropTypes.func.isRequired,
-};

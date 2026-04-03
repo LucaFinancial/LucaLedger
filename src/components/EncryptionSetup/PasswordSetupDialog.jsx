@@ -17,7 +17,6 @@ import {
   ContentCopy,
   Refresh,
 } from '@mui/icons-material';
-import PropTypes from 'prop-types';
 import { useState, useEffect, useRef } from 'react';
 import { generateSecurePassword } from '@/crypto/encryption';
 
@@ -173,8 +172,3 @@ export default function PasswordSetupDialog({ open, onComplete, onCancel }) {
   );
 }
 
-PasswordSetupDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onComplete: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};

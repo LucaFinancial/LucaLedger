@@ -1,5 +1,4 @@
 import { IconButton, Menu, MenuItem, TableCell } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -51,7 +50,3 @@ export default function ActionCell({ transaction, isVirtual = false }) {
   );
 }
 
-ActionCell.propTypes = {
-  transaction: PropTypes.object.isRequired,
-  isVirtual: PropTypes.bool,
-};

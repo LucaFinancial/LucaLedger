@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { isValid } from 'date-fns';
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { constants } from '@/store/transactions';
 import CategorySelect from '@/components/CategorySelect';
@@ -174,10 +173,3 @@ export default function BulkEditModal({
   );
 }
 
-BulkEditModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  selectedCount: PropTypes.number.isRequired,
-  onApplyChanges: PropTypes.func.isRequired,
-  onDeleteTransactions: PropTypes.func.isRequired,
-};

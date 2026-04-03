@@ -4,7 +4,6 @@
  */
 
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { Box, CircularProgress, Typography } from '@mui/material';
@@ -49,6 +48,3 @@ export default function ProtectedRoute({ children }) {
   return children;
 }
 
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-};

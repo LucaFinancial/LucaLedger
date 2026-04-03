@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { Box } from '@mui/material';
 
@@ -364,19 +363,3 @@ export default function CategoryTree({ categories }) {
   );
 }
 
-CategoryTree.propTypes = {
-  categories: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      slug: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      subcategories: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          slug: PropTypes.string.isRequired,
-          name: PropTypes.string.isRequired,
-        }),
-      ),
-    }),
-  ).isRequired,
-};

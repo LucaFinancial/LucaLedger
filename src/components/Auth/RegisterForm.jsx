@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Button,
@@ -31,7 +30,10 @@ import { useAuth } from '@/auth';
 import { generateSecurePassword } from '@/crypto/encryption';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 
-export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
+export default function RegisterForm({
+  onSwitchToLogin = () => {},
+  showBackToLogin = false,
+}) {
   const { register, isUsernameAvailable } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -348,13 +350,3 @@ export default function RegisterForm({ onSwitchToLogin, showBackToLogin }) {
     </Box>
   );
 }
-
-RegisterForm.propTypes = {
-  onSwitchToLogin: PropTypes.func,
-  showBackToLogin: PropTypes.bool,
-};
-
-RegisterForm.defaultProps = {
-  onSwitchToLogin: () => {},
-  showBackToLogin: false,
-};
