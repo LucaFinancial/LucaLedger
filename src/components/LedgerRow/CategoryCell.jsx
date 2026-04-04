@@ -23,8 +23,12 @@ export default function CategoryCell({ transaction, isSelected }) {
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const selectTransactionSplits = useMemo(
+    () => transactionSplitSelectors.selectSplitsByTransactionId(transaction.id),
+    [transaction.id],
+  );
   const transactionSplits = useSelector(
-    transactionSplitSelectors.selectSplitsByTransactionId(transaction.id),
+    selectTransactionSplits,
   );
 
   const hasSplits = transactionSplits.length > 0;
@@ -114,4 +118,3 @@ export default function CategoryCell({ transaction, isSelected }) {
     </>
   );
 }
-

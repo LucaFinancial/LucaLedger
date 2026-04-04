@@ -8,13 +8,13 @@ import {
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import CategorySelect from '@/components/CategorySelect';
-import { centsToDollars } from '@/utils';
 
 /**
  * SplitItem represents a single category split within a transaction
  */
 export default function SplitItem({
   split,
+  amountInput,
   error,
   onCategoryChange,
   onAmountChange,
@@ -52,9 +52,7 @@ export default function SplitItem({
         </Box>
         <TextField
           type='text'
-          value={
-            split.amount === 0 ? '' : centsToDollars(split.amount).toFixed(2)
-          }
+          value={amountInput}
           onChange={(e) => onAmountChange(split.id, e.target.value)}
           size='small'
           sx={{ width: 150 }}
@@ -75,4 +73,3 @@ export default function SplitItem({
     </Paper>
   );
 }
-

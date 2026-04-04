@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-04-03
+
+### Fixed
+
+- Fixed ledger split-category behavior so split transactions participate correctly in ledger category filtering, uncategorized views, and invalid-category cleanup.
+- Fixed the split transaction modal to preserve in-progress edits instead of resetting split rows while the dialog is open.
+- Fixed the split transaction amount field so partial decimal values can be entered and edited naturally without forced reformatting on every keystroke.
+
 ## [2.6.0] - 2026-04-03
 
 ### Changed
