@@ -13,70 +13,75 @@ export const useAccountBalances = (accounts) => {
     transactionSelectors.selectTransactionsByAccountIds(accountIds),
   );
 
-  return useMemo(() => {
-    const totals = {
-      current: 0,
-      pending: 0,
-      scheduled: 0,
-      future: 0,
-    };
-
-    const creditCardTotals = {
-      current: 0,
-      pending: 0,
-      scheduled: 0,
-      future: 0,
-    };
-
-    const { COMPLETE, PENDING, SCHEDULED, PLANNED } =
-      transactionConstants.TransactionStateEnum;
-
-    const processedAccounts = accounts.map((account) => {
-      // Filter transactions for this specific account
-      const transactions = allRelevantTransactions.filter(
-        (t) => t.accountId === account.id,
-      );
-
-      const balances = {
-        current: calculateBalance(transactions, [COMPLETE]),
-        pending: calculateBalance(transactions, [COMPLETE, PENDING]),
-        scheduled: calculateBalance(transactions, [
-          COMPLETE,
-          PENDING,
-          SCHEDULED,
-        ]),
-        future: calculateBalance(transactions, [
-          COMPLETE,
-          PENDING,
-          SCHEDULED,
-          PLANNED,
-        ]),
-      };
-
-      if (account.type === accountConstants.AccountType.CREDIT_CARD) {
-        // For credit cards, track the balance separately
-        // Positive balance means money owed
-        Object.keys(balances).forEach((key) => {
-          creditCardTotals[key] += Math.abs(balances[key]);
-        });
-      } else if (
-        account.type === accountConstants.AccountType.CHECKING ||
-        account.type === accountConstants.AccountType.SAVINGS
-      ) {
-        // Only include checking and savings in main totals
-        Object.keys(balances).forEach((key) => {
-          totals[key] += balances[key];
-        });
-      }
-
-      return { ...account, ...balances };
-    });
-
-    return { accounts: processedAccounts, totals, creditCardTotals };
-  }, [accounts, allRelevantTransactions]);
+  return useMemo(
+    () => buildAccountBalanceSummary(accounts, allRelevantTransactions),
+    [accounts, allRelevantTransactions],
+  );
 };
 
-const calculateBalance = (transactions, statuses) => {
+export const buildAccountBalanceSummary = (accounts, allRelevantTransactions) => {
+  const totals = {
+    current: 0,
+    pending: 0,
+    scheduled: 0,
+    future: 0,
+  };
+
+  const creditCardTotals = {
+    current: 0,
+    pending: 0,
+    scheduled: 0,
+    future: 0,
+  };
+
+  const { COMPLETED, PENDING, SCHEDULED, PLANNED } =
+    transactionConstants.TransactionStateEnum;
+
+  const processedAccounts = accounts.map((account) => {
+    // Filter transactions for this specific account
+    const transactions = allRelevantTransactions.filter(
+      (t) => t.accountId === account.id,
+    );
+
+    const balances = {
+      current: calculateBalance(transactions, [COMPLETED]),
+      pending: calculateBalance(transactions, [COMPLETED, PENDING]),
+      scheduled: calculateBalance(transactions, [
+        COMPLETED,
+        PENDING,
+        SCHEDULED,
+      ]),
+      future: calculateBalance(transactions, [
+        COMPLETED,
+        PENDING,
+        SCHEDULED,
+        PLANNED,
+      ]),
+    };
+
+    if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+      // For credit cards, track the balance separately
+      // Positive balance means money owed
+      Object.keys(balances).forEach((key) => {
+        creditCardTotals[key] += Math.abs(balances[key]);
+      });
+    } else if (
+      account.type === accountConstants.AccountType.CHECKING ||
+      account.type === accountConstants.AccountType.SAVINGS
+    ) {
+      // Only include checking and savings in main totals
+      Object.keys(balances).forEach((key) => {
+        totals[key] += balances[key];
+      });
+    }
+
+    return { ...account, ...balances };
+  });
+
+  return { accounts: processedAccounts, totals, creditCardTotals };
+};
+
+export const calculateBalance = (transactions, statuses) => {
   return transactions
     .filter((tx) => statuses.includes(tx.transactionState))
     .reduce((acc, tx) => acc + Number(tx.amount), 0);

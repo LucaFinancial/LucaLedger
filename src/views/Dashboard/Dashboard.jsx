@@ -18,7 +18,7 @@ export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const categories = useSelector(categorySelectors.selectAllCategories);
-  const { totals, creditCardTotals } = useAccountBalances(accounts);
+  const { totals } = useAccountBalances(accounts);
 
   // Use custom hooks for date ranges and category filtering
   const dateRanges = useDateRanges();
@@ -53,6 +53,10 @@ export default function Dashboard() {
       categorizeTransaction,
       isTransferTransaction,
     });
+  const combinedBalances = {
+    current: totals.current,
+    projected: totals.current + remainingMonthTotals.balance,
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -63,8 +67,7 @@ export default function Dashboard() {
       {/* Current Month Overview Section */}
       <CurrentMonthOverviewSection
         dateRanges={dateRanges}
-        totals={totals}
-        creditCardTotals={creditCardTotals}
+        combinedBalances={combinedBalances}
         currentMonthTotals={currentMonthTotals}
         monthEndProjections={monthEndProjections}
         remainingMonthTotals={remainingMonthTotals}

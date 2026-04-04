@@ -3,10 +3,10 @@ import { format } from 'date-fns';
 
 export default function MonthOverviewSummary({
   dateRanges,
+  combinedBalances,
   monthEndProjections,
   currentMonthTotals,
   remainingMonthTotals,
-  totals,
   formatCurrency,
 }) {
   return (
@@ -78,7 +78,7 @@ export default function MonthOverviewSummary({
             </Typography>
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
-                Income
+                Income & Credits
               </Typography>
               <Typography
                 variant='h6'
@@ -89,25 +89,14 @@ export default function MonthOverviewSummary({
             </Box>
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
-                Expenses {totals.pending - totals.current < 0 && '(Pending)'}
+                Expenses
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ color: '#f44336', fontWeight: 'bold' }}
-                >
-                  {formatCurrency(currentMonthTotals.expenses)}
-                </Typography>
-                {totals.pending - totals.current < 0 && (
-                  <Typography
-                    variant='body1'
-                    sx={{ color: '#ff9800', fontWeight: 'bold' }}
-                  >
-                    ({formatCurrency(Math.abs(totals.pending - totals.current))}
-                    )
-                  </Typography>
-                )}
-              </Box>
+              <Typography
+                variant='h6'
+                sx={{ color: '#f44336', fontWeight: 'bold' }}
+              >
+                {formatCurrency(currentMonthTotals.expenses)}
+              </Typography>
             </Box>
             <Box
               sx={{
@@ -116,24 +105,18 @@ export default function MonthOverviewSummary({
               }}
             >
               <Typography variant='caption' color='text.secondary'>
-                Balance {totals.pending !== totals.current && '(Pending)'}
+                Balance
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                >
-                  {formatCurrency(totals.current)}
-                </Typography>
-                {totals.pending !== totals.current && (
-                  <Typography
-                    variant='body1'
-                    sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                  >
-                    ({formatCurrency(totals.pending)})
-                  </Typography>
-                )}
-              </Box>
+              <Typography
+                variant='h6'
+                sx={{
+                  color:
+                    combinedBalances.current >= 0 ? '#4caf50' : '#f44336',
+                  fontWeight: 'bold',
+                }}
+              >
+                {formatCurrency(combinedBalances.current)}
+              </Typography>
             </Box>
           </Paper>
         </Grid>
@@ -211,7 +194,7 @@ export default function MonthOverviewSummary({
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
             >
-              Projected
+              Total
             </Typography>
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
@@ -242,19 +225,19 @@ export default function MonthOverviewSummary({
               }}
             >
               <Typography variant='caption' color='text.secondary'>
-                Projected Net Flow
+                Balance
               </Typography>
               <Typography
                 variant='h6'
                 sx={{
                   color:
-                    monthEndProjections.projectedNetFlow >= 0
+                    combinedBalances.projected >= 0
                       ? '#4caf50'
                       : '#f44336',
                   fontWeight: 'bold',
                 }}
               >
-                {formatCurrency(monthEndProjections.projectedNetFlow)}
+                {formatCurrency(combinedBalances.projected)}
               </Typography>
             </Box>
           </Paper>

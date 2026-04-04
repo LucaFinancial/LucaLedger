@@ -5,7 +5,7 @@ import MonthOverviewHeader from './MonthOverviewHeader';
 
 export default function CurrentMonthOverviewSection({
   dateRanges,
-  totals,
+  combinedBalances,
   currentMonthTotals,
   monthEndProjections,
   remainingMonthTotals,
@@ -26,10 +26,10 @@ export default function CurrentMonthOverviewSection({
       <AccordionDetails>
         <MonthOverviewSummary
           dateRanges={dateRanges}
+          combinedBalances={combinedBalances}
           monthEndProjections={monthEndProjections}
           currentMonthTotals={currentMonthTotals}
           remainingMonthTotals={remainingMonthTotals}
-          totals={totals}
           formatCurrency={formatCurrency}
         />
       </AccordionDetails>
