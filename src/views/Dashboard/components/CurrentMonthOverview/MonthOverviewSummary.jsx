@@ -99,9 +99,9 @@ function ExpenseMetricsRow({
 }
 
 function SummaryMetricsRow({
-  net,
-  balance,
-  creditCardBalance,
+  leftMetric,
+  middleMetric,
+  rightMetric,
   borderColor,
   formatCurrency,
 }) {
@@ -114,23 +114,23 @@ function SummaryMetricsRow({
     >
       <Box sx={THREE_METRIC_ROW_SX}>
         <MetricCell
-          label='Net'
-          value={net}
-          valueColor={net >= 0 ? '#4caf50' : '#f44336'}
+          label={leftMetric.label}
+          value={leftMetric.value}
+          valueColor={leftMetric.valueColor}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
         />
         <MetricCell
-          label='Balance'
-          value={balance}
-          valueColor={balance >= 0 ? '#4caf50' : '#f44336'}
+          label={middleMetric.label}
+          value={middleMetric.value}
+          valueColor={middleMetric.valueColor}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'center' }}
         />
         <MetricCell
-          label='Card Balance'
-          value={creditCardBalance}
-          valueColor={creditCardBalance > 0 ? '#f44336' : '#4caf50'}
+          label={rightMetric.label}
+          value={rightMetric.value}
+          valueColor={rightMetric.valueColor}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'right' }}
         />
@@ -227,9 +227,26 @@ export default function MonthOverviewSummary({
               formatCurrency={formatCurrency}
             />
             <SummaryMetricsRow
-              net={currentMonthTotals.netFlow}
-              balance={combinedBalances.current}
-              creditCardBalance={combinedBalances.creditCardCurrent}
+              leftMetric={{
+                label: 'Net',
+                value: currentMonthTotals.netFlow,
+                valueColor:
+                  currentMonthTotals.netFlow >= 0 ? '#4caf50' : '#f44336',
+              }}
+              middleMetric={{
+                label: 'Balance',
+                value: combinedBalances.current,
+                valueColor:
+                  combinedBalances.current >= 0 ? '#4caf50' : '#f44336',
+              }}
+              rightMetric={{
+                label: 'Card Balance',
+                value: combinedBalances.creditCardCurrent,
+                valueColor:
+                  combinedBalances.creditCardCurrent > 0
+                    ? '#f44336'
+                    : '#4caf50',
+              }}
               borderColor='#90caf9'
               formatCurrency={formatCurrency}
             />
@@ -264,9 +281,26 @@ export default function MonthOverviewSummary({
               formatCurrency={formatCurrency}
             />
             <SummaryMetricsRow
-              net={remainingMonthTotals.netFlow}
-              balance={combinedBalances.projected}
-              creditCardBalance={combinedBalances.creditCardProjected}
+              leftMetric={{
+                label: 'Net',
+                value: remainingMonthTotals.netFlow,
+                valueColor:
+                  remainingMonthTotals.netFlow >= 0 ? '#4caf50' : '#f44336',
+              }}
+              middleMetric={{
+                label: 'Balance Change',
+                value: remainingMonthTotals.balance,
+                valueColor:
+                  remainingMonthTotals.balance >= 0 ? '#4caf50' : '#f44336',
+              }}
+              rightMetric={{
+                label: 'Credit Balance Change',
+                value: remainingMonthTotals.creditCardBalanceChange,
+                valueColor:
+                  remainingMonthTotals.creditCardBalanceChange > 0
+                    ? '#f44336'
+                    : '#4caf50',
+              }}
               borderColor='#ffcc80'
               formatCurrency={formatCurrency}
             />
@@ -301,9 +335,28 @@ export default function MonthOverviewSummary({
               formatCurrency={formatCurrency}
             />
             <SummaryMetricsRow
-              net={monthEndProjections.projectedNetFlow}
-              balance={combinedBalances.projected}
-              creditCardBalance={combinedBalances.creditCardProjected}
+              leftMetric={{
+                label: 'Net',
+                value: monthEndProjections.projectedNetFlow,
+                valueColor:
+                  monthEndProjections.projectedNetFlow >= 0
+                    ? '#4caf50'
+                    : '#f44336',
+              }}
+              middleMetric={{
+                label: 'Balance',
+                value: combinedBalances.projected,
+                valueColor:
+                  combinedBalances.projected >= 0 ? '#4caf50' : '#f44336',
+              }}
+              rightMetric={{
+                label: 'Card Balance',
+                value: combinedBalances.creditCardProjected,
+                valueColor:
+                  combinedBalances.creditCardProjected > 0
+                    ? '#f44336'
+                    : '#4caf50',
+              }}
               borderColor='#ce93d8'
               formatCurrency={formatCurrency}
             />

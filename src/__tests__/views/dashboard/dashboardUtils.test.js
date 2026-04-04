@@ -42,8 +42,7 @@ describe('dashboardUtils filters', () => {
         creditCardTotals: { current: 18000 },
         remainingMonthTotals: {
           balance: -22000,
-          creditCardPayments: 4500,
-          creditCardExpenses: 6700,
+          creditCardBalanceChange: 2200,
         },
       }),
     ).toEqual({

@@ -66,13 +66,16 @@ describe('useTransactionTotals helpers', () => {
 
     expect(totals).toEqual({
       income: 20000,
-      credits: 5000,
-      incomeAndCredits: 25000,
+      credits: 6200,
+      incomeAndCredits: 26200,
+      cashCredits: 5000,
       expenses: 11200,
-      creditCardPayments: 2500,
-      creditCardExpenses: 7800,
       balance: 13800,
-      netFlow: 13800,
+      creditCardPayments: 2500,
+      creditCardExpenses: 9000,
+      creditCardCredits: 1200,
+      creditCardBalanceChange: 5300,
+      netFlow: 8500,
     });
   });
 
@@ -101,15 +104,23 @@ describe('useTransactionTotals helpers', () => {
           income: 42000,
           credits: 5000,
           expenses: 18000,
+          balance: 29000,
           creditCardPayments: 3000,
           creditCardExpenses: 7000,
+          creditCardCredits: 0,
+          creditCardBalanceChange: 4000,
+          netFlow: 25000,
         },
         {
           income: 8000,
           credits: 2000,
           expenses: 14000,
+          balance: -4000,
           creditCardPayments: 1500,
           creditCardExpenses: 2500,
+          creditCardCredits: 0,
+          creditCardBalanceChange: 1000,
+          netFlow: -5000,
         },
       ),
     ).toEqual({
@@ -117,10 +128,12 @@ describe('useTransactionTotals helpers', () => {
       credits: 7000,
       incomeAndCredits: 57000,
       expenses: 32000,
+      balance: 25000,
       creditCardPayments: 4500,
       creditCardExpenses: 9500,
-      balance: 25000,
-      netFlow: 25000,
+      creditCardCredits: 0,
+      creditCardBalanceChange: 5000,
+      netFlow: 20000,
     });
   });
 
@@ -131,9 +144,12 @@ describe('useTransactionTotals helpers', () => {
         credits: 8000,
         incomeAndCredits: 50000,
         expenses: 32000,
+        balance: 18000,
         creditCardPayments: 4500,
         creditCardExpenses: 9500,
-        balance: 18000,
+        creditCardCredits: 2000,
+        creditCardBalanceChange: 3000,
+        netFlow: 15000,
       },
       {
         today: new Date('2026-04-10T12:00:00.000Z'),
@@ -148,11 +164,16 @@ describe('useTransactionTotals helpers', () => {
     expect(projection.totalBalance).toBe(18000);
     expect(projection.totalCreditCardPayments).toBe(4500);
     expect(projection.totalCreditCardExpenses).toBe(9500);
+    expect(projection.totalCreditCardCredits).toBe(2000);
+    expect(projection.totalCreditCardBalanceChange).toBe(3000);
+    expect(projection.totalNetFlow).toBe(15000);
     expect(projection.projectedIncome).toBe(42000);
     expect(projection.projectedCredits).toBe(8000);
     expect(projection.projectedIncomeAndCredits).toBe(50000);
     expect(projection.projectedCreditCardPayments).toBe(4500);
     expect(projection.projectedCreditCardExpenses).toBe(9500);
-    expect(projection.projectedNetFlow).toBe(18000);
+    expect(projection.projectedCreditCardCredits).toBe(2000);
+    expect(projection.projectedCreditCardBalanceChange).toBe(3000);
+    expect(projection.projectedNetFlow).toBe(15000);
   });
 });

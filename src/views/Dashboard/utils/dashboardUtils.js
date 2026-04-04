@@ -59,8 +59,7 @@ export function buildCombinedDashboardBalances({
   const projected = current + (remainingMonthTotals.balance || 0);
   const creditCardProjected =
     creditCardCurrent +
-    (remainingMonthTotals.creditCardExpenses || 0) -
-    (remainingMonthTotals.creditCardPayments || 0);
+    (remainingMonthTotals.creditCardBalanceChange || 0);
 
   return {
     current,
