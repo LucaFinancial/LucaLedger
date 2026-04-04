@@ -84,6 +84,19 @@ const createSubcategoryNode = (id, name) => ({
   ...createMetrics(),
 });
 
+const sortTransactionDetails = (left, right) => {
+  const leftDate = parseDateValue(left.date)?.getTime() || 0;
+  const rightDate = parseDateValue(right.date)?.getTime() || 0;
+
+  if (leftDate !== rightDate) {
+    return rightDate - leftDate;
+  }
+
+  return String(left.description || '').localeCompare(
+    String(right.description || ''),
+  );
+};
+
 const parseDateValue = (value) => {
   if (!value) return null;
 
@@ -589,18 +602,33 @@ export function buildCategoryTotalsData({
   const subcategoryTotals = new Map(
     (category.subcategories || []).map((subcategory) => [
       subcategory.id,
-      createSubcategoryNode(subcategory.id, subcategory.name),
+      {
+        ...createSubcategoryNode(subcategory.id, subcategory.name),
+        transactions: [],
+      },
     ]),
   );
 
-  const addCategoryAmount = (categoryId, bucket, amount, countedId) => {
+  const addCategoryAmount = (
+    categoryId,
+    bucket,
+    amount,
+    countedId,
+    transactionDetail = null,
+  ) => {
     if (!categoryId || !categoryIds.has(categoryId)) return;
     if (amount === 0) return;
 
     addToMetrics(totals, bucket, amount, countedId);
 
     if (subcategoryTotals.has(categoryId)) {
-      addToMetrics(subcategoryTotals.get(categoryId), bucket, amount, countedId);
+      const subcategoryNode = subcategoryTotals.get(categoryId);
+
+      addToMetrics(subcategoryNode, bucket, amount, countedId);
+
+      if (transactionDetail) {
+        subcategoryNode.transactions.push(transactionDetail);
+      }
     }
   };
 
@@ -619,8 +647,34 @@ export function buildCategoryTotalsData({
     if (!bucket) return;
     if (!showStateBreakdown && bucket !== 'completed') return;
 
+    const categoryAmounts = new Map();
+
     getTransactionEntries(transaction, splitsByTransaction).forEach((entry) => {
-      addCategoryAmount(entry.categoryId, bucket, entry.amount, transaction.id);
+      if (!entry.categoryId || !categoryIds.has(entry.categoryId)) return;
+
+      categoryAmounts.set(
+        entry.categoryId,
+        (categoryAmounts.get(entry.categoryId) || 0) + entry.amount,
+      );
+    });
+
+    categoryAmounts.forEach((amount, categoryId) => {
+      addCategoryAmount(
+        categoryId,
+        bucket,
+        amount,
+        transaction.id,
+        subcategoryTotals.has(categoryId)
+          ? {
+              id: `${transaction.id}:${categoryId}`,
+              date: transaction.date,
+              accountId: transaction.accountId ?? null,
+              description: transaction.description || '',
+              amount,
+              transactionState: transaction.transactionState,
+            }
+          : null,
+      );
     });
   });
 
@@ -647,6 +701,16 @@ export function buildCategoryTotalsData({
             'planned',
             Number(rule.amount) || 0,
             occurrenceId,
+            subcategoryTotals.has(rule.categoryId)
+              ? {
+                  id: `${occurrenceId}:${rule.categoryId}`,
+                  date: dateString,
+                  accountId: rule.accountId ?? null,
+                  description: rule.description || '',
+                  amount: Number(rule.amount) || 0,
+                  transactionState: 'recurring',
+                }
+              : null,
           );
         });
       });
@@ -656,7 +720,10 @@ export function buildCategoryTotalsData({
   return {
     totals: finalizeMetrics(totals, totals.total, 1),
     subcategoryTotals: Array.from(subcategoryTotals.values())
-      .map((subcategory) => finalizeMetrics(subcategory, totals.total, 1))
+      .map((subcategory) => ({
+        ...finalizeMetrics(subcategory, totals.total, 1),
+        transactions: [...subcategory.transactions].sort(sortTransactionDetails),
+      }))
       .filter((subcategory) => subcategory.total !== 0)
       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total)),
     showStateBreakdown,

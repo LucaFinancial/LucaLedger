@@ -278,6 +278,51 @@ describe('spendingAnalytics', () => {
         total: -12000,
       }),
     ]);
+    expect(result.subcategoryTotals[0].transactions).toHaveLength(10);
+    expect(result.subcategoryTotals[0].transactions[0]).toMatchObject({
+      date: '2026-12-20',
+      description: '',
+      amount: -1500,
+      transactionState: 'recurring',
+    });
+    expect(result.subcategoryTotals[0].transactions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'tx-split:dining',
+          date: '2026-04-05',
+          amount: -3000,
+          transactionState: 'COMPLETED',
+        }),
+        expect.objectContaining({
+          id: 'tx-pending:dining',
+          date: '2026-04-10',
+          amount: -2000,
+          transactionState: 'PENDING',
+        }),
+      ]),
+    );
+    expect(
+      result.subcategoryTotals[0].transactions.some(
+        (transaction) => transaction.date === '2026-06-20',
+      ),
+    ).toBe(false);
+    expect(result.subcategoryTotals[1].transactions).toEqual([
+      expect.objectContaining({
+        id: 'tx-planned:groceries',
+        date: '2026-06-15',
+        amount: -3000,
+      }),
+      expect.objectContaining({
+        id: 'tx-split:groceries',
+        date: '2026-04-05',
+        amount: -4000,
+      }),
+      expect.objectContaining({
+        id: 'tx-completed:groceries',
+        date: '2026-01-10',
+        amount: -5000,
+      }),
+    ]);
 
     const periods = buildAvailableSpendingPeriods({
       allTransactions: transactions,

@@ -1,5 +1,6 @@
 import {
   Box,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -9,11 +10,14 @@ import {
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { add, format } from 'date-fns';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { add, format, parseISO } from 'date-fns';
 
 import SpendingPeriodControls from '@/components/SpendingPeriodControls';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as settingsSelectors } from '@/store/settings';
@@ -34,11 +38,18 @@ function formatAmount(amountInCents) {
   )}`;
 }
 
-function getAmountColor(amountInCents) {
-  return amountInCents >= 0 ? 'success.main' : 'error.main';
+function formatTransactionDate(dateValue) {
+  if (!dateValue) return '--';
+
+  try {
+    return format(parseISO(String(dateValue).replace(/\//g, '-')), 'MMM d, yyyy');
+  } catch {
+    return String(dateValue);
+  }
 }
 
 export default function CategoryTotals({ category }) {
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
     transactionSplitSelectors.selectTransactionSplits,
@@ -61,6 +72,7 @@ export default function CategoryTotals({ category }) {
     type: 'month',
     value: currentMonthValue,
   });
+  const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState([]);
   const [customRange, setCustomRange] = useState({
     startDate: null,
     endDate: null,
@@ -107,6 +119,10 @@ export default function CategoryTotals({ category }) {
     () => getSpendingPeriodConfig(activeSelection),
     [activeSelection],
   );
+  const accountsById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account.name])),
+    [accounts],
+  );
 
   const { totals, subcategoryTotals, showStateBreakdown } = useMemo(
     () =>
@@ -130,6 +146,7 @@ export default function CategoryTotals({ category }) {
   );
 
   const hasData = totals.count > 0 || subcategoryTotals.length > 0;
+  const clearExpandedSubcategories = () => setExpandedSubcategoryIds([]);
   const clearCustomRange = () =>
     setCustomRange({
       startDate: null,
@@ -139,16 +156,19 @@ export default function CategoryTotals({ category }) {
   const handleAggregateChange = (_event, newValue) => {
     if (!newValue) return;
 
+    clearExpandedSubcategories();
     clearCustomRange();
     setActiveSelection({ type: 'aggregate', value: newValue });
   };
 
   const handleMonthChange = (event) => {
+    clearExpandedSubcategories();
     clearCustomRange();
     setActiveSelection({ type: 'month', value: event.target.value });
   };
 
   const handleYearChange = (event) => {
+    clearExpandedSubcategories();
     clearCustomRange();
     setActiveSelection({ type: 'year', value: event.target.value });
   };
@@ -163,6 +183,7 @@ export default function CategoryTotals({ category }) {
       startDate: nextRange.startDate,
       endDate: nextRange.endDate,
     });
+    clearExpandedSubcategories();
   };
 
   const handleCustomStartChange = (value) => {
@@ -178,6 +199,14 @@ export default function CategoryTotals({ category }) {
       endDate: value,
     });
   };
+  const toggleSubcategoryExpanded = (subcategoryId) => {
+    setExpandedSubcategoryIds((currentExpandedIds) =>
+      currentExpandedIds.includes(subcategoryId)
+        ? currentExpandedIds.filter((id) => id !== subcategoryId)
+        : [...currentExpandedIds, subcategoryId],
+    );
+  };
+  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 2 : 2;
 
   return (
     <Paper
@@ -309,7 +338,7 @@ export default function CategoryTotals({ category }) {
                     </Typography>
                     <Typography
                       sx={{
-                        color: getAmountColor(totals[stateKey]),
+                        color: 'text.primary',
                         fontWeight: 600,
                         lineHeight: 1.2,
                         mt: 0.25,
@@ -340,7 +369,7 @@ export default function CategoryTotals({ category }) {
                 </Typography>
                 <Typography
                   sx={{
-                    color: getAmountColor(totals.total),
+                    color: 'text.primary',
                     fontWeight: 600,
                     mt: 0.25,
                     fontSize: '0.95rem',
@@ -390,44 +419,150 @@ export default function CategoryTotals({ category }) {
                 </TableHead>
                 <TableBody>
                   {subcategoryTotals.map((subcategory) => (
-                    <TableRow key={subcategory.id}>
-                      <TableCell>{subcategory.name}</TableCell>
-                      {showStateBreakdown ? (
-                        <>
-                          {SPENDING_STATE_ORDER.map((stateKey) => (
-                            <TableCell
-                              key={`${subcategory.id}-${stateKey}`}
-                              align='right'
-                              sx={{
-                                color: getAmountColor(subcategory[stateKey]),
-                                fontWeight: 500,
-                              }}
-                            >
-                              {formatAmount(subcategory[stateKey])}
-                            </TableCell>
-                          ))}
-                          <TableCell
-                            align='right'
+                    <Fragment key={subcategory.id}>
+                      <TableRow
+                        onClick={() =>
+                          subcategory.transactions.length > 0 &&
+                          toggleSubcategoryExpanded(subcategory.id)
+                        }
+                        sx={{
+                          cursor:
+                            subcategory.transactions.length > 0
+                              ? 'pointer'
+                              : 'default',
+                          '&:hover':
+                            subcategory.transactions.length > 0
+                              ? { backgroundColor: 'rgba(0, 0, 0, 0.02)' }
+                              : undefined,
+                        }}
+                      >
+                        <TableCell>
+                          <Box
                             sx={{
-                              color: getAmountColor(subcategory.total),
-                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.75,
                             }}
                           >
-                            {formatAmount(subcategory.total)}
-                          </TableCell>
-                        </>
-                      ) : (
+                            {subcategory.transactions.length > 0 && (
+                              <IconButton size='small' sx={{ p: 0 }}>
+                                {expandedSubcategoryIds.includes(subcategory.id) ? (
+                                  <KeyboardArrowDownIcon fontSize='small' />
+                                ) : (
+                                  <KeyboardArrowRightIcon fontSize='small' />
+                                )}
+                              </IconButton>
+                            )}
+                            <Typography variant='body2'>
+                              {subcategory.name}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        {showStateBreakdown ? (
+                          <>
+                            {SPENDING_STATE_ORDER.map((stateKey) => (
+                              <TableCell
+                                key={`${subcategory.id}-${stateKey}`}
+                                align='right'
+                                sx={{
+                                  color: 'text.primary',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {formatAmount(subcategory[stateKey])}
+                              </TableCell>
+                            ))}
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: 'text.primary',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {formatAmount(subcategory.total)}
+                            </TableCell>
+                          </>
+                        ) : (
                         <TableCell
                           align='right'
                           sx={{
-                            color: getAmountColor(subcategory.total),
+                            color: 'text.primary',
                             fontWeight: 600,
                           }}
                         >
-                          {formatAmount(subcategory.total)}
-                        </TableCell>
+                            {formatAmount(subcategory.total)}
+                          </TableCell>
+                        )}
+                      </TableRow>
+
+                      {expandedSubcategoryIds.includes(subcategory.id) && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={detailColSpan}
+                            sx={{
+                              py: 1.5,
+                              px: 2,
+                              backgroundColor: 'rgba(255, 255, 255, 0.62)',
+                            }}
+                          >
+                            <Table
+                              size='small'
+                              sx={{
+                                '& .MuiTableCell-root': {
+                                  px: 1,
+                                },
+                              }}
+                            >
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Date
+                                  </TableCell>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Account
+                                  </TableCell>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Description
+                                  </TableCell>
+                                  <TableCell
+                                    align='right'
+                                    sx={{ fontWeight: 700 }}
+                                  >
+                                    Amount
+                                  </TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {subcategory.transactions.map((transaction) => (
+                                  <TableRow key={transaction.id}>
+                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                      {formatTransactionDate(transaction.date)}
+                                    </TableCell>
+                                    <TableCell>
+                                      {accountsById.get(transaction.accountId) ||
+                                        '--'}
+                                    </TableCell>
+                                    <TableCell>
+                                      {transaction.description || '--'}
+                                    </TableCell>
+                                    <TableCell
+                                      align='right'
+                                      sx={{
+                                        color: 'text.primary',
+                                        fontWeight: 500,
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {formatAmount(transaction.amount)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableCell>
+                        </TableRow>
                       )}
-                    </TableRow>
+                    </Fragment>
                   ))}
                 </TableBody>
               </Table>
