@@ -36,6 +36,7 @@ export default function Dashboard() {
   // Use custom hooks for date ranges and category filtering
   const dateRanges = useDateRanges();
   const {
+    isIncomeTransaction,
     isTransferTransaction,
     isCreditCardPaymentTransaction,
     categorizeTransaction,
@@ -89,7 +90,6 @@ export default function Dashboard() {
   const {
     recentTransactions,
     currentMonthTransactions,
-    allMonthTransactions,
     futureTransactions,
   } = useFilteredTransactions(
     dashboardTransactions,
@@ -104,11 +104,11 @@ export default function Dashboard() {
       recentTransactions,
       futureTransactions,
       currentMonthTransactions,
-      allMonthTransactions,
       allTransactions: dashboardTransactions,
       accountMap,
       dateRanges,
       categorizeTransaction,
+      isIncomeTransaction,
       isTransferTransaction,
       isCreditCardPaymentTransaction,
     });

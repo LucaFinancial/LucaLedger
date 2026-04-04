@@ -5,6 +5,63 @@ function getExpenseColor(amount) {
   return amount >= 0 ? '#f44336' : '#4caf50';
 }
 
+function IncomeMetricsRow({
+  incomeAndCredits,
+  income,
+  credits,
+  formatCurrency,
+}) {
+  return (
+    <Box sx={{ mb: 1 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(3, minmax(0, 1fr))',
+          },
+          gap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant='caption' color='text.secondary'>
+            Income & Credits
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{ color: '#4caf50', fontWeight: 'bold' }}
+          >
+            {formatCurrency(incomeAndCredits)}
+          </Typography>
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant='caption' color='text.secondary'>
+            Income
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{ color: '#4caf50', fontWeight: 'bold' }}
+          >
+            {formatCurrency(income)}
+          </Typography>
+        </Box>
+        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
+          <Typography variant='caption' color='text.secondary'>
+            Credits
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{ color: '#4caf50', fontWeight: 'bold' }}
+          >
+            {formatCurrency(credits)}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 function ExpenseMetricsRow({
   expenses,
   creditCardPayments,
@@ -195,17 +252,12 @@ export default function MonthOverviewSummary({
             >
               Current
             </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income & Credits
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(currentMonthTotals.income)}
-              </Typography>
-            </Box>
+            <IncomeMetricsRow
+              incomeAndCredits={currentMonthTotals.incomeAndCredits}
+              income={currentMonthTotals.income}
+              credits={currentMonthTotals.credits}
+              formatCurrency={formatCurrency}
+            />
             <ExpenseMetricsRow
               expenses={currentMonthTotals.expenses}
               creditCardPayments={currentMonthTotals.creditCardPayments}
@@ -235,17 +287,12 @@ export default function MonthOverviewSummary({
             >
               Remaining
             </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income & Credits
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(remainingMonthTotals.income)}
-              </Typography>
-            </Box>
+            <IncomeMetricsRow
+              incomeAndCredits={remainingMonthTotals.incomeAndCredits}
+              income={remainingMonthTotals.income}
+              credits={remainingMonthTotals.credits}
+              formatCurrency={formatCurrency}
+            />
             <ExpenseMetricsRow
               expenses={remainingMonthTotals.expenses}
               creditCardPayments={remainingMonthTotals.creditCardPayments}
@@ -290,17 +337,12 @@ export default function MonthOverviewSummary({
             >
               Total
             </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income & Credits
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(monthEndProjections.projectedIncome)}
-              </Typography>
-            </Box>
+            <IncomeMetricsRow
+              incomeAndCredits={monthEndProjections.projectedIncomeAndCredits}
+              income={monthEndProjections.projectedIncome}
+              credits={monthEndProjections.projectedCredits}
+              formatCurrency={formatCurrency}
+            />
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
                 Expenses

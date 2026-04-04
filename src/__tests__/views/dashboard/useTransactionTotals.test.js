@@ -4,6 +4,7 @@ import { AccountType } from '@/store/accounts/constants';
 import {
   buildCurrentMonthOverviewTotals,
   buildMonthEndProjections,
+  combineOverviewTotals,
   isRemainingMonthTransaction,
   sumTransactionTotals,
 } from '@/views/Dashboard/hooks/useTransactionTotals';
@@ -46,6 +47,7 @@ describe('useTransactionTotals helpers', () => {
     const totals = buildCurrentMonthOverviewTotals(
       [
         { accountId: 'checking', amount: 3500, categoryId: 'groceries' },
+        { accountId: 'checking', amount: 20000, categoryId: 'salary' },
         { accountId: 'checking', amount: -8000, categoryId: 'groceries' },
         { accountId: 'checking', amount: -2500, categoryId: 'cc-payment' },
         { accountId: 'checking', amount: 500, categoryId: 'account-transfer' },
@@ -59,15 +61,18 @@ describe('useTransactionTotals helpers', () => {
       (tx) =>
         tx.categoryId === 'cc-payment' || tx.categoryId === 'account-transfer',
       (tx) => tx.categoryId === 'cc-payment',
+      (tx) => tx.categoryId === 'salary',
     );
 
     expect(totals).toEqual({
-      income: 5000,
+      income: 20000,
+      credits: 5000,
+      incomeAndCredits: 25000,
       expenses: 11200,
       creditCardPayments: 2500,
       creditCardExpenses: 7800,
-      balance: -6200,
-      netFlow: -6200,
+      balance: 13800,
+      netFlow: 13800,
     });
   });
 
@@ -89,11 +94,45 @@ describe('useTransactionTotals helpers', () => {
     ).toBe(true);
   });
 
-  it('builds total month projections with a total balance', () => {
+  it('combines overview totals before building projections', () => {
+    expect(
+      combineOverviewTotals(
+        {
+          income: 42000,
+          credits: 5000,
+          expenses: 18000,
+          creditCardPayments: 3000,
+          creditCardExpenses: 7000,
+        },
+        {
+          income: 8000,
+          credits: 2000,
+          expenses: 14000,
+          creditCardPayments: 1500,
+          creditCardExpenses: 2500,
+        },
+      ),
+    ).toEqual({
+      income: 50000,
+      credits: 7000,
+      incomeAndCredits: 57000,
+      expenses: 32000,
+      creditCardPayments: 4500,
+      creditCardExpenses: 9500,
+      balance: 25000,
+      netFlow: 25000,
+    });
+  });
+
+  it('builds total month projections with separated income and credits', () => {
     const projection = buildMonthEndProjections(
       {
-        income: 50000,
+        income: 42000,
+        credits: 8000,
+        incomeAndCredits: 50000,
         expenses: 32000,
+        creditCardPayments: 4500,
+        creditCardExpenses: 9500,
         balance: 18000,
       },
       {
@@ -102,9 +141,14 @@ describe('useTransactionTotals helpers', () => {
       },
     );
 
-    expect(projection.totalIncome).toBe(50000);
+    expect(projection.totalIncome).toBe(42000);
+    expect(projection.totalCredits).toBe(8000);
+    expect(projection.totalIncomeAndCredits).toBe(50000);
     expect(projection.totalExpenses).toBe(32000);
     expect(projection.totalBalance).toBe(18000);
+    expect(projection.projectedIncome).toBe(42000);
+    expect(projection.projectedCredits).toBe(8000);
+    expect(projection.projectedIncomeAndCredits).toBe(50000);
     expect(projection.projectedNetFlow).toBe(18000);
   });
 });

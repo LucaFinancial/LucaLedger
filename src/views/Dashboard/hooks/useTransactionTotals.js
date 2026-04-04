@@ -23,13 +23,46 @@ export const sumTransactionTotals = (transactions, categorizeTransaction) => {
   };
 };
 
+export const combineOverviewTotals = (...overviewTotals) => {
+  const combinedTotals = overviewTotals.reduce(
+    (totals, currentTotals) => ({
+      income: totals.income + (currentTotals?.income || 0),
+      credits: totals.credits + (currentTotals?.credits || 0),
+      expenses: totals.expenses + (currentTotals?.expenses || 0),
+      creditCardPayments:
+        totals.creditCardPayments + (currentTotals?.creditCardPayments || 0),
+      creditCardExpenses:
+        totals.creditCardExpenses + (currentTotals?.creditCardExpenses || 0),
+    }),
+    {
+      income: 0,
+      credits: 0,
+      expenses: 0,
+      creditCardPayments: 0,
+      creditCardExpenses: 0,
+    },
+  );
+
+  const incomeAndCredits = combinedTotals.income + combinedTotals.credits;
+  const netFlow = incomeAndCredits - combinedTotals.expenses;
+
+  return {
+    ...combinedTotals,
+    incomeAndCredits,
+    balance: netFlow,
+    netFlow,
+  };
+};
+
 export const buildCurrentMonthOverviewTotals = (
   transactions,
   accountMap,
   isTransferTransaction,
   isCreditCardPaymentTransaction,
+  isIncomeTransaction,
 ) => {
   let income = 0;
+  let credits = 0;
   let expenses = 0;
   let creditCardPayments = 0;
   let creditCardExpenses = 0;
@@ -56,7 +89,11 @@ export const buildCurrentMonthOverviewTotals = (
       }
 
       if (amount > 0) {
-        income += amount;
+        if (isIncomeTransaction?.(tx)) {
+          income += amount;
+        } else {
+          credits += amount;
+        }
       } else if (amount < 0) {
         expenses += Math.abs(amount);
       }
@@ -69,10 +106,13 @@ export const buildCurrentMonthOverviewTotals = (
     }
   });
 
-  const netFlow = income - expenses;
+  const incomeAndCredits = income + credits;
+  const netFlow = incomeAndCredits - expenses;
 
   return {
     income,
+    credits,
+    incomeAndCredits,
     expenses,
     creditCardPayments,
     creditCardExpenses,
@@ -99,9 +139,14 @@ export const isRemainingMonthTransaction = (
 };
 
 export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
-  const totalIncome = projectedMonthTotals.income;
-  const totalExpenses = projectedMonthTotals.expenses;
-  const totalBalance = projectedMonthTotals.balance;
+  const totalIncome = projectedMonthTotals.income || 0;
+  const totalCredits = projectedMonthTotals.credits || 0;
+  const totalIncomeAndCredits =
+    projectedMonthTotals.incomeAndCredits ?? totalIncome + totalCredits;
+  const totalExpenses = projectedMonthTotals.expenses || 0;
+  const totalBalance = projectedMonthTotals.balance || 0;
+  const totalCreditCardPayments = projectedMonthTotals.creditCardPayments || 0;
+  const totalCreditCardExpenses = projectedMonthTotals.creditCardExpenses || 0;
 
   const daysInMonth = getDaysInMonth(dateRanges.currentMonthEnd);
   const currentDay = getDate(dateRanges.today);
@@ -110,11 +155,19 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
 
   return {
     totalIncome,
+    totalCredits,
+    totalIncomeAndCredits,
     totalExpenses,
     totalBalance,
+    totalCreditCardPayments,
+    totalCreditCardExpenses,
     projectedIncome: totalIncome,
+    projectedCredits: totalCredits,
+    projectedIncomeAndCredits: totalIncomeAndCredits,
     projectedExpenses: totalExpenses,
     projectedBalance: totalBalance,
+    projectedCreditCardPayments: totalCreditCardPayments,
+    projectedCreditCardExpenses: totalCreditCardExpenses,
     projectedNetFlow: totalBalance,
     daysInMonth,
     currentDay,
@@ -129,11 +182,11 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
  * @param {Array} params.recentTransactions - Recent transactions
  * @param {Array} params.futureTransactions - Future transactions
  * @param {Array} params.currentMonthTransactions - Current month completed transactions
- * @param {Array} params.allMonthTransactions - All current month transactions
  * @param {Array} params.allTransactions - All transactions
  * @param {Object} params.accountMap - Account lookup keyed by account ID
  * @param {Object} params.dateRanges - Date ranges for filtering
  * @param {Function} params.categorizeTransaction - Function to categorize transaction
+ * @param {Function} params.isIncomeTransaction - Function to check if income
  * @param {Function} params.isTransferTransaction - Function to check if transfer
  * @param {Function} params.isCreditCardPaymentTransaction - Function to check if credit card payment
  * @returns {Object} Various calculated totals and projections
@@ -142,11 +195,11 @@ export function useTransactionTotals({
   recentTransactions,
   futureTransactions,
   currentMonthTransactions,
-  allMonthTransactions,
   allTransactions,
   accountMap,
   dateRanges,
   categorizeTransaction,
+  isIncomeTransaction,
   isTransferTransaction,
   isCreditCardPaymentTransaction,
 }) {
@@ -157,18 +210,15 @@ export function useTransactionTotals({
       accountMap,
       isTransferTransaction,
       isCreditCardPaymentTransaction,
+      isIncomeTransaction,
     );
   }, [
     currentMonthTransactions,
     accountMap,
+    isIncomeTransaction,
     isTransferTransaction,
     isCreditCardPaymentTransaction,
   ]);
-
-  // Calculate total projected month totals (all statuses)
-  const projectedMonthTotals = useMemo(() => {
-    return sumTransactionTotals(allMonthTransactions, categorizeTransaction);
-  }, [allMonthTransactions, categorizeTransaction]);
 
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
@@ -227,14 +277,21 @@ export function useTransactionTotals({
       accountMap,
       isTransferTransaction,
       isCreditCardPaymentTransaction,
+      isIncomeTransaction,
     );
   }, [
     allTransactions,
     accountMap,
     dateRanges,
+    isIncomeTransaction,
     isTransferTransaction,
     isCreditCardPaymentTransaction,
   ]);
+
+  // Calculate total projected month totals (all statuses)
+  const projectedMonthTotals = useMemo(() => {
+    return combineOverviewTotals(currentMonthTotals, remainingMonthTotals);
+  }, [currentMonthTotals, remainingMonthTotals]);
 
   // Calculate month-end projections
   const monthEndProjections = useMemo(() => {
