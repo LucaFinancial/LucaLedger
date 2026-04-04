@@ -11,18 +11,29 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Fragment, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { add, format, parseISO } from 'date-fns';
 
+import RecurringTransactionModal from '@/components/RecurringTransactionModal';
+import SplitEditorModal from '@/components/SplitEditorModal';
 import SpendingPeriodControls from '@/components/SpendingPeriodControls';
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
-import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
+import {
+  actions as recurringTransactionActions,
+  selectors as recurringTransactionSelectors,
+} from '@/store/recurringTransactions';
 import { selectors as settingsSelectors } from '@/store/settings';
-import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
-import { selectors as transactionSelectors } from '@/store/transactions';
+import {
+  actions as transactionSplitActions,
+  selectors as transactionSplitSelectors,
+} from '@/store/transactionSplits';
+import {
+  actions as transactionActions,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
   SPENDING_STATE_META,
@@ -49,6 +60,7 @@ function formatTransactionDate(dateValue) {
 }
 
 export default function CategoryTotals({ category }) {
+  const dispatch = useDispatch();
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
@@ -77,6 +89,9 @@ export default function CategoryTotals({ category }) {
     startDate: null,
     endDate: null,
   });
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null);
+  const [selectedRecurringTransactionId, setSelectedRecurringTransactionId] =
+    useState(null);
 
   const categoryIds = useMemo(
     () =>
@@ -123,6 +138,26 @@ export default function CategoryTotals({ category }) {
     () => new Map(accounts.map((account) => [account.id, account.name])),
     [accounts],
   );
+  const transactionsById = useMemo(
+    () =>
+      new Map(
+        allTransactions.map((transaction) => [transaction.id, transaction]),
+      ),
+    [allTransactions],
+  );
+  const recurringTransactionsById = useMemo(
+    () =>
+      new Map(
+        recurringTransactions.map((transaction) => [transaction.id, transaction]),
+      ),
+    [recurringTransactions],
+  );
+  const selectedTransaction = selectedTransactionId
+    ? transactionsById.get(selectedTransactionId) || null
+    : null;
+  const selectedRecurringTransaction = selectedRecurringTransactionId
+    ? recurringTransactionsById.get(selectedRecurringTransactionId) || null
+    : null;
 
   const { totals, subcategoryTotals, showStateBreakdown } = useMemo(
     () =>
@@ -199,6 +234,7 @@ export default function CategoryTotals({ category }) {
       endDate: value,
     });
   };
+
   const toggleSubcategoryExpanded = (subcategoryId) => {
     setExpandedSubcategoryIds((currentExpandedIds) =>
       currentExpandedIds.includes(subcategoryId)
@@ -206,6 +242,79 @@ export default function CategoryTotals({ category }) {
         : [...currentExpandedIds, subcategoryId],
     );
   };
+
+  const handleTransactionDetailClick = (transactionDetail) => {
+    if (transactionDetail.sourceType === 'recurring') {
+      if (
+        transactionDetail.recurringTransactionId &&
+        recurringTransactionsById.has(transactionDetail.recurringTransactionId)
+      ) {
+        setSelectedRecurringTransactionId(
+          transactionDetail.recurringTransactionId,
+        );
+      }
+      return;
+    }
+
+    if (
+      transactionDetail.transactionId &&
+      transactionsById.has(transactionDetail.transactionId)
+    ) {
+      setSelectedTransactionId(transactionDetail.transactionId);
+    }
+  };
+
+  const handleSplitEditorClose = () => {
+    setSelectedTransactionId(null);
+  };
+
+  const handleRecurringModalClose = () => {
+    setSelectedRecurringTransactionId(null);
+  };
+
+  const handleSplitEditorSave = (splits) => {
+    if (!selectedTransaction) return;
+
+    const isSingleCategoryAssignment =
+      splits.length === 1 &&
+      splits[0].amount === Math.abs(selectedTransaction.amount);
+
+    if (isSingleCategoryAssignment) {
+      dispatch(
+        transactionActions.updateTransactionProperty(
+          selectedTransaction.accountId,
+          selectedTransaction,
+          'categoryId',
+          splits[0].categoryId || null,
+        ),
+      );
+      dispatch(
+        transactionSplitActions.saveTransactionSplits(selectedTransaction.id, []),
+      );
+    } else {
+      dispatch(
+        transactionSplitActions.saveTransactionSplits(
+          selectedTransaction.id,
+          splits,
+        ),
+      );
+    }
+
+    handleSplitEditorClose();
+  };
+
+  const handleRecurringModalSave = (transactionData) => {
+    if (!selectedRecurringTransaction) return;
+
+    dispatch(
+      recurringTransactionActions.updateRecurringTransactionProperty(
+        selectedRecurringTransaction.id,
+        transactionData,
+      ),
+    );
+    handleRecurringModalClose();
+  };
+
   const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 2 : 2;
 
   return (
@@ -483,13 +592,13 @@ export default function CategoryTotals({ category }) {
                             </TableCell>
                           </>
                         ) : (
-                        <TableCell
-                          align='right'
-                          sx={{
-                            color: 'text.primary',
-                            fontWeight: 600,
-                          }}
-                        >
+                          <TableCell
+                            align='right'
+                            sx={{
+                              color: 'text.primary',
+                              fontWeight: 600,
+                            }}
+                          >
                             {formatAmount(subcategory.total)}
                           </TableCell>
                         )}
@@ -533,30 +642,58 @@ export default function CategoryTotals({ category }) {
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {subcategory.transactions.map((transaction) => (
-                                  <TableRow key={transaction.id}>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                      {formatTransactionDate(transaction.date)}
-                                    </TableCell>
-                                    <TableCell>
-                                      {accountsById.get(transaction.accountId) ||
-                                        '--'}
-                                    </TableCell>
-                                    <TableCell>
-                                      {transaction.description || '--'}
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
+                                {subcategory.transactions.map((transaction) => {
+                                  const isClickable =
+                                    transaction.sourceType === 'recurring'
+                                      ? recurringTransactionsById.has(
+                                          transaction.recurringTransactionId,
+                                        )
+                                      : transactionsById.has(
+                                          transaction.transactionId,
+                                        );
+
+                                  return (
+                                    <TableRow
+                                      key={transaction.id}
+                                      hover={isClickable}
+                                      onClick={
+                                        isClickable
+                                          ? () =>
+                                              handleTransactionDetailClick(
+                                                transaction,
+                                              )
+                                          : undefined
+                                      }
                                       sx={{
-                                        color: 'text.primary',
-                                        fontWeight: 500,
-                                        whiteSpace: 'nowrap',
+                                        cursor: isClickable ? 'pointer' : 'default',
+                                        '&:hover': isClickable
+                                          ? { backgroundColor: 'rgba(0, 0, 0, 0.03)' }
+                                          : undefined,
                                       }}
                                     >
-                                      {formatAmount(transaction.amount)}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                        {formatTransactionDate(transaction.date)}
+                                      </TableCell>
+                                      <TableCell>
+                                        {accountsById.get(transaction.accountId) ||
+                                          '--'}
+                                      </TableCell>
+                                      <TableCell>
+                                        {transaction.description || '--'}
+                                      </TableCell>
+                                      <TableCell
+                                        align='right'
+                                        sx={{
+                                          color: 'text.primary',
+                                          fontWeight: 500,
+                                          whiteSpace: 'nowrap',
+                                        }}
+                                      >
+                                        {formatAmount(transaction.amount)}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                               </TableBody>
                             </Table>
                           </TableCell>
@@ -574,6 +711,20 @@ export default function CategoryTotals({ category }) {
           )}
         </>
       )}
+
+      <SplitEditorModal
+        open={Boolean(selectedTransaction)}
+        onClose={handleSplitEditorClose}
+        transaction={selectedTransaction}
+        onSave={handleSplitEditorSave}
+      />
+
+      <RecurringTransactionModal
+        open={Boolean(selectedRecurringTransaction)}
+        onClose={handleRecurringModalClose}
+        onSave={handleRecurringModalSave}
+        transaction={selectedRecurringTransaction}
+      />
     </Paper>
   );
 }

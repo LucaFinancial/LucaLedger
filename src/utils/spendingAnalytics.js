@@ -148,6 +148,7 @@ const getTransactionEntries = (transaction, splitsByTransaction) => {
     return splits.map((split) => ({
       categoryId: split.categoryId ?? null,
       amount: Number(split.amount) || 0,
+      splitId: split.id,
     }));
   }
 
@@ -155,6 +156,7 @@ const getTransactionEntries = (transaction, splitsByTransaction) => {
     {
       categoryId: transaction.categoryId ?? null,
       amount: Number(transaction.amount) || 0,
+      splitId: null,
     },
   ];
 };
@@ -652,27 +654,43 @@ export function buildCategoryTotalsData({
     getTransactionEntries(transaction, splitsByTransaction).forEach((entry) => {
       if (!entry.categoryId || !categoryIds.has(entry.categoryId)) return;
 
-      categoryAmounts.set(
-        entry.categoryId,
-        (categoryAmounts.get(entry.categoryId) || 0) + entry.amount,
-      );
+      const currentCategoryAmount = categoryAmounts.get(entry.categoryId) || {
+        amount: 0,
+        splitIds: [],
+        isSplitEntry: false,
+      };
+
+      currentCategoryAmount.amount += entry.amount;
+
+      if (entry.splitId) {
+        currentCategoryAmount.splitIds.push(entry.splitId);
+        currentCategoryAmount.isSplitEntry = true;
+      }
+
+      categoryAmounts.set(entry.categoryId, currentCategoryAmount);
     });
 
-    categoryAmounts.forEach((amount, categoryId) => {
+    categoryAmounts.forEach((categoryAmount, categoryId) => {
       addCategoryAmount(
         categoryId,
         bucket,
-        amount,
+        categoryAmount.amount,
         transaction.id,
         subcategoryTotals.has(categoryId)
           ? {
-              id: `${transaction.id}:${categoryId}`,
-              date: transaction.date,
-              accountId: transaction.accountId ?? null,
-              description: transaction.description || '',
-              amount,
-              transactionState: transaction.transactionState,
-            }
+            id: `${transaction.id}:${categoryId}`,
+            sourceType: categoryAmount.isSplitEntry
+              ? 'transaction-split'
+              : 'transaction',
+            transactionId: transaction.id,
+            date: transaction.date,
+            accountId: transaction.accountId ?? null,
+            categoryId,
+            splitIds: categoryAmount.splitIds,
+            description: transaction.description || '',
+            amount: categoryAmount.amount,
+            transactionState: transaction.transactionState,
+          }
           : null,
       );
     });
@@ -704,8 +722,11 @@ export function buildCategoryTotalsData({
             subcategoryTotals.has(rule.categoryId)
               ? {
                   id: `${occurrenceId}:${rule.categoryId}`,
+                  sourceType: 'recurring',
+                  recurringTransactionId: rule.id,
                   date: dateString,
                   accountId: rule.accountId ?? null,
+                  categoryId: rule.categoryId,
                   description: rule.description || '',
                   amount: Number(rule.amount) || 0,
                   transactionState: 'recurring',
