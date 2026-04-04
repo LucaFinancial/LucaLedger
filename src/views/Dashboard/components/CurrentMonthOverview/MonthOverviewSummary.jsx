@@ -1,6 +1,8 @@
 import { Box, Grid, Paper, Typography } from '@mui/material';
+import { format } from 'date-fns';
 
 export default function MonthOverviewSummary({
+  dateRanges,
   monthEndProjections,
   currentMonthTotals,
   remainingMonthTotals,
@@ -17,7 +19,7 @@ export default function MonthOverviewSummary({
       }}
     >
       <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
-        Month Overview
+        {format(dateRanges.today, 'MMMM yyyy')} Overview
       </Typography>
 
       {/* Progress bar */}

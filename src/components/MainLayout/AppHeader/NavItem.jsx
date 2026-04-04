@@ -7,8 +7,9 @@ const StyledLink = styled(NavLink)`
   text-decoration: none;
   display: flex;
   align-items: center;
-  padding: 8px 14px;
-  border-radius: 999px;
+  align-self: stretch;
+  padding: 0 18px;
+  border-radius: 0;
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -19,7 +20,7 @@ const StyledLink = styled(NavLink)`
 
   &.active {
     background-color: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   }
 `;
 

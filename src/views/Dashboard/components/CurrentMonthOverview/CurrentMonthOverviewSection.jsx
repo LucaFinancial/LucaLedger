@@ -2,7 +2,6 @@ import { Accordion, AccordionDetails } from '@mui/material';
 import MonthOverviewSummary from './MonthOverviewSummary';
 
 import MonthOverviewHeader from './MonthOverviewHeader';
-import MonthlyIncomeExpenseCards from './MonthlyIncomeExpenseCards';
 
 export default function CurrentMonthOverviewSection({
   dateRanges,
@@ -25,13 +24,8 @@ export default function CurrentMonthOverviewSection({
         dateRanges={dateRanges}
       />
       <AccordionDetails>
-        <MonthlyIncomeExpenseCards
-          currentMonthTotals={currentMonthTotals}
-          monthEndProjections={monthEndProjections}
-          formatCurrency={formatCurrency}
-        />
-
         <MonthOverviewSummary
+          dateRanges={dateRanges}
           monthEndProjections={monthEndProjections}
           currentMonthTotals={currentMonthTotals}
           remainingMonthTotals={remainingMonthTotals}

@@ -23,6 +23,10 @@ export default function AppHeader() {
 
   const iconButtonSx = (isActive) => ({
     color: 'white',
+    alignSelf: 'stretch',
+    height: '100%',
+    px: 2,
+    borderRadius: 0,
     backgroundColor: isActive ? 'rgba(255, 255, 255, 0.18)' : 'transparent',
     boxShadow: isActive
       ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.28)'
@@ -48,13 +52,24 @@ export default function AppHeader() {
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Toolbar
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'stretch',
+          px: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 0.5 }}>
           <Typography
             component={Link}
             to='/dashboard'
             variant='h4'
             sx={{
+              display: 'flex',
+              alignItems: 'center',
+              alignSelf: 'stretch',
+              px: 1,
               color: 'white',
               textDecoration: 'none',
               fontWeight: 700,
@@ -67,11 +82,13 @@ export default function AppHeader() {
           <NavItem linkTo='/accounts' navText='Accounts' end={false} />
           <NavItem linkTo='/categories' navText='Categories' />
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
           {currentUser && (
-            <Typography variant='body2' sx={{ color: 'white', mr: 1 }}>
-              {currentUser.username}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5 }}>
+              <Typography variant='body2' sx={{ color: 'white' }}>
+                {currentUser.username}
+              </Typography>
+            </Box>
           )}
           <Tooltip title='Help'>
             <IconButton
