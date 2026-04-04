@@ -18,11 +18,17 @@ import {
   createAccountMap,
   filterDashboardAccounts,
   filterTransactionsByAccountIds,
+  getDefaultExcludedDashboardAccountIds,
 } from './utils/dashboardUtils';
 
 export default function Dashboard() {
   const [excludeClosedAccounts, setExcludeClosedAccounts] = useState(true);
-  const [excludedAccountIds, setExcludedAccountIds] = useState([]);
+  const [manuallyExcludedAccountIds, setManuallyExcludedAccountIds] = useState(
+    [],
+  );
+  const [manuallyIncludedAccountIds, setManuallyIncludedAccountIds] = useState(
+    [],
+  );
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const categories = useSelector(categorySelectors.selectAllCategories);
@@ -34,6 +40,26 @@ export default function Dashboard() {
     isCreditCardPaymentTransaction,
     categorizeTransaction,
   } = useCategoryFilters(categories);
+  const defaultExcludedAccountIds = useMemo(
+    () => getDefaultExcludedDashboardAccountIds(accounts),
+    [accounts],
+  );
+  const excludedAccountIds = useMemo(() => {
+    const excludedAccountIdSet = new Set(defaultExcludedAccountIds);
+
+    manuallyIncludedAccountIds.forEach((accountId) => {
+      excludedAccountIdSet.delete(accountId);
+    });
+    manuallyExcludedAccountIds.forEach((accountId) => {
+      excludedAccountIdSet.add(accountId);
+    });
+
+    return [...excludedAccountIdSet];
+  }, [
+    defaultExcludedAccountIds,
+    manuallyExcludedAccountIds,
+    manuallyIncludedAccountIds,
+  ]);
 
   const dashboardAccounts = useMemo(
     () =>
@@ -92,16 +118,46 @@ export default function Dashboard() {
     projected: totals.current + remainingMonthTotals.balance,
   };
   const handleToggleAccount = (accountId) => {
-    setExcludedAccountIds((currentExcludedIds) =>
-      currentExcludedIds.includes(accountId)
-        ? currentExcludedIds.filter((id) => id !== accountId)
-        : [...currentExcludedIds, accountId],
+    const isDefaultExcluded = defaultExcludedAccountIds.includes(accountId);
+    const isCurrentlyExcluded = excludedAccountIds.includes(accountId);
+
+    if (isCurrentlyExcluded) {
+      setManuallyExcludedAccountIds((currentExcludedIds) =>
+        currentExcludedIds.filter((id) => id !== accountId),
+      );
+
+      if (isDefaultExcluded) {
+        setManuallyIncludedAccountIds((currentIncludedIds) =>
+          currentIncludedIds.includes(accountId)
+            ? currentIncludedIds
+            : [...currentIncludedIds, accountId],
+        );
+      }
+
+      return;
+    }
+
+    setManuallyIncludedAccountIds((currentIncludedIds) =>
+      currentIncludedIds.filter((id) => id !== accountId),
     );
+
+    if (!isDefaultExcluded) {
+      setManuallyExcludedAccountIds((currentExcludedIds) =>
+        currentExcludedIds.includes(accountId)
+          ? currentExcludedIds
+          : [...currentExcludedIds, accountId],
+      );
+    }
   };
   const handleResetFilters = () => {
-    setExcludeClosedAccounts(false);
-    setExcludedAccountIds([]);
+    setExcludeClosedAccounts(true);
+    setManuallyExcludedAccountIds([]);
+    setManuallyIncludedAccountIds([]);
   };
+  const hasActiveFilters =
+    !excludeClosedAccounts ||
+    manuallyExcludedAccountIds.length > 0 ||
+    manuallyIncludedAccountIds.length > 0;
 
   return (
     <Box sx={{ p: 3 }}>
@@ -113,6 +169,7 @@ export default function Dashboard() {
         accounts={accounts}
         excludeClosedAccounts={excludeClosedAccounts}
         excludedAccountIds={excludedAccountIds}
+        hasActiveFilters={hasActiveFilters}
         onExcludeClosedAccountsChange={setExcludeClosedAccounts}
         onToggleAccount={handleToggleAccount}
         onReset={handleResetFilters}

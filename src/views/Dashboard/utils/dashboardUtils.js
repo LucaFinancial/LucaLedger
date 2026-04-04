@@ -1,4 +1,5 @@
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
+import { AccountType } from '@/store/accounts/constants';
 import { utils as accountUtils } from '@/store/accounts';
 
 /**
@@ -40,6 +41,12 @@ export function createAccountMap(accounts) {
     map[account.id] = { name: account.name, type: account.type };
     return map;
   }, {});
+}
+
+export function getDefaultExcludedDashboardAccountIds(accounts = []) {
+  return accounts
+    .filter((account) => account.type === AccountType.ESCROW)
+    .map((account) => account.id);
 }
 
 export function filterDashboardAccounts(

@@ -67,8 +67,8 @@ export const buildAccountBalanceSummary = (
       Object.keys(balances).forEach((key) => {
         creditCardTotals[key] += balances[key];
       });
-    } else if (accountUtils.isIncludedInBalanceTotals(account.type)) {
-      // Only include liquid cash account types in main totals
+    } else {
+      // Filters now control which non-credit-card accounts contribute here.
       Object.keys(balances).forEach((key) => {
         totals[key] += balances[key];
       });

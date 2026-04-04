@@ -39,8 +39,11 @@ export const buildCurrentMonthOverviewTotals = (
     const accountType = accountMap[tx.accountId]?.type;
     const isTransfer = isTransferTransaction(tx);
     const isCreditCardPayment = isCreditCardPaymentTransaction(tx);
+    const isCreditCardAccount = accountUtils.isCreditCardAccountType(
+      accountType,
+    );
 
-    if (accountUtils.isIncludedInBalanceTotals(accountType)) {
+    if (!isCreditCardAccount) {
       if (isCreditCardPayment) {
         const paymentAmount = -amount;
         expenses += paymentAmount;
@@ -61,7 +64,7 @@ export const buildCurrentMonthOverviewTotals = (
       return;
     }
 
-    if (accountUtils.isCreditCardAccountType(accountType) && !isTransfer) {
+    if (!isTransfer) {
       creditCardExpenses += amount;
     }
   });

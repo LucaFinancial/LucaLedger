@@ -39,6 +39,7 @@ describe('useTransactionTotals helpers', () => {
     const accountMap = {
       checking: { type: AccountType.CHECKING },
       savings: { type: AccountType.SAVINGS },
+      escrow: { type: AccountType.ESCROW },
       card: { type: AccountType.CREDIT_CARD },
     };
 
@@ -52,6 +53,7 @@ describe('useTransactionTotals helpers', () => {
         { accountId: 'card', amount: -1200, categoryId: 'groceries' },
         { accountId: 'card', amount: -2500, categoryId: 'cc-payment' },
         { accountId: 'savings', amount: 1500, categoryId: 'refund' },
+        { accountId: 'escrow', amount: -700, categoryId: 'insurance' },
       ],
       accountMap,
       (tx) =>
@@ -61,11 +63,11 @@ describe('useTransactionTotals helpers', () => {
 
     expect(totals).toEqual({
       income: 5000,
-      expenses: 10500,
+      expenses: 11200,
       creditCardPayments: 2500,
       creditCardExpenses: 7800,
-      balance: -5500,
-      netFlow: -5500,
+      balance: -6200,
+      netFlow: -6200,
     });
   });
 

@@ -14,6 +14,7 @@ export default function DashboardAnalyticsFilters({
   accounts,
   excludeClosedAccounts,
   excludedAccountIds,
+  hasActiveFilters,
   onExcludeClosedAccountsChange,
   onToggleAccount,
   onReset,
@@ -25,9 +26,6 @@ export default function DashboardAnalyticsFilters({
 
     return !excludedAccountIds.includes(account.id);
   }).length;
-
-  const hasActiveFilters =
-    excludeClosedAccounts || excludedAccountIds.length > 0;
 
   return (
     <Paper
@@ -76,8 +74,9 @@ export default function DashboardAnalyticsFilters({
       />
 
       <Typography variant='caption' color='text.secondary'>
-        Included {includedCount} of {accounts.length} accounts. Click an account
-        chip to exclude or re-include it.
+        Included {includedCount} of {accounts.length} accounts. Escrow
+        accounts start excluded; click a chip to exclude or re-include an
+        account.
       </Typography>
 
       <Box

@@ -5,7 +5,7 @@ import { TransactionStateEnum } from '@/store/transactions/constants';
 import { buildAccountBalanceSummary } from '@/hooks/useAccountBalances';
 
 describe('buildAccountBalanceSummary', () => {
-  it('uses completed transactions for the current combined savings/checking balance', () => {
+  it('uses completed transactions for the current combined non-credit-card balance', () => {
     const accounts = [
       { id: 'checking-1', type: AccountType.CHECKING },
       { id: 'savings-1', type: AccountType.SAVINGS },
@@ -75,8 +75,8 @@ describe('buildAccountBalanceSummary', () => {
 
     const summary = buildAccountBalanceSummary(accounts, transactions);
 
-    expect(summary.totals.current).toBe(48500);
-    expect(summary.totals.pending).toBe(45500);
+    expect(summary.totals.current).toBe(168500);
+    expect(summary.totals.pending).toBe(165500);
     expect(summary.creditCardTotals.current).toBe(7500);
   });
 });

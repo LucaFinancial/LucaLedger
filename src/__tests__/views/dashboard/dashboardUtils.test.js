@@ -5,6 +5,7 @@ import {
   filterRecurringTransactionsByAccountIds,
   filterTransactionSplitsByTransactionIds,
   filterTransactionsByAccountIds,
+  getDefaultExcludedDashboardAccountIds,
 } from '@/views/Dashboard/utils/dashboardUtils';
 
 describe('dashboardUtils filters', () => {
@@ -21,6 +22,16 @@ describe('dashboardUtils filters', () => {
     });
 
     expect(filteredAccounts.map((account) => account.id)).toEqual(['checking']);
+  });
+
+  it('defaults escrow accounts to excluded in dashboard analytics', () => {
+    expect(
+      getDefaultExcludedDashboardAccountIds([
+        { id: 'checking', type: 'CHECKING' },
+        { id: 'escrow-1', type: 'ESCROW' },
+        { id: 'escrow-2', type: 'ESCROW' },
+      ]),
+    ).toEqual(['escrow-1', 'escrow-2']);
   });
 
   it('filters transactions by included account ids', () => {
