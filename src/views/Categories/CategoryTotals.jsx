@@ -7,6 +7,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -14,6 +15,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { add, format, parseISO } from 'date-fns';
 
 import RecurringTransactionModal from '@/components/RecurringTransactionModal';
@@ -124,6 +126,36 @@ function getTransactionDetailTextColor(transactionDetail) {
   }
 }
 
+function getTransactionDetailSortValue(transactionDetail) {
+  if (!transactionDetail?.date) return 0;
+
+  try {
+    const parsedTime = parseISO(
+      String(transactionDetail.date).replace(/\//g, '-'),
+    ).getTime();
+    return Number.isNaN(parsedTime) ? 0 : parsedTime;
+  } catch {
+    return 0;
+  }
+}
+
+function sortTransactionDetailsForDirection(transactions, direction) {
+  const sortMultiplier = direction === 'asc' ? 1 : -1;
+
+  return [...transactions].sort((left, right) => {
+    const leftTime = getTransactionDetailSortValue(left);
+    const rightTime = getTransactionDetailSortValue(right);
+
+    if (leftTime !== rightTime) {
+      return (leftTime - rightTime) * sortMultiplier;
+    }
+
+    return String(left.description || '').localeCompare(
+      String(right.description || ''),
+    );
+  });
+}
+
 export default function CategoryTotals({ category }) {
   const defaultSelection = {
     type: 'aggregate',
@@ -154,6 +186,8 @@ export default function CategoryTotals({ category }) {
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const [selectedRecurringTransactionId, setSelectedRecurringTransactionId] =
     useState(null);
+  const [transactionSortDirection, setTransactionSortDirection] =
+    useState('asc');
 
   const categoryIds = useMemo(
     () =>
@@ -410,6 +444,11 @@ export default function CategoryTotals({ category }) {
       ),
     );
     handleRecurringModalClose();
+  };
+  const handleTransactionSortToggle = () => {
+    setTransactionSortDirection((currentDirection) =>
+      currentDirection === 'asc' ? 'desc' : 'asc',
+    );
   };
 
   const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 3 : 3;
@@ -847,7 +886,14 @@ export default function CategoryTotals({ category }) {
                               <TableHead>
                                 <TableRow>
                                   <TableCell sx={{ fontWeight: 700 }}>
-                                    Date
+                                    <TableSortLabel
+                                      active
+                                      direction={transactionSortDirection}
+                                      IconComponent={KeyboardArrowUpIcon}
+                                      onClick={handleTransactionSortToggle}
+                                    >
+                                      Date
+                                    </TableSortLabel>
                                   </TableCell>
                                   <TableCell sx={{ fontWeight: 700 }}>
                                     Account
@@ -864,7 +910,10 @@ export default function CategoryTotals({ category }) {
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {subcategory.transactions.map((transaction) => {
+                                {sortTransactionDetailsForDirection(
+                                  subcategory.transactions,
+                                  transactionSortDirection,
+                                ).map((transaction) => {
                                   const isClickable =
                                     transaction.sourceType === 'recurring'
                                       ? recurringTransactionsById.has(
