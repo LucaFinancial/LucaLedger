@@ -337,7 +337,7 @@ export default function CategoryTotals({ category }) {
     handleRecurringModalClose();
   };
 
-  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 2 : 3;
+  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 3 : 3;
 
   return (
     <Paper
@@ -443,7 +443,7 @@ export default function CategoryTotals({ category }) {
                   display: 'grid',
                   gridTemplateColumns: {
                     xs: 'repeat(2, minmax(0, 1fr))',
-                    md: 'repeat(4, 136px)',
+                    md: 'repeat(5, 136px)',
                   },
                   gap: 0.75,
                   width: { xs: '100%', md: 'auto' },
@@ -479,6 +479,32 @@ export default function CategoryTotals({ category }) {
                     </Typography>
                   </Paper>
                 ))}
+                <Paper
+                  sx={{
+                    p: 0.875,
+                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+                    border: '1px solid rgba(76, 175, 80, 0.25)',
+                  }}
+                >
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                  >
+                    Total
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                      mt: 0.25,
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {formatAmount(totals.total)}
+                  </Typography>
+                </Paper>
               </Box>
             ) : (
               <Box
@@ -576,6 +602,9 @@ export default function CategoryTotals({ category }) {
                         <TableCell align='right' sx={{ fontWeight: 700 }}>
                           Total
                         </TableCell>
+                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          Monthly Avg
+                        </TableCell>
                       </>
                     ) : (
                       <>
@@ -652,6 +681,15 @@ export default function CategoryTotals({ category }) {
                               }}
                             >
                               {formatAmount(subcategory.total)}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: 'text.primary',
+                                fontWeight: 500,
+                              }}
+                            >
+                              {formatAmount(subcategory.monthlyAvg)}
                             </TableCell>
                           </>
                         ) : (
