@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-04-03
+
+### Added
+
+- Added shared categorized-spending period controls and analytics for the dashboard and categories page, including Current Month, Last 3 Months, YTD, Last 12 Months, month/year filters, and custom date ranges.
+- Added state-aware spending summaries for current and future-inclusive ranges with completed, pending, scheduled, planned, total, and monthly average metrics, including recurring transactions in planned totals.
+- Added expandable transaction drilldowns for dashboard and category spending tables, with per-transaction date, account, description, amount, and direct edit flows for split and recurring transactions.
+
+### Changed
+
+- Renamed the dashboard Spending History section to Categorized Spending and updated its layout, colors, sorting, pie chart sizing, and optional subcategory hiding behavior.
+- Updated the Categories page totals panel to share the new spending controls, support monthly averages, allow subcategory transaction inspection, and align state styling with ledger/dashboard colors.
+- Simplified the Current Month Overview header and removed its Spending by Category content.
+- Bumped application version to `2.7.0`. (#292)
+
+### Fixed
+
+- Fixed category and dashboard date-range synchronization so aggregate presets populate and clear custom date inputs consistently.
+- Fixed split-editor selector memoization warnings on the Categories page and removed React 19 `act(...)` test-environment warnings.
+- Fixed the recurring transaction modal category selector width and improved categorized-spending pie chart legend sizing for large category lists.
+
 ## [2.6.1] - 2026-04-03
 
 ### Fixed
