@@ -26,6 +26,7 @@ export default function SplitEditorModal({
 }) {
   const {
     splits,
+    amountInputs,
     errors,
     setErrors,
     handleAddSplit,
@@ -75,6 +76,7 @@ export default function SplitEditorModal({
               <SplitItem
                 key={split.id}
                 split={split}
+                amountInput={amountInputs[split.id] ?? ''}
                 error={errors[split.id]}
                 onCategoryChange={handleCategoryChange}
                 onAmountChange={handleAmountChange}
@@ -124,4 +126,3 @@ export default function SplitEditorModal({
     </Dialog>
   );
 }
-

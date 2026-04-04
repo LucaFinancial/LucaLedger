@@ -1,54 +1,100 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { v4 as uuid } from 'uuid';
-import { dollarsToCents } from '@/utils';
+import { centsToDollars, dollarsToCents } from '@/utils';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
+
+const validSplitAmountRegex = /^\d*(\.\d{0,2})?$/;
+
+const formatAmountInput = (amountInCents) =>
+  amountInCents === 0 ? '' : centsToDollars(amountInCents).toFixed(2);
+
+const createAmountInputs = (nextSplits) =>
+  nextSplits.reduce((inputs, split) => {
+    inputs[split.id] = formatAmountInput(split.amount);
+    return inputs;
+  }, {});
+
+const parseAmountInputToCents = (value) => {
+  if (value === '' || value === '.') {
+    return 0;
+  }
+
+  return dollarsToCents(parseFloat(value));
+};
 
 /**
  * Custom hook for managing split editor state
  */
 export function useSplitEditor(open, transaction) {
   const [splits, setSplits] = useState([]);
+  const [amountInputs, setAmountInputs] = useState({});
   const [errors, setErrors] = useState({});
+  const transactionId = transaction?.id;
+  const transactionCategoryId = transaction?.categoryId;
+  const transactionAmount = transaction?.amount;
+  const selectExistingSplits = useMemo(
+    () =>
+      transactionId
+        ? transactionSplitSelectors.selectSplitsByTransactionId(transactionId)
+        : () => [],
+    [transactionId],
+  );
   const existingSplits = useSelector(
-    transaction?.id
-      ? transactionSplitSelectors.selectSplitsByTransactionId(transaction.id)
-      : () => [],
+    selectExistingSplits,
   );
 
   // Initialize splits from transaction when modal opens
   useEffect(() => {
-    if (open && transaction) {
+    if (open && transactionId) {
       if (existingSplits.length > 0) {
         // Load existing splits
-        setSplits(existingSplits.map((split) => ({ ...split })));
+        const nextSplits = existingSplits.map((split) => ({ ...split }));
+        setSplits(nextSplits);
+        setAmountInputs(createAmountInputs(nextSplits));
       } else {
         // Start with one empty split
-        setSplits([
+        const nextSplits = [
           {
             id: uuid(),
-            categoryId: transaction.categoryId || '',
-            amount: Math.abs(transaction.amount),
+            categoryId: transactionCategoryId || '',
+            amount: Math.abs(transactionAmount),
           },
-        ]);
+        ];
+        setSplits(nextSplits);
+        setAmountInputs(createAmountInputs(nextSplits));
       }
       setErrors({});
     }
-  }, [open, transaction, existingSplits]);
+  }, [
+    open,
+    transactionId,
+    transactionCategoryId,
+    transactionAmount,
+    existingSplits,
+  ]);
 
   const handleAddSplit = () => {
-    setSplits([
-      ...splits,
-      {
-        id: uuid(),
-        categoryId: '',
-        amount: 0,
-      },
-    ]);
+    const newSplit = {
+      id: uuid(),
+      categoryId: '',
+      amount: 0,
+    };
+
+    setSplits([...splits, newSplit]);
+    setAmountInputs({
+      ...amountInputs,
+      [newSplit.id]: '',
+    });
   };
 
   const handleRemoveSplit = (splitId) => {
     setSplits(splits.filter((split) => split.id !== splitId));
+    setAmountInputs(
+      Object.fromEntries(
+        Object.entries(amountInputs).filter(([id]) => id !== splitId),
+      ),
+    );
   };
 
   const handleCategoryChange = (splitId, categoryId) => {
@@ -64,12 +110,13 @@ export function useSplitEditor(open, transaction) {
   };
 
   const handleAmountChange = (splitId, value) => {
-    // Allow empty, numbers with up to 2 decimals, and negative sign
-    const validNumberRegex = /^\d*\.?\d{0,2}$/;
+    if (validSplitAmountRegex.test(value)) {
+      const amountInCents = parseAmountInputToCents(value);
 
-    if (value === '' || validNumberRegex.test(value)) {
-      const amountInCents =
-        value === '' ? 0 : dollarsToCents(parseFloat(value));
+      setAmountInputs({
+        ...amountInputs,
+        [splitId]: value,
+      });
       setSplits(
         splits.map((split) =>
           split.id === splitId ? { ...split, amount: amountInCents } : split,
@@ -102,11 +149,21 @@ export function useSplitEditor(open, transaction) {
             : split,
         ),
       );
+      setAmountInputs(
+        createAmountInputs(
+          splits.map((split, idx) =>
+            idx === lastEmptyIndex
+              ? { ...split, amount: split.amount + remaining }
+              : split,
+          ),
+        ),
+      );
     }
   };
 
   return {
     splits,
+    amountInputs,
     errors,
     setErrors,
     handleAddSplit,

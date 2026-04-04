@@ -14,10 +14,22 @@ import {
   actions as transactionActions,
   selectors as transactionSelectors,
 } from '@/store/transactions';
+import {
+  actions as transactionSplitActions,
+  selectors as transactionSplitSelectors,
+} from '@/store/transactionSplits';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as settingsSelectors } from '@/store/settings';
 import { actions as statementActions } from '@/store/statements';
+import {
+  buildCategoriesById,
+  buildSplitsByTransactionId,
+  getTransactionSplits,
+  hasTransactionInvalidCategories,
+  isTransactionUncategorized,
+  transactionMatchesCategoryFilter,
+} from '@/utils/transactionCategoryState';
 import {
   Box,
   Button,
@@ -91,19 +103,35 @@ export default function Ledger() {
   const recurringTransactions = useSelector(selectAccountRecurringTransactions);
 
   const flatCategories = useSelector(categorySelectors.selectAllCategories);
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectTransactionSplits,
+  );
+  const categoriesById = useMemo(
+    () => buildCategoriesById(flatCategories),
+    [flatCategories],
+  );
+  const splitsByTransaction = useMemo(
+    () => buildSplitsByTransactionId(transactionSplits),
+    [transactionSplits],
+  );
 
   // Find transactions with invalid categories
   const invalidCategoryCount = useMemo(() => {
-    return transactions.filter((transaction) => {
-      if (!transaction.categoryId) return false;
-      return !flatCategories.some((cat) => cat.id === transaction.categoryId);
-    }).length;
-  }, [transactions, flatCategories]);
+    return transactions.filter((transaction) =>
+      hasTransactionInvalidCategories(
+        transaction,
+        categoriesById,
+        splitsByTransaction,
+      ),
+    ).length;
+  }, [transactions, categoriesById, splitsByTransaction]);
 
   // Count uncategorized transactions
   const uncategorizedCount = useMemo(() => {
-    return transactions.filter((transaction) => !transaction.categoryId).length;
-  }, [transactions]);
+    return transactions.filter((transaction) =>
+      isTransactionUncategorized(transaction, splitsByTransaction),
+    ).length;
+  }, [transactions, splitsByTransaction]);
 
   const recurringProjection = useSelector(
     settingsSelectors.selectRecurringProjection,
@@ -187,7 +215,9 @@ export default function Ledger() {
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
-      filtered = filtered.filter((transaction) => !transaction.categoryId);
+      filtered = filtered.filter((transaction) =>
+        isTransactionUncategorized(transaction, splitsByTransaction),
+      );
     }
 
     // Apply text filter
@@ -199,23 +229,14 @@ export default function Ledger() {
           .toLowerCase()
           .includes(lowerFilter);
 
-        // Check category name
-        const category = flatCategories.find(
-          (cat) => cat.id === transaction.categoryId,
+        const matchesCategory = transactionMatchesCategoryFilter(
+          transaction,
+          filterValue,
+          categoriesById,
+          splitsByTransaction,
         );
-        const matchesCategory = category?.name
-          .toLowerCase()
-          .includes(lowerFilter);
 
-        // Check parent category name if this is a subcategory
-        const parentCategory = category?.parentId
-          ? flatCategories.find((cat) => cat.id === category.parentId)
-          : null;
-        const matchesParentCategory = parentCategory?.name
-          .toLowerCase()
-          .includes(lowerFilter);
-
-        return matchesDescription || matchesCategory || matchesParentCategory;
+        return matchesDescription || matchesCategory;
       });
     }
 
@@ -224,7 +245,8 @@ export default function Ledger() {
     filterValue,
     showUncategorizedOnly,
     yearFilteredTransactions,
-    flatCategories,
+    categoriesById,
+    splitsByTransaction,
   ]);
 
   const allMonths = useMemo(() => {
@@ -499,13 +521,40 @@ export default function Ledger() {
   };
 
   const handleClearInvalidCategories = () => {
-    // Find all transactions with invalid categories and clear them
-    const transactionsToUpdate = transactions
-      .filter((transaction) => {
-        if (!transaction.categoryId) return false;
-        return !flatCategories.some((cat) => cat.id === transaction.categoryId);
-      })
-      .map((t) => t.id);
+    const transactionsToUpdate = [];
+
+    transactions.forEach((transaction) => {
+      const splitsForTransaction = getTransactionSplits(
+        transaction,
+        splitsByTransaction,
+      );
+
+      if (splitsForTransaction.length > 0) {
+        const nextSplits = splitsForTransaction.map((split) =>
+          split.categoryId && !categoriesById.has(split.categoryId)
+            ? { ...split, categoryId: null }
+            : split,
+        );
+        const hasChanges = nextSplits.some(
+          (split, index) =>
+            split.categoryId !== splitsForTransaction[index].categoryId,
+        );
+
+        if (hasChanges) {
+          dispatch(
+            transactionSplitActions.saveTransactionSplits(
+              transaction.id,
+              nextSplits,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (transaction.categoryId && !categoriesById.has(transaction.categoryId)) {
+        transactionsToUpdate.push(transaction.id);
+      }
+    });
 
     if (transactionsToUpdate.length > 0) {
       dispatch(

@@ -4,6 +4,7 @@ import {
   selectors as accountSelectors,
 } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
@@ -22,6 +23,12 @@ import {
 import { Fragment, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import {
+  buildCategoriesById,
+  buildSplitsByTransactionId,
+  isTransactionUncategorized,
+  transactionMatchesCategoryFilter,
+} from '@/utils/transactionCategoryState';
 import LedgerHeader from './LedgerHeader';
 import SeparatorRow from './SeparatorRow';
 import StatementSeparatorRow from './StatementSeparatorRow';
@@ -46,6 +53,9 @@ export default function LedgerTable({
   const transactions = useSelector(selectAccountTransactions);
 
   const categories = useSelector(categorySelectors.selectAllCategories);
+  const transactionSplits = useSelector(
+    transactionSplitSelectors.selectTransactionSplits,
+  );
   const accountStatements = useSelector(
     statementSelectors.selectStatementsByAccountId(accountId),
   );
@@ -59,6 +69,14 @@ export default function LedgerTable({
   );
   const recurringProjection = useSelector(
     settingsSelectors.selectRecurringProjection,
+  );
+  const categoriesById = useMemo(
+    () => buildCategoriesById(categories),
+    [categories],
+  );
+  const splitsByTransaction = useMemo(
+    () => buildSplitsByTransactionId(transactionSplits),
+    [transactionSplits],
   );
 
   // Generate virtual transactions from recurring rules
@@ -116,7 +134,9 @@ export default function LedgerTable({
 
     // Apply uncategorized filter
     if (showUncategorizedOnly) {
-      filtered = filtered.filter((transaction) => !transaction.categoryId);
+      filtered = filtered.filter((transaction) =>
+        isTransactionUncategorized(transaction, splitsByTransaction),
+      );
     }
 
     // Apply text filter
@@ -128,27 +148,17 @@ export default function LedgerTable({
           .toLowerCase()
           .includes(lowerFilter);
 
-        // Check category name
-        const category = categories.find(
-          (cat) => cat.id === transaction.categoryId,
+        const matchesCategory = transactionMatchesCategoryFilter(
+          transaction,
+          filterValue,
+          categoriesById,
+          splitsByTransaction,
         );
-        const matchesCategory = category?.name
-          .toLowerCase()
-          .includes(lowerFilter);
-
-        // Check parent category name if this is a subcategory
-        const parentCategory = category?.parentId
-          ? categories.find((cat) => cat.id === category.parentId)
-          : null;
-        const matchesParentCategory = parentCategory?.name
-          .toLowerCase()
-          .includes(lowerFilter);
 
         // Include if matches description, category, parent category, or is already selected
         return (
           matchesDescription ||
           matchesCategory ||
-          matchesParentCategory ||
           selectedTransactions.has(transaction.id)
         );
       });
@@ -161,7 +171,8 @@ export default function LedgerTable({
     transactionsWithBalance,
     selectedTransactions,
     selectedYear,
-    categories,
+    categoriesById,
+    splitsByTransaction,
   ]);
 
   const toggleGroupCollapse = (groupId) => {
@@ -589,4 +600,3 @@ export default function LedgerTable({
     </TableContainer>
   );
 }
-
