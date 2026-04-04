@@ -34,6 +34,7 @@ import {
   actions as transactionActions,
   selectors as transactionSelectors,
 } from '@/store/transactions';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
   buildSpendingSelectionFromDropdownValues,
@@ -83,6 +84,7 @@ const MONTHLY_AVG_META = Object.freeze({
   borderColor: '#ef6c00',
   color: '#e65100',
 });
+const RECURRING_TEXT_COLOR = '#9c27b0';
 
 function formatAmount(amountInCents) {
   return `$${doublePrecisionFormatString(
@@ -97,6 +99,28 @@ function formatTransactionDate(dateValue) {
     return format(parseISO(String(dateValue).replace(/\//g, '-')), 'MMM d, yyyy');
   } catch {
     return String(dateValue);
+  }
+}
+
+function getTransactionDetailTextColor(transactionDetail) {
+  if (
+    transactionDetail.sourceType === 'recurring' ||
+    transactionDetail.transactionState === 'recurring'
+  ) {
+    return RECURRING_TEXT_COLOR;
+  }
+
+  switch (transactionDetail.transactionState) {
+    case TransactionStateEnum.COMPLETED:
+      return LEDGER_STATE_META.completed.color;
+    case TransactionStateEnum.PENDING:
+      return LEDGER_STATE_META.pending.color;
+    case TransactionStateEnum.SCHEDULED:
+      return LEDGER_STATE_META.scheduled.color;
+    case TransactionStateEnum.PLANNED:
+      return LEDGER_STATE_META.planned.color;
+    default:
+      return 'inherit';
   }
 }
 
@@ -849,6 +873,8 @@ export default function CategoryTotals({ category }) {
                                       : transactionsById.has(
                                           transaction.transactionId,
                                         );
+                                  const detailTextColor =
+                                    getTransactionDetailTextColor(transaction);
 
                                   return (
                                     <TableRow
@@ -864,6 +890,10 @@ export default function CategoryTotals({ category }) {
                                       }
                                       sx={{
                                         cursor: isClickable ? 'pointer' : 'default',
+                                        color: detailTextColor,
+                                        '& .MuiTableCell-root': {
+                                          color: detailTextColor,
+                                        },
                                         '&:hover': isClickable
                                           ? { backgroundColor: 'rgba(0, 0, 0, 0.03)' }
                                           : undefined,
@@ -882,7 +912,7 @@ export default function CategoryTotals({ category }) {
                                       <TableCell
                                         align='right'
                                         sx={{
-                                          color: 'text.primary',
+                                          color: detailTextColor,
                                           fontWeight: 500,
                                           whiteSpace: 'nowrap',
                                         }}
