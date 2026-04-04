@@ -35,6 +35,7 @@ import {
   SPENDING_STATE_ORDER,
   buildAvailableSpendingPeriods,
   buildDashboardSpendingHistoryData,
+  getAggregatePeriodConfig,
   getSpendingSelectionDropdownValues,
   getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
@@ -92,6 +93,11 @@ const MONTHLY_AVG_META = Object.freeze({
   borderColor: '#ef6c00',
   color: '#e65100',
 });
+const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
+  'last-3-months',
+  'ytd',
+  'last-12-months',
+]);
 
 function formatCurrency(amount) {
   const safeAmount =
@@ -286,11 +292,23 @@ export default function SpendingHistorySection() {
       startDate: null,
       endDate: null,
     });
+  const syncCustomRangeForAggregate = (aggregateKey) => {
+    if (!AGGREGATE_RANGES_WITH_VISIBLE_DATES.has(aggregateKey)) {
+      clearCustomRange();
+      return;
+    }
+
+    const aggregateConfig = getAggregatePeriodConfig(aggregateKey);
+    setCustomRange({
+      startDate: aggregateConfig.startDate,
+      endDate: aggregateConfig.endDate,
+    });
+  };
 
   const handleAggregateChange = (_event, newValue) => {
     if (!newValue) return;
 
-    clearCustomRange();
+    syncCustomRangeForAggregate(newValue);
     setActiveSelection({ type: 'aggregate', value: newValue });
     resetExpandedState();
   };

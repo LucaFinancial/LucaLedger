@@ -41,9 +41,16 @@ import {
   SPENDING_STATE_ORDER,
   buildAvailableSpendingPeriods,
   buildCategoryTotalsData,
+  getAggregatePeriodConfig,
   getSpendingSelectionDropdownValues,
   getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
+
+const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
+  'last-3-months',
+  'ytd',
+  'last-12-months',
+]);
 
 function formatAmount(amountInCents) {
   return `$${doublePrecisionFormatString(
@@ -193,12 +200,24 @@ export default function CategoryTotals({ category }) {
       startDate: null,
       endDate: null,
     });
+  const syncCustomRangeForAggregate = (aggregateKey) => {
+    if (!AGGREGATE_RANGES_WITH_VISIBLE_DATES.has(aggregateKey)) {
+      clearCustomRange();
+      return;
+    }
+
+    const aggregateConfig = getAggregatePeriodConfig(aggregateKey);
+    setCustomRange({
+      startDate: aggregateConfig.startDate,
+      endDate: aggregateConfig.endDate,
+    });
+  };
 
   const handleAggregateChange = (_event, newValue) => {
     if (!newValue) return;
 
     clearExpandedSubcategories();
-    clearCustomRange();
+    syncCustomRangeForAggregate(newValue);
     setActiveSelection({ type: 'aggregate', value: newValue });
   };
 
