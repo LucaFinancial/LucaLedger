@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { format } from 'date-fns';
@@ -30,21 +31,46 @@ function getBalanceColor(amount) {
   return amount >= 0 ? '#4caf50' : '#f44336';
 }
 
+function TooltipValue({ tooltip, children }) {
+  if (!tooltip) {
+    return children;
+  }
+
+  return (
+    <Tooltip
+      arrow
+      title={
+        <Box sx={{ maxWidth: 320 }}>
+          <Typography variant='body2'>{tooltip}</Typography>
+        </Box>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+}
+
 function MetricCell({
   label,
   value,
   valueColor,
   formatCurrency,
   textAlign,
+  tooltip,
 }) {
   return (
     <Box sx={{ minWidth: 0, textAlign }}>
       <Typography variant='caption' color='text.secondary'>
         {label}
       </Typography>
-      <Typography variant='h6' sx={{ color: valueColor, fontWeight: 'bold' }}>
-        {formatCurrency(value)}
-      </Typography>
+      <TooltipValue tooltip={tooltip}>
+        <Typography
+          variant='h6'
+          sx={{ color: valueColor, fontWeight: 'bold', whiteSpace: 'nowrap' }}
+        >
+          {formatCurrency(value)}
+        </Typography>
+      </TooltipValue>
     </Box>
   );
 }
@@ -54,6 +80,7 @@ function IncomeMetricsRow({
   income,
   cardCreditsAndPayments,
   formatCurrency,
+  tooltips,
 }) {
   return (
     <Box sx={{ mb: 1 }}>
@@ -64,6 +91,7 @@ function IncomeMetricsRow({
           valueColor='#4caf50'
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
+          tooltip={tooltips.incomeAndCredits}
         />
         <MetricCell
           label='Income'
@@ -71,6 +99,7 @@ function IncomeMetricsRow({
           valueColor='#4caf50'
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'center' }}
+          tooltip={tooltips.income}
         />
         <MetricCell
           label='Card Credits & Payments'
@@ -78,6 +107,7 @@ function IncomeMetricsRow({
           valueColor='#4caf50'
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'right' }}
+          tooltip={tooltips.cardCreditsAndPayments}
         />
       </Box>
     </Box>
@@ -89,6 +119,7 @@ function ExpenseMetricsRow({
   expenses,
   cardCharges,
   formatCurrency,
+  tooltips,
 }) {
   return (
     <Box sx={{ mb: 1 }}>
@@ -99,6 +130,7 @@ function ExpenseMetricsRow({
           valueColor={getExpenseColor(cashOutflows)}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
+          tooltip={tooltips.cashOutflows}
         />
         <MetricCell
           label='All Expenses'
@@ -106,6 +138,7 @@ function ExpenseMetricsRow({
           valueColor={getExpenseColor(expenses)}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'center' }}
+          tooltip={tooltips.expenses}
         />
         <MetricCell
           label='Card Charges'
@@ -113,6 +146,7 @@ function ExpenseMetricsRow({
           valueColor={getExpenseColor(cardCharges)}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'right' }}
+          tooltip={tooltips.cardCharges}
         />
       </Box>
     </Box>
@@ -140,6 +174,7 @@ function SummaryMetricsRow({
           valueColor={leftMetric.valueColor}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
+          tooltip={leftMetric.tooltip}
         />
         {middleMetric ? (
           <MetricCell
@@ -148,6 +183,7 @@ function SummaryMetricsRow({
             valueColor={middleMetric.valueColor}
             formatCurrency={formatCurrency}
             textAlign={{ xs: 'left', sm: 'center' }}
+            tooltip={middleMetric.tooltip}
           />
         ) : (
           <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
@@ -158,6 +194,7 @@ function SummaryMetricsRow({
           valueColor={rightMetric.valueColor}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'right' }}
+          tooltip={rightMetric.tooltip}
         />
       </Box>
     </Box>
@@ -217,40 +254,46 @@ function DetailedComparisonTable({ rows, formatCurrency }) {
                 </Typography>
               </TableCell>
               <TableCell align='right'>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: getComparisonValueColor(row.type, row.current),
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {formatCurrency(row.current)}
-                </Typography>
+                <TooltipValue tooltip={row.tooltip}>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      color: getComparisonValueColor(row.type, row.current),
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {formatCurrency(row.current)}
+                  </Typography>
+                </TooltipValue>
               </TableCell>
               <TableCell align='right'>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: getComparisonValueColor(row.type, row.remaining),
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {formatCurrency(row.remaining)}
-                </Typography>
+                <TooltipValue tooltip={row.tooltip}>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      color: getComparisonValueColor(row.type, row.remaining),
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {formatCurrency(row.remaining)}
+                  </Typography>
+                </TooltipValue>
               </TableCell>
               <TableCell align='right'>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    color: getComparisonValueColor(row.type, row.projected),
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {formatCurrency(row.projected)}
-                </Typography>
+                <TooltipValue tooltip={row.tooltip}>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      color: getComparisonValueColor(row.type, row.projected),
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {formatCurrency(row.projected)}
+                  </Typography>
+                </TooltipValue>
               </TableCell>
             </TableRow>
           ))}
@@ -268,7 +311,35 @@ export default function MonthOverviewSummary({
   remainingMonthTotals,
   formatCurrency,
 }) {
+  const cardMetricTooltips = {
+    incomeAndCredits:
+      'Income and credits to included non-credit-card accounts, such as checking, savings, and cash. This does not include credit card rewards, refunds, statement credits, or card payments.',
+    income:
+      'Transactions in income categories on included non-credit-card accounts.',
+    cardCreditsAndPayments:
+      'Combined total of credit card payments plus credit card rewards, refunds, and statement credits. These reduce the combined credit card balance.',
+    cashOutflows:
+      'Negative activity from included non-credit-card accounts, including card payments and other debits.',
+    expenses:
+      'Actual spending only: cash-account expenses plus credit card charges. This excludes credit card payments.',
+    cardCharges:
+      'Positive transactions on included credit card accounts, such as purchases and fees. This excludes payments, refunds, rewards, and statement credits.',
+    currentBalance:
+      'Combined total of included asset account balances. This excludes credit card accounts.',
+    balanceChange:
+      'Projected remaining change in the combined balance of included non-credit-card accounts based on remaining month activity.',
+    endingBalance:
+      'Projected end-of-month combined balance of included non-credit-card accounts. Calculated as current balance plus remaining balance change.',
+    cardBalance:
+      'Current combined balance of included credit card accounts.',
+    cardBalanceChange:
+      'Projected remaining change in the combined credit card balance, based on remaining card charges, credits, and payments.',
+    endingCardBalance:
+      'Projected end-of-month combined credit card balance. Calculated as current card balance plus remaining card balance change.',
+  };
   const currentDisplayMetrics = {
+    deposits:
+      (currentMonthTotals.income || 0) + (currentMonthTotals.cashCredits || 0),
     incomeAndCredits:
       (currentMonthTotals.income || 0) + (currentMonthTotals.cashCredits || 0),
     income: currentMonthTotals.income || 0,
@@ -280,6 +351,8 @@ export default function MonthOverviewSummary({
     cardCharges: currentMonthTotals.creditCardExpenses || 0,
   };
   const remainingDisplayMetrics = {
+    deposits:
+      (remainingMonthTotals.income || 0) + (remainingMonthTotals.cashCredits || 0),
     incomeAndCredits:
       (remainingMonthTotals.income || 0) + (remainingMonthTotals.cashCredits || 0),
     income: remainingMonthTotals.income || 0,
@@ -291,6 +364,9 @@ export default function MonthOverviewSummary({
     cardCharges: remainingMonthTotals.creditCardExpenses || 0,
   };
   const projectedDisplayMetrics = {
+    deposits:
+      (monthEndProjections.projectedIncome || 0) +
+      (monthEndProjections.projectedCashCredits || 0),
     incomeAndCredits:
       (monthEndProjections.projectedIncome || 0) +
       (monthEndProjections.projectedCashCredits || 0),
@@ -309,6 +385,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.incomeAndCredits || 0,
       remaining: remainingMonthTotals.incomeAndCredits || 0,
       projected: monthEndProjections.projectedIncomeAndCredits || 0,
+      tooltip:
+        'Overall income and credits across included accounts. This includes cash-account income, cash-account credits, and credit card rewards, refunds, and statement credits.',
     },
     {
       label: 'Income',
@@ -316,6 +394,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.income || 0,
       remaining: remainingMonthTotals.income || 0,
       projected: monthEndProjections.projectedIncome || 0,
+      tooltip:
+        'Transactions in income categories on included non-credit-card accounts.',
     },
     {
       label: 'Credits',
@@ -323,6 +403,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.credits || 0,
       remaining: remainingMonthTotals.credits || 0,
       projected: monthEndProjections.projectedCredits || 0,
+      tooltip:
+        'Non-income credits across included accounts. This includes cash-account credits plus credit card rewards, refunds, and statement credits.',
     },
     {
       label: 'Deposits',
@@ -330,6 +412,8 @@ export default function MonthOverviewSummary({
       current: currentDisplayMetrics.deposits,
       remaining: remainingDisplayMetrics.deposits,
       projected: projectedDisplayMetrics.deposits,
+      tooltip:
+        'Cash-side income and credits only. This includes deposits to included non-credit-card accounts and excludes all credit card activity.',
     },
     {
       label: 'Card Payments',
@@ -337,6 +421,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.creditCardPayments || 0,
       remaining: remainingMonthTotals.creditCardPayments || 0,
       projected: monthEndProjections.projectedCreditCardPayments || 0,
+      tooltip:
+        'Payments from non-credit-card accounts to credit card accounts.',
     },
     {
       label: 'Card Credits',
@@ -344,6 +430,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.creditCardCredits || 0,
       remaining: remainingMonthTotals.creditCardCredits || 0,
       projected: monthEndProjections.projectedCreditCardCredits || 0,
+      tooltip:
+        'Credits on credit card accounts, such as rewards, refunds, and statement credits.',
     },
     {
       label: 'Card Charges',
@@ -351,6 +439,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.creditCardExpenses || 0,
       remaining: remainingMonthTotals.creditCardExpenses || 0,
       projected: monthEndProjections.projectedCreditCardExpenses || 0,
+      tooltip:
+        'Positive transactions on included credit card accounts, such as purchases and fees.',
     },
     {
       label: 'Total Expenses',
@@ -358,6 +448,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.expenses || 0,
       remaining: remainingMonthTotals.expenses || 0,
       projected: monthEndProjections.projectedExpenses || 0,
+      tooltip:
+        'Actual spending only: cash-account expenses plus credit card charges. This excludes credit card payments.',
     },
     {
       label: 'Net Worth Change',
@@ -365,6 +457,8 @@ export default function MonthOverviewSummary({
       current: currentMonthTotals.netFlow || 0,
       remaining: remainingMonthTotals.netFlow || 0,
       projected: monthEndProjections.projectedNetFlow || 0,
+      tooltip:
+        'Income and credits minus actual spending. This excludes credit card payments, so it reflects change in net worth rather than cash movement.',
     },
     {
       label: 'Cash Balance',
@@ -372,6 +466,8 @@ export default function MonthOverviewSummary({
       current: combinedBalances.current,
       remaining: remainingMonthTotals.balance || 0,
       projected: combinedBalances.projected,
+      tooltip:
+        'Combined balance of included non-credit-card accounts. The remaining column shows projected balance change; the totals column shows projected ending balance.',
     },
     {
       label: 'Card Balance',
@@ -379,6 +475,8 @@ export default function MonthOverviewSummary({
       current: combinedBalances.creditCardCurrent,
       remaining: remainingMonthTotals.creditCardBalanceChange || 0,
       projected: combinedBalances.creditCardProjected,
+      tooltip:
+        'Combined balance of included credit card accounts. The remaining column shows projected card balance change; the totals column shows projected ending card balance.',
     },
   ];
 
@@ -454,24 +552,28 @@ export default function MonthOverviewSummary({
               income={currentDisplayMetrics.income}
               cardCreditsAndPayments={currentDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <ExpenseMetricsRow
               cashOutflows={currentDisplayMetrics.cashOutflows}
               expenses={currentDisplayMetrics.expenses}
               cardCharges={currentDisplayMetrics.cardCharges}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <SummaryMetricsRow
               leftMetric={{
                 label: 'Current Balance',
                 value: combinedBalances.current,
                 valueColor: getBalanceColor(combinedBalances.current),
+                tooltip: cardMetricTooltips.currentBalance,
               }}
               rightMetric={{
                 label: 'Card Balance',
                 value: combinedBalances.creditCardCurrent,
                 valueColor:
                   combinedBalances.creditCardCurrent > 0 ? '#f44336' : '#4caf50',
+                tooltip: cardMetricTooltips.cardBalance,
               }}
               borderColor='#90caf9'
               formatCurrency={formatCurrency}
@@ -499,18 +601,21 @@ export default function MonthOverviewSummary({
               income={remainingDisplayMetrics.income}
               cardCreditsAndPayments={remainingDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <ExpenseMetricsRow
               cashOutflows={remainingDisplayMetrics.cashOutflows}
               expenses={remainingDisplayMetrics.expenses}
               cardCharges={remainingDisplayMetrics.cardCharges}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <SummaryMetricsRow
               leftMetric={{
                 label: 'Balance Change',
                 value: remainingMonthTotals.balance,
                 valueColor: getBalanceColor(remainingMonthTotals.balance),
+                tooltip: cardMetricTooltips.balanceChange,
               }}
               rightMetric={{
                 label: 'Card Balance Change',
@@ -519,6 +624,7 @@ export default function MonthOverviewSummary({
                   remainingMonthTotals.creditCardBalanceChange > 0
                     ? '#f44336'
                     : '#4caf50',
+                tooltip: cardMetricTooltips.cardBalanceChange,
               }}
               borderColor='#ffcc80'
               formatCurrency={formatCurrency}
@@ -546,18 +652,21 @@ export default function MonthOverviewSummary({
               income={projectedDisplayMetrics.income}
               cardCreditsAndPayments={projectedDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <ExpenseMetricsRow
               cashOutflows={projectedDisplayMetrics.cashOutflows}
               expenses={projectedDisplayMetrics.expenses}
               cardCharges={projectedDisplayMetrics.cardCharges}
               formatCurrency={formatCurrency}
+              tooltips={cardMetricTooltips}
             />
             <SummaryMetricsRow
               leftMetric={{
                 label: 'Ending Balance',
                 value: combinedBalances.projected,
                 valueColor: getBalanceColor(combinedBalances.projected),
+                tooltip: cardMetricTooltips.endingBalance,
               }}
               rightMetric={{
                 label: 'Ending Card Balance',
@@ -566,6 +675,7 @@ export default function MonthOverviewSummary({
                   combinedBalances.creditCardProjected > 0
                     ? '#f44336'
                     : '#4caf50',
+                tooltip: cardMetricTooltips.endingCardBalance,
               }}
               borderColor='#ce93d8'
               formatCurrency={formatCurrency}
