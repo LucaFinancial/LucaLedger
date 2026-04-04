@@ -49,6 +49,7 @@ export default function Dashboard() {
       currentMonthTransactions,
       allMonthTransactions,
       allTransactions,
+      accountMap,
       dateRanges,
       categorizeTransaction,
       isTransferTransaction,

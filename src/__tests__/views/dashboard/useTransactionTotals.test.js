@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { AccountType } from '@/store/accounts/constants';
+import { categorizeDashboardTransaction } from '@/views/Dashboard/hooks/useCategoryFilters';
 
 import {
   buildMonthEndProjections,
@@ -9,10 +11,10 @@ import {
 describe('useTransactionTotals helpers', () => {
   const categorizeTransaction = (tx) => {
     if (tx.kind === 'income') {
-      return { income: Math.abs(tx.amount), expense: 0 };
+      return { income: Math.abs(tx.amount), expense: 0, creditCardExpense: 0 };
     }
 
-    return { income: 0, expense: Math.abs(tx.amount) };
+    return { income: 0, expense: Math.abs(tx.amount), creditCardExpense: 0 };
   };
 
   it('returns a balance that matches income minus expenses', () => {
@@ -28,8 +30,63 @@ describe('useTransactionTotals helpers', () => {
     expect(totals).toEqual({
       income: 25000,
       expenses: 13000,
+      creditCardExpenses: 0,
       balance: 12000,
       netFlow: 12000,
+    });
+  });
+
+  it('calculates expense polarity from account type and tracks card expenses separately', () => {
+    expect(
+      categorizeDashboardTransaction({
+        tx: { amount: 2500 },
+        accountType: AccountType.CREDIT_CARD,
+        isIncome: false,
+        isTransfer: false,
+      }),
+    ).toEqual({
+      income: 0,
+      expense: 2500,
+      creditCardExpense: 2500,
+    });
+
+    expect(
+      categorizeDashboardTransaction({
+        tx: { amount: -1200 },
+        accountType: AccountType.CREDIT_CARD,
+        isIncome: false,
+        isTransfer: false,
+      }),
+    ).toEqual({
+      income: 0,
+      expense: -1200,
+      creditCardExpense: -1200,
+    });
+
+    expect(
+      categorizeDashboardTransaction({
+        tx: { amount: -8000 },
+        accountType: AccountType.CHECKING,
+        isIncome: false,
+        isTransfer: false,
+      }),
+    ).toEqual({
+      income: 0,
+      expense: 8000,
+      creditCardExpense: 0,
+    });
+
+    expect(
+      categorizeDashboardTransaction({
+        tx: { amount: 1500 },
+        accountType: AccountType.CHECKING,
+        isIncome: false,
+        isTransfer: false,
+      }),
+    ).toEqual({
+      income: 0,
+      expense: -1500,
+      creditCardExpense: 0,
     });
   });
 
@@ -56,6 +113,7 @@ describe('useTransactionTotals helpers', () => {
       {
         income: 50000,
         expenses: 32000,
+        creditCardExpenses: 12000,
         balance: 18000,
       },
       {
@@ -66,7 +124,9 @@ describe('useTransactionTotals helpers', () => {
 
     expect(projection.totalIncome).toBe(50000);
     expect(projection.totalExpenses).toBe(32000);
+    expect(projection.totalCreditCardExpenses).toBe(12000);
     expect(projection.totalBalance).toBe(18000);
+    expect(projection.projectedCreditCardExpenses).toBe(12000);
     expect(projection.projectedNetFlow).toBe(18000);
   });
 });

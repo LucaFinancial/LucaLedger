@@ -1,6 +1,51 @@
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { format } from 'date-fns';
 
+function getExpenseColor(amount) {
+  return amount >= 0 ? '#f44336' : '#4caf50';
+}
+
+function ExpenseMetricsRow({ expenses, creditCardExpenses, formatCurrency }) {
+  return (
+    <Box sx={{ mb: 1 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant='caption' color='text.secondary'>
+            Expenses
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{ color: getExpenseColor(expenses), fontWeight: 'bold' }}
+          >
+            {formatCurrency(expenses)}
+          </Typography>
+        </Box>
+        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
+          <Typography variant='caption' color='text.secondary'>
+            Card Expenses
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: getExpenseColor(creditCardExpenses),
+              fontWeight: 'bold',
+            }}
+          >
+            {formatCurrency(creditCardExpenses)}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 export default function MonthOverviewSummary({
   dateRanges,
   combinedBalances,
@@ -87,17 +132,11 @@ export default function MonthOverviewSummary({
                 {formatCurrency(currentMonthTotals.income)}
               </Typography>
             </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(currentMonthTotals.expenses)}
-              </Typography>
-            </Box>
+            <ExpenseMetricsRow
+              expenses={currentMonthTotals.expenses}
+              creditCardExpenses={currentMonthTotals.creditCardExpenses}
+              formatCurrency={formatCurrency}
+            />
             <Box
               sx={{
                 pt: 1,
@@ -110,8 +149,7 @@ export default function MonthOverviewSummary({
               <Typography
                 variant='h6'
                 sx={{
-                  color:
-                    combinedBalances.current >= 0 ? '#4caf50' : '#f44336',
+                  color: combinedBalances.current >= 0 ? '#4caf50' : '#f44336',
                   fontWeight: 'bold',
                 }}
               >
@@ -138,7 +176,7 @@ export default function MonthOverviewSummary({
             </Typography>
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
-                Income
+                Income & Credits
               </Typography>
               <Typography
                 variant='h6'
@@ -147,17 +185,11 @@ export default function MonthOverviewSummary({
                 {formatCurrency(remainingMonthTotals.income)}
               </Typography>
             </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(remainingMonthTotals.expenses)}
-              </Typography>
-            </Box>
+            <ExpenseMetricsRow
+              expenses={remainingMonthTotals.expenses}
+              creditCardExpenses={remainingMonthTotals.creditCardExpenses}
+              formatCurrency={formatCurrency}
+            />
             <Box
               sx={{
                 pt: 1,
@@ -198,7 +230,7 @@ export default function MonthOverviewSummary({
             </Typography>
             <Box sx={{ mb: 1 }}>
               <Typography variant='caption' color='text.secondary'>
-                Income
+                Income & Credits
               </Typography>
               <Typography
                 variant='h6'
@@ -207,17 +239,13 @@ export default function MonthOverviewSummary({
                 {formatCurrency(monthEndProjections.projectedIncome)}
               </Typography>
             </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(monthEndProjections.projectedExpenses)}
-              </Typography>
-            </Box>
+            <ExpenseMetricsRow
+              expenses={monthEndProjections.projectedExpenses}
+              creditCardExpenses={
+                monthEndProjections.projectedCreditCardExpenses
+              }
+              formatCurrency={formatCurrency}
+            />
             <Box
               sx={{
                 pt: 1,
@@ -231,9 +259,7 @@ export default function MonthOverviewSummary({
                 variant='h6'
                 sx={{
                   color:
-                    combinedBalances.projected >= 0
-                      ? '#4caf50'
-                      : '#f44336',
+                    combinedBalances.projected >= 0 ? '#4caf50' : '#f44336',
                   fontWeight: 'bold',
                 }}
               >

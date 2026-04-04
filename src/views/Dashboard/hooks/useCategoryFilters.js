@@ -1,4 +1,43 @@
 import { useMemo, useCallback } from 'react';
+import { utils as accountUtils } from '@/store/accounts';
+
+export const calculateExpenseContribution = (amount, accountType) => {
+  const numericAmount = Number(amount) || 0;
+
+  // Credit cards are liability accounts, so their expense polarity is inverted.
+  return accountUtils.isCreditCardAccountType(accountType)
+    ? numericAmount
+    : -numericAmount;
+};
+
+export const categorizeDashboardTransaction = ({
+  tx,
+  accountType,
+  isIncome,
+  isTransfer,
+}) => {
+  if (isTransfer) {
+    return { income: 0, expense: 0, creditCardExpense: 0 };
+  }
+
+  if (isIncome) {
+    return {
+      income: Math.abs(Number(tx.amount) || 0),
+      expense: 0,
+      creditCardExpense: 0,
+    };
+  }
+
+  const expense = calculateExpenseContribution(tx.amount, accountType);
+
+  return {
+    income: 0,
+    expense,
+    creditCardExpense: accountUtils.isCreditCardAccountType(accountType)
+      ? expense
+      : 0,
+  };
+};
 
 /**
  * Custom hook to handle category filtering logic for income and transfers
@@ -67,24 +106,15 @@ export function useCategoryFilters(categories) {
   );
 
   // Helper function to categorize transaction as income or expense amount
-  // Returns { income: number, expense: number } with absolute values
-  // Transfers are excluded from both income and expense totals
+  // Expense polarity depends on account type so reimbursements reduce expenses.
   const categorizeTransaction = useCallback(
-    (tx) => {
-      const absAmount = Math.abs(tx.amount);
-
-      // Transfers are neutral - don't count as income or expense
-      if (isTransferTransaction(tx)) {
-        return { income: 0, expense: 0 };
-      }
-
-      if (isIncomeTransaction(tx)) {
-        return { income: absAmount, expense: 0 };
-      }
-
-      // Everything else is an expense
-      return { income: 0, expense: absAmount };
-    },
+    (tx, accountType) =>
+      categorizeDashboardTransaction({
+        tx,
+        accountType,
+        isIncome: isIncomeTransaction(tx),
+        isTransfer: isTransferTransaction(tx),
+      }),
     [isIncomeTransaction, isTransferTransaction],
   );
 
