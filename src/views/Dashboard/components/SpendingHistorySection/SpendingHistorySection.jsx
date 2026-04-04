@@ -30,10 +30,12 @@ import { selectors as transactionSplitSelectors } from '@/store/transactionSplit
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
+  buildSpendingSelectionFromDropdownValues,
   SPENDING_STATE_META,
   SPENDING_STATE_ORDER,
   buildAvailableSpendingPeriods,
   buildDashboardSpendingHistoryData,
+  getSpendingSelectionDropdownValues,
   getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
 
@@ -84,6 +86,9 @@ function renderStateCells(item) {
       <TableCell align='right' sx={{ color: '#212121', fontWeight: 600 }}>
         {formatCurrency(centsToDollars(item.total))}
       </TableCell>
+      <TableCell align='right' sx={{ color: '#2196f3', fontWeight: 500 }}>
+        {formatCurrency(centsToDollars(item.monthlyAvg))}
+      </TableCell>
       <TableCell align='right' sx={{ color: 'text.secondary' }}>
         {item.count}
       </TableCell>
@@ -91,17 +96,15 @@ function renderStateCells(item) {
   );
 }
 
-function renderHistoricalCells(item, showMonthlyAverage) {
+function renderHistoricalCells(item) {
   return (
     <>
       <TableCell align='right' sx={{ color: '#9c27b0', fontWeight: 500 }}>
         {formatCurrency(centsToDollars(item.total))}
       </TableCell>
-      {showMonthlyAverage && (
-        <TableCell align='right' sx={{ color: '#2196f3', fontWeight: 500 }}>
-          {formatCurrency(centsToDollars(item.monthlyAvg))}
-        </TableCell>
-      )}
+      <TableCell align='right' sx={{ color: '#2196f3', fontWeight: 500 }}>
+        {formatCurrency(centsToDollars(item.monthlyAvg))}
+      </TableCell>
       <TableCell align='right' sx={{ color: 'text.secondary' }}>
         {item.percentage.toFixed(1)}%
       </TableCell>
@@ -189,15 +192,24 @@ export default function SpendingHistorySection() {
       spendingCategoryFilter,
     ],
   );
+  const dropdownValues = useMemo(
+    () => getSpendingSelectionDropdownValues(activeSelection),
+    [activeSelection],
+  );
 
   const periodConfig = useMemo(
-    () => getSpendingPeriodConfig(activeSelection),
-    [activeSelection],
+    () =>
+      getSpendingPeriodConfig(activeSelection, {
+        availableMonths,
+        availableYears,
+      }),
+    [activeSelection, availableMonths, availableYears],
   );
 
   const {
     categories: categoryData,
     totalExpenses,
+    monthlyAvgExpenses,
     totalTransactions,
     showStateBreakdown,
     stateTotals,
@@ -209,9 +221,7 @@ export default function SpendingHistorySection() {
         categories,
         recurringTransactions,
         realizedDatesMap,
-        startDate: periodConfig.startDate,
-        endDate: periodConfig.endDate,
-        numMonths: periodConfig.numMonths,
+        periodConfig,
       }),
     [
       allTransactions,
@@ -249,13 +259,29 @@ export default function SpendingHistorySection() {
 
   const handleMonthChange = (event) => {
     clearCustomRange();
-    setActiveSelection({ type: 'month', value: event.target.value });
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: event.target.value,
+          year: dropdownValues.year,
+        },
+        DEFAULT_SELECTION,
+      ),
+    );
     resetExpandedState();
   };
 
   const handleYearChange = (event) => {
     clearCustomRange();
-    setActiveSelection({ type: 'year', value: event.target.value });
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: dropdownValues.month,
+          year: event.target.value,
+        },
+        DEFAULT_SELECTION,
+      ),
+    );
     resetExpandedState();
   };
 
@@ -309,7 +335,6 @@ export default function SpendingHistorySection() {
       <AccordionDetails>
         <SpendingPeriodControls
           activeSelection={activeSelection}
-          availableMonths={availableMonths}
           availableYears={availableYears}
           customRange={customRange}
           onAggregateChange={handleAggregateChange}
@@ -332,54 +357,101 @@ export default function SpendingHistorySection() {
           <>
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
               {showStateBreakdown ? (
-                SPENDING_STATE_ORDER.map((stateKey) => (
+                <>
+                  {SPENDING_STATE_ORDER.map((stateKey) => (
+                    <Paper
+                      key={stateKey}
+                      sx={{
+                        flex: 1,
+                        minWidth: 140,
+                        p: 2,
+                        backgroundColor: SPENDING_STATE_META[stateKey].backgroundColor,
+                        border: `1px solid ${SPENDING_STATE_META[stateKey].borderColor}`,
+                      }}
+                    >
+                      <Typography variant='caption' color='text.secondary'>
+                        {SPENDING_STATE_META[stateKey].label}
+                      </Typography>
+                      <Typography
+                        variant='h5'
+                        sx={{
+                          color: SPENDING_STATE_META[stateKey].color,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {formatCurrency(centsToDollars(stateTotals[stateKey]))}
+                      </Typography>
+                    </Paper>
+                  ))}
+
                   <Paper
-                    key={stateKey}
                     sx={{
                       flex: 1,
                       minWidth: 140,
                       p: 2,
-                      backgroundColor: SPENDING_STATE_META[stateKey].backgroundColor,
-                      border: `1px solid ${SPENDING_STATE_META[stateKey].borderColor}`,
+                      backgroundColor: '#f5f5f5',
+                      border: '1px solid #bdbdbd',
                     }}
                   >
                     <Typography variant='caption' color='text.secondary'>
-                      {SPENDING_STATE_META[stateKey].label}
+                      Total
                     </Typography>
                     <Typography
                       variant='h5'
                       sx={{
-                        color: SPENDING_STATE_META[stateKey].color,
+                        color: '#212121',
                         fontWeight: 'bold',
                       }}
                     >
-                      {formatCurrency(centsToDollars(stateTotals[stateKey]))}
+                      {formatCurrency(centsToDollars(totalExpenses))}
                     </Typography>
                   </Paper>
-                ))
+                </>
               ) : (
-                <Paper
-                  sx={{
-                    flex: 1,
-                    minWidth: 180,
-                    p: 2,
-                    backgroundColor: '#f3e5f5',
-                    border: '1px solid #9c27b0',
-                  }}
-                >
-                  <Typography variant='caption' color='text.secondary'>
-                    Total Spent
-                  </Typography>
-                  <Typography
-                    variant='h5'
-                    sx={{ color: '#9c27b0', fontWeight: 'bold' }}
+                <>
+                  <Paper
+                    sx={{
+                      flex: 1,
+                      minWidth: 180,
+                      p: 2,
+                      backgroundColor: '#f3e5f5',
+                      border: '1px solid #9c27b0',
+                    }}
                   >
-                    {formatCurrency(centsToDollars(totalExpenses))}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {totalTransactions} transactions
-                  </Typography>
-                </Paper>
+                    <Typography variant='caption' color='text.secondary'>
+                      Total Spent
+                    </Typography>
+                    <Typography
+                      variant='h5'
+                      sx={{ color: '#9c27b0', fontWeight: 'bold' }}
+                    >
+                      {formatCurrency(centsToDollars(totalExpenses))}
+                    </Typography>
+                    <Typography variant='body2' color='text.secondary'>
+                      {totalTransactions} transactions
+                    </Typography>
+                  </Paper>
+
+                  <Paper
+                    sx={{
+                      flex: 1,
+                      minWidth: 180,
+                      p: 2,
+                      backgroundColor: '#e3f2fd',
+                      border: '1px solid #2196f3',
+                    }}
+                  >
+                    <Typography variant='caption' color='text.secondary'>
+                      Monthly Avg
+                    </Typography>
+                    <Typography
+                      variant='h5'
+                      sx={{ color: '#2196f3', fontWeight: 'bold' }}
+                    >
+                      {formatCurrency(centsToDollars(monthlyAvgExpenses))}
+                    </Typography>
+                  </Paper>
+                </>
               )}
             </Box>
 
@@ -448,6 +520,9 @@ export default function SpendingHistorySection() {
                             Total
                           </TableCell>
                           <TableCell align='right' sx={{ fontWeight: 700 }}>
+                            Monthly Avg
+                          </TableCell>
+                          <TableCell align='right' sx={{ fontWeight: 700 }}>
                             Txns
                           </TableCell>
                         </>
@@ -456,11 +531,9 @@ export default function SpendingHistorySection() {
                           <TableCell align='right' sx={{ fontWeight: 700 }}>
                             Total
                           </TableCell>
-                          {periodConfig.numMonths > 1 && (
-                            <TableCell align='right' sx={{ fontWeight: 700 }}>
-                              Mo. Avg
-                            </TableCell>
-                          )}
+                          <TableCell align='right' sx={{ fontWeight: 700 }}>
+                            Monthly Avg
+                          </TableCell>
                           <TableCell align='right' sx={{ fontWeight: 700 }}>
                             % of Total
                           </TableCell>
@@ -521,10 +594,7 @@ export default function SpendingHistorySection() {
 
                             {showStateBreakdown
                               ? renderStateCells(category)
-                              : renderHistoricalCells(
-                                  category,
-                                  periodConfig.numMonths > 1,
-                                )}
+                              : renderHistoricalCells(category)}
                           </TableRow>
 
                           {hasSubcategories &&
@@ -593,6 +663,17 @@ export default function SpendingHistorySection() {
                                     <TableCell
                                       align='right'
                                       sx={{
+                                        color: '#2196f3',
+                                        fontSize: '0.875rem',
+                                      }}
+                                    >
+                                      {formatCurrency(
+                                        centsToDollars(subcategory.monthlyAvg),
+                                      )}
+                                    </TableCell>
+                                    <TableCell
+                                      align='right'
+                                      sx={{
                                         color: 'text.secondary',
                                         fontSize: '0.875rem',
                                       }}
@@ -613,19 +694,17 @@ export default function SpendingHistorySection() {
                                         centsToDollars(subcategory.total),
                                       )}
                                     </TableCell>
-                                    {periodConfig.numMonths > 1 && (
-                                      <TableCell
-                                        align='right'
-                                        sx={{
-                                          color: '#2196f3',
-                                          fontSize: '0.875rem',
-                                        }}
-                                      >
-                                        {formatCurrency(
-                                          centsToDollars(subcategory.monthlyAvg),
-                                        )}
-                                      </TableCell>
-                                    )}
+                                    <TableCell
+                                      align='right'
+                                      sx={{
+                                        color: '#2196f3',
+                                        fontSize: '0.875rem',
+                                      }}
+                                    >
+                                      {formatCurrency(
+                                        centsToDollars(subcategory.monthlyAvg),
+                                      )}
+                                    </TableCell>
                                     <TableCell
                                       align='right'
                                       sx={{

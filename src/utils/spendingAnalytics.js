@@ -20,9 +20,25 @@ import { TransactionStateEnum } from '@/store/transactions/constants';
 import { buildCategoriesById, buildSplitsByTransactionId } from './transactionCategoryState';
 
 export const AGGREGATE_PERIODS = Object.freeze([
+  { key: 'current-month', label: 'Current Month' },
   { key: 'last-3-months', label: '3 Months' },
   { key: 'ytd', label: 'YTD' },
   { key: 'last-12-months', label: '12 Months' },
+]);
+
+export const CALENDAR_MONTHS = Object.freeze([
+  { value: '01', label: 'January' },
+  { value: '02', label: 'February' },
+  { value: '03', label: 'March' },
+  { value: '04', label: 'April' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'June' },
+  { value: '07', label: 'July' },
+  { value: '08', label: 'August' },
+  { value: '09', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
 ]);
 
 export const SPENDING_STATE_ORDER = Object.freeze([
@@ -123,6 +139,38 @@ const getMonthCount = (startDate, endDate) =>
 
 const formatCustomRangeLabel = (startDate, endDate) =>
   `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`;
+
+const normalizeMonthValue = (value) => {
+  if (!value && value !== 0) return '';
+
+  const normalizedValue = String(value).trim();
+  if (!normalizedValue) return '';
+
+  return normalizedValue.padStart(2, '0');
+};
+
+const cloneSelection = (selection) => ({ ...selection });
+
+const getMonthLabel = (monthValue, referenceDate = new Date()) => {
+  const normalizedMonth = normalizeMonthValue(monthValue);
+  if (!normalizedMonth) return '';
+
+  const monthDate = parse(normalizedMonth, 'MM', referenceDate);
+  return isNaN(monthDate.getTime()) ? '' : format(monthDate, 'MMMM');
+};
+
+const getSelectionYears = (availableYears, referenceDate) => {
+  const numericYears = availableYears
+    .map((year) => Number(year))
+    .filter((year) => !Number.isNaN(year))
+    .sort((left, right) => left - right);
+
+  if (numericYears.length > 0) {
+    return numericYears;
+  }
+
+  return [startOfDay(referenceDate).getFullYear()];
+};
 
 const getBucketForState = (transactionState) => {
   switch (transactionState) {
@@ -248,16 +296,103 @@ export const shouldShowStateBreakdown = (
   return !isBefore(normalizedEnd, startOfDay(referenceDate));
 };
 
+export function getSpendingSelectionDropdownValues(
+  selection,
+  referenceDate = new Date(),
+) {
+  const currentMonth = format(referenceDate, 'MM');
+  const currentYear = format(referenceDate, 'yyyy');
+
+  if (!selection?.type) {
+    return { month: '', year: '' };
+  }
+
+  if (selection.type === 'aggregate') {
+    if (selection.value === 'current-month') {
+      return {
+        month: currentMonth,
+        year: currentYear,
+      };
+    }
+
+    return { month: '', year: '' };
+  }
+
+  if (selection.type === 'month') {
+    return {
+      month: normalizeMonthValue(selection.value),
+      year: '',
+    };
+  }
+
+  if (selection.type === 'year') {
+    return {
+      month: '',
+      year: String(selection.value || ''),
+    };
+  }
+
+  if (selection.type === 'year-month') {
+    return {
+      month: normalizeMonthValue(selection.month),
+      year: String(selection.year || ''),
+    };
+  }
+
+  return { month: '', year: '' };
+}
+
+export function buildSpendingSelectionFromDropdownValues(
+  { month, year },
+  fallbackSelection,
+) {
+  const normalizedMonth = normalizeMonthValue(month);
+  const normalizedYear = String(year || '').trim();
+
+  if (normalizedMonth && normalizedYear) {
+    return {
+      type: 'year-month',
+      month: normalizedMonth,
+      year: normalizedYear,
+    };
+  }
+
+  if (normalizedYear) {
+    return {
+      type: 'year',
+      value: normalizedYear,
+    };
+  }
+
+  if (normalizedMonth) {
+    return {
+      type: 'month',
+      value: normalizedMonth,
+    };
+  }
+
+  return cloneSelection(fallbackSelection);
+}
+
 export function getAggregatePeriodConfig(
   key,
   referenceDate = new Date(),
 ) {
   switch (key) {
+    case 'current-month':
+      return {
+        startDate: startOfMonth(referenceDate),
+        endDate: endOfMonth(referenceDate),
+        numMonths: 1,
+        filterMode: 'range',
+        label: `Current Month (${format(referenceDate, 'MMMM yyyy')})`,
+      };
     case 'last-3-months':
       return {
         startDate: startOfMonth(subMonths(referenceDate, 3)),
         endDate: endOfMonth(subMonths(referenceDate, 1)),
         numMonths: 3,
+        filterMode: 'range',
         label: 'Last 3 Months',
       };
     case 'ytd': {
@@ -272,6 +407,7 @@ export function getAggregatePeriodConfig(
         startDate,
         endDate,
         numMonths: completedMonths,
+        filterMode: 'range',
         label: `YTD (${format(referenceDate, 'yyyy')})`,
       };
     }
@@ -280,6 +416,7 @@ export function getAggregatePeriodConfig(
         startDate: startOfMonth(subMonths(referenceDate, 12)),
         endDate: endOfMonth(subMonths(referenceDate, 1)),
         numMonths: 12,
+        filterMode: 'range',
         label: 'Last 12 Months',
       };
     default:
@@ -289,8 +426,17 @@ export function getAggregatePeriodConfig(
 
 export function getSpendingPeriodConfig(
   selection,
-  referenceDate = new Date(),
+  optionsOrReferenceDate = new Date(),
 ) {
+  const options =
+    optionsOrReferenceDate instanceof Date
+      ? { referenceDate: optionsOrReferenceDate }
+      : optionsOrReferenceDate;
+  const {
+    referenceDate = new Date(),
+    availableYears = [],
+  } = options || {};
+
   if (!selection?.type) {
     return getAggregatePeriodConfig('last-3-months', referenceDate);
   }
@@ -300,14 +446,21 @@ export function getSpendingPeriodConfig(
   }
 
   if (selection.type === 'month' && selection.value) {
-    const monthDate = parse(selection.value, 'yyyy-MM', referenceDate);
+    const normalizedMonth = normalizeMonthValue(selection.value);
+    const yearsInScope = getSelectionYears(availableYears, referenceDate);
 
-    if (!isNaN(monthDate.getTime())) {
+    if (normalizedMonth && yearsInScope.length > 0) {
+      const firstYear = yearsInScope[0];
+      const lastYear = yearsInScope[yearsInScope.length - 1];
+      const monthIndex = Number(normalizedMonth) - 1;
+
       return {
-        startDate: startOfMonth(monthDate),
-        endDate: endOfMonth(monthDate),
-        numMonths: 1,
-        label: format(monthDate, 'MMMM yyyy'),
+        startDate: startOfMonth(new Date(firstYear, monthIndex, 1)),
+        endDate: endOfMonth(new Date(lastYear, monthIndex, 1)),
+        numMonths: yearsInScope.length,
+        filterMode: 'month',
+        month: normalizedMonth,
+        label: `${getMonthLabel(normalizedMonth, referenceDate)} (All Years)`,
       };
     }
   }
@@ -320,7 +473,29 @@ export function getSpendingPeriodConfig(
         startDate: startOfYear(yearDate),
         endDate: endOfYear(yearDate),
         numMonths: 12,
+        filterMode: 'range',
         label: String(selection.value),
+      };
+    }
+  }
+
+  if (selection.type === 'year-month' && selection.year && selection.month) {
+    const monthValue = normalizeMonthValue(selection.month);
+    const monthDate = parse(
+      `${selection.year}-${monthValue}`,
+      'yyyy-MM',
+      referenceDate,
+    );
+
+    if (!isNaN(monthDate.getTime())) {
+      return {
+        startDate: startOfMonth(monthDate),
+        endDate: endOfMonth(monthDate),
+        numMonths: 1,
+        filterMode: 'range',
+        month: monthValue,
+        year: String(selection.year),
+        label: format(monthDate, 'MMMM yyyy'),
       };
     }
   }
@@ -337,6 +512,7 @@ export function getSpendingPeriodConfig(
         startDate: normalizedStart,
         endDate: normalizedEnd,
         numMonths: getMonthCount(normalizedStart, normalizedEnd),
+        filterMode: 'range',
         label: formatCustomRangeLabel(normalizedStart, normalizedEnd),
       };
     }
@@ -404,20 +580,77 @@ export function buildAvailableSpendingPeriods({
   };
 }
 
+const resolvePeriodConfig = ({
+  periodConfig,
+  startDate,
+  endDate,
+  numMonths = 1,
+}) => {
+  if (periodConfig) {
+    return {
+      ...periodConfig,
+      startDate: parseDateValue(periodConfig.startDate),
+      endDate: parseDateValue(periodConfig.endDate),
+      numMonths: Math.max(1, periodConfig.numMonths || 1),
+      filterMode: periodConfig.filterMode || 'range',
+    };
+  }
+
+  return {
+    startDate: parseDateValue(startDate),
+    endDate: parseDateValue(endDate),
+    numMonths: Math.max(1, numMonths),
+    filterMode: 'range',
+  };
+};
+
+const isDateInPeriod = (
+  dateValue,
+  periodConfig,
+  normalizedStartDate,
+  normalizedEndDate,
+) => {
+  const normalizedDate = parseDateValue(dateValue);
+
+  if (!normalizedDate || !normalizedStartDate || !normalizedEndDate) {
+    return false;
+  }
+
+  if (
+    isBefore(normalizedDate, normalizedStartDate) ||
+    isAfter(normalizedDate, normalizedEndDate)
+  ) {
+    return false;
+  }
+
+  if (periodConfig.filterMode === 'month' && periodConfig.month) {
+    return format(normalizedDate, 'MM') === periodConfig.month;
+  }
+
+  return true;
+};
+
 export function buildDashboardSpendingHistoryData({
   allTransactions = [],
   transactionSplits = [],
   categories = [],
   recurringTransactions = [],
   realizedDatesMap = EMPTY_REALIZED_DATES,
+  periodConfig,
   startDate,
   endDate,
   numMonths = 1,
   referenceDate = new Date(),
 }) {
-  const normalizedStartDate = parseDateValue(startDate);
-  const normalizedEndDate = parseDateValue(endDate);
-  const safeMonths = Math.max(1, numMonths);
+  const resolvedPeriodConfig = resolvePeriodConfig({
+    periodConfig,
+    startDate,
+    endDate,
+    numMonths,
+  });
+  const normalizedStartDate = resolvedPeriodConfig.startDate;
+  const normalizedEndDate = resolvedPeriodConfig.endDate;
+  const safeMonths = resolvedPeriodConfig.numMonths;
 
   if (!normalizedStartDate || !normalizedEndDate) {
     return {
@@ -505,8 +738,12 @@ export function buildDashboardSpendingHistoryData({
     if (!transactionDate) return;
 
     if (
-      isBefore(transactionDate, normalizedStartDate) ||
-      isAfter(transactionDate, normalizedEndDate)
+      !isDateInPeriod(
+        transactionDate,
+        resolvedPeriodConfig,
+        normalizedStartDate,
+        normalizedEndDate,
+      )
     ) {
       return;
     }
@@ -539,6 +776,16 @@ export function buildDashboardSpendingHistoryData({
         ).forEach((dateString) => {
           const occurrenceId = `${rule.id}:${dateString}`;
           if (realizedDatesMap.has(occurrenceId)) return;
+          if (
+            !isDateInPeriod(
+              dateString,
+              resolvedPeriodConfig,
+              normalizedStartDate,
+              normalizedEndDate,
+            )
+          ) {
+            return;
+          }
 
           addCategoryAmount(
             rule.categoryId,
@@ -575,12 +822,19 @@ export function buildCategoryTotalsData({
   transactionSplits = [],
   recurringTransactions = [],
   realizedDatesMap = EMPTY_REALIZED_DATES,
+  periodConfig,
   startDate,
   endDate,
   referenceDate = new Date(),
 }) {
-  const normalizedStartDate = parseDateValue(startDate);
-  const normalizedEndDate = parseDateValue(endDate);
+  const resolvedPeriodConfig = resolvePeriodConfig({
+    periodConfig,
+    startDate,
+    endDate,
+  });
+  const normalizedStartDate = resolvedPeriodConfig.startDate;
+  const normalizedEndDate = resolvedPeriodConfig.endDate;
+  const safeMonths = resolvedPeriodConfig.numMonths;
 
   if (!category || !normalizedStartDate || !normalizedEndDate) {
     return {
@@ -639,8 +893,12 @@ export function buildCategoryTotalsData({
     if (!transactionDate) return;
 
     if (
-      isBefore(transactionDate, normalizedStartDate) ||
-      isAfter(transactionDate, normalizedEndDate)
+      !isDateInPeriod(
+        transactionDate,
+        resolvedPeriodConfig,
+        normalizedStartDate,
+        normalizedEndDate,
+      )
     ) {
       return;
     }
@@ -713,6 +971,16 @@ export function buildCategoryTotalsData({
         ).forEach((dateString) => {
           const occurrenceId = `${rule.id}:${dateString}`;
           if (realizedDatesMap.has(occurrenceId)) return;
+          if (
+            !isDateInPeriod(
+              dateString,
+              resolvedPeriodConfig,
+              normalizedStartDate,
+              normalizedEndDate,
+            )
+          ) {
+            return;
+          }
 
           addCategoryAmount(
             rule.categoryId,
@@ -739,10 +1007,10 @@ export function buildCategoryTotalsData({
   }
 
   return {
-    totals: finalizeMetrics(totals, totals.total, 1),
+    totals: finalizeMetrics(totals, totals.total, safeMonths),
     subcategoryTotals: Array.from(subcategoryTotals.values())
       .map((subcategory) => ({
-        ...finalizeMetrics(subcategory, totals.total, 1),
+        ...finalizeMetrics(subcategory, totals.total, safeMonths),
         transactions: [...subcategory.transactions].sort(sortTransactionDetails),
       }))
       .filter((subcategory) => subcategory.total !== 0)

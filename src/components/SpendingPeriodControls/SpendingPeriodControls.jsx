@@ -8,13 +8,15 @@ import {
   ToggleButtonGroup,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { format, parse } from 'date-fns';
 
-import { AGGREGATE_PERIODS } from '@/utils/spendingAnalytics';
+import {
+  AGGREGATE_PERIODS,
+  CALENDAR_MONTHS,
+  getSpendingSelectionDropdownValues,
+} from '@/utils/spendingAnalytics';
 
 export default function SpendingPeriodControls({
   activeSelection,
-  availableMonths,
   availableYears,
   customRange,
   onAggregateChange,
@@ -29,10 +31,8 @@ export default function SpendingPeriodControls({
 }) {
   const activeAggregate =
     activeSelection?.type === 'aggregate' ? activeSelection.value : null;
-  const activeMonth =
-    activeSelection?.type === 'month' ? activeSelection.value : '';
-  const activeYear =
-    activeSelection?.type === 'year' ? activeSelection.value : '';
+  const { month: activeMonth, year: activeYear } =
+    getSpendingSelectionDropdownValues(activeSelection);
 
   return (
     <Box
@@ -69,26 +69,6 @@ export default function SpendingPeriodControls({
 
           {showSelectionControls && (
             <>
-              <FormControl size='small' sx={{ minWidth: 170 }}>
-                <InputLabel>Month</InputLabel>
-                <Select
-                  value={activeMonth}
-                  label='Month'
-                  onChange={onMonthChange}
-                  displayEmpty
-                >
-                  <MenuItem value=''>Month</MenuItem>
-                  {availableMonths.map((monthValue) => (
-                    <MenuItem key={monthValue} value={monthValue}>
-                      {format(
-                        parse(monthValue, 'yyyy-MM', new Date()),
-                        'MMMM yyyy',
-                      )}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
               <FormControl size='small' sx={{ minWidth: 110 }}>
                 <InputLabel>Year</InputLabel>
                 <Select
@@ -99,8 +79,28 @@ export default function SpendingPeriodControls({
                 >
                   <MenuItem value=''>Year</MenuItem>
                   {availableYears.map((yearValue) => (
-                    <MenuItem key={yearValue} value={yearValue}>
+                    <MenuItem key={yearValue} value={String(yearValue)}>
                       {yearValue}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl size='small' sx={{ minWidth: 170 }}>
+                <InputLabel>Month</InputLabel>
+                <Select
+                  value={activeMonth}
+                  label='Month'
+                  onChange={onMonthChange}
+                  displayEmpty
+                >
+                  <MenuItem value=''>Month</MenuItem>
+                  {CALENDAR_MONTHS.map((monthOption) => (
+                    <MenuItem
+                      key={monthOption.value}
+                      value={monthOption.value}
+                    >
+                      {monthOption.label}
                     </MenuItem>
                   ))}
                 </Select>

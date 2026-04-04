@@ -4,6 +4,7 @@ import {
   buildAvailableSpendingPeriods,
   buildCategoryTotalsData,
   buildDashboardSpendingHistoryData,
+  getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
 
 const categories = [
@@ -232,6 +233,81 @@ describe('spendingAnalytics', () => {
         id: 'food',
         total: 1200,
         count: 1,
+      }),
+    ]);
+  });
+
+  it('supports month-only selections across all available years', () => {
+    const periodConfig = getSpendingPeriodConfig(
+      { type: 'month', value: '04' },
+      {
+        referenceDate: new Date('2026-04-03T12:00:00Z'),
+        availableYears: [2025, 2026],
+      },
+    );
+
+    expect(periodConfig.label).toBe('April (All Years)');
+    expect(periodConfig.numMonths).toBe(2);
+
+    const dashboardResult = buildDashboardSpendingHistoryData({
+      allTransactions: transactions,
+      transactionSplits,
+      categories,
+      recurringTransactions,
+      realizedDatesMap,
+      periodConfig,
+      referenceDate: new Date('2026-04-03T12:00:00Z'),
+    });
+
+    expect(dashboardResult.showStateBreakdown).toBe(true);
+    expect(dashboardResult.totalExpenses).toBe(10500);
+    expect(dashboardResult.monthlyAvgExpenses).toBe(5250);
+    expect(dashboardResult.categories).toEqual([
+      expect.objectContaining({
+        id: 'food',
+        completed: 7000,
+        pending: 2000,
+        planned: 1500,
+        total: 10500,
+        monthlyAvg: 5250,
+      }),
+    ]);
+
+    const categoryResult = buildCategoryTotalsData({
+      category: {
+        id: 'food',
+        name: 'Food',
+        subcategories: [
+          { id: 'groceries', name: 'Groceries' },
+          { id: 'dining', name: 'Dining Out' },
+        ],
+      },
+      allTransactions: transactions,
+      transactionSplits,
+      recurringTransactions,
+      realizedDatesMap,
+      periodConfig,
+      referenceDate: new Date('2026-04-03T12:00:00Z'),
+    });
+
+    expect(categoryResult.showStateBreakdown).toBe(true);
+    expect(categoryResult.totals).toMatchObject({
+      completed: -7000,
+      pending: -2000,
+      planned: -1500,
+      total: -10500,
+      monthlyAvg: -5250,
+    });
+    expect(categoryResult.subcategoryTotals).toEqual([
+      expect.objectContaining({
+        id: 'dining',
+        total: -6500,
+        monthlyAvg: -3250,
+      }),
+      expect.objectContaining({
+        id: 'groceries',
+        total: -4000,
+        monthlyAvg: -2000,
       }),
     ]);
   });

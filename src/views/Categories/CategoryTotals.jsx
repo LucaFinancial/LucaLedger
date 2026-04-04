@@ -36,10 +36,12 @@ import {
 } from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
+  buildSpendingSelectionFromDropdownValues,
   SPENDING_STATE_META,
   SPENDING_STATE_ORDER,
   buildAvailableSpendingPeriods,
   buildCategoryTotalsData,
+  getSpendingSelectionDropdownValues,
   getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
 
@@ -60,6 +62,10 @@ function formatTransactionDate(dateValue) {
 }
 
 export default function CategoryTotals({ category }) {
+  const defaultSelection = {
+    type: 'aggregate',
+    value: 'current-month',
+  };
   const dispatch = useDispatch();
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
@@ -76,14 +82,7 @@ export default function CategoryTotals({ category }) {
     settingsSelectors.selectRecurringProjection,
   );
 
-  const currentMonthValue = useMemo(
-    () => format(new Date(), 'yyyy-MM'),
-    [],
-  );
-  const [activeSelection, setActiveSelection] = useState({
-    type: 'month',
-    value: currentMonthValue,
-  });
+  const [activeSelection, setActiveSelection] = useState(defaultSelection);
   const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState([]);
   const [customRange, setCustomRange] = useState({
     startDate: null,
@@ -129,10 +128,18 @@ export default function CategoryTotals({ category }) {
       categoryIds,
     ],
   );
+  const dropdownValues = useMemo(
+    () => getSpendingSelectionDropdownValues(activeSelection),
+    [activeSelection],
+  );
 
   const periodConfig = useMemo(
-    () => getSpendingPeriodConfig(activeSelection),
-    [activeSelection],
+    () =>
+      getSpendingPeriodConfig(activeSelection, {
+        availableMonths,
+        availableYears,
+      }),
+    [activeSelection, availableMonths, availableYears],
   );
   const accountsById = useMemo(
     () => new Map(accounts.map((account) => [account.id, account.name])),
@@ -167,8 +174,7 @@ export default function CategoryTotals({ category }) {
         transactionSplits,
         recurringTransactions,
         realizedDatesMap,
-        startDate: periodConfig.startDate,
-        endDate: periodConfig.endDate,
+        periodConfig,
       }),
     [
       category,
@@ -199,13 +205,29 @@ export default function CategoryTotals({ category }) {
   const handleMonthChange = (event) => {
     clearExpandedSubcategories();
     clearCustomRange();
-    setActiveSelection({ type: 'month', value: event.target.value });
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: event.target.value,
+          year: dropdownValues.year,
+        },
+        defaultSelection,
+      ),
+    );
   };
 
   const handleYearChange = (event) => {
     clearExpandedSubcategories();
     clearCustomRange();
-    setActiveSelection({ type: 'year', value: event.target.value });
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: dropdownValues.month,
+          year: event.target.value,
+        },
+        defaultSelection,
+      ),
+    );
   };
 
   const updateCustomRange = (nextRange) => {
@@ -315,7 +337,7 @@ export default function CategoryTotals({ category }) {
     handleRecurringModalClose();
   };
 
-  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 2 : 2;
+  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 2 : 3;
 
   return (
     <Paper
@@ -387,7 +409,6 @@ export default function CategoryTotals({ category }) {
 
       <SpendingPeriodControls
         activeSelection={activeSelection}
-        availableMonths={availableMonths}
         availableYears={availableYears}
         customRange={customRange}
         onAggregateChange={handleAggregateChange}
@@ -460,34 +481,71 @@ export default function CategoryTotals({ category }) {
                 ))}
               </Box>
             ) : (
-              <Paper
+              <Box
                 sx={{
-                  width: { xs: '100%', sm: 220 },
-                  maxWidth: '100%',
-                  p: 1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.72)',
-                  border: '1px solid rgba(76, 175, 80, 0.25)',
+                  display: 'flex',
+                  gap: 0.75,
+                  flexWrap: 'wrap',
                 }}
               >
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
-                >
-                  Total
-                </Typography>
-                <Typography
+                <Paper
                   sx={{
-                    color: 'text.primary',
-                    fontWeight: 600,
-                    mt: 0.25,
-                    fontSize: '0.95rem',
-                    lineHeight: 1.2,
+                    width: { xs: '100%', sm: 220 },
+                    maxWidth: '100%',
+                    p: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+                    border: '1px solid rgba(76, 175, 80, 0.25)',
                   }}
                 >
-                  {formatAmount(totals.total)}
-                </Typography>
-              </Paper>
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                  >
+                    Total
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 600,
+                      mt: 0.25,
+                      fontSize: '0.95rem',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatAmount(totals.total)}
+                  </Typography>
+                </Paper>
+
+                <Paper
+                  sx={{
+                    width: { xs: '100%', sm: 220 },
+                    maxWidth: '100%',
+                    p: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+                    border: '1px solid rgba(33, 150, 243, 0.3)',
+                  }}
+                >
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                  >
+                    Monthly Avg
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 600,
+                      mt: 0.25,
+                      fontSize: '0.95rem',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatAmount(totals.monthlyAvg)}
+                  </Typography>
+                </Paper>
+              </Box>
             )}
           </Box>
 
@@ -520,9 +578,14 @@ export default function CategoryTotals({ category }) {
                         </TableCell>
                       </>
                     ) : (
-                      <TableCell align='right' sx={{ fontWeight: 700 }}>
-                        Total
-                      </TableCell>
+                      <>
+                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          Total
+                        </TableCell>
+                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          Monthly Avg
+                        </TableCell>
+                      </>
                     )}
                   </TableRow>
                 </TableHead>
@@ -592,15 +655,26 @@ export default function CategoryTotals({ category }) {
                             </TableCell>
                           </>
                         ) : (
-                          <TableCell
-                            align='right'
-                            sx={{
-                              color: 'text.primary',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {formatAmount(subcategory.total)}
-                          </TableCell>
+                          <>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: 'text.primary',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {formatAmount(subcategory.total)}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: 'text.primary',
+                                fontWeight: 500,
+                              }}
+                            >
+                              {formatAmount(subcategory.monthlyAvg)}
+                            </TableCell>
+                          </>
                         )}
                       </TableRow>
 
