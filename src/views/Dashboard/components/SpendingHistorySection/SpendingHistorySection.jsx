@@ -359,7 +359,13 @@ export default function SpendingHistorySection() {
         '&:before': { display: 'none' },
       }}
     >
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        sx={{
+          backgroundColor: '#f3e5f5',
+          '&:hover': { backgroundColor: '#e1bee7' },
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
             Spending History
@@ -380,6 +386,7 @@ export default function SpendingHistorySection() {
           onYearChange={handleYearChange}
           onCustomStartChange={handleCustomStartChange}
           onCustomEndChange={handleCustomEndChange}
+          inlineDateControls
           sx={{ mb: 3 }}
         />
 
