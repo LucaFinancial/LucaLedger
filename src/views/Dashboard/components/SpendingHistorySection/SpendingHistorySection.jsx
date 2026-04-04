@@ -4,30 +4,36 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  FormControlLabel,
   IconButton,
   Paper,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import { add } from 'date-fns';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { add, format, parseISO } from 'date-fns';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Legend, Tooltip } from 'chart.js';
 import { useSelector } from 'react-redux';
 
 import SpendingPeriodControls from '@/components/SpendingPeriodControls';
+import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as settingsSelectors } from '@/store/settings';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import { selectors as transactionSelectors } from '@/store/transactions';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
   buildSpendingSelectionFromDropdownValues,
@@ -98,12 +104,75 @@ const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
   'ytd',
   'last-12-months',
 ]);
+const RECURRING_TEXT_COLOR = TOTAL_META.color;
 
 function formatCurrency(amount) {
   const safeAmount =
     amount == null || Number.isNaN(amount) ? 0 : amount;
 
   return `$${doublePrecisionFormatString(safeAmount)}`;
+}
+
+function formatTransactionDate(dateValue) {
+  if (!dateValue) return '--';
+
+  try {
+    return format(parseISO(String(dateValue).replace(/\//g, '-')), 'MMM d, yyyy');
+  } catch {
+    return String(dateValue);
+  }
+}
+
+function getTransactionDetailTextColor(transactionDetail) {
+  if (
+    transactionDetail.sourceType === 'recurring' ||
+    transactionDetail.transactionState === 'recurring'
+  ) {
+    return RECURRING_TEXT_COLOR;
+  }
+
+  switch (transactionDetail.transactionState) {
+    case TransactionStateEnum.COMPLETED:
+      return LEDGER_STATE_META.completed.color;
+    case TransactionStateEnum.PENDING:
+      return LEDGER_STATE_META.pending.color;
+    case TransactionStateEnum.SCHEDULED:
+      return LEDGER_STATE_META.scheduled.color;
+    case TransactionStateEnum.PLANNED:
+      return LEDGER_STATE_META.planned.color;
+    default:
+      return 'inherit';
+  }
+}
+
+function getTransactionDetailSortValue(transactionDetail) {
+  if (!transactionDetail?.date) return 0;
+
+  try {
+    const parsedTime = parseISO(
+      String(transactionDetail.date).replace(/\//g, '-'),
+    ).getTime();
+    return Number.isNaN(parsedTime) ? 0 : parsedTime;
+  } catch {
+    return 0;
+  }
+}
+
+function sortTransactionDetailsForDirection(transactions, direction) {
+  const sortMultiplier = direction === 'asc' ? 1 : -1;
+
+  return [...transactions].sort((left, right) => {
+    const leftTime = getTransactionDetailSortValue(left);
+    const rightTime = getTransactionDetailSortValue(right);
+
+    if (leftTime !== rightTime) {
+      return (leftTime - rightTime) * sortMultiplier;
+    }
+
+    return String(left.description || '').localeCompare(
+      String(right.description || ''),
+    );
+  });
 }
 
 function renderStateCells(item) {
@@ -166,7 +235,12 @@ export default function SpendingHistorySection() {
     endDate: null,
   });
   const [expandedCategoryId, setExpandedCategoryId] = useState(null);
+  const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState([]);
+  const [hideSubcategories, setHideSubcategories] = useState(false);
+  const [transactionSortDirection, setTransactionSortDirection] =
+    useState('asc');
 
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
     transactionSplitSelectors.selectTransactionSplits,
@@ -188,6 +262,10 @@ export default function SpendingHistorySection() {
         [recurringProjection.unit]: recurringProjection.amount,
       }),
     [recurringProjection],
+  );
+  const accountsById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account.name])),
+    [accounts],
   );
 
   const spendingCategoryFilter = useMemo(() => {
@@ -286,7 +364,10 @@ export default function SpendingHistorySection() {
     [categoryData],
   );
 
-  const resetExpandedState = () => setExpandedCategoryId(null);
+  const resetExpandedState = () => {
+    setExpandedCategoryId(null);
+    setExpandedSubcategoryIds([]);
+  };
   const clearCustomRange = () =>
     setCustomRange({
       startDate: null,
@@ -367,6 +448,113 @@ export default function SpendingHistorySection() {
       endDate: value,
     });
   };
+  const handleHideSubcategoriesChange = (event) => {
+    setHideSubcategories(event.target.checked);
+    setExpandedSubcategoryIds([]);
+  };
+  const handleTransactionSortToggle = () => {
+    setTransactionSortDirection((currentDirection) =>
+      currentDirection === 'asc' ? 'desc' : 'asc',
+    );
+  };
+  const toggleCategoryExpanded = (categoryId) => {
+    setExpandedCategoryId((currentCategoryId) =>
+      currentCategoryId === categoryId ? null : categoryId,
+    );
+    setExpandedSubcategoryIds([]);
+  };
+  const toggleSubcategoryExpanded = (categoryId, subcategoryId) => {
+    const subcategoryKey = `${categoryId}:${subcategoryId}`;
+
+    setExpandedSubcategoryIds((currentExpandedIds) =>
+      currentExpandedIds.includes(subcategoryKey)
+        ? currentExpandedIds.filter((id) => id !== subcategoryKey)
+        : [...currentExpandedIds, subcategoryKey],
+    );
+  };
+  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 4 : 5;
+  const renderTransactionDetailTable = (transactions) => (
+    <Table
+      size='small'
+      sx={{
+        '& .MuiTableCell-root': {
+          px: 1,
+        },
+      }}
+    >
+      <TableHead>
+        <TableRow>
+          <TableCell sx={{ fontWeight: 700 }}>
+            <TableSortLabel
+              active
+              direction={transactionSortDirection}
+              IconComponent={KeyboardArrowUpIcon}
+              onClick={handleTransactionSortToggle}
+            >
+              Date
+            </TableSortLabel>
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700 }}>Account</TableCell>
+          <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+          <TableCell align='right' sx={{ fontWeight: 700 }}>
+            Amount
+          </TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {sortTransactionDetailsForDirection(
+          transactions,
+          transactionSortDirection,
+        ).map((transaction) => {
+          const detailTextColor = getTransactionDetailTextColor(transaction);
+
+          return (
+            <TableRow
+              key={transaction.id}
+              sx={{
+                color: detailTextColor,
+                '& .MuiTableCell-root': {
+                  color: detailTextColor,
+                },
+              }}
+            >
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                {formatTransactionDate(transaction.date)}
+              </TableCell>
+              <TableCell>
+                {accountsById.get(transaction.accountId) || '--'}
+              </TableCell>
+              <TableCell>{transaction.description || '--'}</TableCell>
+              <TableCell
+                align='right'
+                sx={{
+                  color: detailTextColor,
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {formatCurrency(centsToDollars(transaction.amount))}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+  const renderTransactionDetailRow = (transactions) => (
+    <TableRow>
+      <TableCell
+        colSpan={detailColSpan}
+        sx={{
+          py: 1.5,
+          px: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.62)',
+        }}
+      >
+        {renderTransactionDetailTable(transactions)}
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <Accordion
@@ -405,6 +593,25 @@ export default function SpendingHistorySection() {
           onCustomStartChange={handleCustomStartChange}
           onCustomEndChange={handleCustomEndChange}
           inlineDateControls
+          dateTrailingControls={
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={hideSubcategories}
+                  onChange={handleHideSubcategoriesChange}
+                  size='small'
+                />
+              }
+              label='Hide subcategories'
+              sx={{
+                ml: 0.5,
+                mr: 0,
+                '& .MuiFormControlLabel-label': {
+                  fontSize: '0.9rem',
+                },
+              }}
+            />
+          }
           sx={{ mb: 3 }}
         />
 
@@ -688,19 +895,20 @@ export default function SpendingHistorySection() {
                     {categoryData.map((category, index) => {
                       const isExpanded = expandedCategoryId === category.id;
                       const hasSubcategories = category.subcategories.length > 0;
+                      const canExpandCategory = hideSubcategories
+                        ? category.transactions.length > 0
+                        : hasSubcategories || category.transactions.length > 0;
 
                       return (
                         <React.Fragment key={category.id}>
                           <TableRow
                             onClick={() =>
-                              hasSubcategories &&
-                              setExpandedCategoryId(
-                                isExpanded ? null : category.id,
-                              )
+                              canExpandCategory &&
+                              toggleCategoryExpanded(category.id)
                             }
                             sx={{
-                              cursor: hasSubcategories ? 'pointer' : 'default',
-                              '&:hover': hasSubcategories
+                              cursor: canExpandCategory ? 'pointer' : 'default',
+                              '&:hover': canExpandCategory
                                 ? { backgroundColor: '#f5f5f5' }
                                 : undefined,
                             }}
@@ -709,7 +917,7 @@ export default function SpendingHistorySection() {
                               <Box
                                 sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                               >
-                                {hasSubcategories && (
+                                {canExpandCategory && (
                                   <IconButton size='small' sx={{ p: 0 }}>
                                     {isExpanded ? (
                                       <KeyboardArrowDownIcon fontSize='small' />
@@ -724,7 +932,7 @@ export default function SpendingHistorySection() {
                                     height: 12,
                                     borderRadius: '50%',
                                     backgroundColor: COLORS[index % COLORS.length],
-                                    ml: hasSubcategories ? 0 : 3,
+                                    ml: canExpandCategory ? 0 : 3,
                                     flexShrink: 0,
                                   }}
                                 />
@@ -737,135 +945,175 @@ export default function SpendingHistorySection() {
                               : renderHistoricalCells(category)}
                           </TableRow>
 
-                          {hasSubcategories &&
-                            isExpanded &&
-                            category.subcategories.map((subcategory) => (
-                              <TableRow
-                                key={subcategory.id}
-                                sx={{ backgroundColor: '#fafafa' }}
-                              >
-                                <TableCell sx={{ pl: 8 }}>
-                                  <Box
-                                    sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: 1,
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        width: 8,
-                                        height: 8,
-                                        borderRadius: '50%',
-                                        backgroundColor:
-                                          COLORS[index % COLORS.length],
-                                        opacity: 0.6,
-                                        flexShrink: 0,
-                                      }}
-                                    />
-                                    <Typography
-                                      variant='body2'
-                                      color='text.secondary'
-                                    >
-                                      {subcategory.name}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
+                          {isExpanded &&
+                            (hideSubcategories || !hasSubcategories ? (
+                              renderTransactionDetailRow(category.transactions)
+                            ) : (
+                              category.subcategories.map((subcategory) => {
+                                const subcategoryKey = `${category.id}:${subcategory.id}`;
+                                const isSubcategoryExpanded =
+                                  expandedSubcategoryIds.includes(subcategoryKey);
+                                const hasTransactions =
+                                  subcategory.transactions.length > 0;
 
-                                {showStateBreakdown ? (
-                                  <>
-                                    {SPENDING_STATE_ORDER.map((stateKey) => (
-                                      <TableCell
-                                        key={`${subcategory.id}-${stateKey}`}
-                                        align='right'
-                                        sx={{
-                                          color: LEDGER_STATE_META[stateKey].color,
-                                          fontSize: '0.875rem',
-                                        }}
-                                      >
-                                        {formatCurrency(
-                                          centsToDollars(subcategory[stateKey]),
-                                        )}
+                                return (
+                                  <React.Fragment key={subcategory.id}>
+                                    <TableRow
+                                      onClick={() =>
+                                        hasTransactions &&
+                                        toggleSubcategoryExpanded(
+                                          category.id,
+                                          subcategory.id,
+                                        )
+                                      }
+                                      sx={{
+                                        backgroundColor: '#fafafa',
+                                        cursor: hasTransactions ? 'pointer' : 'default',
+                                        '&:hover': hasTransactions
+                                          ? { backgroundColor: '#f3f3f3' }
+                                          : undefined,
+                                      }}
+                                    >
+                                      <TableCell sx={{ pl: 8 }}>
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                          }}
+                                        >
+                                          {hasTransactions && (
+                                            <IconButton size='small' sx={{ p: 0 }}>
+                                              {isSubcategoryExpanded ? (
+                                                <KeyboardArrowDownIcon fontSize='small' />
+                                              ) : (
+                                                <KeyboardArrowRightIcon fontSize='small' />
+                                              )}
+                                            </IconButton>
+                                          )}
+                                          <Box
+                                            sx={{
+                                              width: 8,
+                                              height: 8,
+                                              borderRadius: '50%',
+                                              backgroundColor:
+                                                COLORS[index % COLORS.length],
+                                              opacity: 0.6,
+                                              flexShrink: 0,
+                                              ml: hasTransactions ? 0 : 3,
+                                            }}
+                                          />
+                                          <Typography
+                                            variant='body2'
+                                            color='text.secondary'
+                                          >
+                                            {subcategory.name}
+                                          </Typography>
+                                        </Box>
                                       </TableCell>
-                                    ))}
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: TOTAL_META.color,
-                                        fontSize: '0.875rem',
-                                        fontWeight: 600,
-                                      }}
-                                    >
-                                      {formatCurrency(
-                                        centsToDollars(subcategory.total),
+
+                                      {showStateBreakdown ? (
+                                        <>
+                                          {SPENDING_STATE_ORDER.map((stateKey) => (
+                                            <TableCell
+                                              key={`${subcategory.id}-${stateKey}`}
+                                              align='right'
+                                              sx={{
+                                                color: LEDGER_STATE_META[stateKey].color,
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {formatCurrency(
+                                                centsToDollars(subcategory[stateKey]),
+                                              )}
+                                            </TableCell>
+                                          ))}
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: TOTAL_META.color,
+                                              fontSize: '0.875rem',
+                                              fontWeight: 600,
+                                            }}
+                                          >
+                                            {formatCurrency(
+                                              centsToDollars(subcategory.total),
+                                            )}
+                                          </TableCell>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: MONTHLY_AVG_META.color,
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {formatCurrency(
+                                              centsToDollars(subcategory.monthlyAvg),
+                                            )}
+                                          </TableCell>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: 'text.secondary',
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {subcategory.count}
+                                          </TableCell>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: TOTAL_META.color,
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {formatCurrency(
+                                              centsToDollars(subcategory.total),
+                                            )}
+                                          </TableCell>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: MONTHLY_AVG_META.color,
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {formatCurrency(
+                                              centsToDollars(subcategory.monthlyAvg),
+                                            )}
+                                          </TableCell>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: 'text.secondary',
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {subcategory.percentage.toFixed(1)}%
+                                          </TableCell>
+                                          <TableCell
+                                            align='right'
+                                            sx={{
+                                              color: 'text.secondary',
+                                              fontSize: '0.875rem',
+                                            }}
+                                          >
+                                            {subcategory.count}
+                                          </TableCell>
+                                        </>
                                       )}
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: MONTHLY_AVG_META.color,
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {formatCurrency(
-                                        centsToDollars(subcategory.monthlyAvg),
+                                    </TableRow>
+
+                                    {isSubcategoryExpanded &&
+                                      renderTransactionDetailRow(
+                                        subcategory.transactions,
                                       )}
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: 'text.secondary',
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {subcategory.count}
-                                    </TableCell>
-                                  </>
-                                ) : (
-                                  <>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: '#9c27b0',
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {formatCurrency(
-                                        centsToDollars(subcategory.total),
-                                      )}
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: MONTHLY_AVG_META.color,
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {formatCurrency(
-                                        centsToDollars(subcategory.monthlyAvg),
-                                      )}
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: 'text.secondary',
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {subcategory.percentage.toFixed(1)}%
-                                    </TableCell>
-                                    <TableCell
-                                      align='right'
-                                      sx={{
-                                        color: 'text.secondary',
-                                        fontSize: '0.875rem',
-                                      }}
-                                    >
-                                      {subcategory.count}
-                                    </TableCell>
-                                  </>
-                                )}
-                              </TableRow>
+                                  </React.Fragment>
+                                );
+                              })
                             ))}
                         </React.Fragment>
                       );

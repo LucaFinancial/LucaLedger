@@ -207,6 +207,42 @@ describe('spendingAnalytics', () => {
         total: 12000,
       }),
     ]);
+    expect(result.categories[0].transactions).toHaveLength(13);
+    expect(
+      result.categories[0].transactions.filter(
+        (transaction) => transaction.transactionId === 'tx-split',
+      ),
+    ).toHaveLength(1);
+    expect(result.categories[0].transactions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          transactionId: 'tx-split',
+          sourceType: 'transaction-split',
+          amount: 7000,
+          transactionState: 'COMPLETED',
+        }),
+        expect.objectContaining({
+          recurringTransactionId: 'rt-food',
+          sourceType: 'recurring',
+          amount: 1500,
+          transactionState: 'recurring',
+        }),
+      ]),
+    );
+    expect(result.categories[0].subcategories[0].transactions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          transactionId: 'tx-split',
+          amount: 3000,
+          transactionState: 'COMPLETED',
+        }),
+        expect.objectContaining({
+          recurringTransactionId: 'rt-food',
+          amount: 1500,
+          transactionState: 'recurring',
+        }),
+      ]),
+    );
   });
 
   it('keeps all-historical dashboard ranges on completed-only totals', () => {

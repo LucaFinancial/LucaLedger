@@ -30,6 +30,7 @@ export default function SpendingPeriodControls({
   showSelectionControls = true,
   showDateControls = true,
   inlineDateControls = false,
+  dateTrailingControls = null,
   sx,
 }) {
   const activeAggregate =
@@ -225,6 +226,7 @@ export default function SpendingPeriodControls({
         <Box sx={controlRowSx}>
           {(showAggregateControls || showSelectionControls) && selectionControls}
           {showDateControls && dateControls}
+          {showDateControls && dateTrailingControls}
         </Box>
       ) : (
         <>
@@ -233,7 +235,10 @@ export default function SpendingPeriodControls({
           )}
 
           {showDateControls && (
-            <Box sx={controlRowSx}>{dateControls}</Box>
+            <Box sx={controlRowSx}>
+              {dateControls}
+              {dateTrailingControls}
+            </Box>
           )}
         </>
       )}

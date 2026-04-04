@@ -87,17 +87,25 @@ const createMetrics = () => ({
   _countedIds: new Set(),
 });
 
-const createCategoryNode = (id, name) => ({
-  id,
-  name,
-  ...createMetrics(),
-  subcategories: new Map(),
-});
-
 const createSubcategoryNode = (id, name) => ({
   id,
   name,
   ...createMetrics(),
+});
+
+const createDashboardCategoryNode = (id, name) => ({
+  id,
+  name,
+  ...createMetrics(),
+  subcategories: new Map(),
+  transactions: [],
+});
+
+const createDashboardSubcategoryNode = (id, name) => ({
+  id,
+  name,
+  ...createMetrics(),
+  transactions: [],
 });
 
 const sortTransactionDetails = (left, right) => {
@@ -232,15 +240,30 @@ const finalizeMetrics = (metrics, totalBase, safeMonths) => {
   };
 };
 
-const finalizeCategoryNode = (node, totalBase, safeMonths) => {
-  const { subcategories, ...metrics } = node;
+const finalizeDashboardSubcategoryNode = (node, totalBase, safeMonths) => {
+  const { transactions, ...metrics } = node;
   const finalized = finalizeMetrics(metrics, totalBase, safeMonths);
 
   return {
     ...finalized,
+    transactions: [...transactions].sort(sortTransactionDetails),
+  };
+};
+
+const finalizeDashboardCategoryNode = (node, totalBase, safeMonths) => {
+  const { subcategories, transactions, ...metrics } = node;
+  const finalized = finalizeMetrics(metrics, totalBase, safeMonths);
+
+  return {
+    ...finalized,
+    transactions: [...transactions].sort(sortTransactionDetails),
     subcategories: Array.from(subcategories.values())
       .map((subcategory) =>
-        finalizeMetrics(subcategory, finalized.total || 0, safeMonths),
+        finalizeDashboardSubcategoryNode(
+          subcategory,
+          finalized.total || 0,
+          safeMonths,
+        ),
       )
       .filter((subcategory) => subcategory.total > 0)
       .sort((a, b) => b.total - a.total),
@@ -280,6 +303,32 @@ const getRecurringRangeStart = (startDate, referenceDate) => {
   const today = startOfDay(referenceDate);
   return isAfter(startDate, today) ? startDate : today;
 };
+
+const buildDashboardTransactionDetail = ({
+  id,
+  sourceType,
+  transactionId = null,
+  recurringTransactionId = null,
+  date,
+  accountId = null,
+  categoryId = null,
+  splitIds = [],
+  description = '',
+  amount,
+  transactionState,
+}) => ({
+  id,
+  sourceType,
+  transactionId,
+  recurringTransactionId,
+  date,
+  accountId,
+  categoryId,
+  splitIds,
+  description,
+  amount: Math.abs(Number(amount) || 0),
+  transactionState,
+});
 
 export const shouldShowStateBreakdown = (
   startDate,
@@ -693,14 +742,39 @@ export function buildDashboardSpendingHistoryData({
     if (!categoryTotals.has(categoryMeta.parentId)) {
       categoryTotals.set(
         categoryMeta.parentId,
-        createCategoryNode(categoryMeta.parentId, categoryMeta.parentName),
+        createDashboardCategoryNode(
+          categoryMeta.parentId,
+          categoryMeta.parentName,
+        ),
       );
     }
 
     return categoryTotals.get(categoryMeta.parentId);
   };
 
-  const addCategoryAmount = (categoryId, bucket, amount, countedId) => {
+  const getOrCreateSubcategoryNode = (parentNode, categoryMeta) => {
+    if (!categoryMeta.subcategoryId) return null;
+
+    if (!parentNode.subcategories.has(categoryMeta.subcategoryId)) {
+      parentNode.subcategories.set(
+        categoryMeta.subcategoryId,
+        createDashboardSubcategoryNode(
+          categoryMeta.subcategoryId,
+          categoryMeta.subcategoryName,
+        ),
+      );
+    }
+
+    return parentNode.subcategories.get(categoryMeta.subcategoryId);
+  };
+
+  const addCategoryAmount = (
+    categoryId,
+    bucket,
+    amount,
+    countedId,
+    subcategoryTransactionDetail = null,
+  ) => {
     if (!categoryId || excludedCategoryIds.has(categoryId)) return;
 
     const categoryMeta = categoryLookup.get(categoryId);
@@ -713,24 +787,20 @@ export function buildDashboardSpendingHistoryData({
     addToMetrics(parentNode, bucket, normalizedAmount, countedId);
     addToMetrics(overallTotals, bucket, normalizedAmount, countedId);
 
-    if (!categoryMeta.subcategoryId) return;
+    const subcategoryNode = getOrCreateSubcategoryNode(parentNode, categoryMeta);
+    if (!subcategoryNode) return;
 
-    if (!parentNode.subcategories.has(categoryMeta.subcategoryId)) {
-      parentNode.subcategories.set(
-        categoryMeta.subcategoryId,
-        createSubcategoryNode(
-          categoryMeta.subcategoryId,
-          categoryMeta.subcategoryName,
-        ),
-      );
+    addToMetrics(subcategoryNode, bucket, normalizedAmount, countedId);
+
+    if (subcategoryTransactionDetail) {
+      subcategoryNode.transactions.push(subcategoryTransactionDetail);
     }
+  };
 
-    addToMetrics(
-      parentNode.subcategories.get(categoryMeta.subcategoryId),
-      bucket,
-      normalizedAmount,
-      countedId,
-    );
+  const addParentTransactionDetail = (parentId, transactionDetail) => {
+    if (!transactionDetail || !categoryTotals.has(parentId)) return;
+
+    categoryTotals.get(parentId).transactions.push(transactionDetail);
   };
 
   allTransactions.forEach((transaction) => {
@@ -752,8 +822,89 @@ export function buildDashboardSpendingHistoryData({
     if (!bucket) return;
     if (!showStateBreakdown && bucket !== 'completed') return;
 
+    const categoryAmounts = new Map();
+    const parentAmounts = new Map();
+
     getTransactionEntries(transaction, splitsByTransaction).forEach((entry) => {
-      addCategoryAmount(entry.categoryId, bucket, entry.amount, transaction.id);
+      if (!entry.categoryId || excludedCategoryIds.has(entry.categoryId)) return;
+
+      const categoryMeta = categoryLookup.get(entry.categoryId);
+      if (!categoryMeta) return;
+
+      const currentCategoryAmount = categoryAmounts.get(entry.categoryId) || {
+        amount: 0,
+        splitIds: [],
+        isSplitEntry: false,
+      };
+      currentCategoryAmount.amount += entry.amount;
+
+      if (entry.splitId) {
+        currentCategoryAmount.splitIds.push(entry.splitId);
+        currentCategoryAmount.isSplitEntry = true;
+      }
+
+      categoryAmounts.set(entry.categoryId, currentCategoryAmount);
+
+      const currentParentAmount = parentAmounts.get(categoryMeta.parentId) || {
+        amount: 0,
+        splitIds: [],
+        isSplitEntry: false,
+      };
+      currentParentAmount.amount += entry.amount;
+
+      if (entry.splitId) {
+        currentParentAmount.splitIds.push(entry.splitId);
+        currentParentAmount.isSplitEntry = true;
+      }
+
+      parentAmounts.set(categoryMeta.parentId, currentParentAmount);
+    });
+
+    categoryAmounts.forEach((categoryAmount, categoryId) => {
+      const categoryMeta = categoryLookup.get(categoryId);
+
+      addCategoryAmount(
+        categoryId,
+        bucket,
+        categoryAmount.amount,
+        transaction.id,
+        categoryMeta?.subcategoryId
+          ? buildDashboardTransactionDetail({
+              id: `${transaction.id}:${categoryId}`,
+              sourceType: categoryAmount.isSplitEntry
+                ? 'transaction-split'
+                : 'transaction',
+              transactionId: transaction.id,
+              date: transaction.date,
+              accountId: transaction.accountId ?? null,
+              categoryId,
+              splitIds: categoryAmount.splitIds,
+              description: transaction.description || '',
+              amount: categoryAmount.amount,
+              transactionState: transaction.transactionState,
+            })
+          : null,
+      );
+    });
+
+    parentAmounts.forEach((parentAmount, parentId) => {
+      addParentTransactionDetail(
+        parentId,
+        buildDashboardTransactionDetail({
+          id: `${transaction.id}:${parentId}`,
+          sourceType: parentAmount.isSplitEntry
+            ? 'transaction-split'
+            : 'transaction',
+          transactionId: transaction.id,
+          date: transaction.date,
+          accountId: transaction.accountId ?? null,
+          categoryId: parentId,
+          splitIds: parentAmount.splitIds,
+          description: transaction.description || '',
+          amount: parentAmount.amount,
+          transactionState: transaction.transactionState,
+        }),
+      );
     });
   });
 
@@ -768,6 +919,9 @@ export function buildDashboardSpendingHistoryData({
         if (!rule.categoryId || excludedCategoryIds.has(rule.categoryId)) {
           return;
         }
+
+        const categoryMeta = categoryLookup.get(rule.categoryId);
+        if (!categoryMeta) return;
 
         generateOccurrenceDates(
           rule,
@@ -792,16 +946,52 @@ export function buildDashboardSpendingHistoryData({
             'planned',
             Number(rule.amount) || 0,
             occurrenceId,
+            categoryMeta.subcategoryId
+              ? buildDashboardTransactionDetail({
+                  id: `${occurrenceId}:${rule.categoryId}`,
+                  sourceType: 'recurring',
+                  recurringTransactionId: rule.id,
+                  date: dateString,
+                  accountId: rule.accountId ?? null,
+                  categoryId: rule.categoryId,
+                  description: rule.description || '',
+                  amount: Number(rule.amount) || 0,
+                  transactionState: 'recurring',
+                })
+              : null,
+          );
+
+          addParentTransactionDetail(
+            categoryMeta.parentId,
+            buildDashboardTransactionDetail({
+              id: `${occurrenceId}:${categoryMeta.parentId}`,
+              sourceType: 'recurring',
+              recurringTransactionId: rule.id,
+              date: dateString,
+              accountId: rule.accountId ?? null,
+              categoryId: categoryMeta.parentId,
+              description: rule.description || '',
+              amount: Number(rule.amount) || 0,
+              transactionState: 'recurring',
+            }),
           );
         });
       });
     }
   }
 
-  const finalizedStateTotals = finalizeMetrics(overallTotals, overallTotals.total, safeMonths);
+  const finalizedStateTotals = finalizeMetrics(
+    overallTotals,
+    overallTotals.total,
+    safeMonths,
+  );
   const finalizedCategories = Array.from(categoryTotals.values())
     .map((category) =>
-      finalizeCategoryNode(category, overallTotals.total || 0, safeMonths),
+      finalizeDashboardCategoryNode(
+        category,
+        overallTotals.total || 0,
+        safeMonths,
+      ),
     )
     .filter((category) => category.total > 0)
     .sort((a, b) => b.total - a.total);
