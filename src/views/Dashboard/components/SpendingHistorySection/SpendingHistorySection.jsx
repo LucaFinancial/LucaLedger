@@ -60,6 +60,38 @@ const COLORS = [
 ];
 
 const DEFAULT_SELECTION = { type: 'aggregate', value: 'last-3-months' };
+const LEDGER_STATE_META = Object.freeze({
+  completed: {
+    backgroundColor: '#e0e0e0',
+    borderColor: '#bdbdbd',
+    color: '#424242',
+  },
+  pending: {
+    backgroundColor: '#fff9c4',
+    borderColor: '#fdd835',
+    color: '#f9a825',
+  },
+  scheduled: {
+    backgroundColor: '#b3e5fc',
+    borderColor: '#4fc3f7',
+    color: '#01579b',
+  },
+  planned: {
+    backgroundColor: '#c8e6c9',
+    borderColor: '#81c784',
+    color: '#1b5e20',
+  },
+});
+const TOTAL_META = Object.freeze({
+  backgroundColor: '#f3e5f5',
+  borderColor: '#9c27b0',
+  color: '#9c27b0',
+});
+const MONTHLY_AVG_META = Object.freeze({
+  backgroundColor: '#fff3e0',
+  borderColor: '#ef6c00',
+  color: '#e65100',
+});
 
 function formatCurrency(amount) {
   const safeAmount =
@@ -76,17 +108,20 @@ function renderStateCells(item) {
           key={`${item.id}-${stateKey}`}
           align='right'
           sx={{
-            color: SPENDING_STATE_META[stateKey].color,
+            color: LEDGER_STATE_META[stateKey].color,
             fontWeight: 500,
           }}
         >
           {formatCurrency(centsToDollars(item[stateKey]))}
         </TableCell>
       ))}
-      <TableCell align='right' sx={{ color: '#212121', fontWeight: 600 }}>
+      <TableCell align='right' sx={{ color: TOTAL_META.color, fontWeight: 600 }}>
         {formatCurrency(centsToDollars(item.total))}
       </TableCell>
-      <TableCell align='right' sx={{ color: '#2196f3', fontWeight: 500 }}>
+      <TableCell
+        align='right'
+        sx={{ color: MONTHLY_AVG_META.color, fontWeight: 500 }}
+      >
         {formatCurrency(centsToDollars(item.monthlyAvg))}
       </TableCell>
       <TableCell align='right' sx={{ color: 'text.secondary' }}>
@@ -102,7 +137,10 @@ function renderHistoricalCells(item) {
       <TableCell align='right' sx={{ color: '#9c27b0', fontWeight: 500 }}>
         {formatCurrency(centsToDollars(item.total))}
       </TableCell>
-      <TableCell align='right' sx={{ color: '#2196f3', fontWeight: 500 }}>
+      <TableCell
+        align='right'
+        sx={{ color: MONTHLY_AVG_META.color, fontWeight: 500 }}
+      >
         {formatCurrency(centsToDollars(item.monthlyAvg))}
       </TableCell>
       <TableCell align='right' sx={{ color: 'text.secondary' }}>
@@ -365,20 +403,26 @@ export default function SpendingHistorySection() {
                         flex: 1,
                         minWidth: 140,
                         p: 2,
-                        backgroundColor: SPENDING_STATE_META[stateKey].backgroundColor,
-                        border: `1px solid ${SPENDING_STATE_META[stateKey].borderColor}`,
+                        backgroundColor: LEDGER_STATE_META[stateKey].backgroundColor,
+                        border: `1px solid ${LEDGER_STATE_META[stateKey].borderColor}`,
                       }}
                     >
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        sx={{
+                          color: LEDGER_STATE_META[stateKey].color,
+                          fontSize: '0.9rem',
+                          fontWeight: 700,
+                        }}
+                      >
                         {SPENDING_STATE_META[stateKey].label}
                       </Typography>
                       <Typography
-                        variant='h5'
-                        sx={{
-                          color: SPENDING_STATE_META[stateKey].color,
-                          fontWeight: 'bold',
-                        }}
-                      >
+                      variant='h5'
+                      sx={{
+                        color: LEDGER_STATE_META[stateKey].color,
+                        fontWeight: 'bold',
+                      }}
+                    >
                         {formatCurrency(centsToDollars(stateTotals[stateKey]))}
                       </Typography>
                     </Paper>
@@ -389,21 +433,56 @@ export default function SpendingHistorySection() {
                       flex: 1,
                       minWidth: 140,
                       p: 2,
-                      backgroundColor: '#f5f5f5',
-                      border: '1px solid #bdbdbd',
+                      backgroundColor: TOTAL_META.backgroundColor,
+                      border: `1px solid ${TOTAL_META.borderColor}`,
                     }}
                   >
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                      sx={{
+                        color: TOTAL_META.color,
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                      }}
+                    >
                       Total
                     </Typography>
                     <Typography
                       variant='h5'
                       sx={{
-                        color: '#212121',
+                        color: TOTAL_META.color,
                         fontWeight: 'bold',
                       }}
                     >
                       {formatCurrency(centsToDollars(totalExpenses))}
+                    </Typography>
+                  </Paper>
+
+                  <Paper
+                    sx={{
+                      flex: 1,
+                      minWidth: 140,
+                      p: 2,
+                      backgroundColor: MONTHLY_AVG_META.backgroundColor,
+                      border: `1px solid ${MONTHLY_AVG_META.borderColor}`,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: MONTHLY_AVG_META.color,
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      Monthly Avg
+                    </Typography>
+                    <Typography
+                      variant='h5'
+                      sx={{
+                        color: MONTHLY_AVG_META.color,
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {formatCurrency(centsToDollars(monthlyAvgExpenses))}
                     </Typography>
                   </Paper>
                 </>
@@ -418,7 +497,13 @@ export default function SpendingHistorySection() {
                       border: '1px solid #9c27b0',
                     }}
                   >
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                      sx={{
+                        color: TOTAL_META.color,
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                      }}
+                    >
                       Total Spent
                     </Typography>
                     <Typography
@@ -437,16 +522,25 @@ export default function SpendingHistorySection() {
                       flex: 1,
                       minWidth: 180,
                       p: 2,
-                      backgroundColor: '#e3f2fd',
-                      border: '1px solid #2196f3',
+                      backgroundColor: MONTHLY_AVG_META.backgroundColor,
+                      border: `1px solid ${MONTHLY_AVG_META.borderColor}`,
                     }}
                   >
-                    <Typography variant='caption' color='text.secondary'>
+                    <Typography
+                      sx={{
+                        color: MONTHLY_AVG_META.color,
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                      }}
+                    >
                       Monthly Avg
                     </Typography>
                     <Typography
                       variant='h5'
-                      sx={{ color: '#2196f3', fontWeight: 'bold' }}
+                      sx={{
+                        color: MONTHLY_AVG_META.color,
+                        fontWeight: 'bold',
+                      }}
                     >
                       {formatCurrency(centsToDollars(monthlyAvgExpenses))}
                     </Typography>
@@ -511,15 +605,27 @@ export default function SpendingHistorySection() {
                             <TableCell
                               key={stateKey}
                               align='right'
-                              sx={{ fontWeight: 700 }}
+                              sx={{
+                                color: LEDGER_STATE_META[stateKey].color,
+                                fontWeight: 700,
+                              }}
                             >
                               {SPENDING_STATE_META[stateKey].label}
                             </TableCell>
                           ))}
-                          <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          <TableCell
+                            align='right'
+                            sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                          >
                             Total
                           </TableCell>
-                          <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          <TableCell
+                            align='right'
+                            sx={{
+                              color: MONTHLY_AVG_META.color,
+                              fontWeight: 700,
+                            }}
+                          >
                             Monthly Avg
                           </TableCell>
                           <TableCell align='right' sx={{ fontWeight: 700 }}>
@@ -528,10 +634,19 @@ export default function SpendingHistorySection() {
                         </>
                       ) : (
                         <>
-                          <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          <TableCell
+                            align='right'
+                            sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                          >
                             Total
                           </TableCell>
-                          <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          <TableCell
+                            align='right'
+                            sx={{
+                              color: MONTHLY_AVG_META.color,
+                              fontWeight: 700,
+                            }}
+                          >
                             Monthly Avg
                           </TableCell>
                           <TableCell align='right' sx={{ fontWeight: 700 }}>
@@ -639,7 +754,7 @@ export default function SpendingHistorySection() {
                                         key={`${subcategory.id}-${stateKey}`}
                                         align='right'
                                         sx={{
-                                          color: SPENDING_STATE_META[stateKey].color,
+                                          color: LEDGER_STATE_META[stateKey].color,
                                           fontSize: '0.875rem',
                                         }}
                                       >
@@ -651,7 +766,7 @@ export default function SpendingHistorySection() {
                                     <TableCell
                                       align='right'
                                       sx={{
-                                        color: '#212121',
+                                        color: TOTAL_META.color,
                                         fontSize: '0.875rem',
                                         fontWeight: 600,
                                       }}
@@ -663,7 +778,7 @@ export default function SpendingHistorySection() {
                                     <TableCell
                                       align='right'
                                       sx={{
-                                        color: '#2196f3',
+                                        color: MONTHLY_AVG_META.color,
                                         fontSize: '0.875rem',
                                       }}
                                     >
@@ -697,7 +812,7 @@ export default function SpendingHistorySection() {
                                     <TableCell
                                       align='right'
                                       sx={{
-                                        color: '#2196f3',
+                                        color: MONTHLY_AVG_META.color,
                                         fontSize: '0.875rem',
                                       }}
                                     >
