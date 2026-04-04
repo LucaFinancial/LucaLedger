@@ -161,6 +161,7 @@ export default function RecurringTransactionModal({
           <CategorySelect
             value={categoryId}
             onChange={(newValue) => setCategoryId(newValue)}
+            fullWidth
           />
 
           <Grid container spacing={2}>

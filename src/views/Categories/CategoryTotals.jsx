@@ -1,279 +1,540 @@
 import {
   Box,
+  IconButton,
   Paper,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
+  Typography,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { selectors as transactionSelectors } from '@/store/transactions';
-import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Fragment, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { add, format, parseISO } from 'date-fns';
+
+import RecurringTransactionModal from '@/components/RecurringTransactionModal';
+import SplitEditorModal from '@/components/SplitEditorModal';
+import SpendingPeriodControls from '@/components/SpendingPeriodControls';
+import { selectors as accountSelectors } from '@/store/accounts';
+import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
+import {
+  actions as recurringTransactionActions,
+  selectors as recurringTransactionSelectors,
+} from '@/store/recurringTransactions';
+import { selectors as settingsSelectors } from '@/store/settings';
+import {
+  actions as transactionSplitActions,
+  selectors as transactionSplitSelectors,
+} from '@/store/transactionSplits';
+import {
+  actions as transactionActions,
+  selectors as transactionSelectors,
+} from '@/store/transactions';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
-  parseISO,
-  startOfDay,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-  isBefore,
-  isAfter,
-  isSameDay,
-} from 'date-fns';
-import { Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+  buildSpendingSelectionFromDropdownValues,
+  SPENDING_STATE_META,
+  SPENDING_STATE_ORDER,
+  buildAvailableSpendingPeriods,
+  buildCategoryTotalsData,
+  getAggregatePeriodConfig,
+  getSpendingSelectionDropdownValues,
+  getSpendingPeriodConfig,
+} from '@/utils/spendingAnalytics';
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
+const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
+  'last-3-months',
+  'ytd',
+  'last-12-months',
+]);
+const LEDGER_STATE_META = Object.freeze({
+  completed: {
+    backgroundColor: '#e0e0e0',
+    borderColor: '#bdbdbd',
+    color: '#424242',
+  },
+  pending: {
+    backgroundColor: '#fff9c4',
+    borderColor: '#fdd835',
+    color: '#f9a825',
+  },
+  scheduled: {
+    backgroundColor: '#b3e5fc',
+    borderColor: '#4fc3f7',
+    color: '#01579b',
+  },
+  planned: {
+    backgroundColor: '#c8e6c9',
+    borderColor: '#81c784',
+    color: '#1b5e20',
+  },
+});
+const TOTAL_META = Object.freeze({
+  backgroundColor: '#f3e5f5',
+  borderColor: '#9c27b0',
+  color: '#9c27b0',
+});
+const MONTHLY_AVG_META = Object.freeze({
+  backgroundColor: '#fff3e0',
+  borderColor: '#ef6c00',
+  color: '#e65100',
+});
+const RECURRING_TEXT_COLOR = '#9c27b0';
 
-// Colors for pie chart segments
-const COLORS = [
-  '#2196f3', // blue
-  '#4caf50', // green
-  '#ff9800', // orange
-  '#f44336', // red
-  '#9c27b0', // purple
-  '#00bcd4', // cyan
-  '#ffeb3b', // yellow
-  '#795548', // brown
-  '#607d8b', // blue grey
-  '#e91e63', // pink
-];
+function formatAmount(amountInCents) {
+  return `$${doublePrecisionFormatString(
+    Math.abs(centsToDollars(amountInCents)),
+  )}`;
+}
 
-/**
- * CategoryTotals component displays transaction totals for a category
- * including all of its subcategories with time period filtering
- */
+function formatTransactionDate(dateValue) {
+  if (!dateValue) return '--';
+
+  try {
+    return format(parseISO(String(dateValue).replace(/\//g, '-')), 'MMM d, yyyy');
+  } catch {
+    return String(dateValue);
+  }
+}
+
+function getTransactionDetailTextColor(transactionDetail) {
+  if (
+    transactionDetail.sourceType === 'recurring' ||
+    transactionDetail.transactionState === 'recurring'
+  ) {
+    return RECURRING_TEXT_COLOR;
+  }
+
+  switch (transactionDetail.transactionState) {
+    case TransactionStateEnum.COMPLETED:
+      return LEDGER_STATE_META.completed.color;
+    case TransactionStateEnum.PENDING:
+      return LEDGER_STATE_META.pending.color;
+    case TransactionStateEnum.SCHEDULED:
+      return LEDGER_STATE_META.scheduled.color;
+    case TransactionStateEnum.PLANNED:
+      return LEDGER_STATE_META.planned.color;
+    default:
+      return 'inherit';
+  }
+}
+
+function getTransactionDetailSortValue(transactionDetail) {
+  if (!transactionDetail?.date) return 0;
+
+  try {
+    const parsedTime = parseISO(
+      String(transactionDetail.date).replace(/\//g, '-'),
+    ).getTime();
+    return Number.isNaN(parsedTime) ? 0 : parsedTime;
+  } catch {
+    return 0;
+  }
+}
+
+function sortTransactionDetailsForDirection(transactions, direction) {
+  const sortMultiplier = direction === 'asc' ? 1 : -1;
+
+  return [...transactions].sort((left, right) => {
+    const leftTime = getTransactionDetailSortValue(left);
+    const rightTime = getTransactionDetailSortValue(right);
+
+    if (leftTime !== rightTime) {
+      return (leftTime - rightTime) * sortMultiplier;
+    }
+
+    return String(left.description || '').localeCompare(
+      String(right.description || ''),
+    );
+  });
+}
+
 export default function CategoryTotals({ category }) {
+  const defaultSelection = {
+    type: 'aggregate',
+    value: 'current-month',
+  };
+  const dispatch = useDispatch();
+  const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
     transactionSplitSelectors.selectTransactionSplits,
   );
-  const [timePeriod, setTimePeriod] = useState('month');
+  const recurringTransactions = useSelector(
+    recurringTransactionSelectors.selectRecurringTransactions,
+  );
+  const realizedDatesMap = useSelector(
+    recurringTransactionEventSelectors.selectAllRealizedDatesMap,
+  );
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection,
+  );
 
-  // Calculate totals for this category and all its subcategories
-  const { totals, subcategoryTotals } = useMemo(() => {
-    const now = new Date();
-    const today = startOfDay(now);
+  const [activeSelection, setActiveSelection] = useState(defaultSelection);
+  const [expandedSubcategoryIds, setExpandedSubcategoryIds] = useState([]);
+  const [customRange, setCustomRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null);
+  const [selectedRecurringTransactionId, setSelectedRecurringTransactionId] =
+    useState(null);
+  const [transactionSortDirection, setTransactionSortDirection] =
+    useState('asc');
 
-    // Determine date range based on selected time period
-    let startDate;
-    let endDate;
+  const categoryIds = useMemo(
+    () =>
+      new Set([
+        category.id,
+        ...category.subcategories.map((subcategory) => subcategory.id),
+      ]),
+    [category],
+  );
 
-    switch (timePeriod) {
-      case 'month':
-        startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
-        break;
-      case 'year':
-        startDate = startOfYear(now);
-        endDate = endOfYear(now);
-        break;
-      case 'all':
-      default:
-        startDate = null;
-        endDate = null;
-        break;
+  const projectionEndDate = useMemo(
+    () =>
+      add(new Date(), {
+        [recurringProjection.unit]: recurringProjection.amount,
+      }),
+    [recurringProjection],
+  );
+
+  const { availableMonths, availableYears } = useMemo(
+    () =>
+      buildAvailableSpendingPeriods({
+        allTransactions,
+        transactionSplits,
+        recurringTransactions,
+        realizedDatesMap,
+        projectionEndDate,
+        categoryIdFilter: (categoryId) => categoryIds.has(categoryId),
+      }),
+    [
+      allTransactions,
+      transactionSplits,
+      recurringTransactions,
+      realizedDatesMap,
+      projectionEndDate,
+      categoryIds,
+    ],
+  );
+  const dropdownValues = useMemo(
+    () => getSpendingSelectionDropdownValues(activeSelection),
+    [activeSelection],
+  );
+
+  const periodConfig = useMemo(
+    () =>
+      getSpendingPeriodConfig(activeSelection, {
+        availableMonths,
+        availableYears,
+      }),
+    [activeSelection, availableMonths, availableYears],
+  );
+  const accountsById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account.name])),
+    [accounts],
+  );
+  const transactionsById = useMemo(
+    () =>
+      new Map(
+        allTransactions.map((transaction) => [transaction.id, transaction]),
+      ),
+    [allTransactions],
+  );
+  const recurringTransactionsById = useMemo(
+    () =>
+      new Map(
+        recurringTransactions.map((transaction) => [transaction.id, transaction]),
+      ),
+    [recurringTransactions],
+  );
+  const selectedTransaction = selectedTransactionId
+    ? transactionsById.get(selectedTransactionId) || null
+    : null;
+  const selectedRecurringTransaction = selectedRecurringTransactionId
+    ? recurringTransactionsById.get(selectedRecurringTransactionId) || null
+    : null;
+
+  const { totals, subcategoryTotals, showStateBreakdown } = useMemo(
+    () =>
+      buildCategoryTotalsData({
+        category,
+        allTransactions,
+        transactionSplits,
+        recurringTransactions,
+        realizedDatesMap,
+        periodConfig,
+      }),
+    [
+      category,
+      allTransactions,
+      transactionSplits,
+      recurringTransactions,
+      realizedDatesMap,
+      periodConfig,
+    ],
+  );
+
+  const hasData = totals.count > 0 || subcategoryTotals.length > 0;
+  const clearExpandedSubcategories = () => setExpandedSubcategoryIds([]);
+  const clearCustomRange = () =>
+    setCustomRange({
+      startDate: null,
+      endDate: null,
+    });
+  const syncCustomRangeForAggregate = (aggregateKey) => {
+    if (!AGGREGATE_RANGES_WITH_VISIBLE_DATES.has(aggregateKey)) {
+      clearCustomRange();
+      return;
     }
 
-    // Build a set of category IDs to match (parent + all subcategories)
-    const categoryIds = new Set([
-      category.id,
-      ...category.subcategories.map((sub) => sub.id),
-    ]);
-
-    const splitsByTransaction = new Map();
-    transactionSplits.forEach((split) => {
-      if (!splitsByTransaction.has(split.transactionId)) {
-        splitsByTransaction.set(split.transactionId, []);
-      }
-      splitsByTransaction.get(split.transactionId).push(split);
+    const aggregateConfig = getAggregatePeriodConfig(aggregateKey);
+    setCustomRange({
+      startDate: aggregateConfig.startDate,
+      endDate: aggregateConfig.endDate,
     });
+  };
 
-    // Helper function to get amount for a specific category from a transaction
-    const getAmountForCategory = (transaction, targetCategoryId) => {
-      const splits = splitsByTransaction.get(transaction.id) || [];
-      if (splits.length > 0) {
-        return splits
-          .filter((split) => split.categoryId === targetCategoryId)
-          .reduce((sum, split) => sum + split.amount, 0);
-      }
-      return transaction.categoryId === targetCategoryId
-        ? transaction.amount
-        : 0;
-    };
+  const handleAggregateChange = (_event, newValue) => {
+    if (!newValue) return;
 
-    // Filter transactions by category and date range
-    // Include transaction if it has the category in main categoryId OR in any split
-    const categoryTransactions = allTransactions.filter((transaction) => {
-      // Check if transaction has category in splits
-      const splits = splitsByTransaction.get(transaction.id) || [];
-      if (splits.length > 0) {
-        const hasCategoryInSplits = splits.some((split) =>
-          categoryIds.has(split.categoryId),
-        );
-        if (hasCategoryInSplits) {
-          // Still need to check date range
-          if (startDate && endDate) {
-            const transactionDate = startOfDay(
-              parseISO(transaction.date.replace(/\//g, '-')),
-            );
-            if (
-              isBefore(transactionDate, startDate) ||
-              isAfter(transactionDate, endDate)
-            ) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
+    clearExpandedSubcategories();
+    syncCustomRangeForAggregate(newValue);
+    setActiveSelection({ type: 'aggregate', value: newValue });
+  };
 
-      // Check main categoryId
-      if (!categoryIds.has(transaction.categoryId)) return false;
-
-      // For date filtering, only include transactions within the time period
-      if (startDate && endDate) {
-        const transactionDate = startOfDay(
-          parseISO(transaction.date.replace(/\//g, '-')),
-        );
-        if (
-          isBefore(transactionDate, startDate) ||
-          isAfter(transactionDate, endDate)
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Split transactions into past and future
-    const pastTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
-      return (
-        isBefore(transactionDate, today) || isSameDay(transactionDate, today)
-      );
-    });
-    const futureTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
-      return isAfter(transactionDate, today);
-    });
-
-    // Calculate totals - sum amounts from all category IDs in this category
-    const pastTotal = centsToDollars(
-      pastTransactions.reduce((sum, t) => {
-        const categoryAmount = Array.from(categoryIds).reduce(
-          (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0,
-        );
-        return sum + categoryAmount;
-      }, 0),
+  const handleMonthChange = (event) => {
+    clearExpandedSubcategories();
+    clearCustomRange();
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: event.target.value,
+          year: dropdownValues.year,
+        },
+        defaultSelection,
+      ),
     );
-    const futureTotal = centsToDollars(
-      futureTransactions.reduce((sum, t) => {
-        const categoryAmount = Array.from(categoryIds).reduce(
-          (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0,
-        );
-        return sum + categoryAmount;
-      }, 0),
+  };
+
+  const handleYearChange = (event) => {
+    clearExpandedSubcategories();
+    clearCustomRange();
+    setActiveSelection(
+      buildSpendingSelectionFromDropdownValues(
+        {
+          month: dropdownValues.month,
+          year: event.target.value,
+        },
+        defaultSelection,
+      ),
     );
-    const total = pastTotal + futureTotal;
-    const count = categoryTransactions.length;
+  };
 
-    // Calculate subcategory breakdown
-    const subTotals = category.subcategories.map((subcategory) => {
-      // Get unique transactions that have this subcategory in splits or categoryId
-      const subTransactionsSet = new Set();
-      categoryTransactions.forEach((t) => {
-        if (getAmountForCategory(t, subcategory.id) !== 0) {
-          subTransactionsSet.add(t.id);
-        }
-      });
+  const updateCustomRange = (nextRange) => {
+    setCustomRange(nextRange);
 
-      const subPastTransactions = pastTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0,
-      );
-      const subFutureTransactions = futureTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0,
-      );
+    if (!nextRange.startDate || !nextRange.endDate) return;
 
-      const pastTotal = centsToDollars(
-        subPastTransactions.reduce(
-          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0,
-        ),
-      );
-      const futureTotal = centsToDollars(
-        subFutureTransactions.reduce(
-          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0,
-        ),
-      );
-
-      return {
-        id: subcategory.id,
-        name: subcategory.name,
-        pastTotal,
-        futureTotal,
-        total: pastTotal + futureTotal,
-        count: subTransactionsSet.size, // Use unique count
-      };
+    setActiveSelection({
+      type: 'custom',
+      startDate: nextRange.startDate,
+      endDate: nextRange.endDate,
     });
+    clearExpandedSubcategories();
+  };
 
-    // Sort subcategories by absolute total (highest spending first)
-    subTotals.sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+  const handleCustomStartChange = (value) => {
+    updateCustomRange({
+      ...customRange,
+      startDate: value,
+    });
+  };
 
-    return {
-      totals: { pastTotal, futureTotal, total, count },
-      subcategoryTotals: subTotals,
-    };
-  }, [allTransactions, category, timePeriod, transactionSplits]);
+  const handleCustomEndChange = (value) => {
+    updateCustomRange({
+      ...customRange,
+      endDate: value,
+    });
+  };
 
-  const handleTimePeriodChange = (event, newPeriod) => {
-    if (newPeriod !== null) {
-      setTimePeriod(newPeriod);
+  const toggleSubcategoryExpanded = (subcategoryId) => {
+    setExpandedSubcategoryIds((currentExpandedIds) =>
+      currentExpandedIds.includes(subcategoryId)
+        ? currentExpandedIds.filter((id) => id !== subcategoryId)
+        : [...currentExpandedIds, subcategoryId],
+    );
+  };
+
+  const handleTransactionDetailClick = (transactionDetail) => {
+    if (transactionDetail.sourceType === 'recurring') {
+      if (
+        transactionDetail.recurringTransactionId &&
+        recurringTransactionsById.has(transactionDetail.recurringTransactionId)
+      ) {
+        setSelectedRecurringTransactionId(
+          transactionDetail.recurringTransactionId,
+        );
+      }
+      return;
+    }
+
+    if (
+      transactionDetail.transactionId &&
+      transactionsById.has(transactionDetail.transactionId)
+    ) {
+      setSelectedTransactionId(transactionDetail.transactionId);
     }
   };
 
-  // If no transactions, show a message
-  if (totals.count === 0) {
-    return (
-      <Paper
+  const handleSplitEditorClose = () => {
+    setSelectedTransactionId(null);
+  };
+
+  const handleRecurringModalClose = () => {
+    setSelectedRecurringTransactionId(null);
+  };
+
+  const handleSplitEditorSave = (splits) => {
+    if (!selectedTransaction) return;
+
+    const isSingleCategoryAssignment =
+      splits.length === 1 &&
+      splits[0].amount === Math.abs(selectedTransaction.amount);
+
+    if (isSingleCategoryAssignment) {
+      dispatch(
+        transactionActions.updateTransactionProperty(
+          selectedTransaction.accountId,
+          selectedTransaction,
+          'categoryId',
+          splits[0].categoryId || null,
+        ),
+      );
+      dispatch(
+        transactionSplitActions.saveTransactionSplits(selectedTransaction.id, []),
+      );
+    } else {
+      dispatch(
+        transactionSplitActions.saveTransactionSplits(
+          selectedTransaction.id,
+          splits,
+        ),
+      );
+    }
+
+    handleSplitEditorClose();
+  };
+
+  const handleRecurringModalSave = (transactionData) => {
+    if (!selectedRecurringTransaction) return;
+
+    dispatch(
+      recurringTransactionActions.updateRecurringTransactionProperty(
+        selectedRecurringTransaction.id,
+        transactionData,
+      ),
+    );
+    handleRecurringModalClose();
+  };
+  const handleTransactionSortToggle = () => {
+    setTransactionSortDirection((currentDirection) =>
+      currentDirection === 'asc' ? 'desc' : 'asc',
+    );
+  };
+
+  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 3 : 3;
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        mb: 2,
+        p: 2,
+        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+        border: '1px solid rgba(76, 175, 80, 0.3)',
+      }}
+    >
+      <Box
         sx={{
-          p: 2,
-          mb: 2,
-          backgroundColor: 'rgba(158, 158, 158, 0.08)',
-          border: '1px solid rgba(158, 158, 158, 0.2)',
+          mb: 1.5,
+          display: 'flex',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 1.5,
+          flexWrap: 'wrap',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+        <Box>
+          <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>
             Category Totals
           </Typography>
-          <ToggleButtonGroup
-            value={timePeriod}
-            exclusive
-            onChange={handleTimePeriodChange}
-            size='small'
-          >
-            <ToggleButton value='month'>This Month</ToggleButton>
-            <ToggleButton value='year'>This Year</ToggleButton>
-            <ToggleButton value='all'>All Time</ToggleButton>
-          </ToggleButtonGroup>
+          <Typography variant='body2' color='text.secondary'>
+            {periodConfig.label}
+          </Typography>
         </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            flexWrap: 'wrap',
+          }}
+        >
+          <DatePicker
+            label='Start Date'
+            value={customRange.startDate}
+            onChange={handleCustomStartChange}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: {
+                  width: { xs: '100%', sm: 210 },
+                },
+              },
+            }}
+          />
+
+          <DatePicker
+            label='End Date'
+            value={customRange.endDate}
+            onChange={handleCustomEndChange}
+            minDate={customRange.startDate || undefined}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: {
+                  width: { xs: '100%', sm: 210 },
+                },
+              },
+            }}
+          />
+        </Box>
+      </Box>
+
+      <SpendingPeriodControls
+        activeSelection={activeSelection}
+        availableYears={availableYears}
+        customRange={customRange}
+        onAggregateChange={handleAggregateChange}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
+        onCustomStartChange={handleCustomStartChange}
+        onCustomEndChange={handleCustomEndChange}
+        showDateControls={false}
+        sx={{ mb: 2 }}
+      />
+
+      {!hasData ? (
         <Typography
           variant='body2'
           color='text.secondary'
@@ -281,257 +542,466 @@ export default function CategoryTotals({ category }) {
         >
           No transactions found for this category in the selected time period
         </Typography>
-      </Paper>
-    );
-  }
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        mb: 2,
-        backgroundColor: 'rgba(76, 175, 80, 0.08)',
-        border: '1px solid rgba(76, 175, 80, 0.3)',
-        position: 'relative',
-      }}
-    >
-      {/* Header with title and time period toggle - absolutely positioned overlay */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          p: 2,
-          zIndex: 2,
-        }}
-      >
-        <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
-          Category Totals
-        </Typography>
-        <ToggleButtonGroup
-          value={timePeriod}
-          exclusive
-          onChange={handleTimePeriodChange}
-          size='small'
-        >
-          <ToggleButton value='month'>This Month</ToggleButton>
-          <ToggleButton value='year'>This Year</ToggleButton>
-          <ToggleButton value='all'>All Time</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      {/* Chart and Summary Row */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 3,
-          pr: 2,
-          pb: 1,
-          alignItems: 'flex-start',
-        }}
-      >
-        {/* Pie Chart */}
-        <Box
-          sx={{
-            flex: 5,
-            height: 220,
-          }}
-        >
-          <Pie
-            data={{
-              labels: subcategoryTotals
-                .filter((sub) => sub.count > 0)
-                .map((sub) => sub.name),
-              datasets: [
-                {
-                  data: subcategoryTotals
-                    .filter((sub) => sub.count > 0)
-                    .map((sub) => Math.abs(sub.total)),
-                  backgroundColor: COLORS,
-                  borderColor: '#fff',
-                  borderWidth: 2,
-                },
-              ],
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: 'inline-block',
+              mb: 2.25,
+              maxWidth: '100%',
             }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function (context) {
-                      const value = context.parsed ?? 0;
-                      return `$${doublePrecisionFormatString(value)}`;
-                    },
+          >
+            {showStateBreakdown ? (
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(5, 136px)',
                   },
-                },
-              },
-            }}
-          />
-        </Box>
-
-        {/* Past/Future/Total Summary */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5,
-            flex: 1,
-            pt: 10,
-            pr: 1,
-          }}
-        >
-          {/* Past Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Past
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
-            </Typography>
-          </Box>
-
-          {/* Future Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Future
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
-            </Typography>
-          </Box>
-
-          {/* Total Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Total
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.total >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.total))}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Subcategory Breakdown */}
-      {subcategoryTotals.length > 0 &&
-        subcategoryTotals.some((s) => s.count > 0) && (
-          <Box sx={{ px: 2, pb: 2 }}>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
-                    Past
-                  </TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
-                    Future
-                  </TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
+                  gap: 0.75,
+                  width: { xs: '100%', md: 'auto' },
+                  maxWidth: '100%',
+                }}
+              >
+                {SPENDING_STATE_ORDER.map((stateKey) => (
+                  <Paper
+                    key={stateKey}
+                    sx={{
+                      p: 0.875,
+                      backgroundColor: LEDGER_STATE_META[stateKey].backgroundColor,
+                      border: `1px solid ${LEDGER_STATE_META[stateKey].borderColor}`,
+                    }}
+                  >
+                    <Typography
+                      variant='caption'
+                      sx={{
+                        color: LEDGER_STATE_META[stateKey].color,
+                        fontSize: '0.68rem',
+                        display: 'block',
+                        lineHeight: 1.1,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {SPENDING_STATE_META[stateKey].label}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: LEDGER_STATE_META[stateKey].color,
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        mt: 0.25,
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {formatAmount(totals[stateKey])}
+                    </Typography>
+                  </Paper>
+                ))}
+                <Paper
+                  sx={{
+                    p: 0.875,
+                    backgroundColor: TOTAL_META.backgroundColor,
+                    border: `1px solid ${TOTAL_META.borderColor}`,
+                  }}
+                >
+                  <Typography
+                    variant='caption'
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
+                  >
                     Total
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {subcategoryTotals
-                  .filter((sub) => sub.count > 0)
-                  .map((sub) => (
-                    <TableRow key={sub.id}>
-                      <TableCell>{sub.name}</TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color:
-                            sub.pastTotal >= 0 ? 'success.main' : 'error.main',
-                          fontWeight: 500,
-                        }}
-                      >
-                        ${doublePrecisionFormatString(Math.abs(sub.pastTotal))}
-                      </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color:
-                            sub.futureTotal >= 0
-                              ? 'success.main'
-                              : 'error.main',
-                          fontWeight: 500,
-                        }}
-                      >
-                        $
-                        {doublePrecisionFormatString(Math.abs(sub.futureTotal))}
-                      </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color: sub.total >= 0 ? 'success.main' : 'error.main',
-                          fontWeight: 600,
-                        }}
-                      >
-                        ${doublePrecisionFormatString(Math.abs(sub.total))}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                      mt: 0.25,
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {formatAmount(totals.total)}
+                  </Typography>
+                </Paper>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.75,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Paper
+                  sx={{
+                    width: { xs: '100%', sm: 220 },
+                    maxWidth: '100%',
+                    p: 1,
+                    backgroundColor: TOTAL_META.backgroundColor,
+                    border: `1px solid ${TOTAL_META.borderColor}`,
+                  }}
+                >
+                  <Typography
+                    variant='caption'
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Total
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontWeight: 600,
+                      mt: 0.25,
+                      fontSize: '0.95rem',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatAmount(totals.total)}
+                  </Typography>
+                </Paper>
+
+                <Paper
+                  sx={{
+                    width: { xs: '100%', sm: 220 },
+                    maxWidth: '100%',
+                    p: 1,
+                    backgroundColor: MONTHLY_AVG_META.backgroundColor,
+                    border: `1px solid ${MONTHLY_AVG_META.borderColor}`,
+                  }}
+                >
+                  <Typography
+                    variant='caption'
+                    sx={{
+                      color: MONTHLY_AVG_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Monthly Avg
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: MONTHLY_AVG_META.color,
+                      fontWeight: 600,
+                      mt: 0.25,
+                      fontSize: '0.95rem',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatAmount(totals.monthlyAvg)}
+                  </Typography>
+                </Paper>
+              </Box>
+            )}
           </Box>
-        )}
+
+          {subcategoryTotals.length > 0 ? (
+            <Box sx={{ overflow: 'auto' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontWeight: 'bold', mb: 1 }}
+              >
+                Subcategory Breakdown
+              </Typography>
+
+              <Table size='small'>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
+                    {showStateBreakdown ? (
+                      <>
+                        {SPENDING_STATE_ORDER.map((stateKey) => (
+                          <TableCell
+                            key={stateKey}
+                            align='right'
+                            sx={{
+                              color: LEDGER_STATE_META[stateKey].color,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {SPENDING_STATE_META[stateKey].label}
+                          </TableCell>
+                        ))}
+                        <TableCell
+                          align='right'
+                          sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell
+                          align='right'
+                          sx={{ color: MONTHLY_AVG_META.color, fontWeight: 700 }}
+                        >
+                          Monthly Avg
+                        </TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell
+                          align='right'
+                          sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell
+                          align='right'
+                          sx={{ color: MONTHLY_AVG_META.color, fontWeight: 700 }}
+                        >
+                          Monthly Avg
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {subcategoryTotals.map((subcategory) => (
+                    <Fragment key={subcategory.id}>
+                      <TableRow
+                        onClick={() =>
+                          subcategory.transactions.length > 0 &&
+                          toggleSubcategoryExpanded(subcategory.id)
+                        }
+                        sx={{
+                          cursor:
+                            subcategory.transactions.length > 0
+                              ? 'pointer'
+                              : 'default',
+                          '&:hover':
+                            subcategory.transactions.length > 0
+                              ? { backgroundColor: 'rgba(0, 0, 0, 0.02)' }
+                              : undefined,
+                        }}
+                      >
+                        <TableCell>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.75,
+                            }}
+                          >
+                            {subcategory.transactions.length > 0 && (
+                              <IconButton size='small' sx={{ p: 0 }}>
+                                {expandedSubcategoryIds.includes(subcategory.id) ? (
+                                  <KeyboardArrowDownIcon fontSize='small' />
+                                ) : (
+                                  <KeyboardArrowRightIcon fontSize='small' />
+                                )}
+                              </IconButton>
+                            )}
+                            <Typography variant='body2'>
+                              {subcategory.name}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        {showStateBreakdown ? (
+                          <>
+                            {SPENDING_STATE_ORDER.map((stateKey) => (
+                              <TableCell
+                                key={`${subcategory.id}-${stateKey}`}
+                                align='right'
+                                sx={{
+                                  color: LEDGER_STATE_META[stateKey].color,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {formatAmount(subcategory[stateKey])}
+                              </TableCell>
+                            ))}
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: TOTAL_META.color,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {formatAmount(subcategory.total)}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: MONTHLY_AVG_META.color,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {formatAmount(subcategory.monthlyAvg)}
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: TOTAL_META.color,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {formatAmount(subcategory.total)}
+                            </TableCell>
+                            <TableCell
+                              align='right'
+                              sx={{
+                                color: MONTHLY_AVG_META.color,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {formatAmount(subcategory.monthlyAvg)}
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+
+                      {expandedSubcategoryIds.includes(subcategory.id) && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={detailColSpan}
+                            sx={{
+                              py: 1.5,
+                              px: 2,
+                              backgroundColor: 'rgba(255, 255, 255, 0.62)',
+                            }}
+                          >
+                            <Table
+                              size='small'
+                              sx={{
+                                '& .MuiTableCell-root': {
+                                  px: 1,
+                                },
+                              }}
+                            >
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    <TableSortLabel
+                                      active
+                                      direction={transactionSortDirection}
+                                      IconComponent={KeyboardArrowUpIcon}
+                                      onClick={handleTransactionSortToggle}
+                                    >
+                                      Date
+                                    </TableSortLabel>
+                                  </TableCell>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Account
+                                  </TableCell>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Description
+                                  </TableCell>
+                                  <TableCell
+                                    align='right'
+                                    sx={{ fontWeight: 700 }}
+                                  >
+                                    Amount
+                                  </TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {sortTransactionDetailsForDirection(
+                                  subcategory.transactions,
+                                  transactionSortDirection,
+                                ).map((transaction) => {
+                                  const isClickable =
+                                    transaction.sourceType === 'recurring'
+                                      ? recurringTransactionsById.has(
+                                          transaction.recurringTransactionId,
+                                        )
+                                      : transactionsById.has(
+                                          transaction.transactionId,
+                                        );
+                                  const detailTextColor =
+                                    getTransactionDetailTextColor(transaction);
+
+                                  return (
+                                    <TableRow
+                                      key={transaction.id}
+                                      hover={isClickable}
+                                      onClick={
+                                        isClickable
+                                          ? () =>
+                                              handleTransactionDetailClick(
+                                                transaction,
+                                              )
+                                          : undefined
+                                      }
+                                      sx={{
+                                        cursor: isClickable ? 'pointer' : 'default',
+                                        color: detailTextColor,
+                                        '& .MuiTableCell-root': {
+                                          color: detailTextColor,
+                                        },
+                                        '&:hover': isClickable
+                                          ? { backgroundColor: 'rgba(0, 0, 0, 0.03)' }
+                                          : undefined,
+                                      }}
+                                    >
+                                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                        {formatTransactionDate(transaction.date)}
+                                      </TableCell>
+                                      <TableCell>
+                                        {accountsById.get(transaction.accountId) ||
+                                          '--'}
+                                      </TableCell>
+                                      <TableCell>
+                                        {transaction.description || '--'}
+                                      </TableCell>
+                                      <TableCell
+                                        align='right'
+                                        sx={{
+                                          color: detailTextColor,
+                                          fontWeight: 500,
+                                          whiteSpace: 'nowrap',
+                                        }}
+                                      >
+                                        {formatAmount(transaction.amount)}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          ) : (
+            <Typography variant='body2' color='text.secondary'>
+              No subcategory activity for this period
+            </Typography>
+          )}
+        </>
+      )}
+
+      <SplitEditorModal
+        open={Boolean(selectedTransaction)}
+        onClose={handleSplitEditorClose}
+        transaction={selectedTransaction}
+        onSave={handleSplitEditorSave}
+      />
+
+      <RecurringTransactionModal
+        open={Boolean(selectedRecurringTransaction)}
+        onClose={handleRecurringModalClose}
+        onSave={handleRecurringModalSave}
+        transaction={selectedRecurringTransaction}
+      />
     </Paper>
   );
 }
-

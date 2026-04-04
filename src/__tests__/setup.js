@@ -6,6 +6,9 @@
 import { vi, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
 
+// React 19 warns on act(...) unless the test environment opts in explicitly.
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 // Mock localStorage
 const localStorageMock = {
   store: {},
