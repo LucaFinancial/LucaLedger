@@ -313,13 +313,13 @@ export default function MonthOverviewSummary({
 }) {
   const cardMetricTooltips = {
     incomeAndCredits:
-      'Income and credits to included non-credit-card accounts, such as checking, savings, and cash. This does not include credit card rewards, refunds, statement credits, or card payments.',
+      'Income and credits to included asset accounts, such as checking, savings, and cash. This does not include credit card rewards, refunds, statement credits, or card payments.',
     income:
-      'Transactions in income categories on included non-credit-card accounts.',
+      'Transactions in income categories on included asset accounts.',
     cardCreditsAndPayments:
       'Combined total of credit card payments plus credit card rewards, refunds, and statement credits. These reduce the combined credit card balance.',
     cashOutflows:
-      'Negative activity from included non-credit-card accounts, including card payments and other debits.',
+      'Negative activity from included asset accounts, including card payments and other debits.',
     expenses:
       'Actual spending only: cash-account expenses plus credit card charges. This excludes credit card payments.',
     cardCharges:
@@ -327,9 +327,9 @@ export default function MonthOverviewSummary({
     currentBalance:
       'Combined total of included asset account balances. This excludes credit card accounts.',
     balanceChange:
-      'Projected remaining change in the combined balance of included non-credit-card accounts based on remaining month activity.',
+      'Projected remaining change in the combined balance of included asset accounts based on remaining month activity.',
     endingBalance:
-      'Projected end-of-month combined balance of included non-credit-card accounts. Calculated as current balance plus remaining balance change.',
+      'Projected end-of-month combined balance of included asset accounts. Calculated as current balance plus remaining balance change.',
     cardBalance:
       'Current combined balance of included credit card accounts.',
     cardBalanceChange:
@@ -395,7 +395,7 @@ export default function MonthOverviewSummary({
       remaining: remainingMonthTotals.income || 0,
       projected: monthEndProjections.projectedIncome || 0,
       tooltip:
-        'Transactions in income categories on included non-credit-card accounts.',
+        'Transactions in income categories on included asset accounts.',
     },
     {
       label: 'Credits',
@@ -413,7 +413,7 @@ export default function MonthOverviewSummary({
       remaining: remainingDisplayMetrics.deposits,
       projected: projectedDisplayMetrics.deposits,
       tooltip:
-        'Cash-side income and credits only. This includes deposits to included non-credit-card accounts and excludes all credit card activity.',
+        'Asset-account income and credits only. This includes deposits to included asset accounts and excludes all credit card activity.',
     },
     {
       label: 'Card Payments',
@@ -422,7 +422,7 @@ export default function MonthOverviewSummary({
       remaining: remainingMonthTotals.creditCardPayments || 0,
       projected: monthEndProjections.projectedCreditCardPayments || 0,
       tooltip:
-        'Payments from non-credit-card accounts to credit card accounts.',
+        'Payments from included asset accounts to credit card accounts.',
     },
     {
       label: 'Card Credits',
@@ -467,7 +467,7 @@ export default function MonthOverviewSummary({
       remaining: remainingMonthTotals.balance || 0,
       projected: combinedBalances.projected,
       tooltip:
-        'Combined balance of included non-credit-card accounts. The remaining column shows projected balance change; the totals column shows projected ending balance.',
+        'Combined balance of included asset accounts. The remaining column shows projected balance change; the totals column shows projected ending balance.',
     },
     {
       label: 'Card Balance',
