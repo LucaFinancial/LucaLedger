@@ -49,6 +49,27 @@ export function getDefaultExcludedDashboardAccountIds(accounts = []) {
     .map((account) => account.id);
 }
 
+export function buildCombinedDashboardBalances({
+  totals = {},
+  creditCardTotals = {},
+  remainingMonthTotals = {},
+} = {}) {
+  const current = totals.current || 0;
+  const creditCardCurrent = creditCardTotals.current || 0;
+  const projected = current + (remainingMonthTotals.balance || 0);
+  const creditCardProjected =
+    creditCardCurrent +
+    (remainingMonthTotals.creditCardExpenses || 0) -
+    (remainingMonthTotals.creditCardPayments || 0);
+
+  return {
+    current,
+    creditCardCurrent,
+    projected,
+    creditCardProjected,
+  };
+}
+
 export function filterDashboardAccounts(
   accounts,
   { excludeClosedAccounts = false, excludedAccountIds = [] } = {},

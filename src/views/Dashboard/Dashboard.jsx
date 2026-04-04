@@ -14,6 +14,7 @@ import { useCategoryFilters } from './hooks/useCategoryFilters';
 import { useFilteredTransactions } from './hooks/useFilteredTransactions';
 import { useTransactionTotals } from './hooks/useTransactionTotals';
 import {
+  buildCombinedDashboardBalances,
   formatCurrency,
   createAccountMap,
   filterDashboardAccounts,
@@ -112,11 +113,15 @@ export default function Dashboard() {
       isTransferTransaction,
       isCreditCardPaymentTransaction,
     });
-  const combinedBalances = {
-    current: totals.current,
-    creditCardCurrent: creditCardTotals.current,
-    projected: totals.current + remainingMonthTotals.balance,
-  };
+  const combinedBalances = useMemo(
+    () =>
+      buildCombinedDashboardBalances({
+        totals,
+        creditCardTotals,
+        remainingMonthTotals,
+      }),
+    [totals, creditCardTotals, remainingMonthTotals],
+  );
   const handleToggleAccount = (accountId) => {
     const isDefaultExcluded = defaultExcludedAccountIds.includes(accountId);
     const isCurrentlyExcluded = excludedAccountIds.includes(accountId);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildCombinedDashboardBalances,
   filterDashboardAccounts,
   filterRecurringTransactionsByAccountIds,
   filterTransactionSplitsByTransactionIds,
@@ -32,6 +33,25 @@ describe('dashboardUtils filters', () => {
         { id: 'escrow-2', type: 'ESCROW' },
       ]),
     ).toEqual(['escrow-1', 'escrow-2']);
+  });
+
+  it('builds current and projected cash/card balances for the dashboard', () => {
+    expect(
+      buildCombinedDashboardBalances({
+        totals: { current: 125000 },
+        creditCardTotals: { current: 18000 },
+        remainingMonthTotals: {
+          balance: -22000,
+          creditCardPayments: 4500,
+          creditCardExpenses: 6700,
+        },
+      }),
+    ).toEqual({
+      current: 125000,
+      creditCardCurrent: 18000,
+      projected: 103000,
+      creditCardProjected: 20200,
+    });
   });
 
   it('filters transactions by included account ids', () => {

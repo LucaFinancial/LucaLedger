@@ -1,8 +1,31 @@
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { format } from 'date-fns';
 
+const THREE_METRIC_ROW_SX = {
+  display: 'grid',
+  gridTemplateColumns: {
+    xs: '1fr',
+    sm: 'repeat(3, minmax(0, 1fr))',
+  },
+  gap: 2,
+  alignItems: 'start',
+};
+
 function getExpenseColor(amount) {
   return amount >= 0 ? '#f44336' : '#4caf50';
+}
+
+function MetricCell({ label, value, valueColor, formatCurrency, textAlign }) {
+  return (
+    <Box sx={{ minWidth: 0, textAlign }}>
+      <Typography variant='caption' color='text.secondary'>
+        {label}
+      </Typography>
+      <Typography variant='h6' sx={{ color: valueColor, fontWeight: 'bold' }}>
+        {formatCurrency(value)}
+      </Typography>
+    </Box>
+  );
 }
 
 function IncomeMetricsRow({
@@ -13,50 +36,28 @@ function IncomeMetricsRow({
 }) {
   return (
     <Box sx={{ mb: 1 }}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(3, minmax(0, 1fr))',
-          },
-          gap: 2,
-          alignItems: 'start',
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant='caption' color='text.secondary'>
-            Income & Credits
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{ color: '#4caf50', fontWeight: 'bold' }}
-          >
-            {formatCurrency(incomeAndCredits)}
-          </Typography>
-        </Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant='caption' color='text.secondary'>
-            Income
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{ color: '#4caf50', fontWeight: 'bold' }}
-          >
-            {formatCurrency(income)}
-          </Typography>
-        </Box>
-        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
-          <Typography variant='caption' color='text.secondary'>
-            Credits
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{ color: '#4caf50', fontWeight: 'bold' }}
-          >
-            {formatCurrency(credits)}
-          </Typography>
-        </Box>
+      <Box sx={THREE_METRIC_ROW_SX}>
+        <MetricCell
+          label='Income & Credits'
+          value={incomeAndCredits}
+          valueColor='#4caf50'
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'left' }}
+        />
+        <MetricCell
+          label='Income'
+          value={income}
+          valueColor='#4caf50'
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'center' }}
+        />
+        <MetricCell
+          label='Credits'
+          value={credits}
+          valueColor='#4caf50'
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'right' }}
+        />
       </Box>
     </Box>
   );
@@ -70,108 +71,69 @@ function ExpenseMetricsRow({
 }) {
   return (
     <Box sx={{ mb: 1 }}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(3, minmax(0, 1fr))',
-          },
-          gap: 2,
-          alignItems: 'start',
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant='caption' color='text.secondary'>
-            Expenses
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{ color: getExpenseColor(expenses), fontWeight: 'bold' }}
-          >
-            {formatCurrency(expenses)}
-          </Typography>
-        </Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant='caption' color='text.secondary'>
-            Card Payments
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: getExpenseColor(creditCardPayments),
-              fontWeight: 'bold',
-            }}
-          >
-            {formatCurrency(creditCardPayments)}
-          </Typography>
-        </Box>
-        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
-          <Typography variant='caption' color='text.secondary'>
-            Card Expenses
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: getExpenseColor(creditCardExpenses),
-              fontWeight: 'bold',
-            }}
-          >
-            {formatCurrency(creditCardExpenses)}
-          </Typography>
-        </Box>
+      <Box sx={THREE_METRIC_ROW_SX}>
+        <MetricCell
+          label='Expenses'
+          value={expenses}
+          valueColor={getExpenseColor(expenses)}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'left' }}
+        />
+        <MetricCell
+          label='Card Payments'
+          value={creditCardPayments}
+          valueColor={getExpenseColor(creditCardPayments)}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'center' }}
+        />
+        <MetricCell
+          label='Card Expenses'
+          value={creditCardExpenses}
+          valueColor={getExpenseColor(creditCardExpenses)}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'right' }}
+        />
       </Box>
     </Box>
   );
 }
 
-function BalanceMetricsRow({ balance, creditCardBalance, formatCurrency }) {
+function SummaryMetricsRow({
+  net,
+  balance,
+  creditCardBalance,
+  borderColor,
+  formatCurrency,
+}) {
   return (
     <Box
       sx={{
         pt: 1,
-        borderTop: '1px solid #90caf9',
+        borderTop: `1px solid ${borderColor}`,
       }}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, minmax(0, 1fr))',
-          },
-          gap: 2,
-          alignItems: 'start',
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant='caption' color='text.secondary'>
-            Balance
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: balance >= 0 ? '#4caf50' : '#f44336',
-              fontWeight: 'bold',
-            }}
-          >
-            {formatCurrency(balance)}
-          </Typography>
-        </Box>
-        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
-          <Typography variant='caption' color='text.secondary'>
-            Card Balance
-          </Typography>
-          <Typography
-            variant='h6'
-            sx={{
-              color: creditCardBalance > 0 ? '#f44336' : '#4caf50',
-              fontWeight: 'bold',
-            }}
-          >
-            {formatCurrency(creditCardBalance)}
-          </Typography>
-        </Box>
+      <Box sx={THREE_METRIC_ROW_SX}>
+        <MetricCell
+          label='Net'
+          value={net}
+          valueColor={net >= 0 ? '#4caf50' : '#f44336'}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'left' }}
+        />
+        <MetricCell
+          label='Balance'
+          value={balance}
+          valueColor={balance >= 0 ? '#4caf50' : '#f44336'}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'center' }}
+        />
+        <MetricCell
+          label='Card Balance'
+          value={creditCardBalance}
+          valueColor={creditCardBalance > 0 ? '#f44336' : '#4caf50'}
+          formatCurrency={formatCurrency}
+          textAlign={{ xs: 'left', sm: 'right' }}
+        />
       </Box>
     </Box>
   );
@@ -264,9 +226,11 @@ export default function MonthOverviewSummary({
               creditCardExpenses={currentMonthTotals.creditCardExpenses}
               formatCurrency={formatCurrency}
             />
-            <BalanceMetricsRow
+            <SummaryMetricsRow
+              net={currentMonthTotals.netFlow}
               balance={combinedBalances.current}
               creditCardBalance={combinedBalances.creditCardCurrent}
+              borderColor='#90caf9'
               formatCurrency={formatCurrency}
             />
           </Paper>
@@ -299,26 +263,13 @@ export default function MonthOverviewSummary({
               creditCardExpenses={remainingMonthTotals.creditCardExpenses}
               formatCurrency={formatCurrency}
             />
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #ffcc80',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Net
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  color:
-                    remainingMonthTotals.netFlow >= 0 ? '#4caf50' : '#f44336',
-                  fontWeight: 'bold',
-                }}
-              >
-                {formatCurrency(remainingMonthTotals.netFlow)}
-              </Typography>
-            </Box>
+            <SummaryMetricsRow
+              net={remainingMonthTotals.netFlow}
+              balance={combinedBalances.projected}
+              creditCardBalance={combinedBalances.creditCardProjected}
+              borderColor='#ffcc80'
+              formatCurrency={formatCurrency}
+            />
           </Paper>
         </Grid>
 
@@ -335,7 +286,7 @@ export default function MonthOverviewSummary({
               variant='subtitle2'
               sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
             >
-              Total
+              End of Month Totals
             </Typography>
             <IncomeMetricsRow
               incomeAndCredits={monthEndProjections.projectedIncomeAndCredits}
@@ -343,37 +294,19 @@ export default function MonthOverviewSummary({
               credits={monthEndProjections.projectedCredits}
               formatCurrency={formatCurrency}
             />
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(monthEndProjections.projectedExpenses)}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #ce93d8',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Balance
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  color:
-                    combinedBalances.projected >= 0 ? '#4caf50' : '#f44336',
-                  fontWeight: 'bold',
-                }}
-              >
-                {formatCurrency(combinedBalances.projected)}
-              </Typography>
-            </Box>
+            <ExpenseMetricsRow
+              expenses={monthEndProjections.projectedExpenses}
+              creditCardPayments={monthEndProjections.projectedCreditCardPayments}
+              creditCardExpenses={monthEndProjections.projectedCreditCardExpenses}
+              formatCurrency={formatCurrency}
+            />
+            <SummaryMetricsRow
+              net={monthEndProjections.projectedNetFlow}
+              balance={combinedBalances.projected}
+              creditCardBalance={combinedBalances.creditCardProjected}
+              borderColor='#ce93d8'
+              formatCurrency={formatCurrency}
+            />
           </Paper>
         </Grid>
       </Grid>

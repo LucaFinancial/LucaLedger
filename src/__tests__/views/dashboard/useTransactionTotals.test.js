@@ -146,9 +146,13 @@ describe('useTransactionTotals helpers', () => {
     expect(projection.totalIncomeAndCredits).toBe(50000);
     expect(projection.totalExpenses).toBe(32000);
     expect(projection.totalBalance).toBe(18000);
+    expect(projection.totalCreditCardPayments).toBe(4500);
+    expect(projection.totalCreditCardExpenses).toBe(9500);
     expect(projection.projectedIncome).toBe(42000);
     expect(projection.projectedCredits).toBe(8000);
     expect(projection.projectedIncomeAndCredits).toBe(50000);
+    expect(projection.projectedCreditCardPayments).toBe(4500);
+    expect(projection.projectedCreditCardExpenses).toBe(9500);
     expect(projection.projectedNetFlow).toBe(18000);
   });
 });
