@@ -1,12 +1,14 @@
 import {
   Box,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import {
@@ -40,6 +42,16 @@ export default function SpendingPeriodControls({
     gap: 2,
     flexWrap: 'wrap',
   };
+  const clearButtonSx = {
+    position: 'absolute',
+    top: '50%',
+    right: 34,
+    transform: 'translateY(-50%)',
+    p: 0.25,
+    opacity: 0,
+    zIndex: 1,
+    transition: 'opacity 0.15s ease',
+  };
   const selectionControls = (
     <>
       {showAggregateControls && (
@@ -59,42 +71,110 @@ export default function SpendingPeriodControls({
 
       {showSelectionControls && (
         <>
-          <FormControl size='small' sx={{ minWidth: 110 }}>
-            <InputLabel>Year</InputLabel>
-            <Select
-              value={activeYear}
-              label='Year'
-              onChange={onYearChange}
-              displayEmpty
-            >
-              <MenuItem value=''>Year</MenuItem>
-              {availableYears.map((yearValue) => (
-                <MenuItem key={yearValue} value={String(yearValue)}>
-                  {yearValue}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box
+            sx={{
+              position: 'relative',
+              '&:hover .period-clear-button': {
+                opacity: activeYear ? 1 : 0,
+              },
+            }}
+          >
+            <FormControl size='small' sx={{ minWidth: 110 }}>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={activeYear}
+                label='Year'
+                onChange={onYearChange}
+                displayEmpty
+                sx={{
+                  '& .MuiSelect-select': {
+                    pr: activeYear ? 5 : undefined,
+                  },
+                }}
+              >
+                <MenuItem value=''>Year</MenuItem>
+                {availableYears.map((yearValue) => (
+                  <MenuItem key={yearValue} value={String(yearValue)}>
+                    {yearValue}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl size='small' sx={{ minWidth: 170 }}>
-            <InputLabel>Month</InputLabel>
-            <Select
-              value={activeMonth}
-              label='Month'
-              onChange={onMonthChange}
-              displayEmpty
-            >
-              <MenuItem value=''>Month</MenuItem>
-              {CALENDAR_MONTHS.map((monthOption) => (
-                <MenuItem
-                  key={monthOption.value}
-                  value={monthOption.value}
-                >
-                  {monthOption.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            {activeYear && (
+              <IconButton
+                className='period-clear-button'
+                aria-label='Clear year'
+                size='small'
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onYearChange({ target: { value: '' } });
+                }}
+                sx={clearButtonSx}
+              >
+                <CloseIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              position: 'relative',
+              '&:hover .period-clear-button': {
+                opacity: activeMonth ? 1 : 0,
+              },
+            }}
+          >
+            <FormControl size='small' sx={{ minWidth: 170 }}>
+              <InputLabel>Month</InputLabel>
+              <Select
+                value={activeMonth}
+                label='Month'
+                onChange={onMonthChange}
+                displayEmpty
+                sx={{
+                  '& .MuiSelect-select': {
+                    pr: activeMonth ? 5 : undefined,
+                  },
+                }}
+              >
+                <MenuItem value=''>Month</MenuItem>
+                {CALENDAR_MONTHS.map((monthOption) => (
+                  <MenuItem
+                    key={monthOption.value}
+                    value={monthOption.value}
+                  >
+                    {monthOption.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {activeMonth && (
+              <IconButton
+                className='period-clear-button'
+                aria-label='Clear month'
+                size='small'
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMonthChange({ target: { value: '' } });
+                }}
+                sx={clearButtonSx}
+              >
+                <CloseIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            )}
+          </Box>
         </>
       )}
     </>
