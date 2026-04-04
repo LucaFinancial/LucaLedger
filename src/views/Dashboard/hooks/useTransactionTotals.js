@@ -28,6 +28,8 @@ export const combineOverviewTotals = (...overviewTotals) => {
     (totals, currentTotals) => ({
       income: totals.income + (currentTotals?.income || 0),
       credits: totals.credits + (currentTotals?.credits || 0),
+      cashCredits: totals.cashCredits + (currentTotals?.cashCredits || 0),
+      cashOutflows: totals.cashOutflows + (currentTotals?.cashOutflows || 0),
       expenses: totals.expenses + (currentTotals?.expenses || 0),
       balance: totals.balance + (currentTotals?.balance || 0),
       creditCardPayments:
@@ -43,6 +45,8 @@ export const combineOverviewTotals = (...overviewTotals) => {
     {
       income: 0,
       credits: 0,
+      cashCredits: 0,
+      cashOutflows: 0,
       expenses: 0,
       balance: 0,
       creditCardPayments: 0,
@@ -72,7 +76,8 @@ export const buildCurrentMonthOverviewTotals = (
   let income = 0;
   let credits = 0;
   let cashCredits = 0;
-  let expenses = 0;
+  let cashOutflows = 0;
+  let cashExpenses = 0;
   let creditCardPayments = 0;
   let creditCardExpenses = 0;
   let creditCardCredits = 0;
@@ -89,7 +94,7 @@ export const buildCurrentMonthOverviewTotals = (
     if (!isCreditCardAccount) {
       if (isCreditCardPayment) {
         const paymentAmount = -amount;
-        expenses += paymentAmount;
+        cashOutflows += paymentAmount;
         creditCardPayments += paymentAmount;
         return;
       }
@@ -106,7 +111,9 @@ export const buildCurrentMonthOverviewTotals = (
           cashCredits += amount;
         }
       } else if (amount < 0) {
-        expenses += Math.abs(amount);
+        const expenseAmount = Math.abs(amount);
+        cashOutflows += expenseAmount;
+        cashExpenses += expenseAmount;
       }
 
       return;
@@ -124,7 +131,8 @@ export const buildCurrentMonthOverviewTotals = (
   });
 
   const incomeAndCredits = income + credits;
-  const balance = income + cashCredits - expenses;
+  const expenses = cashExpenses + creditCardExpenses;
+  const balance = income + cashCredits - cashOutflows;
   const creditCardBalanceChange =
     creditCardExpenses - creditCardPayments - creditCardCredits;
   const netFlow = incomeAndCredits - expenses;
@@ -134,6 +142,7 @@ export const buildCurrentMonthOverviewTotals = (
     credits,
     incomeAndCredits,
     cashCredits,
+    cashOutflows,
     expenses,
     balance,
     creditCardPayments,
@@ -164,8 +173,10 @@ export const isRemainingMonthTransaction = (
 export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
   const totalIncome = projectedMonthTotals.income || 0;
   const totalCredits = projectedMonthTotals.credits || 0;
+  const totalCashCredits = projectedMonthTotals.cashCredits || 0;
   const totalIncomeAndCredits =
     projectedMonthTotals.incomeAndCredits ?? totalIncome + totalCredits;
+  const totalCashOutflows = projectedMonthTotals.cashOutflows || 0;
   const totalExpenses = projectedMonthTotals.expenses || 0;
   const totalBalance = projectedMonthTotals.balance || 0;
   const totalCreditCardPayments = projectedMonthTotals.creditCardPayments || 0;
@@ -186,7 +197,9 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
   return {
     totalIncome,
     totalCredits,
+    totalCashCredits,
     totalIncomeAndCredits,
+    totalCashOutflows,
     totalExpenses,
     totalBalance,
     totalCreditCardPayments,
@@ -196,7 +209,9 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
     totalNetFlow,
     projectedIncome: totalIncome,
     projectedCredits: totalCredits,
+    projectedCashCredits: totalCashCredits,
     projectedIncomeAndCredits: totalIncomeAndCredits,
+    projectedCashOutflows: totalCashOutflows,
     projectedExpenses: totalExpenses,
     projectedBalance: totalBalance,
     projectedCreditCardPayments: totalCreditCardPayments,
