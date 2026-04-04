@@ -5,7 +5,7 @@ function getExpenseColor(amount) {
   return amount >= 0 ? '#f44336' : '#4caf50';
 }
 
-function CurrentExpenseMetricsRow({
+function ExpenseMetricsRow({
   expenses,
   creditCardPayments,
   creditCardExpenses,
@@ -206,7 +206,7 @@ export default function MonthOverviewSummary({
                 {formatCurrency(currentMonthTotals.income)}
               </Typography>
             </Box>
-            <CurrentExpenseMetricsRow
+            <ExpenseMetricsRow
               expenses={currentMonthTotals.expenses}
               creditCardPayments={currentMonthTotals.creditCardPayments}
               creditCardExpenses={currentMonthTotals.creditCardExpenses}
@@ -246,17 +246,12 @@ export default function MonthOverviewSummary({
                 {formatCurrency(remainingMonthTotals.income)}
               </Typography>
             </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(remainingMonthTotals.expenses)}
-              </Typography>
-            </Box>
+            <ExpenseMetricsRow
+              expenses={remainingMonthTotals.expenses}
+              creditCardPayments={remainingMonthTotals.creditCardPayments}
+              creditCardExpenses={remainingMonthTotals.creditCardExpenses}
+              formatCurrency={formatCurrency}
+            />
             <Box
               sx={{
                 pt: 1,

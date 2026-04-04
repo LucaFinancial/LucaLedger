@@ -84,13 +84,8 @@ export const buildCurrentMonthOverviewTotals = (
 export const isRemainingMonthTransaction = (
   tx,
   dateRanges,
-  isTransferTransaction,
 ) => {
   const txDate = parseISO(tx.date.replace(/\//g, '-'));
-
-  if (isTransferTransaction(tx)) {
-    return false;
-  }
 
   return (
     txDate >= dateRanges.currentMonthStart &&
@@ -224,18 +219,21 @@ export function useTransactionTotals({
   // Calculate remaining current month pending/scheduled/planned transactions
   const remainingMonthTotals = useMemo(() => {
     const remainingMonthTransactions = allTransactions.filter((tx) =>
-      isRemainingMonthTransaction(tx, dateRanges, isTransferTransaction),
+      isRemainingMonthTransaction(tx, dateRanges),
     );
 
-    return sumTransactionTotals(
+    return buildCurrentMonthOverviewTotals(
       remainingMonthTransactions,
-      categorizeTransaction,
+      accountMap,
+      isTransferTransaction,
+      isCreditCardPaymentTransaction,
     );
   }, [
     allTransactions,
+    accountMap,
     dateRanges,
-    categorizeTransaction,
     isTransferTransaction,
+    isCreditCardPaymentTransaction,
   ]);
 
   // Calculate month-end projections

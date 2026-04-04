@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AccountType } from '@/store/accounts/constants';
 
 import {
@@ -71,7 +71,7 @@ describe('useTransactionTotals helpers', () => {
     });
   });
 
-  it('treats planned transactions as remaining month activity', () => {
+  it('treats transfer-based card payments as remaining month activity', () => {
     const dateRanges = {
       currentMonthStart: new Date('2026-04-01T00:00:00.000Z'),
       currentMonthEnd: new Date('2026-04-30T23:59:59.999Z'),
@@ -81,10 +81,10 @@ describe('useTransactionTotals helpers', () => {
       isRemainingMonthTransaction(
         {
           date: '2026-04-22',
-          transactionState: 'PLANNED',
+          transactionState: 'PENDING',
+          categoryId: 'cc-payment',
         },
         dateRanges,
-        vi.fn(() => false),
       ),
     ).toBe(true);
   });
