@@ -10,4 +10,5 @@ export const AccountFields = Object.freeze({
   NAME: 'name',
   TYPE: 'type',
   STATEMENT_DAY: 'statementClosingDay',
+  CLOSED_AT: 'closedAt',
 });

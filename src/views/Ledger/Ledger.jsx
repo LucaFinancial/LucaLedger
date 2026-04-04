@@ -9,6 +9,7 @@ import RecurringTransactionsPanel from '@/components/RecurringTransactionsPanel'
 import {
   constants as accountConstants,
   selectors as accountSelectors,
+  utils as accountUtils,
 } from '@/store/accounts';
 import {
   actions as transactionActions,
@@ -425,6 +426,9 @@ export default function Ledger() {
     return null;
   }
 
+  const isClosedAccount = accountUtils.isAccountClosed(account);
+  const closedAtLabel = accountUtils.formatAccountClosedAt(account.closedAt);
+
   const handleCollapseAll = () => {
     // Include both month identifiers and year identifiers
     setCollapsedGroups([
@@ -791,6 +795,31 @@ export default function Ledger() {
             </Tooltip>
           </Box>
         </Box>
+
+        {isClosedAccount && (
+          <Box
+            sx={{
+              px: 2,
+              py: 1.25,
+              backgroundColor: 'rgba(211, 47, 47, 0.08)',
+              borderBottom: '1px solid',
+              borderColor: 'error.main',
+              color: 'error.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Box sx={{ fontSize: '1rem', fontWeight: 700 }}>Closed</Box>
+            {closedAtLabel && (
+              <Box sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                Marked closed {closedAtLabel}
+              </Box>
+            )}
+          </Box>
+        )}
 
         {/* Filter Results Summary */}
         {hasActiveFilters && (

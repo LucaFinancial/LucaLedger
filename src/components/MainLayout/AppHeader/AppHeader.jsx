@@ -6,13 +6,12 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import NavItem from './NavItem';
 import { useAuth } from '@/auth';
 
 import {
-  Home as HomeIcon,
   HelpOutline as HelpIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
@@ -20,6 +19,20 @@ import {
 
 export default function AppHeader() {
   const { logout, currentUser } = useAuth();
+  const location = useLocation();
+
+  const iconButtonSx = (isActive) => ({
+    color: 'white',
+    backgroundColor: isActive ? 'rgba(255, 255, 255, 0.18)' : 'transparent',
+    boxShadow: isActive
+      ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.28)'
+      : 'none',
+    '&:hover': {
+      backgroundColor: isActive
+        ? 'rgba(255, 255, 255, 0.24)'
+        : 'rgba(255, 255, 255, 0.08)',
+    },
+  });
 
   const handleLogout = () => {
     if (logout) {
@@ -36,24 +49,24 @@ export default function AppHeader() {
       }}
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Link to='/'>
-            <HomeIcon
-              sx={{
-                fontSize: '3rem',
-                color: 'white',
-                textDecoration: 'none',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            />
-          </Link>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography
+            component={Link}
+            to='/dashboard'
+            variant='h4'
+            sx={{
+              color: 'white',
+              textDecoration: 'none',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Luca Ledger
+          </Typography>
           <NavItem linkTo='/dashboard' navText='Dashboard' />
-          <NavItem linkTo='/accounts' navText='Accounts' />
+          <NavItem linkTo='/accounts' navText='Accounts' end={false} />
           <NavItem linkTo='/categories' navText='Categories' />
         </Box>
-        <Typography variant='h4' sx={{ flexGrow: 1, textAlign: 'center' }}>
-          Luca Ledger
-        </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {currentUser && (
             <Typography variant='body2' sx={{ color: 'white', mr: 1 }}>
@@ -65,7 +78,7 @@ export default function AppHeader() {
               component={Link}
               to='/help'
               aria-label='Help'
-              sx={{ color: 'white' }}
+              sx={iconButtonSx(location.pathname.startsWith('/help'))}
             >
               <HelpIcon />
             </IconButton>
@@ -75,7 +88,7 @@ export default function AppHeader() {
               component={Link}
               to='/settings'
               aria-label='Settings'
-              sx={{ color: 'white' }}
+              sx={iconButtonSx(location.pathname.startsWith('/settings'))}
             >
               <SettingsIcon />
             </IconButton>

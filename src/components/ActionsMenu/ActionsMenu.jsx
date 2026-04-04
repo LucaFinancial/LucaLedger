@@ -8,11 +8,13 @@ import {
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions as accountActions } from '@/store/accounts';
+import { actions as accountActions, utils as accountUtils } from '@/store/accounts';
 import AccountSettingsModal from '@/components/AccountSettingsModal';
 
 import {
   Delete as DeleteIcon,
+  Lock as LockIcon,
+  LockOpen as LockOpenIcon,
   Save as SaveIcon,
   MoreVert as MoreVertIcon,
   Settings as SettingsIcon,
@@ -23,6 +25,7 @@ export default function ActionsMenu({ account }) {
   const [open, setOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const dispatch = useDispatch();
+  const isClosed = accountUtils.isAccountClosed(account);
 
   const handleClick = (event) => {
     event.stopPropagation();
@@ -53,6 +56,17 @@ export default function ActionsMenu({ account }) {
   const handleSettings = (event) => {
     event.stopPropagation();
     setSettingsModalOpen(true);
+    handleClose();
+  };
+
+  const handleClosedStateChange = (event) => {
+    event.stopPropagation();
+    dispatch(
+      accountActions.updateAccount({
+        ...account,
+        closedAt: isClosed ? null : new Date().toISOString(),
+      }),
+    );
     handleClose();
   };
 
@@ -101,6 +115,18 @@ export default function ActionsMenu({ account }) {
           </ListItemIcon>
           <Typography variant='inherit'>Save</Typography>
         </MenuItem>
+        <MenuItem onClick={handleClosedStateChange}>
+          <ListItemIcon>
+            {isClosed ? (
+              <LockOpenIcon fontSize='small' />
+            ) : (
+              <LockIcon fontSize='small' />
+            )}
+          </ListItemIcon>
+          <Typography variant='inherit'>
+            {isClosed ? 'Reopen Account' : 'Close Account'}
+          </Typography>
+        </MenuItem>
         <MenuItem onClick={handleDelete}>
           <ListItemIcon>
             <DeleteIcon fontSize='small' />
@@ -116,4 +142,3 @@ export default function ActionsMenu({ account }) {
     </>
   );
 }
-

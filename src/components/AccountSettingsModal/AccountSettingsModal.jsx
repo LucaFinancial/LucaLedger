@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accounts';
+import { actions, constants, utils as accountUtils } from '@/store/accounts';
 
 function formatAccountType(accountType = '') {
   return accountType
@@ -32,6 +32,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [statementDay, setStatementDay] = useState(
     account.statementClosingDay || 1,
   );
+  const [isClosed, setIsClosed] = useState(accountUtils.isAccountClosed(account));
   const [isDirty, setIsDirty] = useState(false);
   // Store initial values to compare against
   const [initialName, setInitialName] = useState(account.name);
@@ -39,6 +40,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [initialStatementDay, setInitialStatementDay] = useState(
     account.statementClosingDay || 1,
   );
+  const [initialClosedAt, setInitialClosedAt] = useState(account.closedAt || null);
   const accountTypes = Object.values(constants.AccountType).sort((a, b) =>
     formatAccountType(a).localeCompare(formatAccountType(b)),
   );
@@ -49,9 +51,11 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       setName(account.name);
       setType(account.type);
       setStatementDay(account.statementClosingDay || 1);
+      setIsClosed(accountUtils.isAccountClosed(account));
       setInitialName(account.name);
       setInitialType(account.type);
       setInitialStatementDay(account.statementClosingDay || 1);
+      setInitialClosedAt(account.closedAt || null);
       setIsDirty(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,10 +66,20 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     const hasChanges =
       name !== initialName ||
       type !== initialType ||
+      isClosed !== Boolean(initialClosedAt) ||
       (type === constants.AccountType.CREDIT_CARD &&
         statementDay !== initialStatementDay);
     setIsDirty(hasChanges);
-  }, [name, type, statementDay, initialName, initialType, initialStatementDay]);
+  }, [
+    name,
+    type,
+    statementDay,
+    isClosed,
+    initialName,
+    initialType,
+    initialStatementDay,
+    initialClosedAt,
+  ]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -96,6 +110,10 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     setStatementDay(newValue);
   };
 
+  const handleClosedChange = () => {
+    setIsClosed((previousValue) => !previousValue);
+  };
+
   const handleSaveChanges = () => {
     // Collect all changes into a single update object
     const updates = {};
@@ -118,6 +136,10 @@ export default function AccountSettingsModal({ open, onClose, account }) {
       updates.statementClosingDay = statementDay;
     }
 
+    if (isClosed !== Boolean(initialClosedAt)) {
+      updates.closedAt = isClosed ? new Date().toISOString() : null;
+    }
+
     // Apply all updates in a single dispatch
     if (Object.keys(updates).length > 0) {
       const updatedAccount = { ...account, ...updates };
@@ -138,6 +160,7 @@ export default function AccountSettingsModal({ open, onClose, account }) {
     setName(initialName);
     setType(initialType);
     setStatementDay(initialStatementDay);
+    setIsClosed(Boolean(initialClosedAt));
     setIsDirty(false);
     onClose();
   };
@@ -198,6 +221,34 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               helperText='Day of month (1-28)'
               inputProps={{ min: 1, max: 28 }}
             />
+          )}
+        </Box>
+        <Box>
+          <Typography variant='subtitle1' sx={{ fontWeight: 'bold', mb: 1 }}>
+            Account Status
+          </Typography>
+          <Button
+            variant={isClosed ? 'outlined' : 'contained'}
+            color={isClosed ? 'primary' : 'error'}
+            onClick={handleClosedChange}
+            sx={{ mb: 1 }}
+          >
+            {isClosed ? 'Reopen Account' : 'Close Account'}
+          </Button>
+          {initialClosedAt && isClosed && (
+            <Typography variant='body2' color='error.main'>
+              Closed on {accountUtils.formatAccountClosedAt(initialClosedAt)}.
+            </Typography>
+          )}
+          {!initialClosedAt && isClosed && (
+            <Typography variant='body2' color='error.main'>
+              This account will be marked closed when you save.
+            </Typography>
+          )}
+          {initialClosedAt && !isClosed && (
+            <Typography variant='body2' color='error.main'>
+              This account will be reopened when you save.
+            </Typography>
           )}
         </Box>
 
