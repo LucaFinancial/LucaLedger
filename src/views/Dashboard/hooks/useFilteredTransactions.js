@@ -63,11 +63,6 @@ export function useFilteredTransactions(
     return allTransactions.filter((tx) => {
       const txDate = parseISO(tx.date.replace(/\//g, '-'));
 
-      // Exclude transfers
-      if (isTransferTransaction(tx)) {
-        return false;
-      }
-
       return (
         (isAfter(txDate, dateRanges.currentMonthStart) ||
           isSameDay(txDate, dateRanges.currentMonthStart)) &&
@@ -77,7 +72,7 @@ export function useFilteredTransactions(
           transactionConstants.TransactionStateEnum.COMPLETED
       );
     });
-  }, [allTransactions, dateRanges, isTransferTransaction]);
+  }, [allTransactions, dateRanges]);
 
   // All current month transactions (for projections)
   const allMonthTransactions = useMemo(() => {

@@ -1,43 +1,4 @@
 import { useMemo, useCallback } from 'react';
-import { utils as accountUtils } from '@/store/accounts';
-
-export const calculateExpenseContribution = (amount, accountType) => {
-  const numericAmount = Number(amount) || 0;
-
-  // Credit cards are liability accounts, so their expense polarity is inverted.
-  return accountUtils.isCreditCardAccountType(accountType)
-    ? numericAmount
-    : -numericAmount;
-};
-
-export const categorizeDashboardTransaction = ({
-  tx,
-  accountType,
-  isIncome,
-  isTransfer,
-}) => {
-  if (isTransfer) {
-    return { income: 0, expense: 0, creditCardExpense: 0 };
-  }
-
-  if (isIncome) {
-    return {
-      income: Math.abs(Number(tx.amount) || 0),
-      expense: 0,
-      creditCardExpense: 0,
-    };
-  }
-
-  const expense = calculateExpenseContribution(tx.amount, accountType);
-
-  return {
-    income: 0,
-    expense,
-    creditCardExpense: accountUtils.isCreditCardAccountType(accountType)
-      ? expense
-      : 0,
-  };
-};
 
 /**
  * Custom hook to handle category filtering logic for income and transfers
@@ -78,6 +39,13 @@ export function useCategoryFilters(categories) {
     return [transfersCategoryId, ...subcategories.map((cat) => cat.id)];
   }, [categories, transfersCategoryId]);
 
+  const creditCardPaymentsCategoryId = useMemo(
+    () =>
+      categories.find((cat) => cat.slug === 'transfers-credit-card-payments')
+        ?.id || null,
+    [categories],
+  );
+
   // Helper function to determine if a transaction is income
   const isIncomeTransaction = useCallback(
     (tx) => {
@@ -96,6 +64,14 @@ export function useCategoryFilters(categories) {
     [transferCategoryIds],
   );
 
+  const isCreditCardPaymentTransaction = useCallback(
+    (tx) => {
+      if (!tx.categoryId || !creditCardPaymentsCategoryId) return false;
+      return tx.categoryId === creditCardPaymentsCategoryId;
+    },
+    [creditCardPaymentsCategoryId],
+  );
+
   // Helper function to get the display color for a transaction
   const getTransactionColor = useCallback(
     (tx) => {
@@ -106,15 +82,22 @@ export function useCategoryFilters(categories) {
   );
 
   // Helper function to categorize transaction as income or expense amount
-  // Expense polarity depends on account type so reimbursements reduce expenses.
+  // Returns { income: number, expense: number } with absolute values
+  // Transfers are excluded from both income and expense totals
   const categorizeTransaction = useCallback(
-    (tx, accountType) =>
-      categorizeDashboardTransaction({
-        tx,
-        accountType,
-        isIncome: isIncomeTransaction(tx),
-        isTransfer: isTransferTransaction(tx),
-      }),
+    (tx) => {
+      const absAmount = Math.abs(Number(tx.amount) || 0);
+
+      if (isTransferTransaction(tx)) {
+        return { income: 0, expense: 0 };
+      }
+
+      if (isIncomeTransaction(tx)) {
+        return { income: absAmount, expense: 0 };
+      }
+
+      return { income: 0, expense: absAmount };
+    },
     [isIncomeTransaction, isTransferTransaction],
   );
 
@@ -125,6 +108,7 @@ export function useCategoryFilters(categories) {
     transferCategoryIds,
     isIncomeTransaction,
     isTransferTransaction,
+    isCreditCardPaymentTransaction,
     getTransactionColor,
     categorizeTransaction,
   };

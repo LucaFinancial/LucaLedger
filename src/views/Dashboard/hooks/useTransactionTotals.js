@@ -1,21 +1,16 @@
 import { useMemo } from 'react';
 import { parseISO, getDate, getDaysInMonth } from 'date-fns';
+import { utils as accountUtils } from '@/store/accounts';
 import { constants as transactionConstants } from '@/store/transactions';
 
 export const sumTransactionTotals = (transactions, categorizeTransaction) => {
   let income = 0;
   let expenses = 0;
-  let creditCardExpenses = 0;
 
   transactions.forEach((tx) => {
-    const {
-      income: txIncome,
-      expense: txExpense,
-      creditCardExpense = 0,
-    } = categorizeTransaction(tx);
+    const { income: txIncome, expense: txExpense } = categorizeTransaction(tx);
     income += txIncome;
     expenses += txExpense;
-    creditCardExpenses += creditCardExpense;
   });
 
   const balance = income - expenses;
@@ -23,9 +18,63 @@ export const sumTransactionTotals = (transactions, categorizeTransaction) => {
   return {
     income,
     expenses,
-    creditCardExpenses,
     balance,
     netFlow: balance,
+  };
+};
+
+export const buildCurrentMonthOverviewTotals = (
+  transactions,
+  accountMap,
+  isTransferTransaction,
+  isCreditCardPaymentTransaction,
+) => {
+  let income = 0;
+  let expenses = 0;
+  let creditCardPayments = 0;
+  let creditCardExpenses = 0;
+
+  transactions.forEach((tx) => {
+    const amount = Number(tx.amount) || 0;
+    const accountType = accountMap[tx.accountId]?.type;
+    const isTransfer = isTransferTransaction(tx);
+    const isCreditCardPayment = isCreditCardPaymentTransaction(tx);
+
+    if (accountUtils.isIncludedInBalanceTotals(accountType)) {
+      if (isCreditCardPayment) {
+        const paymentAmount = -amount;
+        expenses += paymentAmount;
+        creditCardPayments += paymentAmount;
+        return;
+      }
+
+      if (isTransfer) {
+        return;
+      }
+
+      if (amount > 0) {
+        income += amount;
+      } else if (amount < 0) {
+        expenses += Math.abs(amount);
+      }
+
+      return;
+    }
+
+    if (accountUtils.isCreditCardAccountType(accountType) && !isTransfer) {
+      creditCardExpenses += amount;
+    }
+  });
+
+  const netFlow = income - expenses;
+
+  return {
+    income,
+    expenses,
+    creditCardPayments,
+    creditCardExpenses,
+    balance: netFlow,
+    netFlow,
   };
 };
 
@@ -54,7 +103,6 @@ export const isRemainingMonthTransaction = (
 export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
   const totalIncome = projectedMonthTotals.income;
   const totalExpenses = projectedMonthTotals.expenses;
-  const totalCreditCardExpenses = projectedMonthTotals.creditCardExpenses;
   const totalBalance = projectedMonthTotals.balance;
 
   const daysInMonth = getDaysInMonth(dateRanges.currentMonthEnd);
@@ -65,11 +113,9 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
   return {
     totalIncome,
     totalExpenses,
-    totalCreditCardExpenses,
     totalBalance,
     projectedIncome: totalIncome,
     projectedExpenses: totalExpenses,
-    projectedCreditCardExpenses: totalCreditCardExpenses,
     projectedBalance: totalBalance,
     projectedNetFlow: totalBalance,
     daysInMonth,
@@ -91,6 +137,7 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
  * @param {Object} params.dateRanges - Date ranges for filtering
  * @param {Function} params.categorizeTransaction - Function to categorize transaction
  * @param {Function} params.isTransferTransaction - Function to check if transfer
+ * @param {Function} params.isCreditCardPaymentTransaction - Function to check if credit card payment
  * @returns {Object} Various calculated totals and projections
  */
 export function useTransactionTotals({
@@ -103,30 +150,35 @@ export function useTransactionTotals({
   dateRanges,
   categorizeTransaction,
   isTransferTransaction,
+  isCreditCardPaymentTransaction,
 }) {
   // Calculate current month totals (completed only)
   const currentMonthTotals = useMemo(() => {
-    return sumTransactionTotals(currentMonthTransactions, (tx) =>
-      categorizeTransaction(tx, accountMap[tx.accountId]?.type),
+    return buildCurrentMonthOverviewTotals(
+      currentMonthTransactions,
+      accountMap,
+      isTransferTransaction,
+      isCreditCardPaymentTransaction,
     );
-  }, [currentMonthTransactions, categorizeTransaction, accountMap]);
+  }, [
+    currentMonthTransactions,
+    accountMap,
+    isTransferTransaction,
+    isCreditCardPaymentTransaction,
+  ]);
 
   // Calculate total projected month totals (all statuses)
   const projectedMonthTotals = useMemo(() => {
-    return sumTransactionTotals(allMonthTransactions, (tx) =>
-      categorizeTransaction(tx, accountMap[tx.accountId]?.type),
-    );
-  }, [allMonthTransactions, categorizeTransaction, accountMap]);
+    return sumTransactionTotals(allMonthTransactions, categorizeTransaction);
+  }, [allMonthTransactions, categorizeTransaction]);
 
   // Calculate future totals (for next 30 days section)
   const futureTotals = useMemo(() => {
     let scheduledTotal = 0;
 
     futureTransactions.forEach((tx) => {
-      const { income: txIncome, expense: txExpense } = categorizeTransaction(
-        tx,
-        accountMap[tx.accountId]?.type,
-      );
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
       const netFlow = txIncome - txExpense;
 
       if (
@@ -138,7 +190,7 @@ export function useTransactionTotals({
     });
 
     return { scheduled: scheduledTotal, planned: 0 };
-  }, [futureTransactions, categorizeTransaction, accountMap]);
+  }, [futureTransactions, categorizeTransaction]);
 
   // Calculate recent totals (for last 14 days section)
   const recentTotals = useMemo(() => {
@@ -146,10 +198,8 @@ export function useTransactionTotals({
     let pendingTotal = 0;
 
     recentTransactions.forEach((tx) => {
-      const { income: txIncome, expense: txExpense } = categorizeTransaction(
-        tx,
-        accountMap[tx.accountId]?.type,
-      );
+      const { income: txIncome, expense: txExpense } =
+        categorizeTransaction(tx);
       const netFlow = txIncome - txExpense;
 
       if (
@@ -166,7 +216,7 @@ export function useTransactionTotals({
     });
 
     return { completed: completedTotal, pending: pendingTotal };
-  }, [recentTransactions, categorizeTransaction, accountMap]);
+  }, [recentTransactions, categorizeTransaction]);
 
   // Calculate remaining current month pending/scheduled/planned transactions
   const remainingMonthTotals = useMemo(() => {
@@ -174,12 +224,12 @@ export function useTransactionTotals({
       isRemainingMonthTransaction(tx, dateRanges, isTransferTransaction),
     );
 
-    return sumTransactionTotals(remainingMonthTransactions, (tx) =>
-      categorizeTransaction(tx, accountMap[tx.accountId]?.type),
+    return sumTransactionTotals(
+      remainingMonthTransactions,
+      categorizeTransaction,
     );
   }, [
     allTransactions,
-    accountMap,
     dateRanges,
     categorizeTransaction,
     isTransferTransaction,

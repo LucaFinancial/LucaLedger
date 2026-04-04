@@ -18,12 +18,15 @@ export default function Dashboard() {
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const categories = useSelector(categorySelectors.selectAllCategories);
-  const { totals } = useAccountBalances(accounts);
+  const { totals, creditCardTotals } = useAccountBalances(accounts);
 
   // Use custom hooks for date ranges and category filtering
   const dateRanges = useDateRanges();
-  const { isTransferTransaction, categorizeTransaction } =
-    useCategoryFilters(categories);
+  const {
+    isTransferTransaction,
+    isCreditCardPaymentTransaction,
+    categorizeTransaction,
+  } = useCategoryFilters(categories);
 
   // Create account lookup map for performance
   const accountMap = useMemo(() => createAccountMap(accounts), [accounts]);
@@ -53,9 +56,11 @@ export default function Dashboard() {
       dateRanges,
       categorizeTransaction,
       isTransferTransaction,
+      isCreditCardPaymentTransaction,
     });
   const combinedBalances = {
     current: totals.current,
+    creditCardCurrent: creditCardTotals.current,
     projected: totals.current + remainingMonthTotals.balance,
   };
 

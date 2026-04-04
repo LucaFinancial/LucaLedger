@@ -5,13 +5,21 @@ function getExpenseColor(amount) {
   return amount >= 0 ? '#f44336' : '#4caf50';
 }
 
-function ExpenseMetricsRow({ expenses, creditCardExpenses, formatCurrency }) {
+function CurrentExpenseMetricsRow({
+  expenses,
+  creditCardPayments,
+  creditCardExpenses,
+  formatCurrency,
+}) {
   return (
     <Box sx={{ mb: 1 }}>
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(3, minmax(0, 1fr))',
+          },
           gap: 2,
           alignItems: 'start',
         }}
@@ -27,6 +35,20 @@ function ExpenseMetricsRow({ expenses, creditCardExpenses, formatCurrency }) {
             {formatCurrency(expenses)}
           </Typography>
         </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant='caption' color='text.secondary'>
+            Card Payments
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: getExpenseColor(creditCardPayments),
+              fontWeight: 'bold',
+            }}
+          >
+            {formatCurrency(creditCardPayments)}
+          </Typography>
+        </Box>
         <Box sx={{ minWidth: 0, textAlign: 'right' }}>
           <Typography variant='caption' color='text.secondary'>
             Card Expenses
@@ -39,6 +61,58 @@ function ExpenseMetricsRow({ expenses, creditCardExpenses, formatCurrency }) {
             }}
           >
             {formatCurrency(creditCardExpenses)}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+function BalanceMetricsRow({ balance, creditCardBalance, formatCurrency }) {
+  return (
+    <Box
+      sx={{
+        pt: 1,
+        borderTop: '1px solid #90caf9',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, minmax(0, 1fr))',
+          },
+          gap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant='caption' color='text.secondary'>
+            Balance
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: balance >= 0 ? '#4caf50' : '#f44336',
+              fontWeight: 'bold',
+            }}
+          >
+            {formatCurrency(balance)}
+          </Typography>
+        </Box>
+        <Box sx={{ minWidth: 0, textAlign: 'right' }}>
+          <Typography variant='caption' color='text.secondary'>
+            Card Balance
+          </Typography>
+          <Typography
+            variant='h6'
+            sx={{
+              color: creditCardBalance > 0 ? '#f44336' : '#4caf50',
+              fontWeight: 'bold',
+            }}
+          >
+            {formatCurrency(creditCardBalance)}
           </Typography>
         </Box>
       </Box>
@@ -132,30 +206,17 @@ export default function MonthOverviewSummary({
                 {formatCurrency(currentMonthTotals.income)}
               </Typography>
             </Box>
-            <ExpenseMetricsRow
+            <CurrentExpenseMetricsRow
               expenses={currentMonthTotals.expenses}
+              creditCardPayments={currentMonthTotals.creditCardPayments}
               creditCardExpenses={currentMonthTotals.creditCardExpenses}
               formatCurrency={formatCurrency}
             />
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #90caf9',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Balance
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  color: combinedBalances.current >= 0 ? '#4caf50' : '#f44336',
-                  fontWeight: 'bold',
-                }}
-              >
-                {formatCurrency(combinedBalances.current)}
-              </Typography>
-            </Box>
+            <BalanceMetricsRow
+              balance={combinedBalances.current}
+              creditCardBalance={combinedBalances.creditCardCurrent}
+              formatCurrency={formatCurrency}
+            />
           </Paper>
         </Grid>
 
@@ -185,11 +246,17 @@ export default function MonthOverviewSummary({
                 {formatCurrency(remainingMonthTotals.income)}
               </Typography>
             </Box>
-            <ExpenseMetricsRow
-              expenses={remainingMonthTotals.expenses}
-              creditCardExpenses={remainingMonthTotals.creditCardExpenses}
-              formatCurrency={formatCurrency}
-            />
+            <Box sx={{ mb: 1 }}>
+              <Typography variant='caption' color='text.secondary'>
+                Expenses
+              </Typography>
+              <Typography
+                variant='h6'
+                sx={{ color: '#f44336', fontWeight: 'bold' }}
+              >
+                {formatCurrency(remainingMonthTotals.expenses)}
+              </Typography>
+            </Box>
             <Box
               sx={{
                 pt: 1,
@@ -239,13 +306,17 @@ export default function MonthOverviewSummary({
                 {formatCurrency(monthEndProjections.projectedIncome)}
               </Typography>
             </Box>
-            <ExpenseMetricsRow
-              expenses={monthEndProjections.projectedExpenses}
-              creditCardExpenses={
-                monthEndProjections.projectedCreditCardExpenses
-              }
-              formatCurrency={formatCurrency}
-            />
+            <Box sx={{ mb: 1 }}>
+              <Typography variant='caption' color='text.secondary'>
+                Expenses
+              </Typography>
+              <Typography
+                variant='h6'
+                sx={{ color: '#f44336', fontWeight: 'bold' }}
+              >
+                {formatCurrency(monthEndProjections.projectedExpenses)}
+              </Typography>
+            </Box>
             <Box
               sx={{
                 pt: 1,
