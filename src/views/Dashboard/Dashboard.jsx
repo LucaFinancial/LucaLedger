@@ -21,7 +21,7 @@ import {
 } from './utils/dashboardUtils';
 
 export default function Dashboard() {
-  const [excludeClosedAccounts, setExcludeClosedAccounts] = useState(false);
+  const [excludeClosedAccounts, setExcludeClosedAccounts] = useState(true);
   const [excludedAccountIds, setExcludedAccountIds] = useState([]);
   const accounts = useSelector(accountSelectors.selectAccounts);
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
