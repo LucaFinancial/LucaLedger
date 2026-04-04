@@ -16,15 +16,6 @@ import { useDispatch } from 'react-redux';
 
 import { actions, constants, utils as accountUtils } from '@/store/accounts';
 
-function formatAccountType(accountType = '') {
-  return accountType
-    .toLowerCase()
-    .split('_')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
 export default function AccountSettingsModal({ open, onClose, account }) {
   const dispatch = useDispatch();
   const [name, setName] = useState(account.name);
@@ -32,7 +23,9 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [statementDay, setStatementDay] = useState(
     account.statementClosingDay || 1,
   );
-  const [isClosed, setIsClosed] = useState(accountUtils.isAccountClosed(account));
+  const [isClosed, setIsClosed] = useState(
+    accountUtils.isAccountClosed(account),
+  );
   const [isDirty, setIsDirty] = useState(false);
   // Store initial values to compare against
   const [initialName, setInitialName] = useState(account.name);
@@ -40,9 +33,11 @@ export default function AccountSettingsModal({ open, onClose, account }) {
   const [initialStatementDay, setInitialStatementDay] = useState(
     account.statementClosingDay || 1,
   );
-  const [initialClosedAt, setInitialClosedAt] = useState(account.closedAt || null);
-  const accountTypes = Object.values(constants.AccountType).sort((a, b) =>
-    formatAccountType(a).localeCompare(formatAccountType(b)),
+  const [initialClosedAt, setInitialClosedAt] = useState(
+    account.closedAt || null,
+  );
+  const accountTypes = accountUtils.sortAccountTypes(
+    constants.AccountTypeOptions,
   );
 
   // Reset state when modal opens with new account
@@ -202,11 +197,11 @@ export default function AccountSettingsModal({ open, onClose, account }) {
               value={type}
               onChange={handleTypeChange}
               fullWidth
-              renderValue={(value) => formatAccountType(value)}
+              renderValue={(value) => accountUtils.formatAccountType(value)}
             >
               {accountTypes.map((accountType) => (
                 <MenuItem key={accountType} value={accountType}>
-                  {formatAccountType(accountType)}
+                  {accountUtils.formatAccountType(accountType)}
                 </MenuItem>
               ))}
             </Select>
@@ -251,7 +246,6 @@ export default function AccountSettingsModal({ open, onClose, account }) {
             </Typography>
           )}
         </Box>
-
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>

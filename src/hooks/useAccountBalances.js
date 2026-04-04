@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { constants as accountConstants } from '@/store/accounts';
+import { utils as accountUtils } from '@/store/accounts';
 import {
   constants as transactionConstants,
   selectors as transactionSelectors,
@@ -19,7 +19,10 @@ export const useAccountBalances = (accounts) => {
   );
 };
 
-export const buildAccountBalanceSummary = (accounts, allRelevantTransactions) => {
+export const buildAccountBalanceSummary = (
+  accounts,
+  allRelevantTransactions,
+) => {
   const totals = {
     current: 0,
     pending: 0,
@@ -59,17 +62,14 @@ export const buildAccountBalanceSummary = (accounts, allRelevantTransactions) =>
       ]),
     };
 
-    if (account.type === accountConstants.AccountType.CREDIT_CARD) {
+    if (accountUtils.isCreditCardAccountType(account.type)) {
       // For credit cards, track the balance separately
       // Positive balance means money owed
       Object.keys(balances).forEach((key) => {
         creditCardTotals[key] += Math.abs(balances[key]);
       });
-    } else if (
-      account.type === accountConstants.AccountType.CHECKING ||
-      account.type === accountConstants.AccountType.SAVINGS
-    ) {
-      // Only include checking and savings in main totals
+    } else if (accountUtils.isIncludedInBalanceTotals(account.type)) {
+      // Only include liquid cash account types in main totals
       Object.keys(balances).forEach((key) => {
         totals[key] += balances[key];
       });

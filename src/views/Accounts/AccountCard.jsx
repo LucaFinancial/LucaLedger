@@ -10,19 +10,13 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import { constants } from '@/store/transactions';
-import { selectors as accountSelectors, utils as accountUtils } from '@/store/accounts';
+import {
+  selectors as accountSelectors,
+  utils as accountUtils,
+} from '@/store/accounts';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
-
-function formatAccountType(accountType = '') {
-  return accountType
-    .toLowerCase()
-    .split('_')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
@@ -48,7 +42,9 @@ export default function AccountCard({ account }) {
         position: 'relative',
         border: '2px solid',
         borderColor: isClosed ? 'error.main' : 'transparent',
-        backgroundColor: isClosed ? 'rgba(211, 47, 47, 0.04)' : 'background.paper',
+        backgroundColor: isClosed
+          ? 'rgba(211, 47, 47, 0.04)'
+          : 'background.paper',
         '&:hover': {
           backgroundColor: isLoading
             ? 'inherit'
@@ -87,7 +83,7 @@ export default function AccountCard({ account }) {
       >
         <Typography variant='h4'>{account.name}</Typography>
         <Typography variant='subtitle1'>
-          {formatAccountType(account.type)}
+          {accountUtils.formatAccountType(account.type)}
         </Typography>
         {isClosed ? (
           <Box

@@ -2,7 +2,7 @@ import { Box, InputLabel, MenuItem, Select } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { actions, constants } from '@/store/accounts';
+import { actions, constants, utils as accountUtils } from '@/store/accounts';
 
 export default function AccountTypePicker({ account }) {
   const [type, setType] = useState(account.type);
@@ -43,15 +43,17 @@ export default function AccountTypePicker({ account }) {
         value={type}
         label='Account Type'
         onChange={handleChange}
+        renderValue={(value) => accountUtils.formatAccountType(value)}
         style={{ width: '150px' }}
       >
-        {Object.keys(constants.AccountType).map((key) => (
-          <MenuItem key={key} value={constants.AccountType[key]}>
-            {constants.AccountType[key]}
-          </MenuItem>
-        ))}
+        {accountUtils
+          .sortAccountTypes(constants.AccountTypeOptions)
+          .map((accountType) => (
+            <MenuItem key={accountType} value={accountType}>
+              {accountUtils.formatAccountType(accountType)}
+            </MenuItem>
+          ))}
       </Select>
     </Box>
   );
 }
-

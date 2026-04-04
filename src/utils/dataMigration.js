@@ -1,11 +1,13 @@
-import { AccountType } from '@/store/accounts/constants';
+import { AccountTypeOptions } from '@/store/accounts/constants';
+import { formatAccountType } from '@/store/accounts/utils';
 import { TransactionStateEnum } from '@/store/transactions/constants';
 
-const ACCOUNT_TYPE_MAP = new Map([
-  ['Checking', AccountType.CHECKING],
-  ['Savings', AccountType.SAVINGS],
-  ['Credit Card', AccountType.CREDIT_CARD],
-]);
+const ACCOUNT_TYPE_MAP = new Map(
+  AccountTypeOptions.flatMap((accountType) => [
+    [accountType, accountType],
+    [formatAccountType(accountType), accountType],
+  ]),
+);
 
 const TRANSACTION_STATE_MAP = new Map([
   ['planned', TransactionStateEnum.PLANNED],
@@ -45,12 +47,35 @@ const slugify = (value) => {
   return slug || 'untitled';
 };
 
+const normalizeAccountType = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  if (ACCOUNT_TYPE_MAP.has(trimmedValue)) {
+    return ACCOUNT_TYPE_MAP.get(trimmedValue);
+  }
+
+  const upperSnakeCaseValue = trimmedValue
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_');
+
+  if (ACCOUNT_TYPE_MAP.has(upperSnakeCaseValue)) {
+    return ACCOUNT_TYPE_MAP.get(upperSnakeCaseValue);
+  }
+
+  return null;
+};
+
 const normalizeAccount = (account, timestamp) => {
   let changed = false;
   const normalized = { ...account };
 
-  if (ACCOUNT_TYPE_MAP.has(normalized.type)) {
-    normalized.type = ACCOUNT_TYPE_MAP.get(normalized.type);
+  const normalizedType = normalizeAccountType(normalized.type);
+
+  if (normalizedType && normalizedType !== normalized.type) {
+    normalized.type = normalizedType;
     changed = true;
   }
 
