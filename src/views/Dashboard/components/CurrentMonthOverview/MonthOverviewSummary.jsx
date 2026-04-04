@@ -50,7 +50,7 @@ function MetricCell({
 }
 
 function IncomeMetricsRow({
-  deposits,
+  incomeAndCredits,
   income,
   cardCreditsAndPayments,
   formatCurrency,
@@ -59,8 +59,8 @@ function IncomeMetricsRow({
     <Box sx={{ mb: 1 }}>
       <Box sx={THREE_METRIC_ROW_SX}>
         <MetricCell
-          label='Deposits'
-          value={deposits}
+          label='Income & Credits'
+          value={incomeAndCredits}
           valueColor='#4caf50'
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
@@ -94,14 +94,14 @@ function ExpenseMetricsRow({
     <Box sx={{ mb: 1 }}>
       <Box sx={THREE_METRIC_ROW_SX}>
         <MetricCell
-          label='Cash Outflows'
+          label='Payments & Debits'
           value={cashOutflows}
           valueColor={getExpenseColor(cashOutflows)}
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
         />
         <MetricCell
-          label='Expenses'
+          label='All Expenses'
           value={expenses}
           valueColor={getExpenseColor(expenses)}
           formatCurrency={formatCurrency}
@@ -141,13 +141,17 @@ function SummaryMetricsRow({
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
         />
-        <MetricCell
-          label={middleMetric.label}
-          value={middleMetric.value}
-          valueColor={middleMetric.valueColor}
-          formatCurrency={formatCurrency}
-          textAlign={{ xs: 'left', sm: 'center' }}
-        />
+        {middleMetric ? (
+          <MetricCell
+            label={middleMetric.label}
+            value={middleMetric.value}
+            valueColor={middleMetric.valueColor}
+            formatCurrency={formatCurrency}
+            textAlign={{ xs: 'left', sm: 'center' }}
+          />
+        ) : (
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
+        )}
         <MetricCell
           label={rightMetric.label}
           value={rightMetric.value}
@@ -265,7 +269,7 @@ export default function MonthOverviewSummary({
   formatCurrency,
 }) {
   const currentDisplayMetrics = {
-    deposits:
+    incomeAndCredits:
       (currentMonthTotals.income || 0) + (currentMonthTotals.cashCredits || 0),
     income: currentMonthTotals.income || 0,
     cardCreditsAndPayments:
@@ -276,7 +280,7 @@ export default function MonthOverviewSummary({
     cardCharges: currentMonthTotals.creditCardExpenses || 0,
   };
   const remainingDisplayMetrics = {
-    deposits:
+    incomeAndCredits:
       (remainingMonthTotals.income || 0) + (remainingMonthTotals.cashCredits || 0),
     income: remainingMonthTotals.income || 0,
     cardCreditsAndPayments:
@@ -287,7 +291,7 @@ export default function MonthOverviewSummary({
     cardCharges: remainingMonthTotals.creditCardExpenses || 0,
   };
   const projectedDisplayMetrics = {
-    deposits:
+    incomeAndCredits:
       (monthEndProjections.projectedIncome || 0) +
       (monthEndProjections.projectedCashCredits || 0),
     income: monthEndProjections.projectedIncome || 0,
@@ -446,7 +450,7 @@ export default function MonthOverviewSummary({
               Current
             </Typography>
             <IncomeMetricsRow
-              deposits={currentDisplayMetrics.deposits}
+              incomeAndCredits={currentDisplayMetrics.incomeAndCredits}
               income={currentDisplayMetrics.income}
               cardCreditsAndPayments={currentDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
@@ -459,14 +463,9 @@ export default function MonthOverviewSummary({
             />
             <SummaryMetricsRow
               leftMetric={{
-                label: 'Balance',
+                label: 'Current Balance',
                 value: combinedBalances.current,
                 valueColor: getBalanceColor(combinedBalances.current),
-              }}
-              middleMetric={{
-                label: 'Net',
-                value: currentMonthTotals.netFlow,
-                valueColor: getBalanceColor(currentMonthTotals.netFlow),
               }}
               rightMetric={{
                 label: 'Card Balance',
@@ -496,7 +495,7 @@ export default function MonthOverviewSummary({
               Remaining
             </Typography>
             <IncomeMetricsRow
-              deposits={remainingDisplayMetrics.deposits}
+              incomeAndCredits={remainingDisplayMetrics.incomeAndCredits}
               income={remainingDisplayMetrics.income}
               cardCreditsAndPayments={remainingDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
@@ -513,13 +512,8 @@ export default function MonthOverviewSummary({
                 value: remainingMonthTotals.balance,
                 valueColor: getBalanceColor(remainingMonthTotals.balance),
               }}
-              middleMetric={{
-                label: 'Net',
-                value: remainingMonthTotals.netFlow,
-                valueColor: getBalanceColor(remainingMonthTotals.netFlow),
-              }}
               rightMetric={{
-                label: 'Credit Balance Change',
+                label: 'Card Balance Change',
                 value: remainingMonthTotals.creditCardBalanceChange,
                 valueColor:
                   remainingMonthTotals.creditCardBalanceChange > 0
@@ -548,7 +542,7 @@ export default function MonthOverviewSummary({
               End of Month Totals
             </Typography>
             <IncomeMetricsRow
-              deposits={projectedDisplayMetrics.deposits}
+              incomeAndCredits={projectedDisplayMetrics.incomeAndCredits}
               income={projectedDisplayMetrics.income}
               cardCreditsAndPayments={projectedDisplayMetrics.cardCreditsAndPayments}
               formatCurrency={formatCurrency}
@@ -564,11 +558,6 @@ export default function MonthOverviewSummary({
                 label: 'Ending Balance',
                 value: combinedBalances.projected,
                 valueColor: getBalanceColor(combinedBalances.projected),
-              }}
-              middleMetric={{
-                label: 'Net',
-                value: monthEndProjections.projectedNetFlow,
-                valueColor: getBalanceColor(monthEndProjections.projectedNetFlow),
               }}
               rightMetric={{
                 label: 'Ending Card Balance',
