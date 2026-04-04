@@ -51,6 +51,38 @@ const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
   'ytd',
   'last-12-months',
 ]);
+const LEDGER_STATE_META = Object.freeze({
+  completed: {
+    backgroundColor: '#e0e0e0',
+    borderColor: '#bdbdbd',
+    color: '#424242',
+  },
+  pending: {
+    backgroundColor: '#fff9c4',
+    borderColor: '#fdd835',
+    color: '#f9a825',
+  },
+  scheduled: {
+    backgroundColor: '#b3e5fc',
+    borderColor: '#4fc3f7',
+    color: '#01579b',
+  },
+  planned: {
+    backgroundColor: '#c8e6c9',
+    borderColor: '#81c784',
+    color: '#1b5e20',
+  },
+});
+const TOTAL_META = Object.freeze({
+  backgroundColor: '#f3e5f5',
+  borderColor: '#9c27b0',
+  color: '#9c27b0',
+});
+const MONTHLY_AVG_META = Object.freeze({
+  backgroundColor: '#fff3e0',
+  borderColor: '#ef6c00',
+  color: '#e65100',
+});
 
 function formatAmount(amountInCents) {
   return `$${doublePrecisionFormatString(
@@ -474,20 +506,25 @@ export default function CategoryTotals({ category }) {
                     key={stateKey}
                     sx={{
                       p: 0.875,
-                      backgroundColor: SPENDING_STATE_META[stateKey].backgroundColor,
-                      border: `1px solid ${SPENDING_STATE_META[stateKey].borderColor}`,
+                      backgroundColor: LEDGER_STATE_META[stateKey].backgroundColor,
+                      border: `1px solid ${LEDGER_STATE_META[stateKey].borderColor}`,
                     }}
                   >
                     <Typography
                       variant='caption'
-                      color='text.secondary'
-                      sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                      sx={{
+                        color: LEDGER_STATE_META[stateKey].color,
+                        fontSize: '0.68rem',
+                        display: 'block',
+                        lineHeight: 1.1,
+                        fontWeight: 700,
+                      }}
                     >
                       {SPENDING_STATE_META[stateKey].label}
                     </Typography>
                     <Typography
                       sx={{
-                        color: 'text.primary',
+                        color: LEDGER_STATE_META[stateKey].color,
                         fontWeight: 600,
                         lineHeight: 1.2,
                         mt: 0.25,
@@ -501,20 +538,25 @@ export default function CategoryTotals({ category }) {
                 <Paper
                   sx={{
                     p: 0.875,
-                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
-                    border: '1px solid rgba(76, 175, 80, 0.25)',
+                    backgroundColor: TOTAL_META.backgroundColor,
+                    border: `1px solid ${TOTAL_META.borderColor}`,
                   }}
                 >
                   <Typography
                     variant='caption'
-                    color='text.secondary'
-                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
                   >
                     Total
                   </Typography>
                   <Typography
                     sx={{
-                      color: 'text.primary',
+                      color: TOTAL_META.color,
                       fontWeight: 600,
                       lineHeight: 1.2,
                       mt: 0.25,
@@ -538,20 +580,25 @@ export default function CategoryTotals({ category }) {
                     width: { xs: '100%', sm: 220 },
                     maxWidth: '100%',
                     p: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
-                    border: '1px solid rgba(76, 175, 80, 0.25)',
+                    backgroundColor: TOTAL_META.backgroundColor,
+                    border: `1px solid ${TOTAL_META.borderColor}`,
                   }}
                 >
                   <Typography
                     variant='caption'
-                    color='text.secondary'
-                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                    sx={{
+                      color: TOTAL_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
                   >
                     Total
                   </Typography>
                   <Typography
                     sx={{
-                      color: 'text.primary',
+                      color: TOTAL_META.color,
                       fontWeight: 600,
                       mt: 0.25,
                       fontSize: '0.95rem',
@@ -567,20 +614,25 @@ export default function CategoryTotals({ category }) {
                     width: { xs: '100%', sm: 220 },
                     maxWidth: '100%',
                     p: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.72)',
-                    border: '1px solid rgba(33, 150, 243, 0.3)',
+                    backgroundColor: MONTHLY_AVG_META.backgroundColor,
+                    border: `1px solid ${MONTHLY_AVG_META.borderColor}`,
                   }}
                 >
                   <Typography
                     variant='caption'
-                    color='text.secondary'
-                    sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                    sx={{
+                      color: MONTHLY_AVG_META.color,
+                      fontSize: '0.68rem',
+                      display: 'block',
+                      lineHeight: 1.1,
+                      fontWeight: 700,
+                    }}
                   >
                     Monthly Avg
                   </Typography>
                   <Typography
                     sx={{
-                      color: 'text.primary',
+                      color: MONTHLY_AVG_META.color,
                       fontWeight: 600,
                       mt: 0.25,
                       fontSize: '0.95rem',
@@ -613,24 +665,39 @@ export default function CategoryTotals({ category }) {
                           <TableCell
                             key={stateKey}
                             align='right'
-                            sx={{ fontWeight: 700 }}
+                            sx={{
+                              color: LEDGER_STATE_META[stateKey].color,
+                              fontWeight: 700,
+                            }}
                           >
                             {SPENDING_STATE_META[stateKey].label}
                           </TableCell>
                         ))}
-                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                        <TableCell
+                          align='right'
+                          sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                        >
                           Total
                         </TableCell>
-                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                        <TableCell
+                          align='right'
+                          sx={{ color: MONTHLY_AVG_META.color, fontWeight: 700 }}
+                        >
                           Monthly Avg
                         </TableCell>
                       </>
                     ) : (
                       <>
-                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                        <TableCell
+                          align='right'
+                          sx={{ color: TOTAL_META.color, fontWeight: 700 }}
+                        >
                           Total
                         </TableCell>
-                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                        <TableCell
+                          align='right'
+                          sx={{ color: MONTHLY_AVG_META.color, fontWeight: 700 }}
+                        >
                           Monthly Avg
                         </TableCell>
                       </>
@@ -685,7 +752,7 @@ export default function CategoryTotals({ category }) {
                                 key={`${subcategory.id}-${stateKey}`}
                                 align='right'
                                 sx={{
-                                  color: 'text.primary',
+                                  color: LEDGER_STATE_META[stateKey].color,
                                   fontWeight: 500,
                                 }}
                               >
@@ -695,7 +762,7 @@ export default function CategoryTotals({ category }) {
                             <TableCell
                               align='right'
                               sx={{
-                                color: 'text.primary',
+                                color: TOTAL_META.color,
                                 fontWeight: 600,
                               }}
                             >
@@ -704,7 +771,7 @@ export default function CategoryTotals({ category }) {
                             <TableCell
                               align='right'
                               sx={{
-                                color: 'text.primary',
+                                color: MONTHLY_AVG_META.color,
                                 fontWeight: 500,
                               }}
                             >
@@ -716,7 +783,7 @@ export default function CategoryTotals({ category }) {
                             <TableCell
                               align='right'
                               sx={{
-                                color: 'text.primary',
+                                color: TOTAL_META.color,
                                 fontWeight: 600,
                               }}
                             >
@@ -725,7 +792,7 @@ export default function CategoryTotals({ category }) {
                             <TableCell
                               align='right'
                               sx={{
-                                color: 'text.primary',
+                                color: MONTHLY_AVG_META.color,
                                 fontWeight: 500,
                               }}
                             >
