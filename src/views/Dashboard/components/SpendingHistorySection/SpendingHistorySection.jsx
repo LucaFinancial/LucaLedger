@@ -574,7 +574,7 @@ export default function SpendingHistorySection() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-            Spending History
+            Categorized Spending
           </Typography>
           <Typography variant='body2' color='text.secondary'>
             {periodConfig.label}
