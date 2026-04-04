@@ -5,6 +5,8 @@ import { centsToDollars, dollarsToCents } from '@/utils';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 
 const validSplitAmountRegex = /^\d*(\.\d{0,2})?$/;
+const EMPTY_SPLITS = [];
+const selectNoSplits = () => EMPTY_SPLITS;
 
 const formatAmountInput = (amountInCents) =>
   amountInCents === 0 ? '' : centsToDollars(amountInCents).toFixed(2);
@@ -37,7 +39,7 @@ export function useSplitEditor(open, transaction) {
     () =>
       transactionId
         ? transactionSplitSelectors.selectSplitsByTransactionId(transactionId)
-        : () => [],
+        : selectNoSplits,
     [transactionId],
   );
   const existingSplits = useSelector(
