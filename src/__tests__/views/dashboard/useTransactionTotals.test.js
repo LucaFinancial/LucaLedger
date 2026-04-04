@@ -75,7 +75,7 @@ describe('useTransactionTotals helpers', () => {
       creditCardExpenses: 9000,
       creditCardCredits: 1200,
       creditCardBalanceChange: 5300,
-      netFlow: 8500,
+      netFlow: 15000,
     });
   });
 
@@ -109,7 +109,7 @@ describe('useTransactionTotals helpers', () => {
           creditCardExpenses: 7000,
           creditCardCredits: 0,
           creditCardBalanceChange: 4000,
-          netFlow: 25000,
+          netFlow: 29000,
         },
         {
           income: 8000,
@@ -120,7 +120,7 @@ describe('useTransactionTotals helpers', () => {
           creditCardExpenses: 2500,
           creditCardCredits: 0,
           creditCardBalanceChange: 1000,
-          netFlow: -5000,
+          netFlow: -4000,
         },
       ),
     ).toEqual({
@@ -133,7 +133,7 @@ describe('useTransactionTotals helpers', () => {
       creditCardExpenses: 9500,
       creditCardCredits: 0,
       creditCardBalanceChange: 5000,
-      netFlow: 20000,
+      netFlow: 25000,
     });
   });
 
@@ -149,7 +149,7 @@ describe('useTransactionTotals helpers', () => {
         creditCardExpenses: 9500,
         creditCardCredits: 2000,
         creditCardBalanceChange: 3000,
-        netFlow: 15000,
+        netFlow: 18000,
       },
       {
         today: new Date('2026-04-10T12:00:00.000Z'),
@@ -166,7 +166,7 @@ describe('useTransactionTotals helpers', () => {
     expect(projection.totalCreditCardExpenses).toBe(9500);
     expect(projection.totalCreditCardCredits).toBe(2000);
     expect(projection.totalCreditCardBalanceChange).toBe(3000);
-    expect(projection.totalNetFlow).toBe(15000);
+    expect(projection.totalNetFlow).toBe(18000);
     expect(projection.projectedIncome).toBe(42000);
     expect(projection.projectedCredits).toBe(8000);
     expect(projection.projectedIncomeAndCredits).toBe(50000);
@@ -174,6 +174,6 @@ describe('useTransactionTotals helpers', () => {
     expect(projection.projectedCreditCardExpenses).toBe(9500);
     expect(projection.projectedCreditCardCredits).toBe(2000);
     expect(projection.projectedCreditCardBalanceChange).toBe(3000);
-    expect(projection.projectedNetFlow).toBe(15000);
+    expect(projection.projectedNetFlow).toBe(18000);
   });
 });

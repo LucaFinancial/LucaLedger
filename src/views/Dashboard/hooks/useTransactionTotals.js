@@ -39,7 +39,6 @@ export const combineOverviewTotals = (...overviewTotals) => {
       creditCardBalanceChange:
         totals.creditCardBalanceChange +
         (currentTotals?.creditCardBalanceChange || 0),
-      netFlow: totals.netFlow + (currentTotals?.netFlow || 0),
     }),
     {
       income: 0,
@@ -50,15 +49,16 @@ export const combineOverviewTotals = (...overviewTotals) => {
       creditCardExpenses: 0,
       creditCardCredits: 0,
       creditCardBalanceChange: 0,
-      netFlow: 0,
     },
   );
 
   const incomeAndCredits = combinedTotals.income + combinedTotals.credits;
+  const netFlow = incomeAndCredits - combinedTotals.expenses;
 
   return {
     ...combinedTotals,
     incomeAndCredits,
+    netFlow,
   };
 };
 
@@ -127,7 +127,7 @@ export const buildCurrentMonthOverviewTotals = (
   const balance = income + cashCredits - expenses;
   const creditCardBalanceChange =
     creditCardExpenses - creditCardPayments - creditCardCredits;
-  const netFlow = balance - creditCardBalanceChange;
+  const netFlow = incomeAndCredits - expenses;
 
   return {
     income,
@@ -176,8 +176,7 @@ export const buildMonthEndProjections = (projectedMonthTotals, dateRanges) => {
     totalCreditCardExpenses -
       totalCreditCardPayments -
       totalCreditCardCredits;
-  const totalNetFlow =
-    projectedMonthTotals.netFlow ?? totalBalance - totalCreditCardBalanceChange;
+  const totalNetFlow = totalIncomeAndCredits - totalExpenses;
 
   const daysInMonth = getDaysInMonth(dateRanges.currentMonthEnd);
   const currentDay = getDate(dateRanges.today);
