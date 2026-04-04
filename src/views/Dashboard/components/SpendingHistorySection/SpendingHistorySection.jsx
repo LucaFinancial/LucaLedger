@@ -48,6 +48,8 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const PIE_CHART_RADIUS = 100;
+const PIE_CHART_PADDING = 24;
 const COLORS = [
   '#2196f3',
   '#4caf50',
@@ -107,8 +109,7 @@ const AGGREGATE_RANGES_WITH_VISIBLE_DATES = new Set([
 const RECURRING_TEXT_COLOR = TOTAL_META.color;
 
 function formatCurrency(amount) {
-  const safeAmount =
-    amount == null || Number.isNaN(amount) ? 0 : amount;
+  const safeAmount = amount == null || Number.isNaN(amount) ? 0 : amount;
 
   return `$${doublePrecisionFormatString(safeAmount)}`;
 }
@@ -117,7 +118,10 @@ function formatTransactionDate(dateValue) {
   if (!dateValue) return '--';
 
   try {
-    return format(parseISO(String(dateValue).replace(/\//g, '-')), 'MMM d, yyyy');
+    return format(
+      parseISO(String(dateValue).replace(/\//g, '-')),
+      'MMM d, yyyy',
+    );
   } catch {
     return String(dateValue);
   }
@@ -190,7 +194,10 @@ function renderStateCells(item) {
           {formatCurrency(centsToDollars(item[stateKey]))}
         </TableCell>
       ))}
-      <TableCell align='right' sx={{ color: TOTAL_META.color, fontWeight: 600 }}>
+      <TableCell
+        align='right'
+        sx={{ color: TOTAL_META.color, fontWeight: 600 }}
+      >
         {formatCurrency(centsToDollars(item.total))}
       </TableCell>
       <TableCell
@@ -363,6 +370,26 @@ export default function SpendingHistorySection() {
       })),
     [categoryData],
   );
+  const [pieLegendHeight, setPieLegendHeight] = useState(0);
+  const pieChartHeight =
+    PIE_CHART_RADIUS * 2 + pieLegendHeight + PIE_CHART_PADDING;
+  const pieLegendMeasurementPlugin = useMemo(
+    () => ({
+      id: 'spending-history-legend-measurement',
+      afterLayout(chart) {
+        const nextLegendHeight = Math.ceil(chart.legend?.height ?? 0);
+
+        if (!nextLegendHeight) return;
+
+        setPieLegendHeight((currentLegendHeight) =>
+          currentLegendHeight === nextLegendHeight
+            ? currentLegendHeight
+            : nextLegendHeight,
+        );
+      },
+    }),
+    [],
+  );
 
   const resetExpandedState = () => {
     setExpandedCategoryId(null);
@@ -472,7 +499,9 @@ export default function SpendingHistorySection() {
         : [...currentExpandedIds, subcategoryKey],
     );
   };
-  const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 4 : 5;
+  const detailColSpan = showStateBreakdown
+    ? SPENDING_STATE_ORDER.length + 4
+    : 5;
   const renderTransactionDetailTable = (transactions) => (
     <Table
       size='small'
@@ -635,7 +664,8 @@ export default function SpendingHistorySection() {
                         flex: 1,
                         minWidth: 140,
                         p: 2,
-                        backgroundColor: LEDGER_STATE_META[stateKey].backgroundColor,
+                        backgroundColor:
+                          LEDGER_STATE_META[stateKey].backgroundColor,
                         border: `1px solid ${LEDGER_STATE_META[stateKey].borderColor}`,
                       }}
                     >
@@ -649,12 +679,12 @@ export default function SpendingHistorySection() {
                         {SPENDING_STATE_META[stateKey].label}
                       </Typography>
                       <Typography
-                      variant='h5'
-                      sx={{
-                        color: LEDGER_STATE_META[stateKey].color,
-                        fontWeight: 'bold',
-                      }}
-                    >
+                        variant='h5'
+                        sx={{
+                          color: LEDGER_STATE_META[stateKey].color,
+                          fontWeight: 'bold',
+                        }}
+                      >
                         {formatCurrency(centsToDollars(stateTotals[stateKey]))}
                       </Typography>
                     </Paper>
@@ -786,18 +816,32 @@ export default function SpendingHistorySection() {
                 display: 'flex',
                 gap: 3,
                 flexDirection: { xs: 'column', lg: 'row' },
-                alignItems: 'flex-start',
+                alignItems: { xs: 'flex-start', lg: 'stretch' },
               }}
             >
-              <Box sx={{ flex: '0 0 320px', minWidth: 280 }}>
+              <Box
+                sx={{
+                  flex: '0 0 320px',
+                  minWidth: 280,
+                  p: 1.5,
+                  boxSizing: 'border-box',
+                }}
+              >
                 <Typography
                   variant='subtitle2'
                   sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
                 >
                   Spending by Category
                 </Typography>
-                <Box sx={{ height: 300, position: 'relative' }}>
+                <Box
+                  sx={{
+                    height: pieChartHeight,
+                    position: 'relative',
+                    boxSizing: 'border-box',
+                  }}
+                >
                   <Pie
+                    plugins={[pieLegendMeasurementPlugin]}
                     data={{
                       labels: pieData.map((item) => item.name),
                       datasets: [
@@ -806,6 +850,7 @@ export default function SpendingHistorySection() {
                           backgroundColor: COLORS,
                           borderColor: '#fff',
                           borderWidth: 2,
+                          radius: PIE_CHART_RADIUS,
                         },
                       ],
                     }}
@@ -894,7 +939,8 @@ export default function SpendingHistorySection() {
                   <TableBody>
                     {categoryData.map((category, index) => {
                       const isExpanded = expandedCategoryId === category.id;
-                      const hasSubcategories = category.subcategories.length > 0;
+                      const hasSubcategories =
+                        category.subcategories.length > 0;
                       const canExpandCategory = hideSubcategories
                         ? category.transactions.length > 0
                         : hasSubcategories || category.transactions.length > 0;
@@ -915,7 +961,11 @@ export default function SpendingHistorySection() {
                           >
                             <TableCell>
                               <Box
-                                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                }}
                               >
                                 {canExpandCategory && (
                                   <IconButton size='small' sx={{ p: 0 }}>
@@ -931,7 +981,8 @@ export default function SpendingHistorySection() {
                                     width: 12,
                                     height: 12,
                                     borderRadius: '50%',
-                                    backgroundColor: COLORS[index % COLORS.length],
+                                    backgroundColor:
+                                      COLORS[index % COLORS.length],
                                     ml: canExpandCategory ? 0 : 3,
                                     flexShrink: 0,
                                   }}
@@ -946,175 +997,200 @@ export default function SpendingHistorySection() {
                           </TableRow>
 
                           {isExpanded &&
-                            (hideSubcategories || !hasSubcategories ? (
-                              renderTransactionDetailRow(category.transactions)
-                            ) : (
-                              category.subcategories.map((subcategory) => {
-                                const subcategoryKey = `${category.id}:${subcategory.id}`;
-                                const isSubcategoryExpanded =
-                                  expandedSubcategoryIds.includes(subcategoryKey);
-                                const hasTransactions =
-                                  subcategory.transactions.length > 0;
+                            (hideSubcategories || !hasSubcategories
+                              ? renderTransactionDetailRow(
+                                  category.transactions,
+                                )
+                              : category.subcategories.map((subcategory) => {
+                                  const subcategoryKey = `${category.id}:${subcategory.id}`;
+                                  const isSubcategoryExpanded =
+                                    expandedSubcategoryIds.includes(
+                                      subcategoryKey,
+                                    );
+                                  const hasTransactions =
+                                    subcategory.transactions.length > 0;
 
-                                return (
-                                  <React.Fragment key={subcategory.id}>
-                                    <TableRow
-                                      onClick={() =>
-                                        hasTransactions &&
-                                        toggleSubcategoryExpanded(
-                                          category.id,
-                                          subcategory.id,
-                                        )
-                                      }
-                                      sx={{
-                                        backgroundColor: '#fafafa',
-                                        cursor: hasTransactions ? 'pointer' : 'default',
-                                        '&:hover': hasTransactions
-                                          ? { backgroundColor: '#f3f3f3' }
-                                          : undefined,
-                                      }}
-                                    >
-                                      <TableCell sx={{ pl: 8 }}>
-                                        <Box
-                                          sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                          }}
-                                        >
-                                          {hasTransactions && (
-                                            <IconButton size='small' sx={{ p: 0 }}>
-                                              {isSubcategoryExpanded ? (
-                                                <KeyboardArrowDownIcon fontSize='small' />
-                                              ) : (
-                                                <KeyboardArrowRightIcon fontSize='small' />
-                                              )}
-                                            </IconButton>
-                                          )}
+                                  return (
+                                    <React.Fragment key={subcategory.id}>
+                                      <TableRow
+                                        onClick={() =>
+                                          hasTransactions &&
+                                          toggleSubcategoryExpanded(
+                                            category.id,
+                                            subcategory.id,
+                                          )
+                                        }
+                                        sx={{
+                                          backgroundColor: '#fafafa',
+                                          cursor: hasTransactions
+                                            ? 'pointer'
+                                            : 'default',
+                                          '&:hover': hasTransactions
+                                            ? { backgroundColor: '#f3f3f3' }
+                                            : undefined,
+                                        }}
+                                      >
+                                        <TableCell sx={{ pl: 8 }}>
                                           <Box
                                             sx={{
-                                              width: 8,
-                                              height: 8,
-                                              borderRadius: '50%',
-                                              backgroundColor:
-                                                COLORS[index % COLORS.length],
-                                              opacity: 0.6,
-                                              flexShrink: 0,
-                                              ml: hasTransactions ? 0 : 3,
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: 1,
                                             }}
-                                          />
-                                          <Typography
-                                            variant='body2'
-                                            color='text.secondary'
                                           >
-                                            {subcategory.name}
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
+                                            {hasTransactions && (
+                                              <IconButton
+                                                size='small'
+                                                sx={{ p: 0 }}
+                                              >
+                                                {isSubcategoryExpanded ? (
+                                                  <KeyboardArrowDownIcon fontSize='small' />
+                                                ) : (
+                                                  <KeyboardArrowRightIcon fontSize='small' />
+                                                )}
+                                              </IconButton>
+                                            )}
+                                            <Box
+                                              sx={{
+                                                width: 8,
+                                                height: 8,
+                                                borderRadius: '50%',
+                                                backgroundColor:
+                                                  COLORS[index % COLORS.length],
+                                                opacity: 0.6,
+                                                flexShrink: 0,
+                                                ml: hasTransactions ? 0 : 3,
+                                              }}
+                                            />
+                                            <Typography
+                                              variant='body2'
+                                              color='text.secondary'
+                                            >
+                                              {subcategory.name}
+                                            </Typography>
+                                          </Box>
+                                        </TableCell>
 
-                                      {showStateBreakdown ? (
-                                        <>
-                                          {SPENDING_STATE_ORDER.map((stateKey) => (
+                                        {showStateBreakdown ? (
+                                          <>
+                                            {SPENDING_STATE_ORDER.map(
+                                              (stateKey) => (
+                                                <TableCell
+                                                  key={`${subcategory.id}-${stateKey}`}
+                                                  align='right'
+                                                  sx={{
+                                                    color:
+                                                      LEDGER_STATE_META[
+                                                        stateKey
+                                                      ].color,
+                                                    fontSize: '0.875rem',
+                                                  }}
+                                                >
+                                                  {formatCurrency(
+                                                    centsToDollars(
+                                                      subcategory[stateKey],
+                                                    ),
+                                                  )}
+                                                </TableCell>
+                                              ),
+                                            )}
                                             <TableCell
-                                              key={`${subcategory.id}-${stateKey}`}
                                               align='right'
                                               sx={{
-                                                color: LEDGER_STATE_META[stateKey].color,
+                                                color: TOTAL_META.color,
+                                                fontSize: '0.875rem',
+                                                fontWeight: 600,
+                                              }}
+                                            >
+                                              {formatCurrency(
+                                                centsToDollars(
+                                                  subcategory.total,
+                                                ),
+                                              )}
+                                            </TableCell>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: MONTHLY_AVG_META.color,
                                                 fontSize: '0.875rem',
                                               }}
                                             >
                                               {formatCurrency(
-                                                centsToDollars(subcategory[stateKey]),
+                                                centsToDollars(
+                                                  subcategory.monthlyAvg,
+                                                ),
                                               )}
                                             </TableCell>
-                                          ))}
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: TOTAL_META.color,
-                                              fontSize: '0.875rem',
-                                              fontWeight: 600,
-                                            }}
-                                          >
-                                            {formatCurrency(
-                                              centsToDollars(subcategory.total),
-                                            )}
-                                          </TableCell>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: MONTHLY_AVG_META.color,
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {formatCurrency(
-                                              centsToDollars(subcategory.monthlyAvg),
-                                            )}
-                                          </TableCell>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: 'text.secondary',
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {subcategory.count}
-                                          </TableCell>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: TOTAL_META.color,
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {formatCurrency(
-                                              centsToDollars(subcategory.total),
-                                            )}
-                                          </TableCell>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: MONTHLY_AVG_META.color,
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {formatCurrency(
-                                              centsToDollars(subcategory.monthlyAvg),
-                                            )}
-                                          </TableCell>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: 'text.secondary',
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {subcategory.percentage.toFixed(1)}%
-                                          </TableCell>
-                                          <TableCell
-                                            align='right'
-                                            sx={{
-                                              color: 'text.secondary',
-                                              fontSize: '0.875rem',
-                                            }}
-                                          >
-                                            {subcategory.count}
-                                          </TableCell>
-                                        </>
-                                      )}
-                                    </TableRow>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: 'text.secondary',
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {subcategory.count}
+                                            </TableCell>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: TOTAL_META.color,
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {formatCurrency(
+                                                centsToDollars(
+                                                  subcategory.total,
+                                                ),
+                                              )}
+                                            </TableCell>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: MONTHLY_AVG_META.color,
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {formatCurrency(
+                                                centsToDollars(
+                                                  subcategory.monthlyAvg,
+                                                ),
+                                              )}
+                                            </TableCell>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: 'text.secondary',
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {subcategory.percentage.toFixed(
+                                                1,
+                                              )}
+                                              %
+                                            </TableCell>
+                                            <TableCell
+                                              align='right'
+                                              sx={{
+                                                color: 'text.secondary',
+                                                fontSize: '0.875rem',
+                                              }}
+                                            >
+                                              {subcategory.count}
+                                            </TableCell>
+                                          </>
+                                        )}
+                                      </TableRow>
 
-                                    {isSubcategoryExpanded &&
-                                      renderTransactionDetailRow(
-                                        subcategory.transactions,
-                                      )}
-                                  </React.Fragment>
-                                );
-                              })
-                            ))}
+                                      {isSubcategoryExpanded &&
+                                        renderTransactionDetailRow(
+                                          subcategory.transactions,
+                                        )}
+                                    </React.Fragment>
+                                  );
+                                }))}
                         </React.Fragment>
                       );
                     })}
