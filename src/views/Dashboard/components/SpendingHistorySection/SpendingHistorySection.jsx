@@ -45,6 +45,11 @@ import {
   getSpendingSelectionDropdownValues,
   getSpendingPeriodConfig,
 } from '@/utils/spendingAnalytics';
+import {
+  filterRecurringTransactionsByAccountIds,
+  filterTransactionSplitsByTransactionIds,
+  filterTransactionsByAccountIds,
+} from '@/views/Dashboard/utils/dashboardUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -235,7 +240,7 @@ function renderHistoricalCells(item) {
   );
 }
 
-export default function SpendingHistorySection() {
+export default function SpendingHistorySection({ includedAccountIds = null }) {
   const [activeSelection, setActiveSelection] = useState(DEFAULT_SELECTION);
   const [customRange, setCustomRange] = useState({
     startDate: null,
@@ -262,6 +267,49 @@ export default function SpendingHistorySection() {
   const recurringProjection = useSelector(
     settingsSelectors.selectRecurringProjection,
   );
+  const includedAccountIdSet = useMemo(
+    () =>
+      includedAccountIds == null ? null : new Set(includedAccountIds),
+    [includedAccountIds],
+  );
+  const filteredAccounts = useMemo(() => {
+    if (!includedAccountIdSet) {
+      return accounts;
+    }
+
+    return accounts.filter((account) => includedAccountIdSet.has(account.id));
+  }, [accounts, includedAccountIdSet]);
+  const filteredTransactions = useMemo(() => {
+    if (!includedAccountIdSet) {
+      return allTransactions;
+    }
+
+    return filterTransactionsByAccountIds(allTransactions, includedAccountIdSet);
+  }, [allTransactions, includedAccountIdSet]);
+  const filteredTransactionIds = useMemo(
+    () => new Set(filteredTransactions.map((transaction) => transaction.id)),
+    [filteredTransactions],
+  );
+  const filteredTransactionSplits = useMemo(() => {
+    if (!includedAccountIdSet) {
+      return transactionSplits;
+    }
+
+    return filterTransactionSplitsByTransactionIds(
+      transactionSplits,
+      filteredTransactionIds,
+    );
+  }, [transactionSplits, includedAccountIdSet, filteredTransactionIds]);
+  const filteredRecurringTransactions = useMemo(() => {
+    if (!includedAccountIdSet) {
+      return recurringTransactions;
+    }
+
+    return filterRecurringTransactionsByAccountIds(
+      recurringTransactions,
+      includedAccountIdSet,
+    );
+  }, [recurringTransactions, includedAccountIdSet]);
 
   const projectionEndDate = useMemo(
     () =>
@@ -271,8 +319,8 @@ export default function SpendingHistorySection() {
     [recurringProjection],
   );
   const accountsById = useMemo(
-    () => new Map(accounts.map((account) => [account.id, account.name])),
-    [accounts],
+    () => new Map(filteredAccounts.map((account) => [account.id, account.name])),
+    [filteredAccounts],
   );
 
   const spendingCategoryFilter = useMemo(() => {
@@ -305,17 +353,17 @@ export default function SpendingHistorySection() {
   const { availableMonths, availableYears } = useMemo(
     () =>
       buildAvailableSpendingPeriods({
-        allTransactions,
-        transactionSplits,
-        recurringTransactions,
+        allTransactions: filteredTransactions,
+        transactionSplits: filteredTransactionSplits,
+        recurringTransactions: filteredRecurringTransactions,
         realizedDatesMap,
         projectionEndDate,
         categoryIdFilter: spendingCategoryFilter,
       }),
     [
-      allTransactions,
-      transactionSplits,
-      recurringTransactions,
+      filteredTransactions,
+      filteredTransactionSplits,
+      filteredRecurringTransactions,
       realizedDatesMap,
       projectionEndDate,
       spendingCategoryFilter,
@@ -345,18 +393,18 @@ export default function SpendingHistorySection() {
   } = useMemo(
     () =>
       buildDashboardSpendingHistoryData({
-        allTransactions,
-        transactionSplits,
+        allTransactions: filteredTransactions,
+        transactionSplits: filteredTransactionSplits,
         categories,
-        recurringTransactions,
+        recurringTransactions: filteredRecurringTransactions,
         realizedDatesMap,
         periodConfig,
       }),
     [
-      allTransactions,
-      transactionSplits,
+      filteredTransactions,
+      filteredTransactionSplits,
       categories,
-      recurringTransactions,
+      filteredRecurringTransactions,
       realizedDatesMap,
       periodConfig,
     ],

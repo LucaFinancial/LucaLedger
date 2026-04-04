@@ -13,6 +13,7 @@ describe('buildAccountBalanceSummary', () => {
       { id: 'escrow-1', type: AccountType.ESCROW },
       { id: 'external-1', type: AccountType.EXTERNAL },
       { id: 'credit-1', type: AccountType.CREDIT_CARD },
+      { id: 'credit-2', type: AccountType.CREDIT_CARD },
     ];
 
     const transactions = [
@@ -61,7 +62,13 @@ describe('buildAccountBalanceSummary', () => {
       {
         id: 'tx-8',
         accountId: 'credit-1',
-        amount: -10000,
+        amount: 10000,
+        transactionState: TransactionStateEnum.COMPLETED,
+      },
+      {
+        id: 'tx-9',
+        accountId: 'credit-2',
+        amount: -2500,
         transactionState: TransactionStateEnum.COMPLETED,
       },
     ];
@@ -70,6 +77,6 @@ describe('buildAccountBalanceSummary', () => {
 
     expect(summary.totals.current).toBe(48500);
     expect(summary.totals.pending).toBe(45500);
-    expect(summary.creditCardTotals.current).toBe(10000);
+    expect(summary.creditCardTotals.current).toBe(7500);
   });
 });

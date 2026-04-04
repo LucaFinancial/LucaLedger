@@ -63,10 +63,9 @@ export const buildAccountBalanceSummary = (
     };
 
     if (accountUtils.isCreditCardAccountType(account.type)) {
-      // For credit cards, track the balance separately
-      // Positive balance means money owed
+      // Track the combined signed credit card balance separately.
       Object.keys(balances).forEach((key) => {
-        creditCardTotals[key] += Math.abs(balances[key]);
+        creditCardTotals[key] += balances[key];
       });
     } else if (accountUtils.isIncludedInBalanceTotals(account.type)) {
       // Only include liquid cash account types in main totals
