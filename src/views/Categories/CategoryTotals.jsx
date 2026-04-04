@@ -1,279 +1,267 @@
 import {
   Box,
   Paper,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectors as transactionSelectors } from '@/store/transactions';
+import { add, format } from 'date-fns';
+
+import SpendingPeriodControls from '@/components/SpendingPeriodControls';
+import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
+import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
+import { selectors as settingsSelectors } from '@/store/settings';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
+import { selectors as transactionSelectors } from '@/store/transactions';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
-  parseISO,
-  startOfDay,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-  isBefore,
-  isAfter,
-  isSameDay,
-} from 'date-fns';
-import { Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+  SPENDING_STATE_META,
+  SPENDING_STATE_ORDER,
+  buildAvailableSpendingPeriods,
+  buildCategoryTotalsData,
+  getSpendingPeriodConfig,
+} from '@/utils/spendingAnalytics';
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
+function formatAmount(amountInCents) {
+  return `$${doublePrecisionFormatString(
+    Math.abs(centsToDollars(amountInCents)),
+  )}`;
+}
 
-// Colors for pie chart segments
-const COLORS = [
-  '#2196f3', // blue
-  '#4caf50', // green
-  '#ff9800', // orange
-  '#f44336', // red
-  '#9c27b0', // purple
-  '#00bcd4', // cyan
-  '#ffeb3b', // yellow
-  '#795548', // brown
-  '#607d8b', // blue grey
-  '#e91e63', // pink
-];
+function getAmountColor(amountInCents) {
+  return amountInCents >= 0 ? 'success.main' : 'error.main';
+}
 
-/**
- * CategoryTotals component displays transaction totals for a category
- * including all of its subcategories with time period filtering
- */
 export default function CategoryTotals({ category }) {
   const allTransactions = useSelector(transactionSelectors.selectTransactions);
   const transactionSplits = useSelector(
     transactionSplitSelectors.selectTransactionSplits,
   );
-  const [timePeriod, setTimePeriod] = useState('month');
+  const recurringTransactions = useSelector(
+    recurringTransactionSelectors.selectRecurringTransactions,
+  );
+  const realizedDatesMap = useSelector(
+    recurringTransactionEventSelectors.selectAllRealizedDatesMap,
+  );
+  const recurringProjection = useSelector(
+    settingsSelectors.selectRecurringProjection,
+  );
 
-  // Calculate totals for this category and all its subcategories
-  const { totals, subcategoryTotals } = useMemo(() => {
-    const now = new Date();
-    const today = startOfDay(now);
+  const currentMonthValue = useMemo(
+    () => format(new Date(), 'yyyy-MM'),
+    [],
+  );
+  const [activeSelection, setActiveSelection] = useState({
+    type: 'month',
+    value: currentMonthValue,
+  });
+  const [customRange, setCustomRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
 
-    // Determine date range based on selected time period
-    let startDate;
-    let endDate;
+  const categoryIds = useMemo(
+    () =>
+      new Set([
+        category.id,
+        ...category.subcategories.map((subcategory) => subcategory.id),
+      ]),
+    [category],
+  );
 
-    switch (timePeriod) {
-      case 'month':
-        startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
-        break;
-      case 'year':
-        startDate = startOfYear(now);
-        endDate = endOfYear(now);
-        break;
-      case 'all':
-      default:
-        startDate = null;
-        endDate = null;
-        break;
-    }
+  const projectionEndDate = useMemo(
+    () =>
+      add(new Date(), {
+        [recurringProjection.unit]: recurringProjection.amount,
+      }),
+    [recurringProjection],
+  );
 
-    // Build a set of category IDs to match (parent + all subcategories)
-    const categoryIds = new Set([
-      category.id,
-      ...category.subcategories.map((sub) => sub.id),
-    ]);
+  const { availableMonths, availableYears } = useMemo(
+    () =>
+      buildAvailableSpendingPeriods({
+        allTransactions,
+        transactionSplits,
+        recurringTransactions,
+        realizedDatesMap,
+        projectionEndDate,
+        categoryIdFilter: (categoryId) => categoryIds.has(categoryId),
+      }),
+    [
+      allTransactions,
+      transactionSplits,
+      recurringTransactions,
+      realizedDatesMap,
+      projectionEndDate,
+      categoryIds,
+    ],
+  );
 
-    const splitsByTransaction = new Map();
-    transactionSplits.forEach((split) => {
-      if (!splitsByTransaction.has(split.transactionId)) {
-        splitsByTransaction.set(split.transactionId, []);
-      }
-      splitsByTransaction.get(split.transactionId).push(split);
+  const periodConfig = useMemo(
+    () => getSpendingPeriodConfig(activeSelection),
+    [activeSelection],
+  );
+
+  const { totals, subcategoryTotals, showStateBreakdown } = useMemo(
+    () =>
+      buildCategoryTotalsData({
+        category,
+        allTransactions,
+        transactionSplits,
+        recurringTransactions,
+        realizedDatesMap,
+        startDate: periodConfig.startDate,
+        endDate: periodConfig.endDate,
+      }),
+    [
+      category,
+      allTransactions,
+      transactionSplits,
+      recurringTransactions,
+      realizedDatesMap,
+      periodConfig,
+    ],
+  );
+
+  const hasData = totals.count > 0 || subcategoryTotals.length > 0;
+  const clearCustomRange = () =>
+    setCustomRange({
+      startDate: null,
+      endDate: null,
     });
 
-    // Helper function to get amount for a specific category from a transaction
-    const getAmountForCategory = (transaction, targetCategoryId) => {
-      const splits = splitsByTransaction.get(transaction.id) || [];
-      if (splits.length > 0) {
-        return splits
-          .filter((split) => split.categoryId === targetCategoryId)
-          .reduce((sum, split) => sum + split.amount, 0);
-      }
-      return transaction.categoryId === targetCategoryId
-        ? transaction.amount
-        : 0;
-    };
+  const handleAggregateChange = (_event, newValue) => {
+    if (!newValue) return;
 
-    // Filter transactions by category and date range
-    // Include transaction if it has the category in main categoryId OR in any split
-    const categoryTransactions = allTransactions.filter((transaction) => {
-      // Check if transaction has category in splits
-      const splits = splitsByTransaction.get(transaction.id) || [];
-      if (splits.length > 0) {
-        const hasCategoryInSplits = splits.some((split) =>
-          categoryIds.has(split.categoryId),
-        );
-        if (hasCategoryInSplits) {
-          // Still need to check date range
-          if (startDate && endDate) {
-            const transactionDate = startOfDay(
-              parseISO(transaction.date.replace(/\//g, '-')),
-            );
-            if (
-              isBefore(transactionDate, startDate) ||
-              isAfter(transactionDate, endDate)
-            ) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
-
-      // Check main categoryId
-      if (!categoryIds.has(transaction.categoryId)) return false;
-
-      // For date filtering, only include transactions within the time period
-      if (startDate && endDate) {
-        const transactionDate = startOfDay(
-          parseISO(transaction.date.replace(/\//g, '-')),
-        );
-        if (
-          isBefore(transactionDate, startDate) ||
-          isAfter(transactionDate, endDate)
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Split transactions into past and future
-    const pastTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
-      return (
-        isBefore(transactionDate, today) || isSameDay(transactionDate, today)
-      );
-    });
-    const futureTransactions = categoryTransactions.filter((t) => {
-      const transactionDate = startOfDay(parseISO(t.date.replace(/\//g, '-')));
-      return isAfter(transactionDate, today);
-    });
-
-    // Calculate totals - sum amounts from all category IDs in this category
-    const pastTotal = centsToDollars(
-      pastTransactions.reduce((sum, t) => {
-        const categoryAmount = Array.from(categoryIds).reduce(
-          (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0,
-        );
-        return sum + categoryAmount;
-      }, 0),
-    );
-    const futureTotal = centsToDollars(
-      futureTransactions.reduce((sum, t) => {
-        const categoryAmount = Array.from(categoryIds).reduce(
-          (catSum, catId) => catSum + getAmountForCategory(t, catId),
-          0,
-        );
-        return sum + categoryAmount;
-      }, 0),
-    );
-    const total = pastTotal + futureTotal;
-    const count = categoryTransactions.length;
-
-    // Calculate subcategory breakdown
-    const subTotals = category.subcategories.map((subcategory) => {
-      // Get unique transactions that have this subcategory in splits or categoryId
-      const subTransactionsSet = new Set();
-      categoryTransactions.forEach((t) => {
-        if (getAmountForCategory(t, subcategory.id) !== 0) {
-          subTransactionsSet.add(t.id);
-        }
-      });
-
-      const subPastTransactions = pastTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0,
-      );
-      const subFutureTransactions = futureTransactions.filter(
-        (t) => getAmountForCategory(t, subcategory.id) !== 0,
-      );
-
-      const pastTotal = centsToDollars(
-        subPastTransactions.reduce(
-          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0,
-        ),
-      );
-      const futureTotal = centsToDollars(
-        subFutureTransactions.reduce(
-          (sum, t) => sum + getAmountForCategory(t, subcategory.id),
-          0,
-        ),
-      );
-
-      return {
-        id: subcategory.id,
-        name: subcategory.name,
-        pastTotal,
-        futureTotal,
-        total: pastTotal + futureTotal,
-        count: subTransactionsSet.size, // Use unique count
-      };
-    });
-
-    // Sort subcategories by absolute total (highest spending first)
-    subTotals.sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
-
-    return {
-      totals: { pastTotal, futureTotal, total, count },
-      subcategoryTotals: subTotals,
-    };
-  }, [allTransactions, category, timePeriod, transactionSplits]);
-
-  const handleTimePeriodChange = (event, newPeriod) => {
-    if (newPeriod !== null) {
-      setTimePeriod(newPeriod);
-    }
+    clearCustomRange();
+    setActiveSelection({ type: 'aggregate', value: newValue });
   };
 
-  // If no transactions, show a message
-  if (totals.count === 0) {
-    return (
-      <Paper
+  const handleMonthChange = (event) => {
+    clearCustomRange();
+    setActiveSelection({ type: 'month', value: event.target.value });
+  };
+
+  const handleYearChange = (event) => {
+    clearCustomRange();
+    setActiveSelection({ type: 'year', value: event.target.value });
+  };
+
+  const updateCustomRange = (nextRange) => {
+    setCustomRange(nextRange);
+
+    if (!nextRange.startDate || !nextRange.endDate) return;
+
+    setActiveSelection({
+      type: 'custom',
+      startDate: nextRange.startDate,
+      endDate: nextRange.endDate,
+    });
+  };
+
+  const handleCustomStartChange = (value) => {
+    updateCustomRange({
+      ...customRange,
+      startDate: value,
+    });
+  };
+
+  const handleCustomEndChange = (value) => {
+    updateCustomRange({
+      ...customRange,
+      endDate: value,
+    });
+  };
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        mb: 2,
+        p: 2,
+        backgroundColor: 'rgba(76, 175, 80, 0.08)',
+        border: '1px solid rgba(76, 175, 80, 0.3)',
+      }}
+    >
+      <Box
         sx={{
-          p: 2,
-          mb: 2,
-          backgroundColor: 'rgba(158, 158, 158, 0.08)',
-          border: '1px solid rgba(158, 158, 158, 0.2)',
+          mb: 1.5,
+          display: 'flex',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 1.5,
+          flexWrap: 'wrap',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+        <Box>
+          <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>
             Category Totals
           </Typography>
-          <ToggleButtonGroup
-            value={timePeriod}
-            exclusive
-            onChange={handleTimePeriodChange}
-            size='small'
-          >
-            <ToggleButton value='month'>This Month</ToggleButton>
-            <ToggleButton value='year'>This Year</ToggleButton>
-            <ToggleButton value='all'>All Time</ToggleButton>
-          </ToggleButtonGroup>
+          <Typography variant='body2' color='text.secondary'>
+            {periodConfig.label}
+          </Typography>
         </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            flexWrap: 'wrap',
+          }}
+        >
+          <DatePicker
+            label='Start Date'
+            value={customRange.startDate}
+            onChange={handleCustomStartChange}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: {
+                  width: { xs: '100%', sm: 210 },
+                },
+              },
+            }}
+          />
+
+          <DatePicker
+            label='End Date'
+            value={customRange.endDate}
+            onChange={handleCustomEndChange}
+            minDate={customRange.startDate || undefined}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: {
+                  width: { xs: '100%', sm: 210 },
+                },
+              },
+            }}
+          />
+        </Box>
+      </Box>
+
+      <SpendingPeriodControls
+        activeSelection={activeSelection}
+        availableMonths={availableMonths}
+        availableYears={availableYears}
+        customRange={customRange}
+        onAggregateChange={handleAggregateChange}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
+        onCustomStartChange={handleCustomStartChange}
+        onCustomEndChange={handleCustomEndChange}
+        showDateControls={false}
+        sx={{ mb: 2 }}
+      />
+
+      {!hasData ? (
         <Typography
           variant='body2'
           color='text.secondary'
@@ -281,257 +269,176 @@ export default function CategoryTotals({ category }) {
         >
           No transactions found for this category in the selected time period
         </Typography>
-      </Paper>
-    );
-  }
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        mb: 2,
-        backgroundColor: 'rgba(76, 175, 80, 0.08)',
-        border: '1px solid rgba(76, 175, 80, 0.3)',
-        position: 'relative',
-      }}
-    >
-      {/* Header with title and time period toggle - absolutely positioned overlay */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          p: 2,
-          zIndex: 2,
-        }}
-      >
-        <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
-          Category Totals
-        </Typography>
-        <ToggleButtonGroup
-          value={timePeriod}
-          exclusive
-          onChange={handleTimePeriodChange}
-          size='small'
-        >
-          <ToggleButton value='month'>This Month</ToggleButton>
-          <ToggleButton value='year'>This Year</ToggleButton>
-          <ToggleButton value='all'>All Time</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      {/* Chart and Summary Row */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 3,
-          pr: 2,
-          pb: 1,
-          alignItems: 'flex-start',
-        }}
-      >
-        {/* Pie Chart */}
-        <Box
-          sx={{
-            flex: 5,
-            height: 220,
-          }}
-        >
-          <Pie
-            data={{
-              labels: subcategoryTotals
-                .filter((sub) => sub.count > 0)
-                .map((sub) => sub.name),
-              datasets: [
-                {
-                  data: subcategoryTotals
-                    .filter((sub) => sub.count > 0)
-                    .map((sub) => Math.abs(sub.total)),
-                  backgroundColor: COLORS,
-                  borderColor: '#fff',
-                  borderWidth: 2,
-                },
-              ],
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: 'inline-block',
+              mb: 2.25,
+              maxWidth: '100%',
             }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function (context) {
-                      const value = context.parsed ?? 0;
-                      return `$${doublePrecisionFormatString(value)}`;
-                    },
+          >
+            {showStateBreakdown ? (
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(4, 136px)',
                   },
-                },
-              },
-            }}
-          />
-        </Box>
-
-        {/* Past/Future/Total Summary */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5,
-            flex: 1,
-            pt: 10,
-            pr: 1,
-          }}
-        >
-          {/* Past Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Past
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.pastTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.pastTotal))}
-            </Typography>
+                  gap: 0.75,
+                  width: { xs: '100%', md: 'auto' },
+                  maxWidth: '100%',
+                }}
+              >
+                {SPENDING_STATE_ORDER.map((stateKey) => (
+                  <Paper
+                    key={stateKey}
+                    sx={{
+                      p: 0.875,
+                      backgroundColor: SPENDING_STATE_META[stateKey].backgroundColor,
+                      border: `1px solid ${SPENDING_STATE_META[stateKey].borderColor}`,
+                    }}
+                  >
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                    >
+                      {SPENDING_STATE_META[stateKey].label}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: getAmountColor(totals[stateKey]),
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                        mt: 0.25,
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {formatAmount(totals[stateKey])}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Paper
+                sx={{
+                  width: { xs: '100%', sm: 220 },
+                  maxWidth: '100%',
+                  p: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.72)',
+                  border: '1px solid rgba(76, 175, 80, 0.25)',
+                }}
+              >
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ fontSize: '0.68rem', display: 'block', lineHeight: 1.1 }}
+                >
+                  Total
+                </Typography>
+                <Typography
+                  sx={{
+                    color: getAmountColor(totals.total),
+                    fontWeight: 600,
+                    mt: 0.25,
+                    fontSize: '0.95rem',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {formatAmount(totals.total)}
+                </Typography>
+              </Paper>
+            )}
           </Box>
 
-          {/* Future Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Future
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.futureTotal >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.futureTotal))}
-            </Typography>
-          </Box>
+          {subcategoryTotals.length > 0 ? (
+            <Box sx={{ overflow: 'auto' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontWeight: 'bold', mb: 1 }}
+              >
+                Subcategory Breakdown
+              </Typography>
 
-          {/* Total Amount */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-            }}
-          >
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ minWidth: 60 }}
-            >
-              Total
-            </Typography>
-            <Typography
-              variant='h6'
-              sx={{
-                color: totals.total >= 0 ? 'success.main' : 'error.main',
-                fontWeight: 600,
-              }}
-            >
-              ${doublePrecisionFormatString(Math.abs(totals.total))}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Subcategory Breakdown */}
-      {subcategoryTotals.length > 0 &&
-        subcategoryTotals.some((s) => s.count > 0) && (
-          <Box sx={{ px: 2, pb: 2 }}>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
-                    Past
-                  </TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
-                    Future
-                  </TableCell>
-                  <TableCell align='right' sx={{ fontWeight: 700 }}>
-                    Total
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {subcategoryTotals
-                  .filter((sub) => sub.count > 0)
-                  .map((sub) => (
-                    <TableRow key={sub.id}>
-                      <TableCell>{sub.name}</TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color:
-                            sub.pastTotal >= 0 ? 'success.main' : 'error.main',
-                          fontWeight: 500,
-                        }}
-                      >
-                        ${doublePrecisionFormatString(Math.abs(sub.pastTotal))}
+              <Table size='small'>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>Subcategory</TableCell>
+                    {showStateBreakdown ? (
+                      <>
+                        {SPENDING_STATE_ORDER.map((stateKey) => (
+                          <TableCell
+                            key={stateKey}
+                            align='right'
+                            sx={{ fontWeight: 700 }}
+                          >
+                            {SPENDING_STATE_META[stateKey].label}
+                          </TableCell>
+                        ))}
+                        <TableCell align='right' sx={{ fontWeight: 700 }}>
+                          Total
+                        </TableCell>
+                      </>
+                    ) : (
+                      <TableCell align='right' sx={{ fontWeight: 700 }}>
+                        Total
                       </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color:
-                            sub.futureTotal >= 0
-                              ? 'success.main'
-                              : 'error.main',
-                          fontWeight: 500,
-                        }}
-                      >
-                        $
-                        {doublePrecisionFormatString(Math.abs(sub.futureTotal))}
-                      </TableCell>
-                      <TableCell
-                        align='right'
-                        sx={{
-                          color: sub.total >= 0 ? 'success.main' : 'error.main',
-                          fontWeight: 600,
-                        }}
-                      >
-                        ${doublePrecisionFormatString(Math.abs(sub.total))}
-                      </TableCell>
+                    )}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {subcategoryTotals.map((subcategory) => (
+                    <TableRow key={subcategory.id}>
+                      <TableCell>{subcategory.name}</TableCell>
+                      {showStateBreakdown ? (
+                        <>
+                          {SPENDING_STATE_ORDER.map((stateKey) => (
+                            <TableCell
+                              key={`${subcategory.id}-${stateKey}`}
+                              align='right'
+                              sx={{
+                                color: getAmountColor(subcategory[stateKey]),
+                                fontWeight: 500,
+                              }}
+                            >
+                              {formatAmount(subcategory[stateKey])}
+                            </TableCell>
+                          ))}
+                          <TableCell
+                            align='right'
+                            sx={{
+                              color: getAmountColor(subcategory.total),
+                              fontWeight: 600,
+                            }}
+                          >
+                            {formatAmount(subcategory.total)}
+                          </TableCell>
+                        </>
+                      ) : (
+                        <TableCell
+                          align='right'
+                          sx={{
+                            color: getAmountColor(subcategory.total),
+                            fontWeight: 600,
+                          }}
+                        >
+                          {formatAmount(subcategory.total)}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
-              </TableBody>
-            </Table>
-          </Box>
-        )}
+                </TableBody>
+              </Table>
+            </Box>
+          ) : (
+            <Typography variant='body2' color='text.secondary'>
+              No subcategory activity for this period
+            </Typography>
+          )}
+        </>
+      )}
     </Paper>
   );
 }
-
