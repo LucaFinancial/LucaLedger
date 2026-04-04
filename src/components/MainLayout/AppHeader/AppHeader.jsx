@@ -22,18 +22,16 @@ export default function AppHeader() {
   const location = useLocation();
 
   const iconButtonSx = (isActive) => ({
-    color: 'white',
+    color: isActive ? 'primary.main' : 'white',
     alignSelf: 'stretch',
     height: '100%',
     px: 2,
     borderRadius: 0,
-    backgroundColor: isActive ? 'rgba(255, 255, 255, 0.18)' : 'transparent',
-    boxShadow: isActive
-      ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.28)'
-      : 'none',
+    backgroundColor: isActive ? 'white' : 'transparent',
+    boxShadow: 'none',
     '&:hover': {
       backgroundColor: isActive
-        ? 'rgba(255, 255, 255, 0.24)'
+        ? 'grey.100'
         : 'rgba(255, 255, 255, 0.08)',
     },
   });

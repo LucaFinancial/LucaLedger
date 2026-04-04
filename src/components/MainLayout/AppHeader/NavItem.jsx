@@ -19,8 +19,8 @@ const StyledLink = styled(NavLink)`
   }
 
   &.active {
-    background-color: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    background-color: white;
+    color: #1976d2;
   }
 `;
 
@@ -33,7 +33,7 @@ export default function NavItem({ linkTo, navText, end = true }) {
           display: 'block',
           fontSize: '1.5rem',
           fontWeight: 'bold',
-          color: 'white',
+          color: 'inherit',
         }}
       >
         {navText}
