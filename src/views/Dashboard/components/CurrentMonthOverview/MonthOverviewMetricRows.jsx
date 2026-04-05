@@ -105,6 +105,8 @@ export function SummaryMetricsRow({
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'left' }}
           tooltip={leftMetric.tooltip}
+          icon={leftMetric.icon}
+          useAbsoluteValue={leftMetric.useAbsoluteValue}
         />
         {middleMetric ? (
           <MetricCell
@@ -114,6 +116,8 @@ export function SummaryMetricsRow({
             formatCurrency={formatCurrency}
             textAlign={{ xs: 'left', sm: 'center' }}
             tooltip={middleMetric.tooltip}
+            icon={middleMetric.icon}
+            useAbsoluteValue={middleMetric.useAbsoluteValue}
           />
         ) : (
           <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
@@ -125,6 +129,8 @@ export function SummaryMetricsRow({
           formatCurrency={formatCurrency}
           textAlign={{ xs: 'left', sm: 'right' }}
           tooltip={rightMetric.tooltip}
+          icon={rightMetric.icon}
+          useAbsoluteValue={rightMetric.useAbsoluteValue}
         />
       </Box>
     </Box>

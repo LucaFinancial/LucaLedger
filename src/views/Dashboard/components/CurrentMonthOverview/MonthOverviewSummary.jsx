@@ -1,3 +1,7 @@
+import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ArrowDropUp as ArrowDropUpIcon,
+} from '@mui/icons-material';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import DetailedComparisonTable from './DetailedComparisonTable';
@@ -35,6 +39,15 @@ export default function MonthOverviewSummary({
     monthEndProjections,
     remainingMonthTotals,
   });
+  const upIcon = <ArrowDropUpIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />;
+  const downIcon = (
+    <ArrowDropDownIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />
+  );
+  const getDirectionalIcon = (amount) => {
+    if (!amount) return null;
+
+    return amount > 0 ? upIcon : downIcon;
+  };
 
   return (
     <Paper
@@ -130,6 +143,8 @@ export default function MonthOverviewSummary({
               value: remainingMonthTotals.balance,
               valueColor: getBalanceColor(remainingMonthTotals.balance),
               tooltip: CARD_METRIC_TOOLTIPS.balanceChange,
+              icon: getDirectionalIcon(remainingMonthTotals.balance),
+              useAbsoluteValue: true,
             }}
             rightMetric={{
               label: 'Card Balance Change',
@@ -138,6 +153,10 @@ export default function MonthOverviewSummary({
                 remainingMonthTotals.creditCardBalanceChange,
               ),
               tooltip: CARD_METRIC_TOOLTIPS.cardBalanceChange,
+              icon: getDirectionalIcon(
+                remainingMonthTotals.creditCardBalanceChange,
+              ),
+              useAbsoluteValue: true,
             }}
             formatCurrency={formatCurrency}
             tooltips={CARD_METRIC_TOOLTIPS}
