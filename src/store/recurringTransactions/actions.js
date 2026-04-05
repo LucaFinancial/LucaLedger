@@ -1,10 +1,29 @@
 import { deleteEncryptedRecord } from '@/crypto/database';
+import {
+  actions as recurringTransactionLinkActions,
+  selectors as recurringTransactionLinkSelectors,
+} from '@/store/recurringTransactionLinks';
+import {
+  getCounterpartAmountForLinkedPair,
+  getLinkedRecurringTransactionId,
+  resolveLinkIsSameSign,
+} from '@/utils/linking';
 import { generateRecurringTransaction } from './generators';
 import {
   addRecurringTransaction,
   removeRecurringTransaction,
   updateRecurringTransaction as updateRecurringTransactionNormalized,
 } from './slice';
+
+const LINKED_RECURRING_SYNC_FIELDS = new Set([
+  'amount',
+  'startOn',
+  'frequency',
+  'interval',
+  'endOn',
+  'recurringTransactionState',
+  'description',
+]);
 
 /**
  * Creates a new recurring transaction for an account
@@ -27,7 +46,7 @@ export const createNewRecurringTransaction =
  * @param {Object} updates - Object with properties to update
  */
 export const updateRecurringTransactionProperty =
-  (recurringTransactionId, updates) => (dispatch, getState) => {
+  (recurringTransactionId, updates) => async (dispatch, getState) => {
     const state = getState();
     const recurringTransaction = state.recurringTransactions.find(
       (rt) => rt.id === recurringTransactionId,
@@ -44,6 +63,57 @@ export const updateRecurringTransactionProperty =
     };
 
     dispatch(updateRecurringTransactionNormalized(updatedRecurringTransaction));
+
+    const recurringTransactionLink =
+      recurringTransactionLinkSelectors.selectRecurringTransactionLinkByRecurringTransactionId(
+        recurringTransactionId,
+      )(state);
+    if (!recurringTransactionLink) return;
+
+    const linkedRecurringTransactionId = getLinkedRecurringTransactionId(
+      recurringTransactionLink,
+      recurringTransactionId,
+    );
+    const linkedRecurringTransaction = state.recurringTransactions.find(
+      (candidate) => candidate.id === linkedRecurringTransactionId,
+    );
+
+    if (!linkedRecurringTransaction) {
+      await dispatch(
+        recurringTransactionLinkActions.removeRecurringTransactionLinkById(
+          recurringTransactionLink.id,
+        ),
+      );
+      return;
+    }
+
+    const linkedUpdates = {};
+
+    Object.entries(updates).forEach(([field, value]) => {
+      if (!LINKED_RECURRING_SYNC_FIELDS.has(field)) return;
+
+      linkedUpdates[field] =
+        field === 'amount'
+          ? getCounterpartAmountForLinkedPair({
+              sourceAmount: value,
+              counterpartAmount: linkedRecurringTransaction.amount,
+              isSameSign: resolveLinkIsSameSign({
+                link: recurringTransactionLink,
+                amountA: recurringTransaction.amount,
+                amountB: linkedRecurringTransaction.amount,
+              }),
+            })
+          : value;
+    });
+
+    if (Object.keys(linkedUpdates).length === 0) return;
+
+    dispatch(
+      updateRecurringTransactionNormalized({
+        ...linkedRecurringTransaction,
+        ...linkedUpdates,
+      }),
+    );
   };
 
 /**
@@ -53,6 +123,10 @@ export const updateRecurringTransactionProperty =
 export const removeRecurringTransactionById =
   (recurringTransactionId) => async (dispatch, getState) => {
     const state = getState();
+    const recurringTransactionLink =
+      recurringTransactionLinkSelectors.selectRecurringTransactionLinkByRecurringTransactionId(
+        recurringTransactionId,
+      )(state);
 
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
@@ -69,6 +143,14 @@ export const removeRecurringTransactionById =
         );
         throw error;
       }
+    }
+
+    if (recurringTransactionLink) {
+      await dispatch(
+        recurringTransactionLinkActions.removeRecurringTransactionLinkById(
+          recurringTransactionLink.id,
+        ),
+      );
     }
 
     dispatch(removeRecurringTransaction(recurringTransactionId));

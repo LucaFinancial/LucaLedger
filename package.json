@@ -1,6 +1,6 @@
 {
   "name": "luca-ledger",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "homepage": "https://lucaledger.app/",
   "type": "module",
   "license": "MIT",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@luca-financial/luca-schema": "^3.2.0",
+    "@luca-financial/luca-schema": "^3.3.1",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/system": "^7.3.9",

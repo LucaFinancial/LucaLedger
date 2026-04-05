@@ -15,7 +15,7 @@ import {
 } from './encryption';
 
 const DB_NAME = 'LucaLedgerEncrypted';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 // Create the database instance
 export const db = new Dexie(DB_NAME);
@@ -30,7 +30,9 @@ db.version(DB_VERSION).stores({
   statements: 'id, userId', // Per-user statements
   recurringTransactions: 'id, userId', // Per-user recurring transactions
   recurringTransactionEvents: 'id, userId', // Per-user recurring transaction events
+  recurringTransactionLinks: 'id, userId', // Per-user recurring transaction links
   transactionSplits: 'id, userId', // Per-user transaction splits
+  transactionLinks: 'id, userId', // Per-user transaction links
   metadata: 'key', // Global key-value store for encryption metadata (legacy compatibility)
 });
 
@@ -169,6 +171,8 @@ export async function clearAllData() {
   await db.accounts.clear();
   await db.transactions.clear();
   await db.categories.clear();
+  await db.transactionLinks.clear();
+  await db.recurringTransactionLinks.clear();
   await db.metadata.clear();
 }
 
@@ -289,6 +293,8 @@ export async function deleteUser(userId) {
   await db.transactions.where('userId').equals(userId).delete();
   await db.categories.where('userId').equals(userId).delete();
   await db.statements.where('userId').equals(userId).delete();
+  await db.transactionLinks.where('userId').equals(userId).delete();
+  await db.recurringTransactionLinks.where('userId').equals(userId).delete();
 
   // Delete the user record
   await db.users.delete(userId);
@@ -397,6 +403,8 @@ export async function clearUserData(userId) {
   await db.transactions.where('userId').equals(userId).delete();
   await db.categories.where('userId').equals(userId).delete();
   await db.statements.where('userId').equals(userId).delete();
+  await db.transactionLinks.where('userId').equals(userId).delete();
+  await db.recurringTransactionLinks.where('userId').equals(userId).delete();
 }
 
 /**
@@ -421,7 +429,14 @@ export async function hasLegacyEncryptedData() {
  */
 export async function migrateLegacyDataToUser(userId) {
   // Update all records without userId to have the specified userId
-  const stores = ['accounts', 'transactions', 'categories', 'statements'];
+  const stores = [
+    'accounts',
+    'transactions',
+    'categories',
+    'statements',
+    'transactionLinks',
+    'recurringTransactionLinks',
+  ];
 
   for (const storeName of stores) {
     const records = await db[storeName].filter((r) => !r.userId).toArray();

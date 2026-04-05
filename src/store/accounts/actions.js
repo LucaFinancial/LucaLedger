@@ -9,6 +9,10 @@ import {
   setRecurringTransactionEvents,
 } from '@/store/recurringTransactionEvents';
 import {
+  selectors as recurringTransactionLinkSelectors,
+  setRecurringTransactionLinks,
+} from '@/store/recurringTransactionLinks';
+import {
   selectors as recurringTransactionSelectors,
   setRecurringTransactions,
 } from '@/store/recurringTransactions';
@@ -22,6 +26,11 @@ import {
   setTransactionSplits,
   selectors as transactionSplitSelectors,
 } from '@/store/transactionSplits';
+import {
+  actions as transactionLinkActions,
+  selectors as transactionLinkSelectors,
+  setTransactionLinks,
+} from '@/store/transactionLinks';
 import { AccountType } from './constants';
 import { generateAccountObject } from './generators';
 import {
@@ -64,7 +73,10 @@ export const loadData =
       const recurringTransactionsToLoad = data.recurringTransactions || [];
       const recurringTransactionEventsToLoad =
         data.recurringTransactionEvents || [];
+      const recurringTransactionLinksToLoad =
+        data.recurringTransactionLinks || [];
       const transactionSplitsToLoad = data.transactionSplits || [];
+      const transactionLinksToLoad = data.transactionLinks || [];
       const shouldLoadCategories = shouldOverwriteCategories === true;
 
       // Get current state for idempotent merge
@@ -80,8 +92,14 @@ export const loadData =
         recurringTransactionEventSelectors.selectRecurringTransactionEvents(
           currentState,
         );
+      const existingRecurringTransactionLinks =
+        recurringTransactionLinkSelectors.selectRecurringTransactionLinks(
+          currentState,
+        );
       const existingTransactionSplits =
         transactionSplitSelectors.selectTransactionSplits(currentState);
+      const existingTransactionLinks =
+        transactionLinkSelectors.selectTransactionLinks(currentState);
 
       // Idempotent upsert: merge imported data with existing data by ID
       // Create a map of existing items for efficient lookup
@@ -98,8 +116,14 @@ export const loadData =
       const recurringTransactionEventsMap = new Map(
         existingRecurringTransactionEvents.map((rte) => [rte.id, rte]),
       );
+      const recurringTransactionLinksMap = new Map(
+        existingRecurringTransactionLinks.map((link) => [link.id, link]),
+      );
       const transactionSplitsMap = new Map(
         existingTransactionSplits.map((split) => [split.id, split]),
+      );
+      const transactionLinksMap = new Map(
+        existingTransactionLinks.map((link) => [link.id, link]),
       );
 
       // Upsert imported accounts (overwrites existing by ID)
@@ -131,9 +155,17 @@ export const loadData =
         recurringTransactionEventsMap.set(event.id, event);
       });
 
+      recurringTransactionLinksToLoad.forEach((link) => {
+        recurringTransactionLinksMap.set(link.id, link);
+      });
+
       // Upsert imported transaction splits (overwrites existing by ID)
       transactionSplitsToLoad.forEach((split) => {
         transactionSplitsMap.set(split.id, split);
+      });
+
+      transactionLinksToLoad.forEach((link) => {
+        transactionLinksMap.set(link.id, link);
       });
 
       // Replace entire collections with merged data
@@ -163,12 +195,28 @@ export const loadData =
         );
       }
       if (
+        recurringTransactionLinksToLoad.length > 0 ||
+        existingRecurringTransactionLinks.length > 0
+      ) {
+        dispatch(
+          setRecurringTransactionLinks(
+            Array.from(recurringTransactionLinksMap.values()),
+          ),
+        );
+      }
+      if (
         transactionSplitsToLoad.length > 0 ||
         existingTransactionSplits.length > 0
       ) {
         dispatch(
           setTransactionSplits(Array.from(transactionSplitsMap.values())),
         );
+      }
+      if (
+        transactionLinksToLoad.length > 0 ||
+        existingTransactionLinks.length > 0
+      ) {
+        dispatch(setTransactionLinks(Array.from(transactionLinksMap.values())));
       }
 
       // Load categories if user confirmed
@@ -191,6 +239,14 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
   const state = getState();
   const transactions =
     transactionSelectors.selectTransactionsByAccountId(id)(state);
+  const transactionIds = new Set(transactions.map((transaction) => transaction.id));
+  const transactionLinks = transactionLinkSelectors
+    .selectTransactionLinks(state)
+    .filter(
+      (link) =>
+        transactionIds.has(link.sourceTransactionId) ||
+        transactionIds.has(link.destinationTransactionId),
+    );
 
   // Handle encrypted data if enabled
   const isEncrypted = state.encryption?.status === 'encrypted';
@@ -216,6 +272,12 @@ export const removeAccountById = (id) => async (dispatch, getState) => {
     dispatch(removeTransaction(transaction.id));
   });
 
+  for (const transactionLink of transactionLinks) {
+    await dispatch(
+      transactionLinkActions.removeTransactionLinkById(transactionLink.id),
+    );
+  }
+
   dispatch(removeAccount(id));
 };
 
@@ -240,7 +302,9 @@ export const saveAllAccounts = () => (dispatch, getState) => {
   const statements = state.statements;
   const recurringTransactions = state.recurringTransactions;
   const recurringTransactionEvents = state.recurringTransactionEvents;
+  const recurringTransactionLinks = state.recurringTransactionLinks;
   const transactionSplits = state.transactionSplits;
+  const transactionLinks = state.transactionLinks;
 
   const data = {
     schemaVersion: SCHEMA_VERSION,
@@ -250,7 +314,9 @@ export const saveAllAccounts = () => (dispatch, getState) => {
     statements,
     recurringTransactions,
     recurringTransactionEvents,
+    recurringTransactionLinks,
     transactionSplits,
+    transactionLinks,
   };
 
   const saveString = JSON.stringify(data, null, 2);
@@ -298,6 +364,11 @@ export const saveAccountWithTransactions =
     const recurringTransactionEvents = state.recurringTransactionEvents.filter(
       (event) => recurringTransactionIds.has(event.recurringTransactionId),
     );
+    const recurringTransactionLinks = state.recurringTransactionLinks.filter(
+      (link) =>
+        recurringTransactionIds.has(link.sourceRecurringTransactionId) &&
+        recurringTransactionIds.has(link.destinationRecurringTransactionId),
+    );
 
     // Get transaction IDs for this account
     const transactionIds = new Set(transactions.map((t) => t.id));
@@ -305,6 +376,11 @@ export const saveAccountWithTransactions =
     // Filter transaction splits for this account's transactions
     const transactionSplits = state.transactionSplits.filter((split) =>
       transactionIds.has(split.transactionId),
+    );
+    const transactionLinks = state.transactionLinks.filter(
+      (link) =>
+        transactionIds.has(link.sourceTransactionId) &&
+        transactionIds.has(link.destinationTransactionId),
     );
 
     const data = {
@@ -315,7 +391,9 @@ export const saveAccountWithTransactions =
       statements,
       recurringTransactions,
       recurringTransactionEvents,
+      recurringTransactionLinks,
       transactionSplits,
+      transactionLinks,
     };
 
     const saveString = JSON.stringify(data, null, 2);

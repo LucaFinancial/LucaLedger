@@ -17,6 +17,11 @@ import {
 
 import { generateOccurrenceDates } from '@/store/recurringTransactions/generators';
 import { TransactionStateEnum } from '@/store/transactions/constants';
+import {
+  buildLinkPairKey,
+  buildTransactionLinkMapByTransactionId,
+  getLinkedTransactionId,
+} from '@/utils/linking';
 import { buildCategoriesById, buildSplitsByTransactionId } from './transactionCategoryState';
 
 export const AGGREGATE_PERIODS = Object.freeze([
@@ -215,6 +220,35 @@ const getTransactionEntries = (transaction, splitsByTransaction) => {
       splitId: null,
     },
   ];
+};
+
+const buildCategoryAmountsForTransaction = (
+  transaction,
+  splitsByTransaction,
+  categoryIds,
+) => {
+  const categoryAmounts = new Map();
+
+  getTransactionEntries(transaction, splitsByTransaction).forEach((entry) => {
+    if (!entry.categoryId || !categoryIds.has(entry.categoryId)) return;
+
+    const currentCategoryAmount = categoryAmounts.get(entry.categoryId) || {
+      amount: 0,
+      splitIds: [],
+      isSplitEntry: false,
+    };
+
+    currentCategoryAmount.amount += entry.amount;
+
+    if (entry.splitId) {
+      currentCategoryAmount.splitIds.push(entry.splitId);
+      currentCategoryAmount.isSplitEntry = true;
+    }
+
+    categoryAmounts.set(entry.categoryId, currentCategoryAmount);
+  });
+
+  return categoryAmounts;
 };
 
 const addToMetrics = (metrics, bucket, amount, countedId) => {
@@ -1009,6 +1043,7 @@ export function buildDashboardSpendingHistoryData({
 export function buildCategoryTotalsData({
   category,
   allTransactions = [],
+  transactionLinks = [],
   transactionSplits = [],
   recurringTransactions = [],
   realizedDatesMap = EMPTY_REALIZED_DATES,
@@ -1045,6 +1080,13 @@ export function buildCategoryTotalsData({
   ]);
   const totals = createMetrics();
   const splitsByTransaction = buildSplitsByTransactionId(transactionSplits);
+  const transactionLinkMap =
+    buildTransactionLinkMapByTransactionId(transactionLinks);
+  const allTransactionsById = new Map(
+    allTransactions.map((transaction) => [transaction.id, transaction]),
+  );
+  const categoryAmountsByTransactionId = new Map();
+  const processedLinkedCategoryKeys = new Set();
   const subcategoryTotals = new Map(
     (category.subcategories || []).map((subcategory) => [
       subcategory.id,
@@ -1078,6 +1120,21 @@ export function buildCategoryTotalsData({
     }
   };
 
+  const getCategoryAmountsForTransaction = (transaction) => {
+    if (!transaction) return new Map();
+    if (categoryAmountsByTransactionId.has(transaction.id)) {
+      return categoryAmountsByTransactionId.get(transaction.id);
+    }
+
+    const categoryAmounts = buildCategoryAmountsForTransaction(
+      transaction,
+      splitsByTransaction,
+      categoryIds,
+    );
+    categoryAmountsByTransactionId.set(transaction.id, categoryAmounts);
+    return categoryAmounts;
+  };
+
   allTransactions.forEach((transaction) => {
     const transactionDate = parseDateValue(transaction.date);
     if (!transactionDate) return;
@@ -1097,28 +1154,98 @@ export function buildCategoryTotalsData({
     if (!bucket) return;
     if (!showStateBreakdown && bucket !== 'completed') return;
 
-    const categoryAmounts = new Map();
-
-    getTransactionEntries(transaction, splitsByTransaction).forEach((entry) => {
-      if (!entry.categoryId || !categoryIds.has(entry.categoryId)) return;
-
-      const currentCategoryAmount = categoryAmounts.get(entry.categoryId) || {
-        amount: 0,
-        splitIds: [],
-        isSplitEntry: false,
-      };
-
-      currentCategoryAmount.amount += entry.amount;
-
-      if (entry.splitId) {
-        currentCategoryAmount.splitIds.push(entry.splitId);
-        currentCategoryAmount.isSplitEntry = true;
-      }
-
-      categoryAmounts.set(entry.categoryId, currentCategoryAmount);
-    });
+    const categoryAmounts = getCategoryAmountsForTransaction(transaction);
 
     categoryAmounts.forEach((categoryAmount, categoryId) => {
+      const transactionLink = transactionLinkMap.get(transaction.id) || null;
+      const linkedTransactionId = getLinkedTransactionId(
+        transactionLink,
+        transaction.id,
+      );
+      const linkedTransaction = linkedTransactionId
+        ? allTransactionsById.get(linkedTransactionId) || null
+        : null;
+      const linkedTransactionDate = linkedTransaction
+        ? parseDateValue(linkedTransaction.date)
+        : null;
+      const linkedBucket = linkedTransaction
+        ? getBucketForState(linkedTransaction.transactionState)
+        : null;
+      const linkedTransactionInScope =
+        linkedTransaction &&
+        linkedTransactionDate &&
+        linkedBucket &&
+        (showStateBreakdown || linkedBucket === 'completed') &&
+        linkedBucket === bucket &&
+        isDateInPeriod(
+          linkedTransactionDate,
+          resolvedPeriodConfig,
+          normalizedStartDate,
+          normalizedEndDate,
+        );
+      const linkedCategoryAmount = linkedTransactionInScope
+        ? getCategoryAmountsForTransaction(linkedTransaction).get(categoryId) ||
+          null
+        : null;
+
+      if (linkedTransaction && linkedCategoryAmount) {
+        const pairKey = buildLinkPairKey(transaction.id, linkedTransaction.id);
+        const pairCategoryKey = `${pairKey}:${categoryId}:${bucket}`;
+
+        if (processedLinkedCategoryKeys.has(pairCategoryKey)) {
+          return;
+        }
+
+        processedLinkedCategoryKeys.add(pairCategoryKey);
+
+        const primaryTransaction =
+          transactionLink?.sourceTransactionId === transaction.id
+            ? transaction
+            : linkedTransaction;
+        const secondaryTransaction =
+          primaryTransaction.id === transaction.id ? linkedTransaction : transaction;
+        const primaryCategoryAmount =
+          primaryTransaction.id === transaction.id
+            ? categoryAmount
+            : linkedCategoryAmount;
+        const secondaryCategoryAmount =
+          primaryTransaction.id === transaction.id
+            ? linkedCategoryAmount
+            : categoryAmount;
+
+        addCategoryAmount(
+          categoryId,
+          bucket,
+          primaryCategoryAmount.amount,
+          pairKey,
+          subcategoryTotals.has(categoryId)
+            ? {
+                id: `${pairKey}:${categoryId}`,
+                sourceType: 'linked-transaction',
+                transactionId: primaryTransaction.id,
+                linkedTransactionId: secondaryTransaction.id,
+                transactionIds: [primaryTransaction.id, secondaryTransaction.id],
+                date: primaryTransaction.date,
+                accountId: primaryTransaction.accountId ?? null,
+                linkedAccountId: secondaryTransaction.accountId ?? null,
+                accountIds: [
+                  primaryTransaction.accountId ?? null,
+                  secondaryTransaction.accountId ?? null,
+                ],
+                categoryId,
+                description:
+                  primaryTransaction.description ||
+                  secondaryTransaction.description ||
+                  '',
+                amount: primaryCategoryAmount.amount,
+                linkedAmount: secondaryCategoryAmount.amount,
+                transactionState: primaryTransaction.transactionState,
+              }
+            : null,
+        );
+        return;
+      }
+
       addCategoryAmount(
         categoryId,
         bucket,

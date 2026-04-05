@@ -7,6 +7,10 @@ import {
 } from '@luca-financial/luca-schema';
 import { format } from 'date-fns';
 import { migrateDataToSchema } from '@/utils/dataMigration';
+import {
+  normalizeRecurringTransactionLinks,
+  normalizeTransactionLinks,
+} from '@/utils/linking';
 
 const CANONICAL_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const SLASH_DATE_PATTERN = /^(\d{4})\/(\d{2})\/(\d{2})$/;
@@ -637,7 +641,9 @@ export const processLoadedData = (rawData, options = {}) => {
     statements: rawData.statements || [],
     recurringTransactions: rawData.recurringTransactions || [],
     recurringTransactionEvents: filteredEvents,
+    recurringTransactionLinks: rawData.recurringTransactionLinks || [],
     transactionSplits: rawData.transactionSplits || [],
+    transactionLinks: rawData.transactionLinks || [],
   };
 
   // 2. Migrate if needed
@@ -649,6 +655,35 @@ export const processLoadedData = (rawData, options = {}) => {
       changed = true;
       data = migrated.data;
     }
+  }
+
+  const normalizedRecurringTransactionLinks = normalizeRecurringTransactionLinks(
+    data.recurringTransactionLinks,
+    new Set((data.recurringTransactions || []).map((rule) => rule.id)),
+    new Map((data.recurringTransactions || []).map((rule) => [rule.id, rule])),
+  );
+  const normalizedTransactionLinks = normalizeTransactionLinks(
+    data.transactionLinks,
+    new Set((data.transactions || []).map((transaction) => transaction.id)),
+    new Map(
+      (data.transactions || []).map((transaction) => [transaction.id, transaction]),
+    ),
+  );
+
+  if (
+    JSON.stringify(normalizedRecurringTransactionLinks) !==
+    JSON.stringify(data.recurringTransactionLinks)
+  ) {
+    changed = true;
+    data.recurringTransactionLinks = normalizedRecurringTransactionLinks;
+  }
+
+  if (
+    JSON.stringify(normalizedTransactionLinks) !==
+    JSON.stringify(data.transactionLinks)
+  ) {
+    changed = true;
+    data.transactionLinks = normalizedTransactionLinks;
   }
 
   // 3. Validate collections

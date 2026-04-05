@@ -183,6 +183,36 @@ function handleEncryptedPersistence(action, state) {
     });
   }
 
+  // Handle transaction link actions
+  if (action.type === 'transactionLinks/addTransactionLink') {
+    queueWrite('transactionLinks', action.payload.id, action.payload);
+  } else if (action.type === 'transactionLinks/updateTransactionLink') {
+    queueWrite('transactionLinks', action.payload.id, action.payload);
+  } else if (action.type === 'transactionLinks/setTransactionLinks') {
+    if (currentDEK && currentUserId) {
+      const transactionLinkRecords = action.payload.map((transactionLink) => ({
+        id: transactionLink.id,
+        data: transactionLink,
+      }));
+      batchStoreUserEncryptedRecords(
+        'transactionLinks',
+        transactionLinkRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error(
+          'Failed to persist transaction links to IndexedDB:',
+          error,
+        );
+      });
+    }
+  } else if (action.type === 'transactionLinks/removeTransactionLink') {
+    const transactionLinkId = action.payload;
+    db.transactionLinks.delete(transactionLinkId).catch((error) => {
+      console.error('Failed to delete transaction link from IndexedDB:', error);
+    });
+  }
+
   // Handle category actions
   if (action.type === 'categories/addCategory') {
     queueWrite('categories', action.payload.id, action.payload);
@@ -305,6 +335,10 @@ function handleEncryptedPersistence(action, state) {
   ) {
     queueWrite('recurringTransactionEvents', action.payload.id, action.payload);
   } else if (
+    action.type === 'recurringTransactionEvents/updateRecurringTransactionEvent'
+  ) {
+    queueWrite('recurringTransactionEvents', action.payload.id, action.payload);
+  } else if (
     action.type === 'recurringTransactionEvents/setRecurringTransactionEvents'
   ) {
     if (currentDEK && currentUserId) {
@@ -334,6 +368,59 @@ function handleEncryptedPersistence(action, state) {
         error,
       );
     });
+  }
+
+  // Handle recurring transaction link actions
+  if (
+    action.type === 'recurringTransactionLinks/addRecurringTransactionLink'
+  ) {
+    queueWrite(
+      'recurringTransactionLinks',
+      action.payload.id,
+      action.payload,
+    );
+  } else if (
+    action.type === 'recurringTransactionLinks/updateRecurringTransactionLink'
+  ) {
+    queueWrite(
+      'recurringTransactionLinks',
+      action.payload.id,
+      action.payload,
+    );
+  } else if (
+    action.type === 'recurringTransactionLinks/setRecurringTransactionLinks'
+  ) {
+    if (currentDEK && currentUserId) {
+      const recurringTransactionLinkRecords = action.payload.map(
+        (recurringTransactionLink) => ({
+          id: recurringTransactionLink.id,
+          data: recurringTransactionLink,
+        }),
+      );
+      batchStoreUserEncryptedRecords(
+        'recurringTransactionLinks',
+        recurringTransactionLinkRecords,
+        currentDEK,
+        currentUserId,
+      ).catch((error) => {
+        console.error(
+          'Failed to persist recurring transaction links to IndexedDB:',
+          error,
+        );
+      });
+    }
+  } else if (
+    action.type === 'recurringTransactionLinks/removeRecurringTransactionLink'
+  ) {
+    const recurringTransactionLinkId = action.payload;
+    db.recurringTransactionLinks
+      .delete(recurringTransactionLinkId)
+      .catch((error) => {
+        console.error(
+          'Failed to delete recurring transaction link from IndexedDB:',
+          error,
+        );
+      });
   }
 
   // Handle transaction split actions

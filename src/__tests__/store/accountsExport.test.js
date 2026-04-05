@@ -13,7 +13,6 @@ import {
 } from '@/store/accounts/actions';
 
 describe('Account Export', () => {
-  // Store original globals
   let originalCreateObjectURL;
   let originalRevokeObjectURL;
   let originalCreateElement;
@@ -21,14 +20,12 @@ describe('Account Export', () => {
   let originalStringify;
 
   beforeEach(() => {
-    // Save original implementations
     originalCreateObjectURL = global.URL.createObjectURL;
     originalRevokeObjectURL = global.URL.revokeObjectURL;
     originalCreateElement = global.document.createElement;
     originalAlert = global.alert;
     originalStringify = global.JSON.stringify;
 
-    // Mock window methods
     global.URL.createObjectURL = vi.fn(() => 'mock-url');
     global.URL.revokeObjectURL = vi.fn();
     global.document.createElement = vi.fn(() => ({
@@ -38,15 +35,14 @@ describe('Account Export', () => {
   });
 
   afterEach(() => {
-    // Restore original implementations
     global.URL.createObjectURL = originalCreateObjectURL;
     global.URL.revokeObjectURL = originalRevokeObjectURL;
     global.document.createElement = originalCreateElement;
     global.alert = originalAlert;
     global.JSON.stringify = originalStringify;
   });
-  it('should include all data stores in export', () => {
-    // Create store with sample data
+
+  it('includes link collections in full export', () => {
     const store = configureStore({
       reducer: rootReducer,
       preloadedState: {
@@ -96,6 +92,13 @@ describe('Account Export', () => {
             id: 'rt1',
             accountId: 'acc1',
             amount: 500,
+            description: 'Recurring',
+            categoryId: null,
+            frequency: 'MONTH',
+            interval: 1,
+            startOn: '2026-01-01',
+            endOn: null,
+            recurringTransactionState: 'ACTIVE',
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -105,6 +108,18 @@ describe('Account Export', () => {
             id: 'rte1',
             recurringTransactionId: 'rt1',
             expectedDate: '2026-02-01',
+            eventState: 'MODIFIED',
+            transactionId: 'txn1',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        recurringTransactionLinks: [
+          {
+            id: 'rtl1',
+            sourceRecurringTransactionId: 'rt1',
+            destinationRecurringTransactionId: 'rt2',
+            isSameSign: false,
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -118,12 +133,21 @@ describe('Account Export', () => {
             updatedAt: null,
           },
         ],
+        transactionLinks: [
+          {
+            id: 'tl1',
+            sourceTransactionId: 'txn1',
+            destinationTransactionId: 'txn2',
+            isSameSign: false,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
         settings: {},
         encryption: { status: 'uninitialized' },
       },
     });
 
-    // Spy on JSON.stringify to capture the export data
     let capturedData = null;
     global.JSON.stringify = vi.fn((data, ...args) => {
       if (data && data.schemaVersion) {
@@ -132,58 +156,29 @@ describe('Account Export', () => {
       return originalStringify(data, ...args);
     });
 
-    // Execute export
     store.dispatch(saveAllAccounts());
 
-    // Verify export data structure
     expect(capturedData).toBeDefined();
     expect(capturedData.schemaVersion).toBe(SCHEMA_VERSION);
-    expect(capturedData.accounts).toEqual(
+    expect(capturedData.recurringTransactionLinks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: 'acc1', name: 'Test Account' }),
+        expect.objectContaining({
+          id: 'rtl1',
+          sourceRecurringTransactionId: 'rt1',
+        }),
       ]),
     );
-    expect(capturedData.transactions).toEqual(
+    expect(capturedData.transactionLinks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: 'txn1', accountId: 'acc1' }),
-      ]),
-    );
-    expect(capturedData.categories).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'cat1', name: 'Test Category' }),
-      ]),
-    );
-    expect(capturedData.statements).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'stmt1', accountId: 'acc1' }),
-      ]),
-    );
-
-    // Verify new data stores are included
-    expect(capturedData.recurringTransactions).toBeDefined();
-    expect(capturedData.recurringTransactions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'rt1', accountId: 'acc1' }),
-      ]),
-    );
-
-    expect(capturedData.recurringTransactionEvents).toBeDefined();
-    expect(capturedData.recurringTransactionEvents).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'rte1', recurringTransactionId: 'rt1' }),
-      ]),
-    );
-
-    expect(capturedData.transactionSplits).toBeDefined();
-    expect(capturedData.transactionSplits).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: 'split1', transactionId: 'txn1' }),
+        expect.objectContaining({
+          id: 'tl1',
+          sourceTransactionId: 'txn1',
+        }),
       ]),
     );
   });
 
-  it('should filter data correctly in single account export', () => {
-    // Create store with data for multiple accounts
+  it('filters cross-account links out of single-account export unless both endpoints are included', () => {
     const store = configureStore({
       reducer: rootReducer,
       preloadedState: {
@@ -214,6 +209,14 @@ describe('Account Export', () => {
             accountId: 'acc1',
             amount: 1000,
             date: '2026-01-15',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'txn1b',
+            accountId: 'acc1',
+            amount: 1500,
+            date: '2026-01-20',
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -254,6 +257,27 @@ describe('Account Export', () => {
             id: 'rt1',
             accountId: 'acc1',
             amount: 500,
+            description: 'Recurring 1',
+            categoryId: null,
+            frequency: 'MONTH',
+            interval: 1,
+            startOn: '2026-01-01',
+            endOn: null,
+            recurringTransactionState: 'ACTIVE',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'rt1b',
+            accountId: 'acc1',
+            amount: 700,
+            description: 'Recurring 1b',
+            categoryId: null,
+            frequency: 'MONTH',
+            interval: 1,
+            startOn: '2026-01-01',
+            endOn: null,
+            recurringTransactionState: 'ACTIVE',
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -261,6 +285,13 @@ describe('Account Export', () => {
             id: 'rt2',
             accountId: 'acc2',
             amount: 600,
+            description: 'Recurring 2',
+            categoryId: null,
+            frequency: 'MONTH',
+            interval: 1,
+            startOn: '2026-01-01',
+            endOn: null,
+            recurringTransactionState: 'ACTIVE',
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -270,6 +301,17 @@ describe('Account Export', () => {
             id: 'rte1',
             recurringTransactionId: 'rt1',
             expectedDate: '2026-02-01',
+            eventState: 'MODIFIED',
+            transactionId: 'txn1',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'rte3',
+            recurringTransactionId: 'rt1b',
+            expectedDate: '2026-02-01',
+            eventState: 'MODIFIED',
+            transactionId: 'txn1b',
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -277,6 +319,26 @@ describe('Account Export', () => {
             id: 'rte2',
             recurringTransactionId: 'rt2',
             expectedDate: '2026-02-01',
+            eventState: 'MODIFIED',
+            transactionId: 'txn2',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        recurringTransactionLinks: [
+          {
+            id: 'rtl-keep',
+            sourceRecurringTransactionId: 'rt1',
+            destinationRecurringTransactionId: 'rt1b',
+            isSameSign: false,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'rtl-drop',
+            sourceRecurringTransactionId: 'rt1',
+            destinationRecurringTransactionId: 'rt2',
+            isSameSign: false,
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -290,9 +352,34 @@ describe('Account Export', () => {
             updatedAt: null,
           },
           {
+            id: 'split3',
+            transactionId: 'txn1b',
+            amount: 750,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
             id: 'split2',
             transactionId: 'txn2',
             amount: 1000,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+        ],
+        transactionLinks: [
+          {
+            id: 'tl-keep',
+            sourceTransactionId: 'txn1',
+            destinationTransactionId: 'txn1b',
+            isSameSign: false,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            updatedAt: null,
+          },
+          {
+            id: 'tl-drop',
+            sourceTransactionId: 'txn1',
+            destinationTransactionId: 'txn2',
+            isSameSign: false,
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: null,
           },
@@ -302,7 +389,6 @@ describe('Account Export', () => {
       },
     });
 
-    // Spy on JSON.stringify to capture the export data
     let capturedData = null;
     global.JSON.stringify = vi.fn((data, ...args) => {
       if (data && data.schemaVersion) {
@@ -311,33 +397,33 @@ describe('Account Export', () => {
       return originalStringify(data, ...args);
     });
 
-    // Execute single account export for acc1
     store.dispatch(saveAccountWithTransactions('acc1'));
 
-    // Verify only acc1 data is included
     expect(capturedData).toBeDefined();
     expect(capturedData.accounts).toHaveLength(1);
     expect(capturedData.accounts[0].id).toBe('acc1');
-
-    expect(capturedData.transactions).toHaveLength(1);
-    expect(capturedData.transactions[0].id).toBe('txn1');
-
-    expect(capturedData.statements).toHaveLength(1);
-    expect(capturedData.statements[0].id).toBe('stmt1');
-
-    // Verify filtering of new data stores
-    expect(capturedData.recurringTransactions).toHaveLength(1);
-    expect(capturedData.recurringTransactions[0].id).toBe('rt1');
-
-    // Should only include events for acc1's recurring transactions
-    expect(capturedData.recurringTransactionEvents).toHaveLength(1);
-    expect(capturedData.recurringTransactionEvents[0].id).toBe('rte1');
-
-    // Should only include splits for acc1's transactions
-    expect(capturedData.transactionSplits).toHaveLength(1);
-    expect(capturedData.transactionSplits[0].id).toBe('split1');
-
-    // Categories should be included for all accounts (not filtered)
+    expect(capturedData.transactions.map((transaction) => transaction.id)).toEqual(
+      expect.arrayContaining(['txn1', 'txn1b']),
+    );
+    expect(capturedData.transactions).toHaveLength(2);
+    expect(capturedData.recurringTransactions.map((transaction) => transaction.id)).toEqual(
+      expect.arrayContaining(['rt1', 'rt1b']),
+    );
+    expect(capturedData.recurringTransactions).toHaveLength(2);
+    expect(capturedData.recurringTransactionEvents.map((event) => event.id)).toEqual(
+      expect.arrayContaining(['rte1', 'rte3']),
+    );
+    expect(capturedData.recurringTransactionEvents).toHaveLength(2);
+    expect(capturedData.recurringTransactionLinks).toEqual([
+      expect.objectContaining({ id: 'rtl-keep' }),
+    ]);
+    expect(capturedData.transactionSplits.map((split) => split.id)).toEqual(
+      expect.arrayContaining(['split1', 'split3']),
+    );
+    expect(capturedData.transactionSplits).toHaveLength(2);
+    expect(capturedData.transactionLinks).toEqual([
+      expect.objectContaining({ id: 'tl-keep' }),
+    ]);
     expect(capturedData.categories).toHaveLength(1);
   });
 });

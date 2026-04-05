@@ -453,4 +453,63 @@ describe('spendingAnalytics', () => {
     expect(periods.availableYears).toContain(2026);
     expect(periods.availableYears).toContain(2027);
   });
+
+  it('collapses linked transaction pairs into one category total entry', () => {
+    const result = buildCategoryTotalsData({
+      category: {
+        id: 'transfers',
+        name: 'Transfers',
+        subcategories: [{ id: 'between-accounts', name: 'Between Accounts' }],
+      },
+      allTransactions: [
+        {
+          id: 'tx-transfer-a',
+          accountId: 'checking',
+          date: '2026-03-01',
+          amount: -2500,
+          categoryId: 'between-accounts',
+          description: 'Credit card payment - checking',
+          transactionState: 'COMPLETED',
+        },
+        {
+          id: 'tx-transfer-b',
+          accountId: 'card',
+          date: '2026-03-01',
+          amount: -2500,
+          categoryId: 'between-accounts',
+          description: 'Credit card payment - card',
+          transactionState: 'COMPLETED',
+        },
+      ],
+      transactionLinks: [
+        {
+          id: 'link-transfer',
+          sourceTransactionId: 'tx-transfer-a',
+          destinationTransactionId: 'tx-transfer-b',
+          isSameSign: true,
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: null,
+        },
+      ],
+      startDate: new Date('2026-03-01T00:00:00Z'),
+      endDate: new Date('2026-03-31T23:59:59Z'),
+      referenceDate: new Date('2026-04-03T12:00:00Z'),
+    });
+
+    expect(result.totals.completed).toBe(-2500);
+    expect(result.subcategoryTotals).toEqual([
+      expect.objectContaining({
+        id: 'between-accounts',
+        total: -2500,
+      }),
+    ]);
+    expect(result.subcategoryTotals[0].transactions).toEqual([
+      expect.objectContaining({
+        sourceType: 'linked-transaction',
+        transactionIds: ['tx-transfer-a', 'tx-transfer-b'],
+        accountIds: ['checking', 'card'],
+        amount: -2500,
+      }),
+    ]);
+  });
 });

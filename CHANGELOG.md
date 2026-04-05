@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-04-05
+
+### Added
+
+- Added cross-account transaction linking in the ledger and categories views, including direct reconcile-and-link flows for date, amount, state, description, and same-sign versus opposite-sign behavior.
+- Added recurring transaction linking across accounts, including recurring-rule reconciliation, linked-rule syncing, and automatic paired realization into linked real transactions.
+- Added transaction-link awareness to category totals so linked duplicate transfer/payment legs can be collapsed into a single real-world event in category analytics.
+- Added the dashboard-style account include/exclude filters to the Categories page so analytics can temporarily omit closed, escrow, or other selected accounts.
+
+### Changed
+
+- Updated transaction and recurring link records to use LucaSchema's required `isSameSign` field, with explicit sign-behavior controls in the linking dialogs and migration/load-time inference for older saved links.
+- Updated linked transaction syncing so date, amount, state, and description changes propagate through the stored link configuration instead of relying on sign inference alone.
+- Updated recurring realization so linked recurring rules create paired `PLANNED` transactions and carry their sign behavior into the realized transaction link automatically.
+- Improved transaction and recurring match selection to focus on cross-account candidates, surface top matches and near matches more intelligently, and use reconciliation flows instead of generic picker lists where appropriate.
+- Removed the outdated `Powerful Features` section from the welcome page.
+- Bumped application version to `2.9.0`. (#294)
+
+### Fixed
+
+- Fixed multiple transaction-link and recurring-link dialog crashes caused by missing reconciliation-panel imports and incorrect props after linking more than one pair in a session.
+- Fixed category-link selection so already linked transactions remain non-selectable even when their counterpart is filtered out of the current view.
+- Fixed categories and recurring-link workflows to use shared descriptions consistently across linked records.
+
 ## [2.8.0] - 2026-04-04
 
 ### Added

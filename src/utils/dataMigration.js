@@ -1,6 +1,11 @@
 import { AccountTypeOptions } from '@/store/accounts/constants';
 import { formatAccountType } from '@/store/accounts/utils';
 import { TransactionStateEnum } from '@/store/transactions/constants';
+import {
+  inferLinkIsSameSign,
+  normalizeRecurringTransactionLinks,
+  normalizeTransactionLinks,
+} from '@/utils/linking';
 
 const ACCOUNT_TYPE_MAP = new Map(
   AccountTypeOptions.flatMap((accountType) => [
@@ -253,6 +258,67 @@ const normalizeTransactionSplit = (transactionSplit, timestamp) => {
   return common;
 };
 
+const normalizeTransactionLink = (transactionLink, timestamp, options = {}) => {
+  let changed = false;
+  const normalized = { ...transactionLink };
+  const transactionMap = new Map(
+    (options.transactions || []).map((transaction) => [transaction.id, transaction]),
+  );
+
+  if (typeof normalized.isSameSign !== 'boolean') {
+    const sourceTransaction =
+      transactionMap.get(normalized.sourceTransactionId) || null;
+    const destinationTransaction =
+      transactionMap.get(normalized.destinationTransactionId) || null;
+    normalized.isSameSign = inferLinkIsSameSign(
+      sourceTransaction?.amount ?? 0,
+      destinationTransaction?.amount ?? 0,
+    );
+    changed = true;
+  }
+
+  const common = ensureCommonFields(normalized, timestamp);
+  return {
+    normalized: common.normalized,
+    changed: changed || common.changed,
+  };
+};
+
+const normalizeRecurringTransactionLink = (
+  recurringTransactionLink,
+  timestamp,
+  options = {},
+) => {
+  let changed = false;
+  const normalized = { ...recurringTransactionLink };
+  const recurringTransactionMap = new Map(
+    (options.recurringTransactions || []).map((transaction) => [
+      transaction.id,
+      transaction,
+    ]),
+  );
+
+  if (typeof normalized.isSameSign !== 'boolean') {
+    const sourceRecurringTransaction =
+      recurringTransactionMap.get(normalized.sourceRecurringTransactionId) ||
+      null;
+    const destinationRecurringTransaction =
+      recurringTransactionMap.get(normalized.destinationRecurringTransactionId) ||
+      null;
+    normalized.isSameSign = inferLinkIsSameSign(
+      sourceRecurringTransaction?.amount ?? 0,
+      destinationRecurringTransaction?.amount ?? 0,
+    );
+    changed = true;
+  }
+
+  const common = ensureCommonFields(normalized, timestamp);
+  return {
+    normalized: common.normalized,
+    changed: changed || common.changed,
+  };
+};
+
 const normalizeCollection = (records, normalizer, timestamp, options) => {
   let changed = false;
   const normalized = (records || []).map((record) => {
@@ -271,7 +337,9 @@ export const migrateDataToSchema = (
     statements = [],
     recurringTransactions = [],
     recurringTransactionEvents = [],
+    recurringTransactionLinks = [],
     transactionSplits = [],
+    transactionLinks = [],
   },
   options = {},
 ) => {
@@ -327,6 +395,17 @@ export const migrateDataToSchema = (
   changes.recurringTransactionEvents =
     migratedRecurringTransactionEvents.changed;
 
+  const migratedRecurringTransactionLinks = normalizeCollection(
+    recurringTransactionLinks,
+    normalizeRecurringTransactionLink,
+    timestamp,
+    {
+      ...options,
+      recurringTransactions: migratedRecurringTransactions.normalized,
+    },
+  );
+  changes.recurringTransactionLinks = migratedRecurringTransactionLinks.changed;
+
   const migratedTransactionSplits = normalizeCollection(
     transactionSplits,
     normalizeTransactionSplit,
@@ -334,6 +413,48 @@ export const migrateDataToSchema = (
     options,
   );
   changes.transactionSplits = migratedTransactionSplits.changed;
+
+  const migratedTransactionLinks = normalizeCollection(
+    transactionLinks,
+    normalizeTransactionLink,
+    timestamp,
+    {
+      ...options,
+      transactions: migratedTransactions.normalized,
+    },
+  );
+  changes.transactionLinks = migratedTransactionLinks.changed;
+
+  const normalizedRecurringTransactionLinks = normalizeRecurringTransactionLinks(
+    migratedRecurringTransactionLinks.normalized,
+    new Set(migratedRecurringTransactions.normalized.map((rule) => rule.id)),
+    new Map(
+      migratedRecurringTransactions.normalized.map((rule) => [rule.id, rule]),
+    ),
+  );
+  if (
+    JSON.stringify(normalizedRecurringTransactionLinks) !==
+    JSON.stringify(migratedRecurringTransactionLinks.normalized)
+  ) {
+    changes.recurringTransactionLinks = true;
+  }
+
+  const normalizedTransactionLinks = normalizeTransactionLinks(
+    migratedTransactionLinks.normalized,
+    new Set(migratedTransactions.normalized.map((transaction) => transaction.id)),
+    new Map(
+      migratedTransactions.normalized.map((transaction) => [
+        transaction.id,
+        transaction,
+      ]),
+    ),
+  );
+  if (
+    JSON.stringify(normalizedTransactionLinks) !==
+    JSON.stringify(migratedTransactionLinks.normalized)
+  ) {
+    changes.transactionLinks = true;
+  }
 
   const changed = Object.values(changes).some(Boolean);
 
@@ -345,7 +466,9 @@ export const migrateDataToSchema = (
       statements: migratedStatements.normalized,
       recurringTransactions: migratedRecurringTransactions.normalized,
       recurringTransactionEvents: migratedRecurringTransactionEvents.normalized,
+      recurringTransactionLinks: normalizedRecurringTransactionLinks,
       transactionSplits: migratedTransactionSplits.normalized,
+      transactionLinks: normalizedTransactionLinks,
     },
     changes,
     changed,
