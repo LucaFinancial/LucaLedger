@@ -19,7 +19,7 @@ export const COLORS = [
   '#673ab7',
 ];
 
-export const DEFAULT_SELECTION = { type: 'aggregate', value: 'last-3-months' };
+export const DEFAULT_SELECTION = { type: 'aggregate', value: 'current-month' };
 
 export const LEDGER_STATE_META = Object.freeze({
   completed: {

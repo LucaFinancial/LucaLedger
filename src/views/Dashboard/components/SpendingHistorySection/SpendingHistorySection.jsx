@@ -74,7 +74,7 @@ export default function SpendingHistorySection({ includedAccountIds = null }) {
         </Box>
       </AccordionSummary>
 
-      <AccordionDetails>
+      <AccordionDetails sx={{ pt: 2.5 }}>
         <SpendingPeriodControls
           activeSelection={activeSelection}
           availableYears={availableYears}
