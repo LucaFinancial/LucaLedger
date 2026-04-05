@@ -11,7 +11,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { Fragment } from 'react';
 import { format } from 'date-fns';
 
 const THREE_METRIC_ROW_SX = {
@@ -203,10 +202,13 @@ function SummaryMetricsRow({
 }
 
 function getComparisonValueColor(rowType, amount) {
+  if (rowType === 'cardPayments') {
+    return '#4caf50';
+  }
+
   if (
     rowType === 'outflow' ||
     rowType === 'cardCharges' ||
-    rowType === 'cardPayments' ||
     rowType === 'cardBalance'
   ) {
     return getExpenseColor(amount);
@@ -217,135 +219,151 @@ function getComparisonValueColor(rowType, amount) {
 
 function DetailedComparisonTable({ sections, formatCurrency }) {
   return (
-    <TableContainer
-      sx={{
-        border: '1px solid #e0e0e0',
-        borderRadius: 2,
-        overflowX: 'auto',
-      }}
-    >
-      <Table size='small' sx={{ minWidth: 760 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell
+    <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
+      {sections.map((section) => (
+        <Grid
+          key={section.title}
+          size={{ xs: 12, md: 6 }}
+          sx={{ display: 'flex' }}
+        >
+          <Paper
+            sx={{
+              width: '100%',
+              height: '100%',
+              border: '1px solid #e0e0e0',
+              borderRadius: 2,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box
               sx={{
-                fontWeight: 700,
-                width: '34%',
+                px: 2,
+                py: 1.25,
+                backgroundColor: '#f8fafc',
+                borderBottom: '1px solid #e0e0e0',
               }}
             >
-              Metric
-            </TableCell>
-            <TableCell align='right' sx={{ fontWeight: 700, color: '#2196f3' }}>
-              Current
-            </TableCell>
-            <TableCell align='right' sx={{ fontWeight: 700, color: '#ff9800' }}>
-              Remaining
-            </TableCell>
-            <TableCell align='right' sx={{ fontWeight: 700, color: '#9c27b0' }}>
-              End of Month Totals
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sections.map((section, sectionIndex) => (
-            <Fragment key={section.title}>
-              <TableRow
-                sx={{
-                  backgroundColor: '#f8fafc',
-                }}
-              >
-                <TableCell
-                  colSpan={4}
-                  sx={{
-                    fontWeight: 700,
-                    borderTop:
-                      sectionIndex === 0 ? 'none' : '2px solid #e0e0e0',
-                    color: 'text.primary',
-                  }}
-                >
-                  {section.title}
-                </TableCell>
-              </TableRow>
-              {section.rows.map((row) => (
-                <TableRow
-                  key={`${section.title}-${row.label}`}
-                  sx={
-                    row.emphasis
-                      ? {
-                          backgroundColor:
-                            row.emphasis === 'total'
-                              ? '#fafafa'
-                              : 'rgba(33, 150, 243, 0.04)',
-                        }
-                      : undefined
-                  }
-                >
-                  <TableCell
-                    component='th'
-                    scope='row'
-                    sx={{
-                      pl: row.emphasis ? 2 : 3,
-                    }}
-                  >
-                    <Typography
-                      variant='body2'
-                      sx={{ fontWeight: row.emphasis ? 700 : 600 }}
+              <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
+                {section.title}
+              </Typography>
+            </Box>
+
+            <TableContainer sx={{ flex: 1 }}>
+              <Table size='small' sx={{ tableLayout: 'fixed' }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ width: '34%' }} />
+                    <TableCell
+                      align='right'
+                      sx={{ fontWeight: 700, color: '#2196f3' }}
                     >
-                      {row.label}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <TooltipValue tooltip={row.tooltip}>
-                      <Typography
-                        variant='body2'
+                      Current
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{ fontWeight: 700, color: '#ff9800' }}
+                    >
+                      Remaining
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{ fontWeight: 700, color: '#9c27b0' }}
+                    >
+                      Totals
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {section.rows.map((row) => (
+                    <TableRow
+                      key={`${section.title}-${row.label}`}
+                      sx={
+                        row.emphasis
+                          ? {
+                              backgroundColor:
+                                row.emphasis === 'total'
+                                  ? '#fafafa'
+                                  : 'rgba(33, 150, 243, 0.04)',
+                            }
+                          : undefined
+                      }
+                    >
+                      <TableCell
+                        component='th'
+                        scope='row'
                         sx={{
-                          color: getComparisonValueColor(row.type, row.current),
-                          fontWeight: row.emphasis ? 700 : 600,
-                          whiteSpace: 'nowrap',
+                          pl: row.emphasis ? 2 : 3,
                         }}
                       >
-                        {formatCurrency(row.current)}
-                      </Typography>
-                    </TooltipValue>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <TooltipValue tooltip={row.tooltip}>
-                      <Typography
-                        variant='body2'
-                        sx={{
-                          color: getComparisonValueColor(
-                            row.type,
-                            row.remaining,
-                          ),
-                          fontWeight: row.emphasis ? 700 : 600,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {formatCurrency(row.remaining)}
-                      </Typography>
-                    </TooltipValue>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <TooltipValue tooltip={row.tooltip}>
-                      <Typography
-                        variant='body2'
-                        sx={{
-                          color: getComparisonValueColor(row.type, row.projected),
-                          fontWeight: row.emphasis ? 700 : 600,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {formatCurrency(row.projected)}
-                      </Typography>
-                    </TooltipValue>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                        <Typography
+                          variant='body2'
+                          sx={{ fontWeight: row.emphasis ? 700 : 600 }}
+                        >
+                          {row.label}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align='right'>
+                        <TooltipValue tooltip={row.tooltip}>
+                          <Typography
+                            variant='body2'
+                            sx={{
+                              color: getComparisonValueColor(
+                                row.type,
+                                row.current,
+                              ),
+                              fontWeight: row.emphasis ? 700 : 600,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatCurrency(row.current)}
+                          </Typography>
+                        </TooltipValue>
+                      </TableCell>
+                      <TableCell align='right'>
+                        <TooltipValue tooltip={row.tooltip}>
+                          <Typography
+                            variant='body2'
+                            sx={{
+                              color: getComparisonValueColor(
+                                row.type,
+                                row.remaining,
+                              ),
+                              fontWeight: row.emphasis ? 700 : 600,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatCurrency(row.remaining)}
+                          </Typography>
+                        </TooltipValue>
+                      </TableCell>
+                      <TableCell align='right'>
+                        <TooltipValue tooltip={row.tooltip}>
+                          <Typography
+                            variant='body2'
+                            sx={{
+                              color: getComparisonValueColor(
+                                row.type,
+                                row.projected,
+                              ),
+                              fontWeight: row.emphasis ? 700 : 600,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatCurrency(row.projected)}
+                          </Typography>
+                        </TooltipValue>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+      ))}
+    </Grid>
   );
 }
 
@@ -463,17 +481,7 @@ export default function MonthOverviewSummary({
             'Credits to included asset accounts that are not categorized as income, such as reimbursements and refunds.',
         },
         {
-          label: 'Deposits',
-          type: 'inflow',
-          current: currentDisplayMetrics.deposits,
-          remaining: remainingDisplayMetrics.deposits,
-          projected: projectedDisplayMetrics.deposits,
-          emphasis: 'subtotal',
-          tooltip:
-            'Asset-account income and credits only. This includes deposits to included asset accounts and excludes all credit card activity.',
-        },
-        {
-          label: 'Card Credits',
+          label: 'Credit Card Credits / Rewards',
           type: 'inflow',
           current: currentMonthTotals.creditCardCredits || 0,
           remaining: remainingMonthTotals.creditCardCredits || 0,
@@ -482,7 +490,7 @@ export default function MonthOverviewSummary({
             'Credits on credit card accounts, such as rewards, refunds, and statement credits.',
         },
         {
-          label: 'Income & Credits',
+          label: 'Total Income & Credits',
           type: 'inflow',
           current: currentMonthTotals.incomeAndCredits || 0,
           remaining: remainingMonthTotals.incomeAndCredits || 0,
@@ -490,6 +498,48 @@ export default function MonthOverviewSummary({
           emphasis: 'total',
           tooltip:
             'Overall income and credits across included accounts. This includes asset-account income, asset-account credits, and credit card rewards, refunds, and statement credits.',
+        },
+      ],
+    },
+    {
+      title: 'Credit Cards',
+      rows: [
+        {
+          label: 'Credit Card Payments',
+          type: 'cardPayments',
+          current: currentMonthTotals.creditCardPayments || 0,
+          remaining: remainingMonthTotals.creditCardPayments || 0,
+          projected: monthEndProjections.projectedCreditCardPayments || 0,
+          tooltip:
+            'Payments from included asset accounts to credit card accounts.',
+        },
+        {
+          label: 'Credit Card Credits / Rewards',
+          type: 'inflow',
+          current: currentMonthTotals.creditCardCredits || 0,
+          remaining: remainingMonthTotals.creditCardCredits || 0,
+          projected: monthEndProjections.projectedCreditCardCredits || 0,
+          tooltip:
+            'Credits on credit card accounts, such as rewards, refunds, and statement credits.',
+        },
+        {
+          label: 'Credit Card Charges',
+          type: 'cardCharges',
+          current: currentMonthTotals.creditCardExpenses || 0,
+          remaining: remainingMonthTotals.creditCardExpenses || 0,
+          projected: monthEndProjections.projectedCreditCardExpenses || 0,
+          tooltip:
+            'Positive transactions on included credit card accounts, such as purchases and fees.',
+        },
+        {
+          label: 'Credit Card Balance',
+          type: 'cardBalance',
+          current: combinedBalances.creditCardCurrent,
+          remaining: remainingMonthTotals.creditCardBalanceChange || 0,
+          projected: combinedBalances.creditCardProjected,
+          emphasis: 'total',
+          tooltip:
+            'Combined balance of included credit card accounts. The remaining column shows projected card balance change; the totals column shows projected ending card balance.',
         },
       ],
     },
@@ -506,7 +556,7 @@ export default function MonthOverviewSummary({
             'Expenses paid directly from included asset accounts. This excludes card payments and excludes spending charged to credit cards.',
         },
         {
-          label: 'Card Charges',
+          label: 'Credit Card Charges',
           type: 'cardCharges',
           current: currentMonthTotals.creditCardExpenses || 0,
           remaining: remainingMonthTotals.creditCardExpenses || 0,
@@ -527,49 +577,7 @@ export default function MonthOverviewSummary({
       ],
     },
     {
-      title: 'Credit Cards',
-      rows: [
-        {
-          label: 'Card Payments',
-          type: 'cardPayments',
-          current: currentMonthTotals.creditCardPayments || 0,
-          remaining: remainingMonthTotals.creditCardPayments || 0,
-          projected: monthEndProjections.projectedCreditCardPayments || 0,
-          tooltip:
-            'Payments from included asset accounts to credit card accounts.',
-        },
-        {
-          label: 'Card Credits',
-          type: 'inflow',
-          current: currentMonthTotals.creditCardCredits || 0,
-          remaining: remainingMonthTotals.creditCardCredits || 0,
-          projected: monthEndProjections.projectedCreditCardCredits || 0,
-          tooltip:
-            'Credits on credit card accounts, such as rewards, refunds, and statement credits.',
-        },
-        {
-          label: 'Card Charges',
-          type: 'cardCharges',
-          current: currentMonthTotals.creditCardExpenses || 0,
-          remaining: remainingMonthTotals.creditCardExpenses || 0,
-          projected: monthEndProjections.projectedCreditCardExpenses || 0,
-          tooltip:
-            'Positive transactions on included credit card accounts, such as purchases and fees.',
-        },
-        {
-          label: 'Card Balance',
-          type: 'cardBalance',
-          current: combinedBalances.creditCardCurrent,
-          remaining: remainingMonthTotals.creditCardBalanceChange || 0,
-          projected: combinedBalances.creditCardProjected,
-          emphasis: 'total',
-          tooltip:
-            'Combined balance of included credit card accounts. The remaining column shows projected card balance change; the totals column shows projected ending card balance.',
-        },
-      ],
-    },
-    {
-      title: 'Net Worth',
+      title: 'Income vs Expenses',
       rows: [
         {
           label: 'Income & Credits',
@@ -590,7 +598,7 @@ export default function MonthOverviewSummary({
             'Actual spending only: asset-account expenses plus credit card charges. This excludes credit card payments.',
         },
         {
-          label: 'Net Worth Change',
+          label: 'Net Income - Expenses',
           type: 'balance',
           current: currentMonthTotals.netFlow || 0,
           remaining: remainingMonthTotals.netFlow || 0,
@@ -808,13 +816,6 @@ export default function MonthOverviewSummary({
       </Grid>
 
       <Box sx={{ mt: 4 }}>
-        <Typography variant='subtitle1' sx={{ fontWeight: 'bold', mb: 0.5 }}>
-          Detailed Comparison
-        </Typography>
-        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Related metrics are grouped together below, with subtotal and total
-          rows placed under the pieces they summarize.
-        </Typography>
         <DetailedComparisonTable
           sections={detailedComparisonSections}
           formatCurrency={formatCurrency}
