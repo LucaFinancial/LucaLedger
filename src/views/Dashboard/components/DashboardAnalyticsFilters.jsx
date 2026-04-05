@@ -19,14 +19,6 @@ export default function DashboardAnalyticsFilters({
   onToggleAccount,
   onReset,
 }) {
-  const includedCount = accounts.filter((account) => {
-    if (excludeClosedAccounts && accountUtils.isAccountClosed(account)) {
-      return false;
-    }
-
-    return !excludedAccountIds.includes(account.id);
-  }).length;
-
   return (
     <Paper
       sx={{
@@ -46,38 +38,28 @@ export default function DashboardAnalyticsFilters({
           mb: 1,
         }}
       >
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 5 }}>
           <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-            Analytics Filters
+            Select Accounts to Include or Exclude from Analytics
           </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            UI only. Resets on refresh.
-          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={excludeClosedAccounts}
+                onChange={(event) =>
+                  onExcludeClosedAccountsChange(event.target.checked)
+                }
+                size='small'
+              />
+            }
+            label='Exclude closed accounts'
+            sx={{ mb: 1 }}
+          />
         </Box>
         <Button onClick={onReset} disabled={!hasActiveFilters}>
           Reset
         </Button>
       </Box>
-
-      <FormControlLabel
-        control={
-          <Switch
-            checked={excludeClosedAccounts}
-            onChange={(event) =>
-              onExcludeClosedAccountsChange(event.target.checked)
-            }
-            size='small'
-          />
-        }
-        label='Exclude closed accounts'
-        sx={{ mb: 1 }}
-      />
-
-      <Typography variant='caption' color='text.secondary'>
-        Included {includedCount} of {accounts.length} accounts. Escrow
-        accounts start excluded; click a chip to exclude or re-include an
-        account.
-      </Typography>
 
       <Box
         sx={{
