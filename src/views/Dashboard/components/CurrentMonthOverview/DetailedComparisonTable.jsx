@@ -14,7 +14,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import TooltipValue from './TooltipValue';
+import DetailedComparisonValueCell from './DetailedComparisonValueCell';
 import {
   getBalanceColor,
   getExpenseColor,
@@ -230,103 +230,37 @@ export default function DetailedComparisonTable({
                               {row.label}
                             </Typography>
                           </TableCell>
-                          <TableCell
-                            align='right'
-                            sx={{
-                              height:
-                                row.emphasis === 'total' ? '3.25rem' : undefined,
-                              boxSizing:
-                                row.emphasis === 'total'
-                                  ? 'border-box'
-                                  : undefined,
-                            }}
-                          >
-                            <TooltipValue tooltip={row.tooltip}>
-                              <Typography
-                                variant='body2'
-                                sx={{
-                                  color: getComparisonValueColor(
-                                    row.type,
-                                    row.current,
-                                  ),
-                                  fontWeight: row.emphasis ? 700 : 600,
-                                  fontSize:
-                                    row.emphasis === 'total'
-                                      ? '1rem'
-                                      : undefined,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {formatCurrency(row.current)}
-                              </Typography>
-                            </TooltipValue>
-                          </TableCell>
-                          <TableCell
-                            align='right'
-                            sx={{
-                              height:
-                                row.emphasis === 'total' ? '3.25rem' : undefined,
-                              boxSizing:
-                                row.emphasis === 'total'
-                                  ? 'border-box'
-                                  : undefined,
-                            }}
-                          >
-                            <TooltipValue tooltip={row.tooltip}>
-                              <Typography
-                                variant='body2'
-                                sx={{
-                                  color: getComparisonValueColor(
-                                    remainingDisplay.type,
-                                    remainingDisplay.value,
-                                  ),
-                                  fontWeight: row.emphasis ? 700 : 600,
-                                  fontSize:
-                                    row.emphasis === 'total'
-                                      ? '1rem'
-                                      : undefined,
-                                  whiteSpace: 'nowrap',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'flex-end',
-                                }}
-                              >
-                                {remainingDisplay.icon}
-                                {formatCurrency(remainingDisplay.value)}
-                              </Typography>
-                            </TooltipValue>
-                          </TableCell>
-                          <TableCell
-                            align='right'
-                            sx={{
-                              height:
-                                row.emphasis === 'total' ? '3.25rem' : undefined,
-                              boxSizing:
-                                row.emphasis === 'total'
-                                  ? 'border-box'
-                                  : undefined,
-                            }}
-                          >
-                            <TooltipValue tooltip={row.tooltip}>
-                              <Typography
-                                variant='body2'
-                                sx={{
-                                  color: getComparisonValueColor(
-                                    row.type,
-                                    row.projected,
-                                  ),
-                                  fontWeight: row.emphasis ? 700 : 600,
-                                  fontSize:
-                                    row.emphasis === 'total'
-                                      ? '1rem'
-                                      : undefined,
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                {formatCurrency(row.projected)}
-                              </Typography>
-                            </TooltipValue>
-                          </TableCell>
+                          <DetailedComparisonValueCell
+                            emphasis={row.emphasis}
+                            formatCurrency={formatCurrency}
+                            tooltip={row.tooltip}
+                            value={row.current}
+                            valueColor={getComparisonValueColor(
+                              row.type,
+                              row.current,
+                            )}
+                          />
+                          <DetailedComparisonValueCell
+                            emphasis={row.emphasis}
+                            formatCurrency={formatCurrency}
+                            icon={remainingDisplay.icon}
+                            tooltip={row.tooltip}
+                            value={remainingDisplay.value}
+                            valueColor={getComparisonValueColor(
+                              remainingDisplay.type,
+                              remainingDisplay.value,
+                            )}
+                          />
+                          <DetailedComparisonValueCell
+                            emphasis={row.emphasis}
+                            formatCurrency={formatCurrency}
+                            tooltip={row.tooltip}
+                            value={row.projected}
+                            valueColor={getComparisonValueColor(
+                              row.type,
+                              row.projected,
+                            )}
+                          />
                         </TableRow>
                       );
                     })}
