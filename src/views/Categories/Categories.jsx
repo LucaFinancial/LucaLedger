@@ -29,16 +29,23 @@ import {
   selectors,
   setCategories,
 } from '@/store/categories';
+import { selectors as accountSelectors } from '@/store/accounts';
 import CategoryDialog from '@/components/CategoryDialog';
 import CategoryResetConfirmModal from '@/components/CategoryResetConfirmModal';
 import CategoryDeleteConfirmModal from '@/components/CategoryDeleteConfirmModal';
+import DashboardAnalyticsFilters from '@/views/Dashboard/components/DashboardAnalyticsFilters';
 import { getDefaultCategories } from '@/utils/defaultCategories';
+import {
+  filterDashboardAccounts,
+  getDefaultExcludedDashboardAccountIds,
+} from '@/views/Dashboard/utils/dashboardUtils';
 import CategoryTotals from './CategoryTotals';
 import CategoryTree from './CategoryTree';
 
 export default function Categories() {
   const dispatch = useDispatch();
   const categories = useSelector(selectors.selectCategoriesHierarchical);
+  const accounts = useSelector(accountSelectors.selectAccounts);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState(0); // 0 = List View, 1 = Tree View
@@ -50,6 +57,13 @@ export default function Categories() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState(null); // { id, name, isSubcategory }
+  const [excludeClosedAccounts, setExcludeClosedAccounts] = useState(true);
+  const [manuallyExcludedAccountIds, setManuallyExcludedAccountIds] = useState(
+    [],
+  );
+  const [manuallyIncludedAccountIds, setManuallyIncludedAccountIds] = useState(
+    [],
+  );
 
   // Filter and sort categories based on search query
   const filteredCategories = useMemo(() => {
@@ -82,6 +96,76 @@ export default function Categories() {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [categories, searchQuery]);
+
+  const defaultExcludedAccountIds = useMemo(
+    () => getDefaultExcludedDashboardAccountIds(accounts),
+    [accounts],
+  );
+  const excludedAccountIds = useMemo(() => {
+    const excludedAccountIdSet = new Set(defaultExcludedAccountIds);
+
+    manuallyIncludedAccountIds.forEach((accountId) => {
+      excludedAccountIdSet.delete(accountId);
+    });
+    manuallyExcludedAccountIds.forEach((accountId) => {
+      excludedAccountIdSet.add(accountId);
+    });
+
+    return [...excludedAccountIdSet];
+  }, [
+    defaultExcludedAccountIds,
+    manuallyExcludedAccountIds,
+    manuallyIncludedAccountIds,
+  ]);
+  const includedAccountIds = useMemo(
+    () =>
+      filterDashboardAccounts(accounts, {
+        excludeClosedAccounts,
+        excludedAccountIds,
+      }).map((account) => account.id),
+    [accounts, excludeClosedAccounts, excludedAccountIds],
+  );
+  const handleToggleAccount = (accountId) => {
+    const isDefaultExcluded = defaultExcludedAccountIds.includes(accountId);
+    const isCurrentlyExcluded = excludedAccountIds.includes(accountId);
+
+    if (isCurrentlyExcluded) {
+      setManuallyExcludedAccountIds((currentExcludedIds) =>
+        currentExcludedIds.filter((id) => id !== accountId),
+      );
+
+      if (isDefaultExcluded) {
+        setManuallyIncludedAccountIds((currentIncludedIds) =>
+          currentIncludedIds.includes(accountId)
+            ? currentIncludedIds
+            : [...currentIncludedIds, accountId],
+        );
+      }
+
+      return;
+    }
+
+    setManuallyIncludedAccountIds((currentIncludedIds) =>
+      currentIncludedIds.filter((id) => id !== accountId),
+    );
+
+    if (!isDefaultExcluded) {
+      setManuallyExcludedAccountIds((currentExcludedIds) =>
+        currentExcludedIds.includes(accountId)
+          ? currentExcludedIds
+          : [...currentExcludedIds, accountId],
+      );
+    }
+  };
+  const handleResetFilters = () => {
+    setExcludeClosedAccounts(true);
+    setManuallyExcludedAccountIds([]);
+    setManuallyIncludedAccountIds([]);
+  };
+  const hasActiveFilters =
+    !excludeClosedAccounts ||
+    manuallyExcludedAccountIds.length > 0 ||
+    manuallyIncludedAccountIds.length > 0;
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -263,6 +347,19 @@ export default function Categories() {
         )}
       </Paper>
 
+      {viewMode === 0 && (
+        <DashboardAnalyticsFilters
+          accounts={accounts}
+          excludeClosedAccounts={excludeClosedAccounts}
+          excludedAccountIds={excludedAccountIds}
+          hasActiveFilters={hasActiveFilters}
+          onExcludeClosedAccountsChange={setExcludeClosedAccounts}
+          onToggleAccount={handleToggleAccount}
+          onReset={handleResetFilters}
+          title='Select Accounts to Include or Exclude from Category Totals'
+        />
+      )}
+
       {viewMode === 0 ? (
         <>
           {/* Categories List */}
@@ -443,7 +540,10 @@ export default function Categories() {
 
                       {/* Category Totals */}
                       <Box sx={{ flex: 1 }}>
-                        <CategoryTotals category={category} />
+                        <CategoryTotals
+                          category={category}
+                          includedAccountIds={includedAccountIds}
+                        />
                       </Box>
                     </Box>
                   </AccordionDetails>

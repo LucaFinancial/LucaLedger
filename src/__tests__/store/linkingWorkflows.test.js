@@ -376,6 +376,11 @@ describe('linking workflows', () => {
     );
 
     expect(realizedTransactions).toHaveLength(2);
+    expect(
+      realizedTransactions.every(
+        (transaction) => transaction.transactionState === 'PLANNED',
+      ),
+    ).toBe(true);
     expect(nextState.recurringTransactionEvents).toHaveLength(2);
     expect(nextState.transactionLinks).toHaveLength(2);
     expect(

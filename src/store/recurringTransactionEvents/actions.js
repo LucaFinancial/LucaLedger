@@ -22,7 +22,7 @@ const buildRecurringTransactionPayload = (recurringTransaction, occurrenceDate) 
     amount: recurringTransaction.amount,
     description: recurringTransaction.description,
     categoryId: recurringTransaction.categoryId,
-    transactionState: TransactionStateEnum.SCHEDULED,
+    transactionState: TransactionStateEnum.PLANNED,
   });
 
 const ensureOccurrenceRealized = ({

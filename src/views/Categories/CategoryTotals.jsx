@@ -50,6 +50,11 @@ import {
 import { TransactionStateEnum } from '@/store/transactions/constants';
 import { centsToDollars, doublePrecisionFormatString } from '@/utils';
 import {
+  filterRecurringTransactionsByAccountIds,
+  filterTransactionsByAccountIds,
+  filterTransactionSplitsByTransactionIds,
+} from '@/views/Dashboard/utils/dashboardUtils';
+import {
   buildSpendingSelectionFromDropdownValues,
   SPENDING_STATE_META,
   SPENDING_STATE_ORDER,
@@ -167,7 +172,7 @@ function sortTransactionDetailsForDirection(transactions, direction) {
   });
 }
 
-export default function CategoryTotals({ category }) {
+export default function CategoryTotals({ category, includedAccountIds = null }) {
   const defaultSelection = {
     type: 'aggregate',
     value: 'current-month',
@@ -227,21 +232,50 @@ export default function CategoryTotals({ category }) {
       }),
     [recurringProjection],
   );
+  const filteredTransactions = useMemo(() => {
+    if (!Array.isArray(includedAccountIds)) {
+      return allTransactions;
+    }
+
+    return filterTransactionsByAccountIds(allTransactions, includedAccountIds);
+  }, [allTransactions, includedAccountIds]);
+  const filteredTransactionIds = useMemo(
+    () => filteredTransactions.map((transaction) => transaction.id),
+    [filteredTransactions],
+  );
+  const filteredTransactionSplits = useMemo(
+    () =>
+      filterTransactionSplitsByTransactionIds(
+        transactionSplits,
+        filteredTransactionIds,
+      ),
+    [filteredTransactionIds, transactionSplits],
+  );
+  const filteredRecurringTransactions = useMemo(() => {
+    if (!Array.isArray(includedAccountIds)) {
+      return recurringTransactions;
+    }
+
+    return filterRecurringTransactionsByAccountIds(
+      recurringTransactions,
+      includedAccountIds,
+    );
+  }, [includedAccountIds, recurringTransactions]);
 
   const { availableMonths, availableYears } = useMemo(
     () =>
       buildAvailableSpendingPeriods({
-        allTransactions,
-        transactionSplits,
-        recurringTransactions,
+        allTransactions: filteredTransactions,
+        transactionSplits: filteredTransactionSplits,
+        recurringTransactions: filteredRecurringTransactions,
         realizedDatesMap,
         projectionEndDate,
         categoryIdFilter: (categoryId) => categoryIds.has(categoryId),
       }),
     [
-      allTransactions,
-      transactionSplits,
-      recurringTransactions,
+      filteredTransactions,
+      filteredTransactionSplits,
+      filteredRecurringTransactions,
       realizedDatesMap,
       projectionEndDate,
       categoryIds,
@@ -289,19 +323,19 @@ export default function CategoryTotals({ category }) {
     () =>
       buildCategoryTotalsData({
         category,
-        allTransactions,
+        allTransactions: filteredTransactions,
         transactionLinks,
-        transactionSplits,
-        recurringTransactions,
+        transactionSplits: filteredTransactionSplits,
+        recurringTransactions: filteredRecurringTransactions,
         realizedDatesMap,
         periodConfig,
       }),
     [
       category,
-      allTransactions,
+      filteredTransactions,
       transactionLinks,
-      transactionSplits,
-      recurringTransactions,
+      filteredTransactionSplits,
+      filteredRecurringTransactions,
       realizedDatesMap,
       periodConfig,
     ],

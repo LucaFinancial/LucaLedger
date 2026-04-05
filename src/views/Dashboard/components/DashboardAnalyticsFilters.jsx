@@ -18,6 +18,7 @@ export default function DashboardAnalyticsFilters({
   onExcludeClosedAccountsChange,
   onToggleAccount,
   onReset,
+  title = 'Select Accounts to Include or Exclude from Analytics',
 }) {
   return (
     <Paper
@@ -40,7 +41,7 @@ export default function DashboardAnalyticsFilters({
       >
         <Box sx={{ display: 'flex', flexDirection: 'row', gap: 5 }}>
           <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-            Select Accounts to Include or Exclude from Analytics
+            {title}
           </Typography>
           <FormControlLabel
             control={
