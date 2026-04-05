@@ -1083,6 +1083,7 @@ export default function CategoryTotals({ category, includedAccountIds = null }) 
                                         ),
                                       ));
                                   const canSelectForLinking =
+                                    !isLinkedDetail &&
                                     transaction.sourceType !== 'recurring' &&
                                     transaction.sourceType !== 'linked-transaction' &&
                                     Boolean(transaction.transactionId) &&
@@ -1194,9 +1195,11 @@ export default function CategoryTotals({ category, includedAccountIds = null }) 
                                         ) : (
                                           <Tooltip
                                             title={
-                                              canSelectForLinking
-                                                ? 'Select two transactions to link them.'
-                                                : 'Only realized transactions without splits can be linked.'
+                                              isLinkedDetail
+                                                ? 'This transaction is already linked.'
+                                                : canSelectForLinking
+                                                  ? 'Select two transactions to link them.'
+                                                  : 'Only realized transactions without splits can be linked.'
                                             }
                                           >
                                             <span>

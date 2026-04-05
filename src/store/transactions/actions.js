@@ -27,7 +27,11 @@ import {
   removeTransaction,
 } from './slice';
 
-const LINKED_TRANSACTION_SYNC_FIELDS = new Set(['date', 'amount']);
+const LINKED_TRANSACTION_SYNC_FIELDS = new Set([
+  'date',
+  'amount',
+  'transactionState',
+]);
 
 const buildProcessedUpdates = (updates) => {
   const processedUpdates = { ...updates };
@@ -179,7 +183,9 @@ export const updateTransactionProperty =
               ),
             }),
           }
-        : { date: value };
+        : property === 'date'
+          ? { date: value }
+          : { [property]: value };
 
     dispatch(
       updateTransactionNormalized({
@@ -236,14 +242,12 @@ export const removeTransactionById =
   };
 
 export const updateMultipleTransactionsStatus =
-  (transactionIds, newStatus) => (dispatch) => {
+  (transactionIds, newStatus) => (dispatch) =>
     dispatch(
-      updateMultipleTransactions({
-        transactionIds,
-        updates: { transactionState: newStatus },
+      updateMultipleTransactionsFields(transactionIds, {
+        transactionState: newStatus,
       }),
     );
-  };
 
 export const updateMultipleTransactionsFields =
   (transactionIds, updates) => async (dispatch, getState) => {

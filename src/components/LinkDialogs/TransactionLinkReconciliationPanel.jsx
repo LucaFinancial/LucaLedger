@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { TransactionStateEnum } from '@/store/transactions/constants';
 import {
   formatTransactionLinkCurrency,
   formatTransactionLinkDateLabel,
@@ -41,6 +42,9 @@ function TransactionSummaryCard({ title, transaction, accountName }) {
       <Typography variant='caption' color='text.secondary'>
         {formatTransactionLinkDateLabel(transaction.date)}
       </Typography>
+      <Typography variant='caption' color='text.secondary'>
+        State: {transaction.transactionState || 'UNKNOWN'}
+      </Typography>
       <Typography variant='body2' sx={{ fontWeight: 600 }}>
         {formatTransactionLinkCurrency(transaction.amount)}
       </Typography>
@@ -61,6 +65,8 @@ export default function TransactionLinkReconciliationPanel({
   onSelectedDateChange,
   selectedAbsoluteAmount,
   onSelectedAbsoluteAmountChange,
+  selectedTransactionState,
+  onSelectedTransactionStateChange,
   syncDescription,
   onSyncDescriptionChange,
   sharedDescription,
@@ -69,6 +75,8 @@ export default function TransactionLinkReconciliationPanel({
   const hasDateMismatch = sourceTransaction.date !== destinationTransaction.date;
   const hasAmountMismatch =
     Math.abs(sourceTransaction.amount) !== Math.abs(destinationTransaction.amount);
+  const hasStateMismatch =
+    sourceTransaction.transactionState !== destinationTransaction.transactionState;
   const hasDescriptionMismatch =
     String(sourceTransaction.description || '') !==
     String(destinationTransaction.description || '');
@@ -96,7 +104,10 @@ export default function TransactionLinkReconciliationPanel({
 
       {blockingReason ? (
         <Alert severity='error'>{blockingReason}</Alert>
-      ) : hasDateMismatch || hasAmountMismatch || hasDescriptionMismatch ? (
+      ) : hasDateMismatch ||
+        hasAmountMismatch ||
+        hasStateMismatch ||
+        hasDescriptionMismatch ? (
         <Alert severity='info'>
           Resolve any differences below, then save the link.
         </Alert>
@@ -157,6 +168,27 @@ export default function TransactionLinkReconciliationPanel({
             The selected absolute amount will be applied to both transactions
             while keeping each transaction&apos;s current sign.
           </Typography>
+        </FormControl>
+      )}
+
+      {hasStateMismatch && (
+        <FormControl>
+          <FormLabel>Which state is correct?</FormLabel>
+          <RadioGroup
+            value={selectedTransactionState}
+            onChange={(event) =>
+              onSelectedTransactionStateChange(event.target.value)
+            }
+          >
+            {Object.values(TransactionStateEnum).map((stateValue) => (
+              <FormControlLabel
+                key={stateValue}
+                value={stateValue}
+                control={<Radio />}
+                label={stateValue}
+              />
+            ))}
+          </RadioGroup>
         </FormControl>
       )}
 

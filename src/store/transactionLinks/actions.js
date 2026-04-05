@@ -148,6 +148,7 @@ export const reconcileAndSaveTransactionLinkPair =
     reconciledDate = null,
     reconciledAbsoluteAmount = null,
     reconciledDescription = null,
+    reconciledTransactionState = null,
   }) =>
   async (dispatch, getState) => {
     const state = getState();
@@ -193,10 +194,16 @@ export const reconcileAndSaveTransactionLinkPair =
       }
     }
 
+    if (reconciledTransactionState) {
+      nextSourceTransaction.transactionState = reconciledTransactionState;
+      nextDestinationTransaction.transactionState = reconciledTransactionState;
+    }
+
     if (
       nextSourceTransaction.date !== sourceTransaction.date ||
       nextSourceTransaction.amount !== sourceTransaction.amount ||
-      nextSourceTransaction.description !== sourceTransaction.description
+      nextSourceTransaction.description !== sourceTransaction.description ||
+      nextSourceTransaction.transactionState !== sourceTransaction.transactionState
     ) {
       dispatch(updateTransactionNormalized(nextSourceTransaction));
     }
@@ -204,7 +211,10 @@ export const reconcileAndSaveTransactionLinkPair =
     if (
       nextDestinationTransaction.date !== destinationTransaction.date ||
       nextDestinationTransaction.amount !== destinationTransaction.amount ||
-      nextDestinationTransaction.description !== destinationTransaction.description
+      nextDestinationTransaction.description !==
+        destinationTransaction.description ||
+      nextDestinationTransaction.transactionState !==
+        destinationTransaction.transactionState
     ) {
       dispatch(updateTransactionNormalized(nextDestinationTransaction));
     }

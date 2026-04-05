@@ -55,6 +55,7 @@ export default function SelectedTransactionLinkDialog({
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
+  const [selectedTransactionState, setSelectedTransactionState] = useState('');
   const [syncDescription, setSyncDescription] = useState(false);
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -109,6 +110,11 @@ export default function SelectedTransactionLinkDialog({
         Math.abs(sourceTransaction.amount ?? destinationTransaction.amount ?? 0),
       ),
     );
+    setSelectedTransactionState(
+      sourceTransaction.transactionState ??
+        destinationTransaction.transactionState ??
+        '',
+    );
     setSyncDescription(false);
     setSharedDescription(
       sourceTransaction.description ??
@@ -130,6 +136,7 @@ export default function SelectedTransactionLinkDialog({
           selectedAbsoluteAmount === ''
             ? null
             : Number.parseInt(selectedAbsoluteAmount, 10),
+        reconciledTransactionState: selectedTransactionState || null,
         reconciledDescription: syncDescription ? sharedDescription : null,
       }),
     );
@@ -170,6 +177,8 @@ export default function SelectedTransactionLinkDialog({
             onSelectedDateChange={setSelectedDate}
             selectedAbsoluteAmount={selectedAbsoluteAmount}
             onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
+            selectedTransactionState={selectedTransactionState}
+            onSelectedTransactionStateChange={setSelectedTransactionState}
             syncDescription={syncDescription}
             onSyncDescriptionChange={setSyncDescription}
             sharedDescription={sharedDescription}

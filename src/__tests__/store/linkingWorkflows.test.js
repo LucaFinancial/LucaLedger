@@ -156,6 +156,36 @@ describe('linking workflows', () => {
     ).toBe(7500);
   });
 
+  it('syncs linked transaction state when one side changes', async () => {
+    const store = createStore();
+    const sourceTransaction = store
+      .getState()
+      .transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      );
+
+    await store.dispatch(
+      transactionActions.updateTransactionProperty(
+        IDS.checkingAccount,
+        sourceTransaction,
+        'transactionState',
+        'PENDING',
+      ),
+    );
+
+    const nextState = store.getState();
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      ).transactionState,
+    ).toBe('PENDING');
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.cardTransaction,
+      ).transactionState,
+    ).toBe('PENDING');
+  });
+
   it('reconciles selected transactions before linking them', async () => {
     const store = createStore();
 
@@ -172,6 +202,7 @@ describe('linking workflows', () => {
           date: '2026-04-03',
           amount: -6200,
           description: 'Checking side',
+          transactionState: 'COMPLETED',
         },
       ),
     );
@@ -182,6 +213,7 @@ describe('linking workflows', () => {
           date: '2026-04-05',
           amount: 7400,
           description: 'Card side',
+          transactionState: 'PENDING',
         },
       ),
     );
@@ -192,6 +224,7 @@ describe('linking workflows', () => {
         destinationTransactionId: IDS.cardTransaction,
         reconciledDate: '2026-04-05',
         reconciledAbsoluteAmount: 7400,
+        reconciledTransactionState: 'PENDING',
         reconciledDescription: 'Matched transfer',
       }),
     );
@@ -206,6 +239,7 @@ describe('linking workflows', () => {
     ).toMatchObject({
       date: '2026-04-05',
       amount: -7400,
+      transactionState: 'PENDING',
       description: 'Matched transfer',
     });
     expect(
@@ -215,6 +249,7 @@ describe('linking workflows', () => {
     ).toMatchObject({
       date: '2026-04-05',
       amount: 7400,
+      transactionState: 'PENDING',
       description: 'Matched transfer',
     });
     expect(nextState.transactionLinks).toHaveLength(1);
