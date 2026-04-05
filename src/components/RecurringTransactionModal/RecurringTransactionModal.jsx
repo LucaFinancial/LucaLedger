@@ -15,9 +15,16 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
+import { Link as LinkIcon, LinkOff as LinkOffIcon } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format, parseISO, addYears } from 'date-fns';
+import { useDispatch, useSelector } from 'react-redux';
+import RecurringTransactionLinkDialog from '@/components/LinkDialogs/RecurringTransactionLinkDialog';
 import CategorySelect from '@/components/CategorySelect';
+import {
+  actions as recurringTransactionLinkActions,
+  selectors as recurringTransactionLinkSelectors,
+} from '@/store/recurringTransactionLinks';
 import { constants as recurringTransactionConstants } from '@/store/recurringTransactions';
 import config from '@/config';
 
@@ -46,7 +53,24 @@ export default function RecurringTransactionModal({
   onSave,
   transaction,
 }) {
+  const dispatch = useDispatch();
   const isEditing = Boolean(transaction);
+  const recurringTransactionLink = useSelector(
+    transaction?.id
+      ? recurringTransactionLinkSelectors.selectRecurringTransactionLinkByRecurringTransactionId(
+          transaction.id,
+        )
+      : () => null,
+  );
+  const linkedRecurringTransactionId =
+    transaction?.id && recurringTransactionLink
+      ? recurringTransactionLink.sourceRecurringTransactionId === transaction.id
+        ? recurringTransactionLink.destinationRecurringTransactionId
+        : recurringTransactionLink.destinationRecurringTransactionId ===
+            transaction.id
+          ? recurringTransactionLink.sourceRecurringTransactionId
+          : null
+      : null;
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -58,6 +82,7 @@ export default function RecurringTransactionModal({
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
   const [hasEndDate, setHasEndDate] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
   // Reset form when transaction changes
   useEffect(() => {
@@ -233,6 +258,43 @@ export default function RecurringTransactionModal({
               />
             )}
           </Box>
+
+          {isEditing && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
+            >
+              <Button
+                variant='outlined'
+                startIcon={<LinkIcon />}
+                onClick={() => setLinkDialogOpen(true)}
+              >
+                {recurringTransactionLink
+                  ? 'Change Linked Recurring Transaction'
+                  : 'Link Recurring Transaction'}
+              </Button>
+              {recurringTransactionLink && (
+                <Button
+                  variant='text'
+                  color='warning'
+                  startIcon={<LinkOffIcon />}
+                  onClick={() =>
+                    dispatch(
+                      recurringTransactionLinkActions.unlinkRecurringTransactionByRecurringTransactionId(
+                        transaction.id,
+                      ),
+                    )
+                  }
+                >
+                  Unlink
+                </Button>
+              )}
+            </Box>
+          )}
         </Box>
       </DialogContent>
       <DialogActions>
@@ -241,6 +303,12 @@ export default function RecurringTransactionModal({
           {isEditing ? 'Save' : 'Add'}
         </Button>
       </DialogActions>
+      <RecurringTransactionLinkDialog
+        open={linkDialogOpen}
+        onClose={() => setLinkDialogOpen(false)}
+        sourceRecurringTransactionId={transaction?.id || null}
+        preselectedRecurringTransactionId={linkedRecurringTransactionId}
+      />
     </Dialog>
   );
 }

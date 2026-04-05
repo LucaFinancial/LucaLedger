@@ -1,8 +1,10 @@
 import { Box, Button, TableCell, TextField, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
+import LinkedStatusIndicator from '@/components/LinkedIndicators/LinkedStatusIndicator';
+import { selectors as transactionLinkSelectors } from '@/store/transactionLinks';
 import { actions, constants } from '@/store/transactions';
 import { Cancel, Check } from '@mui/icons-material';
 import { LEDGER_COLUMN_STYLES } from '@/components/LedgerTable/ledgerColumnConfig';
@@ -13,6 +15,9 @@ export default function DescriptionCell({ transaction }) {
   const inputRef = useRef(null);
   const [edit, setEdit] = useState(false);
   const [description, setDescription] = useState(transaction.description);
+  const transactionLink = useSelector(
+    transactionLinkSelectors.selectTransactionLinkByTransactionId(transaction.id),
+  );
 
   const handleSave = () => {
     dispatch(
@@ -77,17 +82,24 @@ export default function DescriptionCell({ transaction }) {
           </Button>
         </Box>
       ) : (
-        <Typography
-          variant='body1'
-          style={{ cursor: 'pointer' }}
-          onClick={handleEdit}
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}
         >
-          {transaction.description === ''
-            ? 'Enter description here'
-            : transaction.description}
-        </Typography>
+          {transactionLink && (
+            <LinkedStatusIndicator title='This transaction is linked.' />
+          )}
+          <Typography
+            variant='body1'
+            style={{ cursor: 'pointer' }}
+            onClick={handleEdit}
+            noWrap
+          >
+            {transaction.description === ''
+              ? 'Enter description here'
+              : transaction.description}
+          </Typography>
+        </Box>
       )}
     </TableCell>
   );
 }
-

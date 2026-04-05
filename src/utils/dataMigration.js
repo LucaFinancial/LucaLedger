@@ -1,6 +1,10 @@
 import { AccountTypeOptions } from '@/store/accounts/constants';
 import { formatAccountType } from '@/store/accounts/utils';
 import { TransactionStateEnum } from '@/store/transactions/constants';
+import {
+  normalizeRecurringTransactionLinks,
+  normalizeTransactionLinks,
+} from '@/utils/linking';
 
 const ACCOUNT_TYPE_MAP = new Map(
   AccountTypeOptions.flatMap((accountType) => [
@@ -253,6 +257,19 @@ const normalizeTransactionSplit = (transactionSplit, timestamp) => {
   return common;
 };
 
+const normalizeTransactionLink = (transactionLink, timestamp) => {
+  const common = ensureCommonFields(transactionLink, timestamp);
+  return common;
+};
+
+const normalizeRecurringTransactionLink = (
+  recurringTransactionLink,
+  timestamp,
+) => {
+  const common = ensureCommonFields(recurringTransactionLink, timestamp);
+  return common;
+};
+
 const normalizeCollection = (records, normalizer, timestamp, options) => {
   let changed = false;
   const normalized = (records || []).map((record) => {
@@ -271,7 +288,9 @@ export const migrateDataToSchema = (
     statements = [],
     recurringTransactions = [],
     recurringTransactionEvents = [],
+    recurringTransactionLinks = [],
     transactionSplits = [],
+    transactionLinks = [],
   },
   options = {},
 ) => {
@@ -327,6 +346,14 @@ export const migrateDataToSchema = (
   changes.recurringTransactionEvents =
     migratedRecurringTransactionEvents.changed;
 
+  const migratedRecurringTransactionLinks = normalizeCollection(
+    recurringTransactionLinks,
+    normalizeRecurringTransactionLink,
+    timestamp,
+    options,
+  );
+  changes.recurringTransactionLinks = migratedRecurringTransactionLinks.changed;
+
   const migratedTransactionSplits = normalizeCollection(
     transactionSplits,
     normalizeTransactionSplit,
@@ -334,6 +361,36 @@ export const migrateDataToSchema = (
     options,
   );
   changes.transactionSplits = migratedTransactionSplits.changed;
+
+  const migratedTransactionLinks = normalizeCollection(
+    transactionLinks,
+    normalizeTransactionLink,
+    timestamp,
+    options,
+  );
+  changes.transactionLinks = migratedTransactionLinks.changed;
+
+  const normalizedRecurringTransactionLinks = normalizeRecurringTransactionLinks(
+    migratedRecurringTransactionLinks.normalized,
+    new Set(migratedRecurringTransactions.normalized.map((rule) => rule.id)),
+  );
+  if (
+    JSON.stringify(normalizedRecurringTransactionLinks) !==
+    JSON.stringify(migratedRecurringTransactionLinks.normalized)
+  ) {
+    changes.recurringTransactionLinks = true;
+  }
+
+  const normalizedTransactionLinks = normalizeTransactionLinks(
+    migratedTransactionLinks.normalized,
+    new Set(migratedTransactions.normalized.map((transaction) => transaction.id)),
+  );
+  if (
+    JSON.stringify(normalizedTransactionLinks) !==
+    JSON.stringify(migratedTransactionLinks.normalized)
+  ) {
+    changes.transactionLinks = true;
+  }
 
   const changed = Object.values(changes).some(Boolean);
 
@@ -345,7 +402,9 @@ export const migrateDataToSchema = (
       statements: migratedStatements.normalized,
       recurringTransactions: migratedRecurringTransactions.normalized,
       recurringTransactionEvents: migratedRecurringTransactionEvents.normalized,
+      recurringTransactionLinks: normalizedRecurringTransactionLinks,
       transactionSplits: migratedTransactionSplits.normalized,
+      transactionLinks: normalizedTransactionLinks,
     },
     changes,
     changed,

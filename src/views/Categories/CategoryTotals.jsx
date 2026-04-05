@@ -1,5 +1,7 @@
 import {
+  Button,
   Box,
+  Checkbox,
   IconButton,
   Paper,
   Table,
@@ -8,6 +10,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -16,8 +19,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { add, format, parseISO } from 'date-fns';
 
+import SelectedTransactionLinkDialog from '@/components/LinkDialogs/SelectedTransactionLinkDialog';
+import LinkedStatusIndicator from '@/components/LinkedIndicators/LinkedStatusIndicator';
 import RecurringTransactionModal from '@/components/RecurringTransactionModal';
 import SplitEditorModal from '@/components/SplitEditorModal';
 import SpendingPeriodControls from '@/components/SpendingPeriodControls';
@@ -32,6 +39,10 @@ import {
   actions as transactionSplitActions,
   selectors as transactionSplitSelectors,
 } from '@/store/transactionSplits';
+import {
+  actions as transactionLinkActions,
+  selectors as transactionLinkSelectors,
+} from '@/store/transactionLinks';
 import {
   actions as transactionActions,
   selectors as transactionSelectors,
@@ -173,6 +184,9 @@ export default function CategoryTotals({ category }) {
   const realizedDatesMap = useSelector(
     recurringTransactionEventSelectors.selectAllRealizedDatesMap,
   );
+  const transactionLinks = useSelector(
+    transactionLinkSelectors.selectActiveTransactionLinks,
+  );
   const recurringProjection = useSelector(
     settingsSelectors.selectRecurringProjection,
   );
@@ -186,6 +200,14 @@ export default function CategoryTotals({ category }) {
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const [selectedRecurringTransactionId, setSelectedRecurringTransactionId] =
     useState(null);
+  const [selectedLinkTransactionIds, setSelectedLinkTransactionIds] = useState(
+    new Set(),
+  );
+  const [linkDialogState, setLinkDialogState] = useState({
+    open: false,
+    sourceTransactionId: null,
+    destinationTransactionId: null,
+  });
   const [transactionSortDirection, setTransactionSortDirection] =
     useState('asc');
 
@@ -268,6 +290,7 @@ export default function CategoryTotals({ category }) {
       buildCategoryTotalsData({
         category,
         allTransactions,
+        transactionLinks,
         transactionSplits,
         recurringTransactions,
         realizedDatesMap,
@@ -276,6 +299,7 @@ export default function CategoryTotals({ category }) {
     [
       category,
       allTransactions,
+      transactionLinks,
       transactionSplits,
       recurringTransactions,
       realizedDatesMap,
@@ -449,6 +473,62 @@ export default function CategoryTotals({ category }) {
     setTransactionSortDirection((currentDirection) =>
       currentDirection === 'asc' ? 'desc' : 'asc',
     );
+  };
+
+  const handleToggleLinkSelection = (transactionId, isSelected) => {
+    setSelectedLinkTransactionIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      if (isSelected) {
+        nextIds.add(transactionId);
+      } else {
+        nextIds.delete(transactionId);
+      }
+      return nextIds;
+    });
+  };
+
+  const handleOpenSelectedLinkDialog = () => {
+    const [sourceTransactionId, destinationTransactionId] = Array.from(
+      selectedLinkTransactionIds,
+    );
+    setLinkDialogState({
+      open: true,
+      sourceTransactionId,
+      destinationTransactionId: destinationTransactionId || null,
+    });
+  };
+
+  const handleCloseLinkDialog = () => {
+    setLinkDialogState({
+      open: false,
+      sourceTransactionId: null,
+      destinationTransactionId: null,
+    });
+  };
+
+  const handleLinkDialogLinked = () => {
+    setSelectedLinkTransactionIds(new Set());
+  };
+
+  const handleUnlinkTransaction = async (transactionId) => {
+    await dispatch(
+      transactionLinkActions.unlinkTransactionByTransactionId(transactionId),
+    );
+    setSelectedLinkTransactionIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      nextIds.delete(transactionId);
+      return nextIds;
+    });
+  };
+
+  const formatAccountLabel = (transactionDetail) => {
+    if (Array.isArray(transactionDetail.accountIds)) {
+      return transactionDetail.accountIds
+        .map((accountId) => accountsById.get(accountId) || '--')
+        .join(' <-> ');
+    }
+
+    return accountsById.get(transactionDetail.accountId) || '--';
   };
 
   const detailColSpan = showStateBreakdown ? SPENDING_STATE_ORDER.length + 3 : 3;
@@ -711,12 +791,50 @@ export default function CategoryTotals({ category }) {
 
           {subcategoryTotals.length > 0 ? (
             <Box sx={{ overflow: 'auto' }}>
-              <Typography
-                variant='subtitle2'
-                sx={{ fontWeight: 'bold', mb: 1 }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                  mb: 1,
+                  flexWrap: 'wrap',
+                }}
               >
-                Subcategory Breakdown
-              </Typography>
+                <Typography variant='subtitle2' sx={{ fontWeight: 'bold' }}>
+                  Subcategory Breakdown
+                </Typography>
+                {selectedLinkTransactionIds.size > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
+                      {selectedLinkTransactionIds.size} selected
+                    </Typography>
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      startIcon={<LinkIcon />}
+                      disabled={selectedLinkTransactionIds.size !== 2}
+                      onClick={handleOpenSelectedLinkDialog}
+                    >
+                      Link Selected
+                    </Button>
+                    <Button
+                      variant='text'
+                      size='small'
+                      onClick={() => setSelectedLinkTransactionIds(new Set())}
+                    >
+                      Clear
+                    </Button>
+                  </Box>
+                )}
+              </Box>
 
               <Table size='small'>
                 <TableHead>
@@ -885,6 +1003,7 @@ export default function CategoryTotals({ category }) {
                             >
                               <TableHead>
                                 <TableRow>
+                                  <TableCell sx={{ fontWeight: 700 }} />
                                   <TableCell sx={{ fontWeight: 700 }}>
                                     <TableSortLabel
                                       active
@@ -907,6 +1026,9 @@ export default function CategoryTotals({ category }) {
                                   >
                                     Amount
                                   </TableCell>
+                                  <TableCell sx={{ fontWeight: 700 }}>
+                                    Link
+                                  </TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
@@ -914,6 +1036,24 @@ export default function CategoryTotals({ category }) {
                                   subcategory.transactions,
                                   transactionSortDirection,
                                 ).map((transaction) => {
+                                  const isLinkedDetail =
+                                    transaction.sourceType === 'linked-transaction' ||
+                                    (transaction.transactionId &&
+                                      Boolean(
+                                        transactionLinks.find(
+                                          (link) =>
+                                            link.sourceTransactionId ===
+                                              transaction.transactionId ||
+                                            link.destinationTransactionId ===
+                                              transaction.transactionId,
+                                        ),
+                                      ));
+                                  const canSelectForLinking =
+                                    transaction.sourceType !== 'recurring' &&
+                                    transaction.sourceType !== 'linked-transaction' &&
+                                    Boolean(transaction.transactionId) &&
+                                    (!transaction.splitIds ||
+                                      transaction.splitIds.length === 0);
                                   const isClickable =
                                     transaction.sourceType === 'recurring'
                                       ? recurringTransactionsById.has(
@@ -948,15 +1088,46 @@ export default function CategoryTotals({ category }) {
                                           : undefined,
                                       }}
                                     >
+                                      <TableCell
+                                        onClick={(event) =>
+                                          event.stopPropagation()
+                                        }
+                                      >
+                                        <Checkbox
+                                          checked={selectedLinkTransactionIds.has(
+                                            transaction.transactionId,
+                                          )}
+                                          disabled={!canSelectForLinking}
+                                          onChange={(event) =>
+                                            handleToggleLinkSelection(
+                                              transaction.transactionId,
+                                              event.target.checked,
+                                            )
+                                          }
+                                          size='small'
+                                        />
+                                      </TableCell>
                                       <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                         {formatTransactionDate(transaction.date)}
                                       </TableCell>
                                       <TableCell>
-                                        {accountsById.get(transaction.accountId) ||
-                                          '--'}
+                                        {formatAccountLabel(transaction)}
                                       </TableCell>
                                       <TableCell>
-                                        {transaction.description || '--'}
+                                        <Box
+                                          sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 0.75,
+                                          }}
+                                        >
+                                          {isLinkedDetail && (
+                                            <LinkedStatusIndicator title='This transaction is linked.' />
+                                          )}
+                                          <Typography variant='body2'>
+                                            {transaction.description || '--'}
+                                          </Typography>
+                                        </Box>
                                       </TableCell>
                                       <TableCell
                                         align='right'
@@ -967,6 +1138,43 @@ export default function CategoryTotals({ category }) {
                                         }}
                                       >
                                         {formatAmount(transaction.amount)}
+                                      </TableCell>
+                                      <TableCell
+                                        onClick={(event) =>
+                                          event.stopPropagation()
+                                        }
+                                      >
+                                        {isLinkedDetail && transaction.transactionId ? (
+                                          <Tooltip title='Unlink transaction'>
+                                            <IconButton
+                                              size='small'
+                                              onClick={() =>
+                                                handleUnlinkTransaction(
+                                                  transaction.transactionId,
+                                                )
+                                              }
+                                            >
+                                              <LinkOffIcon fontSize='small' />
+                                            </IconButton>
+                                          </Tooltip>
+                                        ) : (
+                                          <Tooltip
+                                            title={
+                                              canSelectForLinking
+                                                ? 'Select two transactions to link them.'
+                                                : 'Only realized transactions without splits can be linked.'
+                                            }
+                                          >
+                                            <span>
+                                              <IconButton
+                                                size='small'
+                                                disabled
+                                              >
+                                                <LinkIcon fontSize='small' />
+                                              </IconButton>
+                                            </span>
+                                          </Tooltip>
+                                        )}
                                       </TableCell>
                                     </TableRow>
                                   );
@@ -1001,6 +1209,14 @@ export default function CategoryTotals({ category }) {
         onClose={handleRecurringModalClose}
         onSave={handleRecurringModalSave}
         transaction={selectedRecurringTransaction}
+      />
+
+      <SelectedTransactionLinkDialog
+        open={linkDialogState.open}
+        onClose={handleCloseLinkDialog}
+        sourceTransactionId={linkDialogState.sourceTransactionId}
+        destinationTransactionId={linkDialogState.destinationTransactionId}
+        onLinked={handleLinkDialogLinked}
       />
     </Paper>
   );

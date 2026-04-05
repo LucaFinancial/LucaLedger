@@ -30,7 +30,9 @@ const migrateState = (persistedState) => {
       categories: isEncryptionActive ? [] : getDefaultCategories(),
       recurringTransactions: [],
       recurringTransactionEvents: [],
+      recurringTransactionLinks: [],
       transactionSplits: [],
+      transactionLinks: [],
     };
 
     return initialState;
@@ -114,8 +116,18 @@ const migrateState = (persistedState) => {
     needsPersist = true;
   }
 
+  if (!state.recurringTransactionLinks) {
+    state.recurringTransactionLinks = [];
+    needsPersist = true;
+  }
+
   if (!state.transactionSplits) {
     state.transactionSplits = [];
+    needsPersist = true;
+  }
+
+  if (!state.transactionLinks) {
+    state.transactionLinks = [];
     needsPersist = true;
   }
 
@@ -128,7 +140,9 @@ const migrateState = (persistedState) => {
       statements: state.statements || [],
       recurringTransactions: state.recurringTransactions || [],
       recurringTransactionEvents: state.recurringTransactionEvents || [],
+      recurringTransactionLinks: state.recurringTransactionLinks || [],
       transactionSplits: state.transactionSplits || [],
+      transactionLinks: state.transactionLinks || [],
     },
     {
       timestamp: migrationTimestamp,
@@ -143,7 +157,9 @@ const migrateState = (persistedState) => {
     state.recurringTransactions = migration.data.recurringTransactions;
     state.recurringTransactionEvents =
       migration.data.recurringTransactionEvents;
+    state.recurringTransactionLinks = migration.data.recurringTransactionLinks;
     state.transactionSplits = migration.data.transactionSplits;
+    state.transactionLinks = migration.data.transactionLinks;
     needsPersist = true;
   }
 

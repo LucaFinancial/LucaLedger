@@ -60,6 +60,14 @@ const recurringTransactionEvents = createSlice({
     addRecurringTransactionEvent: (state, action) => {
       state.push(cleanRecurringTransactionEvent(action.payload));
     },
+    updateRecurringTransactionEvent: (state, action) => {
+      const updatedEvent = cleanRecurringTransactionEvent(action.payload);
+      const index = state.findIndex((event) => event.id === updatedEvent.id);
+      if (index !== -1) {
+        updatedEvent.updatedAt = new Date().toISOString();
+        state[index] = { ...state[index], ...updatedEvent };
+      }
+    },
     removeRecurringTransactionEvent: (state, action) =>
       state.filter((event) => event.id !== action.payload),
     pruneOldEvents: (state, action) => {
@@ -81,6 +89,7 @@ export default recurringTransactionEvents.reducer;
 export const {
   setRecurringTransactionEvents,
   addRecurringTransactionEvent,
+  updateRecurringTransactionEvent,
   removeRecurringTransactionEvent,
   pruneOldEvents,
 } = recurringTransactionEvents.actions;

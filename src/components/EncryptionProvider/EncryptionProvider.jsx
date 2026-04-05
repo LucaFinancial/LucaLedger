@@ -20,7 +20,9 @@ import { setCategories } from '@/store/categories/slice';
 import { setStatements } from '@/store/statements/slice';
 import { setRecurringTransactions } from '@/store/recurringTransactions/slice';
 import { setRecurringTransactionEvents } from '@/store/recurringTransactionEvents/slice';
+import { setRecurringTransactionLinks } from '@/store/recurringTransactionLinks/slice';
 import { setTransactionSplits } from '@/store/transactionSplits/slice';
+import { setTransactionLinks } from '@/store/transactionLinks/slice';
 import { getDefaultCategories } from '@/utils/defaultCategories';
 import ValidationErrorsDialog from '@/components/ValidationErrorsDialog';
 import {
@@ -134,7 +136,9 @@ export default function EncryptionProvider() {
           encryptedStatements,
           encryptedRecurringTransactions,
           encryptedRecurringTransactionEvents,
+          encryptedRecurringTransactionLinks,
           encryptedTransactionSplits,
+          encryptedTransactionLinks,
         ] = await Promise.all([
           getUserEncryptedRecords('accounts', activeDEK, currentUser.id),
           getUserEncryptedRecords('transactions', activeDEK, currentUser.id),
@@ -151,10 +155,16 @@ export default function EncryptionProvider() {
             currentUser.id,
           ),
           getUserEncryptedRecords(
+            'recurringTransactionLinks',
+            activeDEK,
+            currentUser.id,
+          ),
+          getUserEncryptedRecords(
             'transactionSplits',
             activeDEK,
             currentUser.id,
           ),
+          getUserEncryptedRecords('transactionLinks', activeDEK, currentUser.id),
         ]);
 
         const rawData = {
@@ -165,7 +175,9 @@ export default function EncryptionProvider() {
           statements: encryptedStatements || [],
           recurringTransactions: encryptedRecurringTransactions || [],
           recurringTransactionEvents: encryptedRecurringTransactionEvents || [],
+          recurringTransactionLinks: encryptedRecurringTransactionLinks || [],
           transactionSplits: encryptedTransactionSplits || [],
+          transactionLinks: encryptedTransactionLinks || [],
         };
 
         const processed = await runValidationFlow(
@@ -185,7 +197,10 @@ export default function EncryptionProvider() {
         encryptedRecurringTransactions = processed.data.recurringTransactions;
         encryptedRecurringTransactionEvents =
           processed.data.recurringTransactionEvents;
+        encryptedRecurringTransactionLinks =
+          processed.data.recurringTransactionLinks;
         encryptedTransactionSplits = processed.data.transactionSplits;
+        encryptedTransactionLinks = processed.data.transactionLinks;
 
         if (processed.changed) {
           const recordWrites = [
@@ -246,10 +261,30 @@ export default function EncryptionProvider() {
               currentUser.id,
             ),
             batchStoreUserEncryptedRecords(
+              'recurringTransactionLinks',
+              encryptedRecurringTransactionLinks.map(
+                (recurringTransactionLink) => ({
+                  id: recurringTransactionLink.id,
+                  data: recurringTransactionLink,
+                }),
+              ),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
               'transactionSplits',
               encryptedTransactionSplits.map((transactionSplit) => ({
                 id: transactionSplit.id,
                 data: transactionSplit,
+              })),
+              activeDEK,
+              currentUser.id,
+            ),
+            batchStoreUserEncryptedRecords(
+              'transactionLinks',
+              encryptedTransactionLinks.map((transactionLink) => ({
+                id: transactionLink.id,
+                data: transactionLink,
               })),
               activeDEK,
               currentUser.id,
@@ -292,7 +327,13 @@ export default function EncryptionProvider() {
             encryptedRecurringTransactionEvents || [],
           ),
         );
+        dispatch(
+          setRecurringTransactionLinks(
+            encryptedRecurringTransactionLinks || [],
+          ),
+        );
         dispatch(setTransactionSplits(encryptedTransactionSplits || []));
+        dispatch(setTransactionLinks(encryptedTransactionLinks || []));
 
         setDataLoaded(true);
       } catch (error) {
@@ -327,7 +368,9 @@ export default function EncryptionProvider() {
       dispatch(setStatements([]));
       dispatch(setRecurringTransactions([]));
       dispatch(setRecurringTransactionEvents([]));
+      dispatch(setRecurringTransactionLinks([]));
       dispatch(setTransactionSplits([]));
+      dispatch(setTransactionLinks([]));
       dispatch(setEncryptionStatus(EncryptionStatus.UNENCRYPTED));
       dispatch(setAuthStatus(AuthStatus.UNAUTHENTICATED));
     }

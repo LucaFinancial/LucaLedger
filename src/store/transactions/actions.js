@@ -13,6 +13,12 @@ import {
 import config from '@/config';
 import { deleteEncryptedRecord } from '@/crypto/database';
 import { removeRecurringTransactionEvent } from '@/store/recurringTransactionEvents/slice';
+import { actions as transactionLinkActions, selectors as transactionLinkSelectors } from '@/store/transactionLinks';
+import {
+  getCounterpartAmountForLinkedPair,
+  getLinkedTransactionId,
+  getSignOrientation,
+} from '@/utils/linking';
 import { generateTransaction } from './generators';
 import {
   addTransaction,
@@ -20,6 +26,31 @@ import {
   updateMultipleTransactions,
   removeTransaction,
 } from './slice';
+
+const LINKED_TRANSACTION_SYNC_FIELDS = new Set(['date', 'amount']);
+
+const buildProcessedUpdates = (updates) => {
+  const processedUpdates = { ...updates };
+  if (
+    updates.date &&
+    typeof updates.date === 'object' &&
+    updates.date instanceof Date
+  ) {
+    processedUpdates.date = format(updates.date, config.dateFormatString);
+  }
+
+  return processedUpdates;
+};
+
+const removeDanglingTransactionLinkIfNeeded = async (
+  dispatch,
+  transactionLink,
+  linkedTransaction,
+) => {
+  if (transactionLink && !linkedTransaction) {
+    await dispatch(transactionLinkActions.removeTransactionLinkById(transactionLink.id));
+  }
+};
 
 export const createNewTransaction = (accountId) => (dispatch) => {
   const newTransaction = generateTransaction({ accountId });
@@ -102,13 +133,60 @@ export const createRepeatTransaction = createAsyncThunk(
 );
 
 export const updateTransactionProperty =
-  (accountId, transaction, property, value) => (dispatch) => {
+  (accountId, transaction, property, value) => async (dispatch, getState) => {
+    const state = getState();
+    const transactionLink = transactionLinkSelectors.selectTransactionLinkByTransactionId(
+      transaction.id,
+    )(state);
+    const linkedTransactionId = getLinkedTransactionId(
+      transactionLink,
+      transaction.id,
+    );
+    const linkedTransaction = linkedTransactionId
+      ? state.transactions.find((candidate) => candidate.id === linkedTransactionId)
+      : null;
+
+    await removeDanglingTransactionLinkIfNeeded(
+      dispatch,
+      transactionLink,
+      linkedTransaction,
+    );
+
     const updatedTransaction = {
       ...transaction,
       [property]: value,
     };
 
     dispatch(updateTransactionNormalized(updatedTransaction));
+
+    if (
+      !LINKED_TRANSACTION_SYNC_FIELDS.has(property) ||
+      !transactionLink ||
+      !linkedTransaction
+    ) {
+      return;
+    }
+
+    const linkedUpdates =
+      property === 'amount'
+        ? {
+            amount: getCounterpartAmountForLinkedPair({
+              sourceAmount: value,
+              counterpartAmount: linkedTransaction.amount,
+              orientation: getSignOrientation(
+                transaction.amount,
+                linkedTransaction.amount,
+              ),
+            }),
+          }
+        : { date: value };
+
+    dispatch(
+      updateTransactionNormalized({
+        ...linkedTransaction,
+        ...linkedUpdates,
+      }),
+    );
   };
 
 export const removeTransactionById =
@@ -119,6 +197,10 @@ export const removeTransactionById =
     const recurringEvent = state.recurringTransactionEvents?.find(
       (event) => event.transactionId === transaction.id,
     );
+    const transactionLink =
+      transactionLinkSelectors.selectTransactionLinkByTransactionId(
+        transaction.id,
+      )(state);
 
     // Handle encrypted data if enabled
     const isEncrypted = state.encryption?.status === 'encrypted';
@@ -143,6 +225,10 @@ export const removeTransactionById =
     // Remove the transaction from state
     dispatch(removeTransaction(transaction.id));
 
+    if (transactionLink) {
+      await dispatch(transactionLinkActions.removeTransactionLinkById(transactionLink.id));
+    }
+
     // Remove the linked recurring transaction event if it exists
     if (recurringEvent) {
       dispatch(removeRecurringTransactionEvent(recurringEvent.id));
@@ -160,21 +246,111 @@ export const updateMultipleTransactionsStatus =
   };
 
 export const updateMultipleTransactionsFields =
-  (transactionIds, updates) => (dispatch) => {
-    // Process date if present - convert Date object to string format
-    const processedUpdates = { ...updates };
-    if (
-      updates.date &&
-      typeof updates.date === 'object' &&
-      updates.date instanceof Date
-    ) {
-      processedUpdates.date = format(updates.date, config.dateFormatString);
+  (transactionIds, updates) => async (dispatch, getState) => {
+    const processedUpdates = buildProcessedUpdates(updates);
+    const state = getState();
+    const hasLinkedFieldUpdate = Object.keys(processedUpdates).some((field) =>
+      LINKED_TRANSACTION_SYNC_FIELDS.has(field),
+    );
+
+    if (!hasLinkedFieldUpdate) {
+      dispatch(
+        updateMultipleTransactions({
+          transactionIds,
+          updates: processedUpdates,
+        }),
+      );
+      return;
     }
 
-    dispatch(
-      updateMultipleTransactions({
-        transactionIds,
-        updates: processedUpdates,
-      }),
-    );
+    const transactionLinkMap =
+      transactionLinkSelectors.selectTransactionLinkMapByTransactionId(state);
+    const updatesByTransactionId = new Map();
+    const processedLinkIds = new Set();
+
+    transactionIds.forEach((transactionId) => {
+      const transaction = state.transactions.find(
+        (candidate) => candidate.id === transactionId,
+      );
+      if (!transaction) return;
+
+      const transactionLink = transactionLinkMap.get(transactionId) || null;
+
+      if (!transactionLink) {
+        updatesByTransactionId.set(transaction.id, {
+          ...(updatesByTransactionId.get(transaction.id) || {}),
+          ...processedUpdates,
+        });
+        return;
+      }
+
+      if (processedLinkIds.has(transactionLink.id)) {
+        return;
+      }
+
+      processedLinkIds.add(transactionLink.id);
+
+      const linkedTransactionId = getLinkedTransactionId(
+        transactionLink,
+        transaction.id,
+      );
+      const linkedTransaction = state.transactions.find(
+        (candidate) => candidate.id === linkedTransactionId,
+      );
+
+      if (!linkedTransaction) {
+        updatesByTransactionId.set(transaction.id, {
+          ...(updatesByTransactionId.get(transaction.id) || {}),
+          ...processedUpdates,
+        });
+        dispatch(transactionLinkActions.removeTransactionLinkById(transactionLink.id));
+        return;
+      }
+
+      updatesByTransactionId.set(transaction.id, {
+        ...(updatesByTransactionId.get(transaction.id) || {}),
+        ...processedUpdates,
+      });
+
+      const linkedUpdates = { ...(updatesByTransactionId.get(linkedTransaction.id) || {}) };
+
+      if (typeof processedUpdates.date !== 'undefined') {
+        linkedUpdates.date = processedUpdates.date;
+      }
+
+      if (typeof processedUpdates.amount !== 'undefined') {
+        linkedUpdates.amount = getCounterpartAmountForLinkedPair({
+          sourceAmount: processedUpdates.amount,
+          counterpartAmount: linkedTransaction.amount,
+          orientation: getSignOrientation(
+            transaction.amount,
+            linkedTransaction.amount,
+          ),
+        });
+      }
+
+      Object.entries(processedUpdates).forEach(([field, fieldValue]) => {
+        if (!LINKED_TRANSACTION_SYNC_FIELDS.has(field)) {
+          // Non-sync fields stay local to the transaction that was explicitly edited.
+          return;
+        }
+        linkedUpdates[field] = linkedUpdates[field] ?? fieldValue;
+      });
+
+      updatesByTransactionId.set(linkedTransaction.id, linkedUpdates);
+    });
+
+    updatesByTransactionId.forEach((transactionUpdates, transactionId) => {
+      const transaction = state.transactions.find(
+        (candidate) => candidate.id === transactionId,
+      );
+      if (!transaction) return;
+
+      dispatch(
+        updateTransactionNormalized({
+          ...transaction,
+          ...transactionUpdates,
+        }),
+      );
+    });
   };

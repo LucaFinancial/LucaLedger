@@ -10,13 +10,18 @@ import {
   Tooltip,
   Chip,
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
+import { Add, Edit, Delete, Link, LinkOff } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   selectors as recurringTransactionSelectors,
   actions as recurringTransactionActions,
   constants as recurringTransactionConstants,
 } from '@/store/recurringTransactions';
+import {
+  selectors as recurringTransactionLinkSelectors,
+  actions as recurringTransactionLinkActions,
+} from '@/store/recurringTransactionLinks';
+import RecurringTransactionLinkDialog from '@/components/LinkDialogs/RecurringTransactionLinkDialog';
 import RecurringTransactionModal from '@/components/RecurringTransactionModal';
 
 const formatFrequency = (transaction) => {
@@ -59,11 +64,28 @@ export default function RecurringTransactionsPanel({ accountId }) {
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [linkDialogState, setLinkDialogState] = useState({
+    open: false,
+    sourceRecurringTransactionId: null,
+    preselectedRecurringTransactionId: null,
+  });
 
   const recurringTransactions = useSelector(
     recurringTransactionSelectors.selectRecurringTransactionsByAccountId(
       accountId,
     ),
+  );
+  const recurringTransactionLinks = useSelector(
+    recurringTransactionLinkSelectors.selectActiveRecurringTransactionLinks,
+  );
+  const recurringLinkMap = useMemo(
+    () =>
+      recurringTransactionLinks.reduce((map, link) => {
+        map.set(link.sourceRecurringTransactionId, link);
+        map.set(link.destinationRecurringTransactionId, link);
+        return map;
+      }, new Map()),
+    [recurringTransactionLinks],
   );
 
   const sortedTransactions = useMemo(
@@ -117,6 +139,36 @@ export default function RecurringTransactionsPanel({ accountId }) {
     setEditingTransaction(null);
   };
 
+  const handleOpenLinkDialog = (transaction) => {
+    const recurringTransactionLink = recurringLinkMap.get(transaction.id) || null;
+    const linkedRecurringTransactionId =
+      recurringTransactionLink?.sourceRecurringTransactionId === transaction.id
+        ? recurringTransactionLink.destinationRecurringTransactionId
+        : recurringTransactionLink?.destinationRecurringTransactionId || null;
+
+    setLinkDialogState({
+      open: true,
+      sourceRecurringTransactionId: transaction.id,
+      preselectedRecurringTransactionId: linkedRecurringTransactionId,
+    });
+  };
+
+  const handleCloseLinkDialog = () => {
+    setLinkDialogState({
+      open: false,
+      sourceRecurringTransactionId: null,
+      preselectedRecurringTransactionId: null,
+    });
+  };
+
+  const handleUnlinkClick = async (transaction) => {
+    await dispatch(
+      recurringTransactionLinkActions.unlinkRecurringTransactionByRecurringTransactionId(
+        transaction.id,
+      ),
+    );
+  };
+
   return (
     <Box>
       <Box
@@ -166,6 +218,26 @@ export default function RecurringTransactionsPanel({ accountId }) {
               }}
               secondaryAction={
                 <Box>
+                  <Tooltip title='Link recurring transaction'>
+                    <IconButton
+                      size='small'
+                      onClick={() => handleOpenLinkDialog(transaction)}
+                      color='primary'
+                    >
+                      <Link fontSize='small' />
+                    </IconButton>
+                  </Tooltip>
+                  {recurringLinkMap.has(transaction.id) && (
+                    <Tooltip title='Unlink recurring transaction'>
+                      <IconButton
+                        size='small'
+                        onClick={() => handleUnlinkClick(transaction)}
+                        color='warning'
+                      >
+                        <LinkOff fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <Tooltip title='Edit'>
                     <IconButton
                       size='small'
@@ -199,6 +271,14 @@ export default function RecurringTransactionsPanel({ accountId }) {
                     <Typography variant='body2' sx={{ fontWeight: 500 }}>
                       {transaction.description}
                     </Typography>
+                    {recurringLinkMap.has(transaction.id) && (
+                      <Chip
+                        size='small'
+                        label='Linked'
+                        color='primary'
+                        sx={{ fontSize: '0.7rem', height: 20 }}
+                      />
+                    )}
                     <Chip
                       size='small'
                       label={formatFrequency(transaction)}
@@ -229,7 +309,14 @@ export default function RecurringTransactionsPanel({ accountId }) {
         transaction={editingTransaction}
         accountId={accountId}
       />
+      <RecurringTransactionLinkDialog
+        open={linkDialogState.open}
+        onClose={handleCloseLinkDialog}
+        sourceRecurringTransactionId={linkDialogState.sourceRecurringTransactionId}
+        preselectedRecurringTransactionId={
+          linkDialogState.preselectedRecurringTransactionId
+        }
+      />
     </Box>
   );
 }
-
