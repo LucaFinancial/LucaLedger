@@ -278,7 +278,7 @@ export default function StatementSeparatorRow({
                         size='small'
                         onClick={handleSync}
                         color='warning'
-                        title='Sync Statement'
+                        aria-label='Sync Statement'
                       >
                         <Sync fontSize='small' />
                       </IconButton>
@@ -340,4 +340,3 @@ export default function StatementSeparatorRow({
     </>
   );
 }
-
