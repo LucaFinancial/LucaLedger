@@ -187,11 +187,8 @@ export const reconcileAndSaveTransactionLinkPair =
 
     if (typeof reconciledDescription === 'string') {
       const trimmedDescription = reconciledDescription.trim();
-
-      if (trimmedDescription !== '') {
-        nextSourceTransaction.description = trimmedDescription;
-        nextDestinationTransaction.description = trimmedDescription;
-      }
+      nextSourceTransaction.description = trimmedDescription;
+      nextDestinationTransaction.description = trimmedDescription;
     }
 
     if (reconciledTransactionState) {

@@ -1,9 +1,7 @@
 import {
   Alert,
   Box,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   FormLabel,
   Paper,
   Radio,
@@ -65,8 +63,6 @@ export default function RecurringTransactionLinkReconciliationPanel({
   onSelectedScheduleSourceChange,
   selectedAbsoluteAmount,
   onSelectedAbsoluteAmountChange,
-  syncDescription,
-  onSyncDescriptionChange,
   sharedDescription,
   onSharedDescriptionChange,
 }) {
@@ -179,27 +175,14 @@ export default function RecurringTransactionLinkReconciliationPanel({
         </FormControl>
       )}
 
-      <Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={syncDescription}
-              onChange={(event) => onSyncDescriptionChange(event.target.checked)}
-            />
-          }
-          label='Use the same description for both recurring transactions'
-        />
-        {syncDescription && (
-          <TextField
-            label='Shared description'
-            value={sharedDescription}
-            onChange={(event) => onSharedDescriptionChange(event.target.value)}
-            fullWidth
-            size='small'
-            sx={{ mt: 1 }}
-          />
-        )}
-      </Box>
+      <TextField
+        label='Shared description'
+        value={sharedDescription}
+        onChange={(event) => onSharedDescriptionChange(event.target.value)}
+        fullWidth
+        size='small'
+        helperText='This description will be applied to both linked recurring transactions.'
+      />
     </Box>
   );
 }

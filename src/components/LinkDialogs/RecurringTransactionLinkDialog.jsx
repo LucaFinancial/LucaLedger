@@ -82,7 +82,6 @@ export default function RecurringTransactionLinkDialog({
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [selectedScheduleSource, setSelectedScheduleSource] = useState('source');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
-  const [syncDescription, setSyncDescription] = useState(false);
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -372,7 +371,6 @@ export default function RecurringTransactionLinkDialog({
         ),
       ),
     );
-    setSyncDescription(false);
     setSharedDescription(
       sourceRecurringTransaction.description ??
         selectedCandidateRow.recurringTransaction.description ??
@@ -394,7 +392,7 @@ export default function RecurringTransactionLinkDialog({
               ? null
               : Number.parseInt(selectedAbsoluteAmount, 10),
           reconciledScheduleSource: selectedScheduleSource,
-          reconciledDescription: syncDescription ? sharedDescription : null,
+          reconciledDescription: sharedDescription,
         },
       ),
     );
@@ -449,7 +447,7 @@ export default function RecurringTransactionLinkDialog({
                     checked={showIneligible}
                     onChange={(event) =>
                       setShowIneligible(event.target.checked)
-                }
+                    }
                   />
                 }
                 label='Show near matches'
@@ -584,8 +582,6 @@ export default function RecurringTransactionLinkDialog({
                 onSelectedScheduleSourceChange={setSelectedScheduleSource}
                 selectedAbsoluteAmount={selectedAbsoluteAmount}
                 onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
-                syncDescription={syncDescription}
-                onSyncDescriptionChange={setSyncDescription}
                 sharedDescription={sharedDescription}
                 onSharedDescriptionChange={setSharedDescription}
               />
@@ -604,8 +600,7 @@ export default function RecurringTransactionLinkDialog({
           variant='contained'
           disabled={
             !selectedTargetId ||
-            !selectedCandidateRow?.selectable ||
-            (syncDescription && sharedDescription.trim() === '')
+            !selectedCandidateRow?.selectable
           }
         >
           Save Link

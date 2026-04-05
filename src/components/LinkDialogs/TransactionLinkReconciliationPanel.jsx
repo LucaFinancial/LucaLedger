@@ -1,9 +1,7 @@
 import {
   Alert,
   Box,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   FormLabel,
   Paper,
   Radio,
@@ -67,8 +65,6 @@ export default function TransactionLinkReconciliationPanel({
   onSelectedAbsoluteAmountChange,
   selectedTransactionState,
   onSelectedTransactionStateChange,
-  syncDescription,
-  onSyncDescriptionChange,
   sharedDescription,
   onSharedDescriptionChange,
 }) {
@@ -192,27 +188,14 @@ export default function TransactionLinkReconciliationPanel({
         </FormControl>
       )}
 
-      <Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={syncDescription}
-              onChange={(event) => onSyncDescriptionChange(event.target.checked)}
-            />
-          }
-          label='Use the same description for both transactions'
-        />
-        {syncDescription && (
-          <TextField
-            label='Shared description'
-            value={sharedDescription}
-            onChange={(event) => onSharedDescriptionChange(event.target.value)}
-            fullWidth
-            size='small'
-            sx={{ mt: 1 }}
-          />
-        )}
-      </Box>
+      <TextField
+        label='Shared description'
+        value={sharedDescription}
+        onChange={(event) => onSharedDescriptionChange(event.target.value)}
+        fullWidth
+        size='small'
+        helperText='This description will be applied to both linked transactions.'
+      />
     </Box>
   );
 }

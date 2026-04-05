@@ -22,6 +22,7 @@ const LINKED_RECURRING_SYNC_FIELDS = new Set([
   'interval',
   'endOn',
   'recurringTransactionState',
+  'description',
 ]);
 
 /**

@@ -56,7 +56,6 @@ export default function SelectedTransactionLinkDialog({
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
   const [selectedTransactionState, setSelectedTransactionState] = useState('');
-  const [syncDescription, setSyncDescription] = useState(false);
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -115,7 +114,6 @@ export default function SelectedTransactionLinkDialog({
         destinationTransaction.transactionState ??
         '',
     );
-    setSyncDescription(false);
     setSharedDescription(
       sourceTransaction.description ??
         destinationTransaction.description ??
@@ -137,7 +135,7 @@ export default function SelectedTransactionLinkDialog({
             ? null
             : Number.parseInt(selectedAbsoluteAmount, 10),
         reconciledTransactionState: selectedTransactionState || null,
-        reconciledDescription: syncDescription ? sharedDescription : null,
+        reconciledDescription: sharedDescription,
       }),
     );
 
@@ -153,8 +151,7 @@ export default function SelectedTransactionLinkDialog({
   const isSaveDisabled =
     !sourceTransaction ||
     !destinationTransaction ||
-    Boolean(blockingReason) ||
-    (syncDescription && sharedDescription.trim() === '');
+    Boolean(blockingReason);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='md'>
@@ -179,8 +176,6 @@ export default function SelectedTransactionLinkDialog({
             onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
             selectedTransactionState={selectedTransactionState}
             onSelectedTransactionStateChange={setSelectedTransactionState}
-            syncDescription={syncDescription}
-            onSyncDescriptionChange={setSyncDescription}
             sharedDescription={sharedDescription}
             onSharedDescriptionChange={setSharedDescription}
           />

@@ -207,10 +207,8 @@ export const reconcileAndSaveRecurringTransactionLinkPair =
 
     if (typeof reconciledDescription === 'string') {
       const trimmedDescription = reconciledDescription.trim();
-      if (trimmedDescription !== '') {
-        nextSourceRecurringTransaction.description = trimmedDescription;
-        nextDestinationRecurringTransaction.description = trimmedDescription;
-      }
+      nextSourceRecurringTransaction.description = trimmedDescription;
+      nextDestinationRecurringTransaction.description = trimmedDescription;
     }
 
     if (

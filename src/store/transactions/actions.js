@@ -31,6 +31,7 @@ const LINKED_TRANSACTION_SYNC_FIELDS = new Set([
   'date',
   'amount',
   'transactionState',
+  'description',
 ]);
 
 const buildProcessedUpdates = (updates) => {

@@ -186,6 +186,36 @@ describe('linking workflows', () => {
     ).toBe('PENDING');
   });
 
+  it('syncs linked transaction description when one side changes', async () => {
+    const store = createStore();
+    const sourceTransaction = store
+      .getState()
+      .transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      );
+
+    await store.dispatch(
+      transactionActions.updateTransactionProperty(
+        IDS.checkingAccount,
+        sourceTransaction,
+        'description',
+        'Matched linked description',
+      ),
+    );
+
+    const nextState = store.getState();
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      ).description,
+    ).toBe('Matched linked description');
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.cardTransaction,
+      ).description,
+    ).toBe('Matched linked description');
+  });
+
   it('reconciles selected transactions before linking them', async () => {
     const store = createStore();
 
@@ -276,7 +306,7 @@ describe('linking workflows', () => {
     expect(store.getState().transactionLinks).toEqual([]);
   });
 
-  it('syncs recurring rule schedule fields and amount while keeping description independent', async () => {
+  it('syncs recurring rule schedule fields, amount, and description', async () => {
     const store = createStore();
 
     await store.dispatch(
@@ -303,7 +333,7 @@ describe('linking workflows', () => {
     );
 
     expect(checkingRule.description).toBe('Changed on checking only');
-    expect(cardRule.description).toBe('Recurring payment in');
+    expect(cardRule.description).toBe('Changed on checking only');
     expect(cardRule.amount).toBe(9000);
     expect(cardRule.startOn).toBe('2026-05-01');
     expect(cardRule.frequency).toBe('WEEK');

@@ -77,7 +77,6 @@ export default function TransactionLinkDialog({
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
   const [selectedTransactionState, setSelectedTransactionState] = useState('');
-  const [syncDescription, setSyncDescription] = useState(false);
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -338,7 +337,6 @@ export default function TransactionLinkDialog({
         selectedCandidateRow.transaction.transactionState ??
         '',
     );
-    setSyncDescription(false);
     setSharedDescription(
       sourceTransaction.description ??
         selectedCandidateRow.transaction.description ??
@@ -360,7 +358,7 @@ export default function TransactionLinkDialog({
             ? null
             : Number.parseInt(selectedAbsoluteAmount, 10),
         reconciledTransactionState: selectedTransactionState || null,
-        reconciledDescription: syncDescription ? sharedDescription : null,
+        reconciledDescription: sharedDescription,
       }),
     );
 
@@ -541,8 +539,6 @@ export default function TransactionLinkDialog({
                 onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
                 selectedTransactionState={selectedTransactionState}
                 onSelectedTransactionStateChange={setSelectedTransactionState}
-                syncDescription={syncDescription}
-                onSyncDescriptionChange={setSyncDescription}
                 sharedDescription={sharedDescription}
                 onSharedDescriptionChange={setSharedDescription}
               />
@@ -559,8 +555,7 @@ export default function TransactionLinkDialog({
           variant='contained'
           disabled={
             !selectedTargetId ||
-            !selectedCandidateRow?.selectable ||
-            (syncDescription && sharedDescription.trim() === '')
+            !selectedCandidateRow?.selectable
           }
         >
           Save Link
