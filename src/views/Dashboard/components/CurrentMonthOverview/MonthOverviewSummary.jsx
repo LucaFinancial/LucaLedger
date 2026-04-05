@@ -378,9 +378,9 @@ function DetailedComparisonTable({ sections, formatCurrency }) {
                               icon: null,
                             };
 
-                      return (
-                        <TableRow
-                          key={`${section.title}-${row.label}`}
+                    return (
+                      <TableRow
+                        key={`${section.title}-${row.label}`}
                           sx={
                             row.emphasis
                               ? {
@@ -392,11 +392,18 @@ function DetailedComparisonTable({ sections, formatCurrency }) {
                               : undefined
                           }
                         >
+                          {/** Keep total rows visually identical across sections, including icon rows. */}
                           <TableCell
                             component='th'
                             scope='row'
                             sx={{
                               pl: row.emphasis ? 2 : 3,
+                              height:
+                                row.emphasis === 'total' ? '3.25rem' : undefined,
+                              boxSizing:
+                                row.emphasis === 'total'
+                                  ? 'border-box'
+                                  : undefined,
                             }}
                           >
                             <Typography
@@ -406,7 +413,17 @@ function DetailedComparisonTable({ sections, formatCurrency }) {
                               {row.label}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell
+                            align='right'
+                            sx={{
+                              height:
+                                row.emphasis === 'total' ? '3.25rem' : undefined,
+                              boxSizing:
+                                row.emphasis === 'total'
+                                  ? 'border-box'
+                                  : undefined,
+                            }}
+                          >
                             <TooltipValue tooltip={row.tooltip}>
                               <Typography
                                 variant='body2'
@@ -427,7 +444,17 @@ function DetailedComparisonTable({ sections, formatCurrency }) {
                               </Typography>
                             </TooltipValue>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell
+                            align='right'
+                            sx={{
+                              height:
+                                row.emphasis === 'total' ? '3.25rem' : undefined,
+                              boxSizing:
+                                row.emphasis === 'total'
+                                  ? 'border-box'
+                                  : undefined,
+                            }}
+                          >
                             <TooltipValue tooltip={row.tooltip}>
                               <Typography
                                 variant='body2'
@@ -452,7 +479,17 @@ function DetailedComparisonTable({ sections, formatCurrency }) {
                               </Typography>
                             </TooltipValue>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell
+                            align='right'
+                            sx={{
+                              height:
+                                row.emphasis === 'total' ? '3.25rem' : undefined,
+                              boxSizing:
+                                row.emphasis === 'total'
+                                  ? 'border-box'
+                                  : undefined,
+                            }}
+                          >
                             <TooltipValue tooltip={row.tooltip}>
                               <Typography
                                 variant='body2'
