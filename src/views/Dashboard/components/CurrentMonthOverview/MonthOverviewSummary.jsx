@@ -1,12 +1,54 @@
+import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ArrowDropUp as ArrowDropUpIcon,
+} from '@mui/icons-material';
 import { Box, Grid, Paper, Typography } from '@mui/material';
+import { format } from 'date-fns';
+import DetailedComparisonTable from './DetailedComparisonTable';
+import OverviewPeriodCard from './OverviewPeriodCard';
+import {
+  buildDetailedComparisonSections,
+  buildDisplayMetrics,
+  CARD_METRIC_TOOLTIPS,
+  getBalanceColor,
+  getCreditCardBalanceColor,
+} from './monthOverviewSummaryUtils';
 
 export default function MonthOverviewSummary({
+  dateRanges,
+  combinedBalances,
   monthEndProjections,
   currentMonthTotals,
   remainingMonthTotals,
-  totals,
   formatCurrency,
 }) {
+  const currentDisplayMetrics = buildDisplayMetrics(currentMonthTotals);
+  const remainingDisplayMetrics = buildDisplayMetrics(remainingMonthTotals);
+  const projectedDisplayMetrics = buildDisplayMetrics({
+    income: monthEndProjections.projectedIncome,
+    cashCredits: monthEndProjections.projectedCashCredits,
+    creditCardCredits: monthEndProjections.projectedCreditCardCredits,
+    creditCardPayments: monthEndProjections.projectedCreditCardPayments,
+    cashOutflows: monthEndProjections.projectedCashOutflows,
+    expenses: monthEndProjections.projectedExpenses,
+    creditCardExpenses: monthEndProjections.projectedCreditCardExpenses,
+  });
+  const detailedComparisonSections = buildDetailedComparisonSections({
+    combinedBalances,
+    currentMonthTotals,
+    monthEndProjections,
+    remainingMonthTotals,
+  });
+  const upIcon = <ArrowDropUpIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />;
+  const downIcon = (
+    <ArrowDropDownIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />
+  );
+  const getDirectionalIcon = (amount) => {
+    if (!amount) return null;
+
+    return amount > 0 ? upIcon : downIcon;
+  };
+
   return (
     <Paper
       sx={{
@@ -17,7 +59,7 @@ export default function MonthOverviewSummary({
       }}
     >
       <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
-        Month Overview
+        {format(dateRanges.today, 'MMMM yyyy')} Overview
       </Typography>
 
       {/* Progress bar */}
@@ -61,203 +103,101 @@ export default function MonthOverviewSummary({
       <Grid container spacing={2}>
         {/* Month-to-Date (Actuals) */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 2,
-              backgroundColor: '#e3f2fd',
-              border: '1px solid #2196f3',
+          <OverviewPeriodCard
+            title='Current'
+            titleColor='#2196f3'
+            backgroundColor='#e3f2fd'
+            cardBorderColor='#2196f3'
+            summaryBorderColor='#90caf9'
+            metrics={currentDisplayMetrics}
+            leftMetric={{
+              label: 'Current Balance',
+              value: combinedBalances.current,
+              valueColor: getBalanceColor(combinedBalances.current),
+              tooltip: CARD_METRIC_TOOLTIPS.currentBalance,
             }}
-          >
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1, color: '#2196f3' }}
-            >
-              Current
-            </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(currentMonthTotals.income)}
-              </Typography>
-            </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses {totals.pending - totals.current < 0 && '(Pending)'}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ color: '#f44336', fontWeight: 'bold' }}
-                >
-                  {formatCurrency(currentMonthTotals.expenses)}
-                </Typography>
-                {totals.pending - totals.current < 0 && (
-                  <Typography
-                    variant='body1'
-                    sx={{ color: '#ff9800', fontWeight: 'bold' }}
-                  >
-                    ({formatCurrency(Math.abs(totals.pending - totals.current))}
-                    )
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #90caf9',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Balance {totals.pending !== totals.current && '(Pending)'}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <Typography
-                  variant='h6'
-                  sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                >
-                  {formatCurrency(totals.current)}
-                </Typography>
-                {totals.pending !== totals.current && (
-                  <Typography
-                    variant='body1'
-                    sx={{ color: '#2196f3', fontWeight: 'bold' }}
-                  >
-                    ({formatCurrency(totals.pending)})
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          </Paper>
+            rightMetric={{
+              label: 'Card Balance',
+              value: combinedBalances.creditCardCurrent,
+              valueColor: getCreditCardBalanceColor(
+                combinedBalances.creditCardCurrent,
+              ),
+              tooltip: CARD_METRIC_TOOLTIPS.cardBalance,
+            }}
+            formatCurrency={formatCurrency}
+            tooltips={CARD_METRIC_TOOLTIPS}
+          />
         </Grid>
 
         {/* Remaining Month (Scheduled/Planned) */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 2,
-              backgroundColor: '#fff3e0',
-              border: '1px solid #ff9800',
+          <OverviewPeriodCard
+            title='Remaining'
+            titleColor='#9c27b0'
+            backgroundColor='#f3e5f5'
+            cardBorderColor='#9c27b0'
+            summaryBorderColor='#ce93d8'
+            metrics={remainingDisplayMetrics}
+            leftMetric={{
+              label: 'Balance Change',
+              value: remainingMonthTotals.balance,
+              valueColor: getBalanceColor(remainingMonthTotals.balance),
+              tooltip: CARD_METRIC_TOOLTIPS.balanceChange,
+              icon: getDirectionalIcon(remainingMonthTotals.balance),
+              useAbsoluteValue: true,
             }}
-          >
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1, color: '#ff9800' }}
-            >
-              Remaining
-            </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(remainingMonthTotals.income)}
-              </Typography>
-            </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(remainingMonthTotals.expenses)}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #ffcc80',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Net
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  color:
-                    remainingMonthTotals.netFlow >= 0 ? '#4caf50' : '#f44336',
-                  fontWeight: 'bold',
-                }}
-              >
-                {formatCurrency(remainingMonthTotals.netFlow)}
-              </Typography>
-            </Box>
-          </Paper>
+            rightMetric={{
+              label: 'Card Balance Change',
+              value: remainingMonthTotals.creditCardBalanceChange,
+              valueColor: getCreditCardBalanceColor(
+                remainingMonthTotals.creditCardBalanceChange,
+              ),
+              tooltip: CARD_METRIC_TOOLTIPS.cardBalanceChange,
+              icon: getDirectionalIcon(
+                remainingMonthTotals.creditCardBalanceChange,
+              ),
+              useAbsoluteValue: true,
+            }}
+            formatCurrency={formatCurrency}
+            tooltips={CARD_METRIC_TOOLTIPS}
+          />
         </Grid>
 
         {/* Month-End Projection */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 2,
-              backgroundColor: '#f3e5f5',
-              border: '1px solid #9c27b0',
+          <OverviewPeriodCard
+            title='End of Month Totals'
+            titleColor='#2e7d32'
+            backgroundColor='#e8f5e9'
+            cardBorderColor='#4caf50'
+            summaryBorderColor='#81c784'
+            metrics={projectedDisplayMetrics}
+            leftMetric={{
+              label: 'Ending Balance',
+              value: combinedBalances.projected,
+              valueColor: getBalanceColor(combinedBalances.projected),
+              tooltip: CARD_METRIC_TOOLTIPS.endingBalance,
             }}
-          >
-            <Typography
-              variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
-            >
-              Projected
-            </Typography>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Income
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#4caf50', fontWeight: 'bold' }}
-              >
-                {formatCurrency(monthEndProjections.projectedIncome)}
-              </Typography>
-            </Box>
-            <Box sx={{ mb: 1 }}>
-              <Typography variant='caption' color='text.secondary'>
-                Expenses
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{ color: '#f44336', fontWeight: 'bold' }}
-              >
-                {formatCurrency(monthEndProjections.projectedExpenses)}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                pt: 1,
-                borderTop: '1px solid #ce93d8',
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                Projected Net Flow
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  color:
-                    monthEndProjections.projectedNetFlow >= 0
-                      ? '#4caf50'
-                      : '#f44336',
-                  fontWeight: 'bold',
-                }}
-              >
-                {formatCurrency(monthEndProjections.projectedNetFlow)}
-              </Typography>
-            </Box>
-          </Paper>
+            rightMetric={{
+              label: 'Ending Card Balance',
+              value: combinedBalances.creditCardProjected,
+              valueColor: getCreditCardBalanceColor(
+                combinedBalances.creditCardProjected,
+              ),
+              tooltip: CARD_METRIC_TOOLTIPS.endingCardBalance,
+            }}
+            formatCurrency={formatCurrency}
+            tooltips={CARD_METRIC_TOOLTIPS}
+          />
         </Grid>
       </Grid>
+
+      <Box sx={{ mt: 4 }}>
+        <DetailedComparisonTable
+          sections={detailedComparisonSections}
+          formatCurrency={formatCurrency}
+        />
+      </Box>
     </Paper>
   );
 }

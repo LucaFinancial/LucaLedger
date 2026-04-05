@@ -119,6 +119,23 @@ describe('Accounts Slice', () => {
         expect(state.data[0].name).toBe('Updated Name');
       });
 
+      it('should persist a valid closedAt value', () => {
+        const stateWithData = {
+          ...initialState,
+          data: [validCheckingAccount],
+        };
+        const closedAccount = {
+          ...validCheckingAccount,
+          closedAt: '2025-02-14T00:00:00.000Z',
+        };
+        const state = accountsReducer(
+          stateWithData,
+          updateAccount(closedAccount),
+        );
+
+        expect(state.data[0].closedAt).toBe('2025-02-14T00:00:00.000Z');
+      });
+
       it('should not modify other accounts', () => {
         const stateWithData = {
           ...initialState,

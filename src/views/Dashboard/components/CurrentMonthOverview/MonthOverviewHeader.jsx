@@ -1,8 +1,7 @@
-import { AccordionSummary, Box, Chip, Typography } from '@mui/material';
+import { AccordionSummary, Box, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { format } from 'date-fns';
 
-export default function MonthOverviewHeader({ dateRanges }) {
+export default function MonthOverviewHeader() {
   return (
     <AccordionSummary
       expandIcon={<ExpandMoreIcon />}
@@ -24,11 +23,6 @@ export default function MonthOverviewHeader({ dateRanges }) {
           <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
             Current Month Overview
           </Typography>
-          <Chip
-            label={format(dateRanges.today, 'MMMM yyyy')}
-            size='small'
-            sx={{ backgroundColor: '#2196f3', color: 'white' }}
-          />
         </Box>
       </Box>
     </AccordionSummary>

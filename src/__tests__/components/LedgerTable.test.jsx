@@ -9,6 +9,8 @@ import {
   endOfMonth,
 } from 'date-fns';
 
+import { getAccountClosedRowContent } from '@/components/LedgerTable/utils';
+
 describe('LedgerTable Year Filter', () => {
   it('should filter transactions by selected year', () => {
     // Mock transactions from different years
@@ -172,5 +174,21 @@ describe('LedgerTable Year Filter', () => {
     // Should include ids 2, 3, 4, 5
     expect(filtered).toHaveLength(4);
     expect(filtered.map((t) => t.id)).toEqual(['2', '3', '4', '5']);
+  });
+
+  it('should build closed account row content with the closure date', () => {
+    expect(
+      getAccountClosedRowContent('2025-02-14T12:00:00.000Z'),
+    ).toEqual({
+      label: 'ACCOUNT CLOSED',
+      detail: 'Feb 14, 2025',
+    });
+  });
+
+  it('should build closed account row content without a detail for missing dates', () => {
+    expect(getAccountClosedRowContent(null)).toEqual({
+      label: 'ACCOUNT CLOSED',
+      detail: null,
+    });
   });
 });

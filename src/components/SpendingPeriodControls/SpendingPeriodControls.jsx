@@ -81,12 +81,13 @@ export default function SpendingPeriodControls({
             }}
           >
             <FormControl size='small' sx={{ minWidth: 110 }}>
-              <InputLabel>Year</InputLabel>
+              {activeYear ? <InputLabel shrink>Year</InputLabel> : null}
               <Select
                 value={activeYear}
-                label='Year'
+                label={activeYear ? 'Year' : undefined}
                 onChange={onYearChange}
                 displayEmpty
+                notched={Boolean(activeYear)}
                 sx={{
                   '& .MuiSelect-select': {
                     pr: activeYear ? 5 : undefined,
@@ -132,12 +133,13 @@ export default function SpendingPeriodControls({
             }}
           >
             <FormControl size='small' sx={{ minWidth: 170 }}>
-              <InputLabel>Month</InputLabel>
+              {activeMonth ? <InputLabel shrink>Month</InputLabel> : null}
               <Select
                 value={activeMonth}
-                label='Month'
+                label={activeMonth ? 'Month' : undefined}
                 onChange={onMonthChange}
                 displayEmpty
+                notched={Boolean(activeMonth)}
                 sx={{
                   '& .MuiSelect-select': {
                     pr: activeMonth ? 5 : undefined,

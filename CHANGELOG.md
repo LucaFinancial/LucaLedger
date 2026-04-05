@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-04-04
+
+### Added
+
+- Added account closure support across the app, including closed-account state persistence, account-card/status updates, and a dedicated closed-account row in the ledger.
+- Added dashboard analytics filters for excluding closed accounts by default and temporarily including or excluding individual accounts from dashboard calculations.
+- Added a detailed Current Month Overview breakdown with current, remaining, and month-end comparisons for income, expenses, balances, and credit card activity, including metric tooltips and a grouped comparison table.
+
+### Changed
+
+- Updated dashboard balance and projection calculations to better separate asset-account balances from credit card balances, support credit card payments/credits/charges explicitly, and account for newer schema-driven account types.
+- Switched account-type pickers and related account utilities to use schema-exported account type enums, including support for recently added types such as cash and escrow.
+- Refactored the dashboard overview and categorized-spending sections into smaller reusable components, and removed the legacy dashboard Recent Activity, Upcoming Activity, and old monthly summary cards.
+- Updated categorized-spending controls on the dashboard to default to the current month and polished the shared month/year selector behavior and spacing.
+- Bumped application version to `2.8.0`. (#293)
+
+### Fixed
+
+- Fixed dashboard account inclusion behavior so closed and escrow accounts can be excluded by default without preventing users from re-including them for the current session.
+- Fixed dashboard credit card balance aggregation to use the combined signed balance of included credit card accounts.
+- Fixed ledger sync-button tooltip warnings caused by passing a `title` prop to a tooltip child.
+
 ## [2.7.0] - 2026-04-03
 
 ### Added

@@ -30,6 +30,7 @@ import {
   transactionMatchesCategoryFilter,
 } from '@/utils/transactionCategoryState';
 import LedgerHeader from './LedgerHeader';
+import AccountClosedRow from './AccountClosedRow';
 import SeparatorRow from './SeparatorRow';
 import StatementSeparatorRow from './StatementSeparatorRow';
 import { dateCompareFn, generateVirtualTransactions } from './utils';
@@ -595,6 +596,7 @@ export default function LedgerTable({
               </Fragment>
             );
           })}
+          {account.closedAt && <AccountClosedRow closedAt={account.closedAt} />}
         </TableBody>
       </Table>
     </TableContainer>

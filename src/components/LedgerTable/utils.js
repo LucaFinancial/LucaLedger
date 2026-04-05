@@ -1,5 +1,6 @@
 import { format, parseISO, getDate, addMonths, compareAsc } from 'date-fns';
 
+import { formatAccountClosedAt } from '@/store/accounts/utils';
 import { generators as recurringTransactionGenerators } from '@/store/recurringTransactions';
 
 export const dateCompareFn = (a, b) => {
@@ -65,3 +66,8 @@ export const generateVirtualTransactions = (
 
   return virtualTransactions;
 };
+
+export const getAccountClosedRowContent = (closedAt) => ({
+  label: 'ACCOUNT CLOSED',
+  detail: formatAccountClosedAt(closedAt, 'MMM d, yyyy'),
+});

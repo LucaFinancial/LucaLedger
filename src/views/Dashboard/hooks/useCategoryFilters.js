@@ -39,6 +39,13 @@ export function useCategoryFilters(categories) {
     return [transfersCategoryId, ...subcategories.map((cat) => cat.id)];
   }, [categories, transfersCategoryId]);
 
+  const creditCardPaymentsCategoryId = useMemo(
+    () =>
+      categories.find((cat) => cat.slug === 'transfers-credit-card-payments')
+        ?.id || null,
+    [categories],
+  );
+
   // Helper function to determine if a transaction is income
   const isIncomeTransaction = useCallback(
     (tx) => {
@@ -57,6 +64,14 @@ export function useCategoryFilters(categories) {
     [transferCategoryIds],
   );
 
+  const isCreditCardPaymentTransaction = useCallback(
+    (tx) => {
+      if (!tx.categoryId || !creditCardPaymentsCategoryId) return false;
+      return tx.categoryId === creditCardPaymentsCategoryId;
+    },
+    [creditCardPaymentsCategoryId],
+  );
+
   // Helper function to get the display color for a transaction
   const getTransactionColor = useCallback(
     (tx) => {
@@ -71,9 +86,8 @@ export function useCategoryFilters(categories) {
   // Transfers are excluded from both income and expense totals
   const categorizeTransaction = useCallback(
     (tx) => {
-      const absAmount = Math.abs(tx.amount);
+      const absAmount = Math.abs(Number(tx.amount) || 0);
 
-      // Transfers are neutral - don't count as income or expense
       if (isTransferTransaction(tx)) {
         return { income: 0, expense: 0 };
       }
@@ -82,7 +96,6 @@ export function useCategoryFilters(categories) {
         return { income: absAmount, expense: 0 };
       }
 
-      // Everything else is an expense
       return { income: 0, expense: absAmount };
     },
     [isIncomeTransaction, isTransferTransaction],
@@ -95,6 +108,7 @@ export function useCategoryFilters(categories) {
     transferCategoryIds,
     isIncomeTransaction,
     isTransferTransaction,
+    isCreditCardPaymentTransaction,
     getTransactionColor,
     categorizeTransaction,
   };

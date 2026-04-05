@@ -3,31 +3,27 @@ import {
   CardContent,
   Typography,
   Box,
+  Chip,
   CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import { constants } from '@/store/transactions';
-import { selectors as accountSelectors } from '@/store/accounts';
+import {
+  selectors as accountSelectors,
+  utils as accountUtils,
+} from '@/store/accounts';
 import BalanceRow from './BalanceRow';
 
 import ActionsMenu from '@/components/ActionsMenu/ActionsMenu';
-
-function formatAccountType(accountType = '') {
-  return accountType
-    .toLowerCase()
-    .split('_')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 export default function AccountCard({ account }) {
   const navigate = useNavigate();
   const isLoading = useSelector(
     accountSelectors.selectIsAccountLoading(account.id),
   );
+  const isClosed = accountUtils.isAccountClosed(account);
 
   const cardLength = '320px';
 
@@ -44,8 +40,17 @@ export default function AccountCard({ account }) {
       sx={{
         width: cardLength,
         position: 'relative',
+        border: '2px solid',
+        borderColor: isClosed ? 'error.main' : 'transparent',
+        backgroundColor: isClosed
+          ? 'rgba(211, 47, 47, 0.04)'
+          : 'background.paper',
         '&:hover': {
-          backgroundColor: isLoading ? 'inherit' : 'rgba(0, 0, 0, 0.04)',
+          backgroundColor: isLoading
+            ? 'inherit'
+            : isClosed
+              ? 'rgba(211, 47, 47, 0.08)'
+              : 'rgba(0, 0, 0, 0.04)',
           cursor: isLoading ? 'default' : 'pointer',
         },
       }}
@@ -68,46 +73,65 @@ export default function AccountCard({ account }) {
           <CircularProgress size={60} />
         </Box>
       )}
-      <CardContent style={{ position: 'relative' }}>
+      <CardContent
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          boxSizing: 'border-box',
+        }}
+      >
         <Typography variant='h4'>{account.name}</Typography>
         <Typography variant='subtitle1'>
-          {formatAccountType(account.type)}
+          {accountUtils.formatAccountType(account.type)}
         </Typography>
-        <BalanceRow
-          accountId={account.id}
-          accountType={account.type}
-          balanceType={'Current'}
-          filterArray={[constants.TransactionStateEnum.COMPLETED]}
-        />
-        <BalanceRow
-          accountId={account.id}
-          accountType={account.type}
-          balanceType={'Pending'}
-          filterArray={[
-            constants.TransactionStateEnum.COMPLETED,
-            constants.TransactionStateEnum.PENDING,
-          ]}
-        />
-        <BalanceRow
-          accountId={account.id}
-          accountType={account.type}
-          balanceType={'Scheduled'}
-          filterArray={[
-            constants.TransactionStateEnum.COMPLETED,
-            constants.TransactionStateEnum.PENDING,
-            constants.TransactionStateEnum.SCHEDULED,
-          ]}
-        />
-        {/* <BalanceRow
-          account={account}
-          balanceType={'Planned'}
-          filterArray={[
-            constants.TransactionStateEnum.COMPLETED,
-            constants.TransactionStateEnum.PENDING,
-            constants.TransactionStateEnum.SCHEDULED,
-            constants.TransactionStateEnum.SCHEDULED,
-          ]}
-        /> */}
+        {isClosed ? (
+          <Box
+            sx={{
+              mt: 'auto',
+              pt: 2,
+              mb: 0.5,
+              height: '102px',
+              borderTop: '1px solid',
+              borderColor: 'rgba(211, 47, 47, 0.35)',
+            }}
+          >
+            <Chip
+              label='Closed'
+              color='error'
+              variant='outlined'
+              sx={{ fontWeight: 700 }}
+            />
+          </Box>
+        ) : (
+          <>
+            <BalanceRow
+              accountId={account.id}
+              accountType={account.type}
+              balanceType={'Current'}
+              filterArray={[constants.TransactionStateEnum.COMPLETED]}
+            />
+            <BalanceRow
+              accountId={account.id}
+              accountType={account.type}
+              balanceType={'Pending'}
+              filterArray={[
+                constants.TransactionStateEnum.COMPLETED,
+                constants.TransactionStateEnum.PENDING,
+              ]}
+            />
+            <BalanceRow
+              accountId={account.id}
+              accountType={account.type}
+              balanceType={'Scheduled'}
+              filterArray={[
+                constants.TransactionStateEnum.COMPLETED,
+                constants.TransactionStateEnum.PENDING,
+                constants.TransactionStateEnum.SCHEDULED,
+              ]}
+            />
+          </>
+        )}
         <ActionsMenu account={account} />
       </CardContent>
     </Card>
