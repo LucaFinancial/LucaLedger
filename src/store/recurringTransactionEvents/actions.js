@@ -7,7 +7,10 @@ import { actions as transactionLinkActions } from '@/store/transactionLinks';
 import { TransactionStateEnum } from '@/store/transactions/constants';
 import { generateTransaction } from '@/store/transactions/generators';
 import { addTransaction } from '@/store/transactions/slice';
-import { getLinkedRecurringTransactionId } from '@/utils/linking';
+import {
+  getLinkedRecurringTransactionId,
+  inferLinkIsSameSign,
+} from '@/utils/linking';
 import { generateRecurringTransactionEvent } from './generators';
 import {
   addRecurringTransactionEvent,
@@ -153,6 +156,13 @@ export const realizeRecurringTransaction =
       transactionLinkActions.saveTransactionLinkPair({
         sourceTransactionId: sourceResult.transaction.id,
         destinationTransactionId: linkedResult.transaction.id,
+        isSameSign:
+          typeof recurringTransactionLink.isSameSign === 'boolean'
+            ? recurringTransactionLink.isSameSign
+            : inferLinkIsSameSign(
+                recurringTransaction.amount,
+                linkedRecurringTransaction.amount,
+              ),
       }),
     );
 

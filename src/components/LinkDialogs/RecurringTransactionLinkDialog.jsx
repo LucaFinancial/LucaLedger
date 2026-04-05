@@ -31,7 +31,10 @@ import {
 } from '@/store/recurringTransactionLinks';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as accountSelectors } from '@/store/accounts';
-import { validateRecurringLinkCandidate } from '@/utils/linking';
+import {
+  inferLinkIsSameSign,
+  validateRecurringLinkCandidate,
+} from '@/utils/linking';
 
 const hasMatchingScheduleShape = (sourceTransaction, destinationTransaction) =>
   sourceTransaction.startOn === destinationTransaction.startOn &&
@@ -82,6 +85,7 @@ export default function RecurringTransactionLinkDialog({
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [selectedScheduleSource, setSelectedScheduleSource] = useState('source');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
+  const [selectedIsSameSign, setSelectedIsSameSign] = useState(true);
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -371,13 +375,33 @@ export default function RecurringTransactionLinkDialog({
         ),
       ),
     );
+    setSelectedIsSameSign(
+      selectedCandidateRow.recurringTransaction.id ===
+        (sourceRecurringTransactionLink?.sourceRecurringTransactionId ===
+        sourceRecurringTransactionId
+          ? sourceRecurringTransactionLink.destinationRecurringTransactionId
+          : sourceRecurringTransactionLink?.destinationRecurringTransactionId ||
+            '') &&
+        typeof sourceRecurringTransactionLink?.isSameSign === 'boolean'
+        ? sourceRecurringTransactionLink.isSameSign
+        : inferLinkIsSameSign(
+            sourceRecurringTransaction.amount ?? 0,
+            selectedCandidateRow.recurringTransaction.amount ?? 0,
+          ),
+    );
     setSharedDescription(
       sourceRecurringTransaction.description ??
         selectedCandidateRow.recurringTransaction.description ??
         '',
     );
     setErrorMessage('');
-  }, [open, selectedCandidateRow, sourceRecurringTransaction]);
+  }, [
+    open,
+    selectedCandidateRow,
+    sourceRecurringTransaction,
+    sourceRecurringTransactionId,
+    sourceRecurringTransactionLink,
+  ]);
 
   const handleSave = async () => {
     if (!selectedTargetId || !selectedCandidateRow?.selectable) return;
@@ -391,6 +415,7 @@ export default function RecurringTransactionLinkDialog({
             selectedAbsoluteAmount === ''
               ? null
               : Number.parseInt(selectedAbsoluteAmount, 10),
+          reconciledIsSameSign: selectedIsSameSign,
           reconciledScheduleSource: selectedScheduleSource,
           reconciledDescription: sharedDescription,
         },
@@ -582,6 +607,8 @@ export default function RecurringTransactionLinkDialog({
                 onSelectedScheduleSourceChange={setSelectedScheduleSource}
                 selectedAbsoluteAmount={selectedAbsoluteAmount}
                 onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
+                selectedIsSameSign={selectedIsSameSign}
+                onSelectedIsSameSignChange={setSelectedIsSameSign}
                 sharedDescription={sharedDescription}
                 onSharedDescriptionChange={setSharedDescription}
               />

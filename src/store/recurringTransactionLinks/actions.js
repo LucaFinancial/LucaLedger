@@ -2,7 +2,9 @@ import { deleteEncryptedRecord } from '@/crypto/database';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { updateRecurringTransaction as updateRecurringTransactionNormalized } from '@/store/recurringTransactions/slice';
 import {
+  getCounterpartAmountForLinkedPair,
   getLinkedRecurringTransactionId,
+  inferLinkIsSameSign,
   validateRecurringLinkCandidate,
 } from '@/utils/linking';
 import { generateRecurringTransactionLink } from './generators';
@@ -20,6 +22,28 @@ const applyAbsoluteAmountWithExistingSign = (currentAmount, absoluteAmount) => {
   const normalizedAbsoluteAmount = Math.abs(absoluteAmount || 0);
   const sign = Math.sign(currentAmount) || 1;
   return normalizedAbsoluteAmount * sign;
+};
+
+const buildLinkedRecurringAmountPair = ({
+  sourceCurrentAmount,
+  destinationCurrentAmount,
+  absoluteAmount,
+  isSameSign,
+}) => {
+  const nextSourceAmount = applyAbsoluteAmountWithExistingSign(
+    sourceCurrentAmount,
+    absoluteAmount,
+  );
+  const nextDestinationAmount = getCounterpartAmountForLinkedPair({
+    sourceAmount: nextSourceAmount,
+    counterpartAmount: destinationCurrentAmount,
+    isSameSign,
+  });
+
+  return {
+    sourceAmount: nextSourceAmount,
+    destinationAmount: nextDestinationAmount,
+  };
 };
 
 export const createRecurringTransactionLinkRecord =
@@ -77,7 +101,11 @@ export const unlinkRecurringTransactionByRecurringTransactionId =
   };
 
 export const saveRecurringTransactionLinkPair =
-  ({ sourceRecurringTransactionId, destinationRecurringTransactionId }) =>
+  ({
+    sourceRecurringTransactionId,
+    destinationRecurringTransactionId,
+    isSameSign = null,
+  }) =>
   async (dispatch, getState) => {
     const state = getState();
     const sourceRecurringTransaction =
@@ -109,6 +137,14 @@ export const saveRecurringTransactionLinkPair =
       };
     }
 
+    const resolvedIsSameSign =
+      typeof isSameSign === 'boolean'
+        ? isSameSign
+        : inferLinkIsSameSign(
+            sourceRecurringTransaction?.amount ?? 0,
+            destinationRecurringTransaction?.amount ?? 0,
+          );
+
     if (
       sourceExistingLink &&
       getLinkedRecurringTransactionId(
@@ -116,6 +152,19 @@ export const saveRecurringTransactionLinkPair =
         sourceRecurringTransactionId,
       ) === destinationRecurringTransactionId
     ) {
+      if (sourceExistingLink.isSameSign !== resolvedIsSameSign) {
+        const updatedLink = {
+          ...sourceExistingLink,
+          isSameSign: resolvedIsSameSign,
+        };
+        dispatch(replaceRecurringTransactionLinkRecord(updatedLink));
+        return {
+          valid: true,
+          reason: null,
+          link: updatedLink,
+        };
+      }
+
       return {
         valid: true,
         reason: null,
@@ -131,6 +180,7 @@ export const saveRecurringTransactionLinkPair =
       createRecurringTransactionLinkRecord({
         sourceRecurringTransactionId,
         destinationRecurringTransactionId,
+        isSameSign: resolvedIsSameSign,
       }),
     );
 
@@ -148,6 +198,7 @@ export const reconcileAndSaveRecurringTransactionLinkPair =
     sourceRecurringTransactionId,
     destinationRecurringTransactionId,
     reconciledAbsoluteAmount = null,
+    reconciledIsSameSign = null,
     reconciledScheduleSource = null,
     reconciledDescription = null,
   }) =>
@@ -173,6 +224,13 @@ export const reconcileAndSaveRecurringTransactionLinkPair =
     const nextDestinationRecurringTransaction = {
       ...destinationRecurringTransaction,
     };
+    const resolvedIsSameSign =
+      typeof reconciledIsSameSign === 'boolean'
+        ? reconciledIsSameSign
+        : inferLinkIsSameSign(
+            sourceRecurringTransaction.amount,
+            destinationRecurringTransaction.amount,
+          );
 
     if (reconciledScheduleSource === 'source' || reconciledScheduleSource === 'destination') {
       const scheduleSource =
@@ -193,16 +251,24 @@ export const reconcileAndSaveRecurringTransactionLinkPair =
       });
     }
 
-    if (typeof reconciledAbsoluteAmount === 'number') {
-      nextSourceRecurringTransaction.amount = applyAbsoluteAmountWithExistingSign(
-        sourceRecurringTransaction.amount,
-        reconciledAbsoluteAmount,
-      );
-      nextDestinationRecurringTransaction.amount =
-        applyAbsoluteAmountWithExistingSign(
-          destinationRecurringTransaction.amount,
-          reconciledAbsoluteAmount,
-        );
+    if (
+      typeof reconciledAbsoluteAmount === 'number' ||
+      typeof reconciledIsSameSign === 'boolean'
+    ) {
+      const absoluteAmount =
+        typeof reconciledAbsoluteAmount === 'number'
+          ? reconciledAbsoluteAmount
+          : Math.abs(sourceRecurringTransaction.amount);
+      const { sourceAmount, destinationAmount } =
+        buildLinkedRecurringAmountPair({
+          sourceCurrentAmount: sourceRecurringTransaction.amount,
+          destinationCurrentAmount: destinationRecurringTransaction.amount,
+          absoluteAmount,
+          isSameSign: resolvedIsSameSign,
+        });
+
+      nextSourceRecurringTransaction.amount = sourceAmount;
+      nextDestinationRecurringTransaction.amount = destinationAmount;
     }
 
     if (typeof reconciledDescription === 'string') {
@@ -231,6 +297,7 @@ export const reconcileAndSaveRecurringTransactionLinkPair =
       saveRecurringTransactionLinkPair({
         sourceRecurringTransactionId,
         destinationRecurringTransactionId,
+        isSameSign: resolvedIsSameSign,
       }),
     );
   };

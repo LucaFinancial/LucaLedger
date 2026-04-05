@@ -3,7 +3,9 @@ import { selectors as transactionSelectors } from '@/store/transactions';
 import { updateTransaction as updateTransactionNormalized } from '@/store/transactions/slice';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
 import {
+  getCounterpartAmountForLinkedPair,
   getLinkedTransactionId,
+  inferLinkIsSameSign,
   validateTransactionLinkCandidate,
 } from '@/utils/linking';
 import { generateTransactionLink } from './generators';
@@ -21,6 +23,28 @@ const applyAbsoluteAmountWithExistingSign = (currentAmount, absoluteAmount) => {
   const normalizedAbsoluteAmount = Math.abs(absoluteAmount || 0);
   const sign = Math.sign(currentAmount) || 1;
   return normalizedAbsoluteAmount * sign;
+};
+
+const buildLinkedAmountPair = ({
+  sourceCurrentAmount,
+  destinationCurrentAmount,
+  absoluteAmount,
+  isSameSign,
+}) => {
+  const nextSourceAmount = applyAbsoluteAmountWithExistingSign(
+    sourceCurrentAmount,
+    absoluteAmount,
+  );
+  const nextDestinationAmount = getCounterpartAmountForLinkedPair({
+    sourceAmount: nextSourceAmount,
+    counterpartAmount: destinationCurrentAmount,
+    isSameSign,
+  });
+
+  return {
+    sourceAmount: nextSourceAmount,
+    destinationAmount: nextDestinationAmount,
+  };
 };
 
 export const createTransactionLinkRecord =
@@ -71,7 +95,7 @@ export const unlinkTransactionByTransactionId =
   };
 
 export const saveTransactionLinkPair =
-  ({ sourceTransactionId, destinationTransactionId }) =>
+  ({ sourceTransactionId, destinationTransactionId, isSameSign = null }) =>
   async (dispatch, getState) => {
     const state = getState();
     const sourceTransaction =
@@ -111,11 +135,32 @@ export const saveTransactionLinkPair =
       };
     }
 
+    const resolvedIsSameSign =
+      typeof isSameSign === 'boolean'
+        ? isSameSign
+        : inferLinkIsSameSign(
+            sourceTransaction?.amount ?? 0,
+            destinationTransaction?.amount ?? 0,
+          );
+
     if (
       sourceExistingLink &&
       getLinkedTransactionId(sourceExistingLink, sourceTransactionId) ===
         destinationTransactionId
     ) {
+      if (sourceExistingLink.isSameSign !== resolvedIsSameSign) {
+        const updatedLink = {
+          ...sourceExistingLink,
+          isSameSign: resolvedIsSameSign,
+        };
+        dispatch(replaceTransactionLinkRecord(updatedLink));
+        return {
+          valid: true,
+          reason: null,
+          link: updatedLink,
+        };
+      }
+
       return {
         valid: true,
         reason: null,
@@ -131,6 +176,7 @@ export const saveTransactionLinkPair =
       createTransactionLinkRecord({
         sourceTransactionId,
         destinationTransactionId,
+        isSameSign: resolvedIsSameSign,
       }),
     );
 
@@ -147,6 +193,7 @@ export const reconcileAndSaveTransactionLinkPair =
     destinationTransactionId,
     reconciledDate = null,
     reconciledAbsoluteAmount = null,
+    reconciledIsSameSign = null,
     reconciledDescription = null,
     reconciledTransactionState = null,
   }) =>
@@ -168,21 +215,36 @@ export const reconcileAndSaveTransactionLinkPair =
 
     const nextSourceTransaction = { ...sourceTransaction };
     const nextDestinationTransaction = { ...destinationTransaction };
+    const resolvedIsSameSign =
+      typeof reconciledIsSameSign === 'boolean'
+        ? reconciledIsSameSign
+        : inferLinkIsSameSign(
+            sourceTransaction.amount,
+            destinationTransaction.amount,
+          );
 
     if (reconciledDate) {
       nextSourceTransaction.date = reconciledDate;
       nextDestinationTransaction.date = reconciledDate;
     }
 
-    if (typeof reconciledAbsoluteAmount === 'number') {
-      nextSourceTransaction.amount = applyAbsoluteAmountWithExistingSign(
-        sourceTransaction.amount,
-        reconciledAbsoluteAmount,
-      );
-      nextDestinationTransaction.amount = applyAbsoluteAmountWithExistingSign(
-        destinationTransaction.amount,
-        reconciledAbsoluteAmount,
-      );
+    if (
+      typeof reconciledAbsoluteAmount === 'number' ||
+      typeof reconciledIsSameSign === 'boolean'
+    ) {
+      const absoluteAmount =
+        typeof reconciledAbsoluteAmount === 'number'
+          ? reconciledAbsoluteAmount
+          : Math.abs(sourceTransaction.amount);
+      const { sourceAmount, destinationAmount } = buildLinkedAmountPair({
+        sourceCurrentAmount: sourceTransaction.amount,
+        destinationCurrentAmount: destinationTransaction.amount,
+        absoluteAmount,
+        isSameSign: resolvedIsSameSign,
+      });
+
+      nextSourceTransaction.amount = sourceAmount;
+      nextDestinationTransaction.amount = destinationAmount;
     }
 
     if (typeof reconciledDescription === 'string') {
@@ -220,6 +282,7 @@ export const reconcileAndSaveTransactionLinkPair =
       saveTransactionLinkPair({
         sourceTransactionId,
         destinationTransactionId,
+        isSameSign: resolvedIsSameSign,
       }),
     );
   };

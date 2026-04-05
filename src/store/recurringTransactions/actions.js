@@ -6,7 +6,7 @@ import {
 import {
   getCounterpartAmountForLinkedPair,
   getLinkedRecurringTransactionId,
-  getSignOrientation,
+  resolveLinkIsSameSign,
 } from '@/utils/linking';
 import { generateRecurringTransaction } from './generators';
 import {
@@ -97,10 +97,11 @@ export const updateRecurringTransactionProperty =
           ? getCounterpartAmountForLinkedPair({
               sourceAmount: value,
               counterpartAmount: linkedRecurringTransaction.amount,
-              orientation: getSignOrientation(
-                recurringTransaction.amount,
-                linkedRecurringTransaction.amount,
-              ),
+              isSameSign: resolveLinkIsSameSign({
+                link: recurringTransactionLink,
+                amountA: recurringTransaction.amount,
+                amountB: linkedRecurringTransaction.amount,
+              }),
             })
           : value;
     });

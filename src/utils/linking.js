@@ -12,6 +12,17 @@ const buildInvalidResult = (reason) => ({
   reason,
 });
 
+const inferIsSameSignFromAmounts = (amountA = 0, amountB = 0) => {
+  const amountASign = Math.sign(amountA);
+  const amountBSign = Math.sign(amountB);
+
+  if (amountASign === 0 || amountBSign === 0) {
+    return true;
+  }
+
+  return amountASign === amountBSign;
+};
+
 const getLinkedId = (link, id, sourceKey, destinationKey) => {
   if (!link || !id) return null;
   if (link[sourceKey] === id) return link[destinationKey];
@@ -24,6 +35,7 @@ const buildNormalizedLinkCollection = ({
   validIdSet,
   sourceKey,
   destinationKey,
+  recordById = null,
 }) => {
   const activeLinks = [];
   const deletedLinks = [];
@@ -47,8 +59,21 @@ const buildNormalizedLinkCollection = ({
       return;
     }
 
-    if (!isLinkActive(link)) {
-      deletedLinks.push(link);
+    const sourceRecord = recordById?.get(sourceId) || null;
+    const destinationRecord = recordById?.get(destinationId) || null;
+    const normalizedLink =
+      typeof link?.isSameSign === 'boolean'
+        ? link
+        : {
+            ...link,
+            isSameSign: inferIsSameSignFromAmounts(
+              sourceRecord?.amount ?? 0,
+              destinationRecord?.amount ?? 0,
+            ),
+          };
+
+    if (!isLinkActive(normalizedLink)) {
+      deletedLinks.push(normalizedLink);
       return;
     }
 
@@ -58,7 +83,7 @@ const buildNormalizedLinkCollection = ({
 
     usedIds.add(sourceId);
     usedIds.add(destinationId);
-    activeLinks.push(link);
+    activeLinks.push(normalizedLink);
   });
 
   return [...activeLinks, ...deletedLinks];
@@ -149,47 +174,64 @@ export const buildRecurringLinkMapByRecurringTransactionId = (links = []) =>
     destinationKey: 'destinationRecurringTransactionId',
   });
 
-export const normalizeTransactionLinks = (links = [], validTransactionIds) =>
+export const normalizeTransactionLinks = (
+  links = [],
+  validTransactionIds,
+  transactionById = null,
+) =>
   buildNormalizedLinkCollection({
     links,
     validIdSet: validTransactionIds,
     sourceKey: 'sourceTransactionId',
     destinationKey: 'destinationTransactionId',
+    recordById: transactionById,
   });
 
 export const normalizeRecurringTransactionLinks = (
   links = [],
   validRecurringTransactionIds,
+  recurringTransactionById = null,
 ) =>
   buildNormalizedLinkCollection({
     links,
     validIdSet: validRecurringTransactionIds,
     sourceKey: 'sourceRecurringTransactionId',
     destinationKey: 'destinationRecurringTransactionId',
+    recordById: recurringTransactionById,
   });
 
+export const inferLinkIsSameSign = inferIsSameSignFromAmounts;
+
+export const resolveLinkIsSameSign = ({
+  link = null,
+  amountA = 0,
+  amountB = 0,
+}) =>
+  typeof link?.isSameSign === 'boolean'
+    ? link.isSameSign
+    : inferIsSameSignFromAmounts(amountA, amountB);
+
 export const getSignOrientation = (amountA = 0, amountB = 0) => {
-  const amountASign = Math.sign(amountA);
-  const amountBSign = Math.sign(amountB);
-
-  if (amountASign === 0 || amountBSign === 0 || amountASign === amountBSign) {
-    return SAME_SIGN;
-  }
-
-  return OPPOSITE_SIGN;
+  return inferIsSameSignFromAmounts(amountA, amountB)
+    ? SAME_SIGN
+    : OPPOSITE_SIGN;
 };
 
 export const getCounterpartAmountForLinkedPair = ({
   sourceAmount,
   counterpartAmount,
+  isSameSign,
   orientation = getSignOrientation(sourceAmount, counterpartAmount),
 }) => {
   const absoluteAmount = Math.abs(sourceAmount);
   if (absoluteAmount === 0) return 0;
 
   const sourceSign = Math.sign(sourceAmount) || Math.sign(counterpartAmount) || 1;
-  const counterpartSign =
-    orientation === SAME_SIGN ? sourceSign : sourceSign * -1;
+  const resolvedIsSameSign =
+    typeof isSameSign === 'boolean'
+      ? isSameSign
+      : orientation === SAME_SIGN;
+  const counterpartSign = resolvedIsSameSign ? sourceSign : sourceSign * -1;
 
   return absoluteAmount * counterpartSign;
 };

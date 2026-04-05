@@ -4,6 +4,7 @@ import {
   LINK_VALIDATION_REASONS,
   getCounterpartAmountForLinkedPair,
   getSignOrientation,
+  inferLinkIsSameSign,
   normalizeRecurringTransactionLinks,
   normalizeTransactionLinks,
   validateRecurringLinkCandidate,
@@ -13,20 +14,24 @@ import {
 describe('linking utilities', () => {
   it('preserves opposite-sign orientation when syncing counterpart amounts', () => {
     expect(getSignOrientation(-10000, 10000)).toBe('opposite-sign');
+    expect(inferLinkIsSameSign(-10000, 10000)).toBe(false);
     expect(
       getCounterpartAmountForLinkedPair({
         sourceAmount: -12000,
         counterpartAmount: 10000,
+        isSameSign: false,
       }),
     ).toBe(12000);
   });
 
   it('preserves same-sign orientation when syncing counterpart amounts', () => {
     expect(getSignOrientation(-10000, -10000)).toBe('same-sign');
+    expect(inferLinkIsSameSign(-10000, -10000)).toBe(true);
     expect(
       getCounterpartAmountForLinkedPair({
         sourceAmount: -12000,
         counterpartAmount: -10000,
+        isSameSign: true,
       }),
     ).toBe(-12000);
   });
@@ -109,6 +114,7 @@ describe('linking utilities', () => {
           id: 'link-older',
           sourceTransactionId: 'tx-1',
           destinationTransactionId: 'tx-2',
+          isSameSign: false,
           createdAt: '2026-01-01T00:00:00.000Z',
           updatedAt: '2026-01-01T00:00:00.000Z',
         },
@@ -116,6 +122,7 @@ describe('linking utilities', () => {
           id: 'link-newer',
           sourceTransactionId: 'tx-1',
           destinationTransactionId: 'tx-3',
+          isSameSign: true,
           createdAt: '2026-02-01T00:00:00.000Z',
           updatedAt: '2026-02-01T00:00:00.000Z',
         },
@@ -123,6 +130,7 @@ describe('linking utilities', () => {
           id: 'link-other',
           sourceTransactionId: 'tx-2',
           destinationTransactionId: 'tx-4',
+          isSameSign: false,
           createdAt: '2026-03-01T00:00:00.000Z',
           updatedAt: '2026-03-01T00:00:00.000Z',
         },
@@ -130,6 +138,7 @@ describe('linking utilities', () => {
           id: 'link-self',
           sourceTransactionId: 'tx-4',
           destinationTransactionId: 'tx-4',
+          isSameSign: true,
           createdAt: '2026-01-01T00:00:00.000Z',
           updatedAt: '2026-01-01T00:00:00.000Z',
         },
@@ -148,6 +157,7 @@ describe('linking utilities', () => {
           id: 'rec-link',
           sourceRecurringTransactionId: 'rt-1',
           destinationRecurringTransactionId: 'rt-2',
+          isSameSign: false,
           createdAt: '2026-01-01T00:00:00.000Z',
           updatedAt: '2026-01-01T00:00:00.000Z',
         },
@@ -156,5 +166,31 @@ describe('linking utilities', () => {
     );
 
     expect(normalizedRecurringLinks).toHaveLength(1);
+  });
+
+  it('infers isSameSign for legacy links when linked amounts are available', () => {
+    const normalizedTransactionLinks = normalizeTransactionLinks(
+      [
+        {
+          id: 'legacy-link',
+          sourceTransactionId: 'tx-1',
+          destinationTransactionId: 'tx-2',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      new Set(['tx-1', 'tx-2']),
+      new Map([
+        ['tx-1', { id: 'tx-1', amount: -2500 }],
+        ['tx-2', { id: 'tx-2', amount: 2500 }],
+      ]),
+    );
+
+    expect(normalizedTransactionLinks).toEqual([
+      expect.objectContaining({
+        id: 'legacy-link',
+        isSameSign: false,
+      }),
+    ]);
   });
 });

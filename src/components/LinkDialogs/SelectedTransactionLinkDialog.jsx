@@ -17,7 +17,10 @@ import {
   actions as transactionLinkActions,
   selectors as transactionLinkSelectors,
 } from '@/store/transactionLinks';
-import { validateTransactionLinkCandidate } from '@/utils/linking';
+import {
+  inferLinkIsSameSign,
+  validateTransactionLinkCandidate,
+} from '@/utils/linking';
 
 export default function SelectedTransactionLinkDialog({
   open,
@@ -55,6 +58,7 @@ export default function SelectedTransactionLinkDialog({
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
+  const [selectedIsSameSign, setSelectedIsSameSign] = useState(true);
   const [selectedTransactionState, setSelectedTransactionState] = useState('');
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -109,6 +113,12 @@ export default function SelectedTransactionLinkDialog({
         Math.abs(sourceTransaction.amount ?? destinationTransaction.amount ?? 0),
       ),
     );
+    setSelectedIsSameSign(
+      inferLinkIsSameSign(
+        sourceTransaction.amount ?? 0,
+        destinationTransaction.amount ?? 0,
+      ),
+    );
     setSelectedTransactionState(
       sourceTransaction.transactionState ??
         destinationTransaction.transactionState ??
@@ -134,6 +144,7 @@ export default function SelectedTransactionLinkDialog({
           selectedAbsoluteAmount === ''
             ? null
             : Number.parseInt(selectedAbsoluteAmount, 10),
+        reconciledIsSameSign: selectedIsSameSign,
         reconciledTransactionState: selectedTransactionState || null,
         reconciledDescription: sharedDescription,
       }),
@@ -174,6 +185,8 @@ export default function SelectedTransactionLinkDialog({
             onSelectedDateChange={setSelectedDate}
             selectedAbsoluteAmount={selectedAbsoluteAmount}
             onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
+            selectedIsSameSign={selectedIsSameSign}
+            onSelectedIsSameSignChange={setSelectedIsSameSign}
             selectedTransactionState={selectedTransactionState}
             onSelectedTransactionStateChange={setSelectedTransactionState}
             sharedDescription={sharedDescription}

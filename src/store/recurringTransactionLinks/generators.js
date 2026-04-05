@@ -10,6 +10,8 @@ export const generateRecurringTransactionLink = (initialData = {}) => {
       initialData.sourceRecurringTransactionId || null,
     destinationRecurringTransactionId:
       initialData.destinationRecurringTransactionId || null,
+    isSameSign:
+      typeof initialData.isSameSign === 'boolean' ? initialData.isSameSign : true,
     createdAt: now,
     updatedAt: null,
     ...initialData,

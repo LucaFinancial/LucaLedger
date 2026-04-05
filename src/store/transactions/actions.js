@@ -17,7 +17,7 @@ import { actions as transactionLinkActions, selectors as transactionLinkSelector
 import {
   getCounterpartAmountForLinkedPair,
   getLinkedTransactionId,
-  getSignOrientation,
+  resolveLinkIsSameSign,
 } from '@/utils/linking';
 import { generateTransaction } from './generators';
 import {
@@ -178,10 +178,11 @@ export const updateTransactionProperty =
             amount: getCounterpartAmountForLinkedPair({
               sourceAmount: value,
               counterpartAmount: linkedTransaction.amount,
-              orientation: getSignOrientation(
-                transaction.amount,
-                linkedTransaction.amount,
-              ),
+              isSameSign: resolveLinkIsSameSign({
+                link: transactionLink,
+                amountA: transaction.amount,
+                amountB: linkedTransaction.amount,
+              }),
             }),
           }
         : property === 'date'
@@ -327,10 +328,11 @@ export const updateMultipleTransactionsFields =
         linkedUpdates.amount = getCounterpartAmountForLinkedPair({
           sourceAmount: processedUpdates.amount,
           counterpartAmount: linkedTransaction.amount,
-          orientation: getSignOrientation(
-            transaction.amount,
-            linkedTransaction.amount,
-          ),
+          isSameSign: resolveLinkIsSameSign({
+            link: transactionLink,
+            amountA: transaction.amount,
+            amountB: linkedTransaction.amount,
+          }),
         });
       }
 

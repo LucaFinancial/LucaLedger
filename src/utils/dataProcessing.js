@@ -660,10 +660,14 @@ export const processLoadedData = (rawData, options = {}) => {
   const normalizedRecurringTransactionLinks = normalizeRecurringTransactionLinks(
     data.recurringTransactionLinks,
     new Set((data.recurringTransactions || []).map((rule) => rule.id)),
+    new Map((data.recurringTransactions || []).map((rule) => [rule.id, rule])),
   );
   const normalizedTransactionLinks = normalizeTransactionLinks(
     data.transactionLinks,
     new Set((data.transactions || []).map((transaction) => transaction.id)),
+    new Map(
+      (data.transactions || []).map((transaction) => [transaction.id, transaction]),
+    ),
   );
 
   if (

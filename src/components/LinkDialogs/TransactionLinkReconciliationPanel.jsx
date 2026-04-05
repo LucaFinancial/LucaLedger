@@ -7,6 +7,7 @@ import {
   Paper,
   Radio,
   RadioGroup,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -64,6 +65,8 @@ export default function TransactionLinkReconciliationPanel({
   onSelectedDateChange,
   selectedAbsoluteAmount,
   onSelectedAbsoluteAmountChange,
+  selectedIsSameSign,
+  onSelectedIsSameSignChange,
   selectedTransactionState,
   onSelectedTransactionStateChange,
   sharedDescription,
@@ -162,8 +165,8 @@ export default function TransactionLinkReconciliationPanel({
             />
           </RadioGroup>
           <Typography variant='caption' color='text.secondary'>
-            The selected absolute amount will be applied to both transactions
-            while keeping each transaction&apos;s current sign.
+            The selected absolute amount will be applied to both transactions.
+            The sign relationship is controlled by the toggle below.
           </Typography>
         </FormControl>
       )}
@@ -188,6 +191,28 @@ export default function TransactionLinkReconciliationPanel({
           </RadioGroup>
         </FormControl>
       )}
+
+      <Box>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={selectedIsSameSign}
+              onChange={(event) =>
+                onSelectedIsSameSignChange(event.target.checked)
+              }
+            />
+          }
+          label={
+            selectedIsSameSign
+              ? 'Linked amounts use the same sign'
+              : 'Linked amounts use opposite signs'
+          }
+        />
+        <Typography variant='caption' color='text.secondary'>
+          Use the same sign for mirrored payments. Use opposite signs for
+          transfers between accounts.
+        </Typography>
+      </Box>
 
       <TextField
         label='Shared description'

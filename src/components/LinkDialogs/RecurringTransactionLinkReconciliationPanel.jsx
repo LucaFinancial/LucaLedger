@@ -7,6 +7,7 @@ import {
   Paper,
   Radio,
   RadioGroup,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -64,6 +65,8 @@ export default function RecurringTransactionLinkReconciliationPanel({
   onSelectedScheduleSourceChange,
   selectedAbsoluteAmount,
   onSelectedAbsoluteAmountChange,
+  selectedIsSameSign,
+  onSelectedIsSameSignChange,
   sharedDescription,
   onSharedDescriptionChange,
 }) {
@@ -171,10 +174,33 @@ export default function RecurringTransactionLinkReconciliationPanel({
           </RadioGroup>
           <Typography variant='caption' color='text.secondary'>
             The selected absolute amount will be applied to both recurring
-            transactions while keeping each rule&apos;s current sign.
+            transactions. The sign relationship is controlled by the toggle
+            below.
           </Typography>
         </FormControl>
       )}
+
+      <Box>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={selectedIsSameSign}
+              onChange={(event) =>
+                onSelectedIsSameSignChange(event.target.checked)
+              }
+            />
+          }
+          label={
+            selectedIsSameSign
+              ? 'Linked amounts use the same sign'
+              : 'Linked amounts use opposite signs'
+          }
+        />
+        <Typography variant='caption' color='text.secondary'>
+          Use the same sign for mirrored payments. Use opposite signs for
+          transfers between accounts.
+        </Typography>
+      </Box>
 
       <TextField
         label='Shared description'

@@ -8,6 +8,8 @@ export const generateTransactionLink = (initialData = {}) => {
     id: uuid(),
     sourceTransactionId: initialData.sourceTransactionId || null,
     destinationTransactionId: initialData.destinationTransactionId || null,
+    isSameSign:
+      typeof initialData.isSameSign === 'boolean' ? initialData.isSameSign : true,
     createdAt: now,
     updatedAt: null,
     ...initialData,

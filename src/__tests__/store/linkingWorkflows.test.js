@@ -106,6 +106,7 @@ const createStore = () =>
           id: IDS.recurringLink,
           sourceRecurringTransactionId: IDS.checkingRecurring,
           destinationRecurringTransactionId: IDS.cardRecurring,
+          isSameSign: false,
           createdAt: '2026-01-01T00:00:00.000Z',
           updatedAt: null,
         },
@@ -116,6 +117,7 @@ const createStore = () =>
           id: IDS.transactionLink,
           sourceTransactionId: IDS.checkingTransaction,
           destinationTransactionId: IDS.cardTransaction,
+          isSameSign: false,
           createdAt: '2026-01-01T00:00:00.000Z',
           updatedAt: null,
         },
@@ -154,6 +156,46 @@ describe('linking workflows', () => {
         (transaction) => transaction.id === IDS.cardTransaction,
       ).amount,
     ).toBe(7500);
+  });
+
+  it('syncs linked transaction amounts with same-sign behavior when configured', async () => {
+    const store = createStore();
+
+    await store.dispatch(
+      transactionLinkActions.reconcileAndSaveTransactionLinkPair({
+        sourceTransactionId: IDS.checkingTransaction,
+        destinationTransactionId: IDS.cardTransaction,
+        reconciledIsSameSign: true,
+      }),
+    );
+
+    const sourceTransaction = store
+      .getState()
+      .transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      );
+
+    await store.dispatch(
+      transactionActions.updateTransactionProperty(
+        IDS.checkingAccount,
+        sourceTransaction,
+        'amount',
+        -8300,
+      ),
+    );
+
+    const nextState = store.getState();
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.checkingTransaction,
+      ).amount,
+    ).toBe(-8300);
+    expect(
+      nextState.transactions.find(
+        (transaction) => transaction.id === IDS.cardTransaction,
+      ).amount,
+    ).toBe(-8300);
+    expect(nextState.transactionLinks[0].isSameSign).toBe(true);
   });
 
   it('syncs linked transaction state when one side changes', async () => {
@@ -254,6 +296,7 @@ describe('linking workflows', () => {
         destinationTransactionId: IDS.cardTransaction,
         reconciledDate: '2026-04-05',
         reconciledAbsoluteAmount: 7400,
+        reconciledIsSameSign: false,
         reconciledTransactionState: 'PENDING',
         reconciledDescription: 'Matched transfer',
       }),
@@ -383,6 +426,7 @@ describe('linking workflows', () => {
         sourceRecurringTransactionId: IDS.checkingRecurring,
         destinationRecurringTransactionId: IDS.cardRecurring,
         reconciledAbsoluteAmount: 7500,
+        reconciledIsSameSign: false,
         reconciledScheduleSource: 'destination',
         reconciledDescription: 'Matched recurring transfer',
       }),

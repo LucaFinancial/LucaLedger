@@ -32,7 +32,10 @@ import {
 import { selectors as accountSelectors } from '@/store/accounts';
 import { selectors as transactionSelectors } from '@/store/transactions';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
-import { validateTransactionLinkCandidate } from '@/utils/linking';
+import {
+  inferLinkIsSameSign,
+  validateTransactionLinkCandidate,
+} from '@/utils/linking';
 
 export default function TransactionLinkDialog({
   open,
@@ -76,6 +79,7 @@ export default function TransactionLinkDialog({
   const [selectedTargetId, setSelectedTargetId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedAbsoluteAmount, setSelectedAbsoluteAmount] = useState('');
+  const [selectedIsSameSign, setSelectedIsSameSign] = useState(true);
   const [selectedTransactionState, setSelectedTransactionState] = useState('');
   const [sharedDescription, setSharedDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -332,6 +336,18 @@ export default function TransactionLinkDialog({
         ),
       ),
     );
+    setSelectedIsSameSign(
+      selectedCandidateRow.transaction.id ===
+        (sourceTransactionLink?.sourceTransactionId === sourceTransactionId
+          ? sourceTransactionLink.destinationTransactionId
+          : sourceTransactionLink?.destinationTransactionId || '') &&
+        typeof sourceTransactionLink?.isSameSign === 'boolean'
+        ? sourceTransactionLink.isSameSign
+        : inferLinkIsSameSign(
+            sourceTransaction.amount ?? 0,
+            selectedCandidateRow.transaction.amount ?? 0,
+          ),
+    );
     setSelectedTransactionState(
       sourceTransaction.transactionState ??
         selectedCandidateRow.transaction.transactionState ??
@@ -343,7 +359,13 @@ export default function TransactionLinkDialog({
         '',
     );
     setErrorMessage('');
-  }, [open, selectedCandidateRow, sourceTransaction]);
+  }, [
+    open,
+    selectedCandidateRow,
+    sourceTransaction,
+    sourceTransactionId,
+    sourceTransactionLink,
+  ]);
 
   const handleSave = async () => {
     if (!selectedTargetId || !selectedCandidateRow?.selectable) return;
@@ -357,6 +379,7 @@ export default function TransactionLinkDialog({
           selectedAbsoluteAmount === ''
             ? null
             : Number.parseInt(selectedAbsoluteAmount, 10),
+        reconciledIsSameSign: selectedIsSameSign,
         reconciledTransactionState: selectedTransactionState || null,
         reconciledDescription: sharedDescription,
       }),
@@ -537,6 +560,8 @@ export default function TransactionLinkDialog({
                 onSelectedDateChange={setSelectedDate}
                 selectedAbsoluteAmount={selectedAbsoluteAmount}
                 onSelectedAbsoluteAmountChange={setSelectedAbsoluteAmount}
+                selectedIsSameSign={selectedIsSameSign}
+                onSelectedIsSameSignChange={setSelectedIsSameSign}
                 selectedTransactionState={selectedTransactionState}
                 onSelectedTransactionStateChange={setSelectedTransactionState}
                 sharedDescription={sharedDescription}
