@@ -1,4 +1,8 @@
 import {
+  ArrowDropDown as ArrowDropDownIcon,
+  ArrowDropUp as ArrowDropUpIcon,
+} from '@mui/icons-material';
+import {
   Box,
   Grid,
   Paper,
@@ -217,152 +221,268 @@ function getComparisonValueColor(rowType, amount) {
   return getBalanceColor(amount);
 }
 
+function getRemainingTotalCellConfig(row, sectionTitle) {
+  const remainingValue = row.remaining ?? 0;
+  const positiveIsGood = row.type === 'inflow' || row.type === 'balance';
+  const upIcon = <ArrowDropUpIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />;
+  const downIcon = (
+    <ArrowDropDownIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />
+  );
+
+  if (sectionTitle === 'Income') {
+    return {
+      value: Math.abs(remainingValue),
+      type: remainingValue >= 0 ? 'balance' : 'outflow',
+      icon: null,
+    };
+  }
+
+  if (sectionTitle === 'Expenses') {
+    return {
+      value: Math.abs(remainingValue),
+      type: remainingValue >= 0 ? 'outflow' : 'balance',
+      icon: null,
+    };
+  }
+
+  if (remainingValue > 0) {
+    return {
+      value: Math.abs(remainingValue),
+      type: positiveIsGood ? 'balance' : 'outflow',
+      icon: upIcon,
+    };
+  }
+
+  if (remainingValue < 0) {
+    return {
+      value: Math.abs(remainingValue),
+      type: positiveIsGood ? 'outflow' : 'balance',
+      icon: downIcon,
+    };
+  }
+
+  return {
+    value: remainingValue,
+    type: row.type,
+    icon: null,
+  };
+}
+
+function getSectionHeaderStyles(sectionTitle) {
+  switch (sectionTitle) {
+    case 'Income':
+      return {
+        backgroundColor: '#e8f5e9',
+        borderColor: '#a5d6a7',
+        color: '#2e7d32',
+      };
+    case 'Expenses':
+      return {
+        backgroundColor: '#ffebee',
+        borderColor: '#ef9a9a',
+        color: '#c62828',
+      };
+    case 'Credit Cards':
+      return {
+        backgroundColor: '#e3f2fd',
+        borderColor: '#90caf9',
+        color: '#1565c0',
+      };
+    case 'Income vs Expenses':
+      return {
+        backgroundColor: '#f3e5f5',
+        borderColor: '#ce93d8',
+        color: '#7b1fa2',
+      };
+    default:
+      return {
+        backgroundColor: '#f8fafc',
+        borderColor: '#e0e0e0',
+        color: 'text.primary',
+      };
+  }
+}
+
 function DetailedComparisonTable({ sections, formatCurrency }) {
   return (
     <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
-      {sections.map((section) => (
-        <Grid
-          key={section.title}
-          size={{ xs: 12, md: 6 }}
-          sx={{ display: 'flex' }}
-        >
-          <Paper
-            sx={{
-              width: '100%',
-              height: '100%',
-              border: '1px solid #e0e0e0',
-              borderRadius: 2,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
+      {sections.map((section) => {
+        const headerStyles = getSectionHeaderStyles(section.title);
+
+        return (
+          <Grid
+            key={section.title}
+            size={{ xs: 12, md: 6 }}
+            sx={{ display: 'flex' }}
           >
-            <Box
+            <Paper
               sx={{
-                px: 2,
-                py: 1.25,
-                backgroundColor: '#f8fafc',
-                borderBottom: '1px solid #e0e0e0',
+                width: '100%',
+                height: '100%',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
-                {section.title}
-              </Typography>
-            </Box>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1.25,
+                  backgroundColor: headerStyles.backgroundColor,
+                  borderBottom: `1px solid ${headerStyles.borderColor}`,
+                }}
+              >
+                <Typography
+                  variant='subtitle2'
+                  sx={{ fontWeight: 700, color: headerStyles.color }}
+                >
+                  {section.title}
+                </Typography>
+              </Box>
 
-            <TableContainer sx={{ flex: 1 }}>
-              <Table size='small' sx={{ tableLayout: 'fixed' }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ width: '34%' }} />
-                    <TableCell
-                      align='right'
-                      sx={{ fontWeight: 700, color: '#2196f3' }}
-                    >
-                      Current
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ fontWeight: 700, color: '#ff9800' }}
-                    >
-                      Remaining
-                    </TableCell>
-                    <TableCell
-                      align='right'
-                      sx={{ fontWeight: 700, color: '#9c27b0' }}
-                    >
-                      Totals
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {section.rows.map((row) => (
-                    <TableRow
-                      key={`${section.title}-${row.label}`}
-                      sx={
-                        row.emphasis
-                          ? {
-                              backgroundColor:
-                                row.emphasis === 'total'
-                                  ? '#fafafa'
-                                  : 'rgba(33, 150, 243, 0.04)',
-                            }
-                          : undefined
-                      }
-                    >
+              <TableContainer sx={{ flex: 1 }}>
+                <Table size='small' sx={{ tableLayout: 'fixed' }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ width: '34%' }} />
                       <TableCell
-                        component='th'
-                        scope='row'
-                        sx={{
-                          pl: row.emphasis ? 2 : 3,
-                        }}
+                        align='right'
+                        sx={{ fontWeight: 700, color: '#2196f3' }}
                       >
-                        <Typography
-                          variant='body2'
-                          sx={{ fontWeight: row.emphasis ? 700 : 600 }}
-                        >
-                          {row.label}
-                        </Typography>
+                        Current
                       </TableCell>
-                      <TableCell align='right'>
-                        <TooltipValue tooltip={row.tooltip}>
-                          <Typography
-                            variant='body2'
-                            sx={{
-                              color: getComparisonValueColor(
-                                row.type,
-                                row.current,
-                              ),
-                              fontWeight: row.emphasis ? 700 : 600,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {formatCurrency(row.current)}
-                          </Typography>
-                        </TooltipValue>
+                      <TableCell
+                        align='right'
+                        sx={{ fontWeight: 700, color: '#9c27b0' }}
+                      >
+                        Remaining
                       </TableCell>
-                      <TableCell align='right'>
-                        <TooltipValue tooltip={row.tooltip}>
-                          <Typography
-                            variant='body2'
-                            sx={{
-                              color: getComparisonValueColor(
-                                row.type,
-                                row.remaining,
-                              ),
-                              fontWeight: row.emphasis ? 700 : 600,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {formatCurrency(row.remaining)}
-                          </Typography>
-                        </TooltipValue>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <TooltipValue tooltip={row.tooltip}>
-                          <Typography
-                            variant='body2'
-                            sx={{
-                              color: getComparisonValueColor(
-                                row.type,
-                                row.projected,
-                              ),
-                              fontWeight: row.emphasis ? 700 : 600,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {formatCurrency(row.projected)}
-                          </Typography>
-                        </TooltipValue>
+                      <TableCell
+                        align='right'
+                        sx={{ fontWeight: 700, color: '#2e7d32' }}
+                      >
+                        Month End Totals
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-      ))}
+                  </TableHead>
+                  <TableBody>
+                    {section.rows.map((row) => {
+                      const remainingDisplay =
+                        row.emphasis === 'total'
+                          ? getRemainingTotalCellConfig(row, section.title)
+                          : {
+                              value: row.remaining,
+                              type: row.type,
+                              icon: null,
+                            };
+
+                      return (
+                        <TableRow
+                          key={`${section.title}-${row.label}`}
+                          sx={
+                            row.emphasis
+                              ? {
+                                  backgroundColor:
+                                    row.emphasis === 'total'
+                                      ? '#fafafa'
+                                      : 'rgba(33, 150, 243, 0.04)',
+                                }
+                              : undefined
+                          }
+                        >
+                          <TableCell
+                            component='th'
+                            scope='row'
+                            sx={{
+                              pl: row.emphasis ? 2 : 3,
+                            }}
+                          >
+                            <Typography
+                              variant='body2'
+                              sx={{ fontWeight: row.emphasis ? 700 : 600 }}
+                            >
+                              {row.label}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <TooltipValue tooltip={row.tooltip}>
+                              <Typography
+                                variant='body2'
+                                sx={{
+                                  color: getComparisonValueColor(
+                                    row.type,
+                                    row.current,
+                                  ),
+                                  fontWeight: row.emphasis ? 700 : 600,
+                                  fontSize:
+                                    row.emphasis === 'total'
+                                      ? '1rem'
+                                      : undefined,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {formatCurrency(row.current)}
+                              </Typography>
+                            </TooltipValue>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <TooltipValue tooltip={row.tooltip}>
+                              <Typography
+                                variant='body2'
+                                sx={{
+                                  color: getComparisonValueColor(
+                                    remainingDisplay.type,
+                                    remainingDisplay.value,
+                                  ),
+                                  fontWeight: row.emphasis ? 700 : 600,
+                                  fontSize:
+                                    row.emphasis === 'total'
+                                      ? '1rem'
+                                      : undefined,
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'flex-end',
+                                }}
+                              >
+                                {remainingDisplay.icon}
+                                {formatCurrency(remainingDisplay.value)}
+                              </Typography>
+                            </TooltipValue>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <TooltipValue tooltip={row.tooltip}>
+                              <Typography
+                                variant='body2'
+                                sx={{
+                                  color: getComparisonValueColor(
+                                    row.type,
+                                    row.projected,
+                                  ),
+                                  fontWeight: row.emphasis ? 700 : 600,
+                                  fontSize:
+                                    row.emphasis === 'total'
+                                      ? '1rem'
+                                      : undefined,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {formatCurrency(row.projected)}
+                              </Typography>
+                            </TooltipValue>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </Grid>
+        );
+      })}
     </Grid>
   );
 }
@@ -472,13 +592,13 @@ export default function MonthOverviewSummary({
             'Transactions in income categories on included asset accounts.',
         },
         {
-          label: 'Asset Credits',
+          label: 'Checking/Savings Credits',
           type: 'inflow',
           current: assetCreditsMetrics.current,
           remaining: assetCreditsMetrics.remaining,
           projected: assetCreditsMetrics.projected,
           tooltip:
-            'Credits to included asset accounts that are not categorized as income, such as reimbursements and refunds.',
+            'Credits to included checking and savings accounts that are not categorized as income, such as reimbursements and refunds.',
         },
         {
           label: 'Credit Card Credits / Rewards',
@@ -547,13 +667,13 @@ export default function MonthOverviewSummary({
       title: 'Expenses',
       rows: [
         {
-          label: 'Asset Expenses',
+          label: 'Checking/Savings Expenses',
           type: 'outflow',
           current: assetExpensesMetrics.current,
           remaining: assetExpensesMetrics.remaining,
           projected: assetExpensesMetrics.projected,
           tooltip:
-            'Expenses paid directly from included asset accounts. This excludes card payments and excludes spending charged to credit cards.',
+            'Expenses paid directly from included checking and savings accounts. This excludes card payments and excludes spending charged to credit cards.',
         },
         {
           label: 'Credit Card Charges',
@@ -565,7 +685,7 @@ export default function MonthOverviewSummary({
             'Positive transactions on included credit card accounts, such as purchases and fees.',
         },
         {
-          label: 'All Expenses',
+          label: 'Total Expenses',
           type: 'outflow',
           current: currentMonthTotals.expenses || 0,
           remaining: remainingMonthTotals.expenses || 0,
@@ -589,7 +709,7 @@ export default function MonthOverviewSummary({
             'Overall income and credits across included accounts. This includes asset-account income, asset-account credits, and credit card rewards, refunds, and statement credits.',
         },
         {
-          label: 'All Expenses',
+          label: 'Total Expenses',
           type: 'outflow',
           current: currentMonthTotals.expenses || 0,
           remaining: remainingMonthTotals.expenses || 0,
@@ -717,13 +837,13 @@ export default function MonthOverviewSummary({
           <Paper
             sx={{
               p: 2,
-              backgroundColor: '#fff3e0',
-              border: '1px solid #ff9800',
+              backgroundColor: '#f3e5f5',
+              border: '1px solid #9c27b0',
             }}
           >
             <Typography
               variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1, color: '#ff9800' }}
+              sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
             >
               Remaining
             </Typography>
@@ -757,7 +877,7 @@ export default function MonthOverviewSummary({
                     : '#4caf50',
                 tooltip: cardMetricTooltips.cardBalanceChange,
               }}
-              borderColor='#ffcc80'
+              borderColor='#ce93d8'
               formatCurrency={formatCurrency}
             />
           </Paper>
@@ -768,13 +888,13 @@ export default function MonthOverviewSummary({
           <Paper
             sx={{
               p: 2,
-              backgroundColor: '#f3e5f5',
-              border: '1px solid #9c27b0',
+              backgroundColor: '#e8f5e9',
+              border: '1px solid #4caf50',
             }}
           >
             <Typography
               variant='subtitle2'
-              sx={{ fontWeight: 'bold', mb: 1, color: '#9c27b0' }}
+              sx={{ fontWeight: 'bold', mb: 1, color: '#2e7d32' }}
             >
               End of Month Totals
             </Typography>
@@ -808,7 +928,7 @@ export default function MonthOverviewSummary({
                     : '#4caf50',
                 tooltip: cardMetricTooltips.endingCardBalance,
               }}
-              borderColor='#ce93d8'
+              borderColor='#81c784'
               formatCurrency={formatCurrency}
             />
           </Paper>
