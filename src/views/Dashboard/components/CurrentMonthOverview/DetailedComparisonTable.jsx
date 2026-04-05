@@ -15,10 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import DetailedComparisonValueCell from './DetailedComparisonValueCell';
-import {
-  getBalanceColor,
-  getExpenseColor,
-} from './monthOverviewSummaryUtils';
+import { getBalanceColor, getExpenseColor } from './monthOverviewSummaryUtils';
 
 function getComparisonValueColor(rowType, amount) {
   if (rowType === 'cardPayments') {
@@ -40,9 +37,7 @@ function getRemainingTotalCellConfig(row, sectionTitle) {
   const remainingValue = row.remaining ?? 0;
   const positiveIsGood = row.type === 'inflow' || row.type === 'balance';
   const upIcon = <ArrowDropUpIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />;
-  const downIcon = (
-    <ArrowDropDownIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />
-  );
+  const downIcon = <ArrowDropDownIcon sx={{ fontSize: '1.9rem', mr: 0.25 }} />;
 
   if (sectionTitle === 'Income') {
     return {
@@ -118,10 +113,7 @@ function getSectionHeaderStyles(sectionTitle) {
   }
 }
 
-export default function DetailedComparisonTable({
-  sections,
-  formatCurrency,
-}) {
+export default function DetailedComparisonTable({ sections, formatCurrency }) {
   return (
     <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
       {sections.map((section) => {
@@ -138,6 +130,7 @@ export default function DetailedComparisonTable({
                 width: '100%',
                 height: '100%',
                 border: '1px solid #e0e0e0',
+                borderBottom: 'none',
                 borderRadius: 2,
                 overflow: 'hidden',
                 display: 'flex',
@@ -216,7 +209,9 @@ export default function DetailedComparisonTable({
                             sx={{
                               pl: row.emphasis ? 2 : 3,
                               height:
-                                row.emphasis === 'total' ? '3.25rem' : undefined,
+                                row.emphasis === 'total'
+                                  ? '3.25rem'
+                                  : undefined,
                               boxSizing:
                                 row.emphasis === 'total'
                                   ? 'border-box'
