@@ -130,16 +130,6 @@ export default function AccountCard({ account }) {
                 constants.TransactionStateEnum.SCHEDULED,
               ]}
             />
-            {/* <BalanceRow
-              account={account}
-              balanceType={'Planned'}
-              filterArray={[
-                constants.TransactionStateEnum.COMPLETED,
-                constants.TransactionStateEnum.PENDING,
-                constants.TransactionStateEnum.SCHEDULED,
-                constants.TransactionStateEnum.SCHEDULED,
-              ]}
-            /> */}
           </>
         )}
         <ActionsMenu account={account} />
