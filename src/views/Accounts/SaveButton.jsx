@@ -9,7 +9,9 @@ import { selectors as categorySelectors } from '@/store/categories';
 import { selectors as statementSelectors } from '@/store/statements';
 import { selectors as recurringTransactionSelectors } from '@/store/recurringTransactions';
 import { selectors as recurringTransactionEventSelectors } from '@/store/recurringTransactionEvents';
+import { selectors as recurringTransactionLinkSelectors } from '@/store/recurringTransactionLinks';
 import { selectors as transactionSplitSelectors } from '@/store/transactionSplits';
+import { selectors as transactionLinkSelectors } from '@/store/transactionLinks';
 
 export default function SaveButton() {
   const accounts = useSelector(accountSelectors.selectAccounts);
@@ -22,8 +24,14 @@ export default function SaveButton() {
   const recurringTransactionEvents = useSelector(
     recurringTransactionEventSelectors.selectRecurringTransactionEvents,
   );
+  const recurringTransactionLinks = useSelector(
+    recurringTransactionLinkSelectors.selectRecurringTransactionLinks,
+  );
   const transactionSplits = useSelector(
     transactionSplitSelectors.selectTransactionSplits,
+  );
+  const transactionLinks = useSelector(
+    transactionLinkSelectors.selectTransactionLinks,
   );
   const loading = useSelector(accountSelectors.selectAccountsLoading);
 
@@ -36,7 +44,9 @@ export default function SaveButton() {
       statements,
       recurringTransactions,
       recurringTransactionEvents,
+      recurringTransactionLinks,
       transactionSplits,
+      transactionLinks,
     };
 
     const saveString = JSON.stringify(data, null, 2);
