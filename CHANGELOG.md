@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-04-05
+
+### Changed
+
+- Updated `@luca-financial/luca-schema` from `^3.3.1` to `^3.3.2`.
+- Bumped application version to `2.9.1`. (#295)
+
+### Fixed
+
+- Fixed the `Save Accounts` export so recurring transaction links and transaction links are included in the downloaded data payload, preserving linked-record relationships on round-trip import/export.
+- Added regression coverage for the `Save Accounts` export payload so schema-backed collections do not drift out of the full export again.
+
 ## [2.9.0] - 2026-04-05
 
 ### Added
