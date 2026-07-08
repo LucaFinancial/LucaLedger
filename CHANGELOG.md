@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-07-08
+
+### Changed
+
+- Updated account cards to use a consistent fixed size, truncate long account names with hover tooltips, emphasize current balances, and preview pending or upcoming scheduled/planned transactions instead of the old scheduled balance row.
+- Bumped application version to `2.10.0`.
+
 ## [2.9.1] - 2026-04-05
 
 ### Changed
